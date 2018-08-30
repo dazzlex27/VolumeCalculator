@@ -1,9 +1,17 @@
 #pragma once
 
-#include "VolumeChecker.h"
+#include "Structures.h"
 
-void CreateVolumeChecker(const float fovX, const float fovY, int mapWidth, int mapHeight, int cutOffDepth);
+#define DLL_EXPORT extern "C" _declspec(dllexport)
 
-ObjDimDescription* CheckVolume(short* mapData);
+DLL_EXPORT int TestExport();
 
-void DestroyVolumeChecker();
+DLL_EXPORT int CreateVolumeChecker(const float fovX, const float fovY, int mapWidth, int mapHeight, int floorDepth, int cutOffDepth);
+
+DLL_EXPORT ImageFrame* GetNextRgbFrame();
+
+DLL_EXPORT DepthFrame* GetNextDepthFrame();
+
+DLL_EXPORT ObjDimDescription* CheckVolume(short* mapData);
+
+DLL_EXPORT int DestroyVolumeChecker();

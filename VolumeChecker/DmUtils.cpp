@@ -1,6 +1,7 @@
 #include "DmUtils.h"
 #include <cmath>
 #include <climits>
+#include <fstream>
 
 const std::vector<Contour> DmUtils::GetValidContours(const std::vector<Contour>& contours, const float minAreaRatio, const int imageDataLength)
 {
@@ -71,52 +72,85 @@ void DmUtils::FilterDepthMap(const int mapDataLength, short*const mapData,  cons
 	}
 }
 
-const AbsRect DmUtils::CalculateContourBoundingBox(const Contour& contour)
+const std::vector<short> DmUtils::GetContourDepthValues(const int mapWidth, const int mapHeight, const short*const mapData, 
+	const cv::RotatedRect& roi, const Contour& contour)
 {
-	int left = INT32_MAX;
-	int top = INT32_MAX;
-	int right = -1;
-	int bottom = -1;
+	cv::Rect boundingRect = roi.boundingRect();
 
-	for (const cv::Point& point : contour)
-	{
-		if (point.x < left)
-			left = point.x;
-		if (point.x > right)
-			right = point.x;
-		if (point.y < top)
-			top = point.y;
-		if (point.y > bottom)
-			bottom = point.y;
-	}
-
-	const int x = left;
-	const int y = top;
-	const int width = right - left;
-	const int height = bottom - top;
-
-	return AbsRect{ x, y, width, height };
-}
-
-const std::vector<short> DmUtils::GetContourDepthValues(const int mapWidth, const short*const mapData, const cv::Rect& roi)
-{
 	std::vector<short> result;
-	result.reserve(roi.width * roi.height);
+	result.emplace_back(boundingRect.width * boundingRect.height);
 
-	for (int j = 0; j < roi.height; j++)
+	for (int j = boundingRect.y; j < boundingRect.y + boundingRect.height; j++)
 	{
-		int yIndex = mapWidth * roi.y + mapWidth * j;
-
-		for (int i = 0; i < roi.width; i++)
+		for (int i = boundingRect.x; i < boundingRect.x + boundingRect.width; i++)
 		{
-			int xIndex = roi.x + i;
-
-			short value = mapData[yIndex + xIndex];
-
-			if (value > 0)
-				result.emplace_back(value);
+			if (cv::pointPolygonTest(contour, cv::Point2f(i, j), false) >= 0.0)
+			{
+				result.emplace_back(mapData[j * mapWidth + i]);
+			}
 		}
 	}
+
+	return result;
+}
+
+const DepthMap*const DmUtils::ReadDepthMapFromFile(const char* filepath)
+{
+	std::ifstream stream(filepath);
+	if (!stream.good())
+		return nullptr;
+
+	int width = 0;
+	stream >> width;
+	int height = 0;
+	stream >> height;
+	DepthMap* dm = new DepthMap(width, height);
+
+	short value;
+	int index = 0;
+
+	while (stream >> value)
+	{
+		dm->Data[index++] = value;
+	}
+
+	stream.close();
+
+	return dm;
+}
+
+void DmUtils::SaveDepthMapToFile(const std::string& filename, const DepthMap& map)
+{
+	std::ofstream file;
+	file.open(filename);
+
+	const int frameSize = map.Width * map.Height;
+
+	file << map.Width;
+	file << map.Height;
+
+	for (int i = 0; i < frameSize; i++)
+		file << map.Data[i] << std::endl;
+
+	file.close();
+}
+
+const RotRelRect DmUtils::RotAbsRectToRel(const int rotWidth, const int rotHeight, const cv::RotatedRect& rect)
+{
+	RotRelRect result;
+
+	cv::Point2f rectPoints[4];
+	rect.points(rectPoints);
+
+	memcpy(result.Points, rectPoints, 4 * sizeof(FlPoint));
+	for (int i = 0; i < 4; i++)
+	{
+		result.Points[i].X = (float)rectPoints[i].x / rotWidth;
+		result.Points[i].Y = (float)rectPoints[i].y / rotHeight;
+	}
+	result.Width = rect.size.width / rotWidth;
+	result.Height = rect.size.height / rotHeight;
+	result.AngleDeg = rect.angle;
 
 	return result;
 }

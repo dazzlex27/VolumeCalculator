@@ -13,6 +13,7 @@ private:
 	const int _mapHeight;
 	const int _mapLength;
 	const int _mapLengthBytes;
+	const int _floorDepth;
 	const int _cutOffDepth;
 
 	short* _mapBuffer;
@@ -20,7 +21,8 @@ private:
 	ObjDimDescription* _result;
 
 public:
-	VolumeChecker(const float fovX, const float fovY, const int mapWidth, const int mapHeight, const int cutOffDepth);
+	VolumeChecker(const float fovX, const float fovY, const int mapWidth, const int mapHeight, const int floorDepth, 
+		const int cutOffDepth);
 	~VolumeChecker();
 
 	ObjDimDescription* GetVolume(const short*const mapData);

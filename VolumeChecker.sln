@@ -5,22 +5,39 @@ VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VolumeChecker", "VolumeChecker\VolumeChecker.vcxproj", "{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCheckerGUI", "VolumeCheckerGUI\VolumeCheckerGUI.csproj", "{08B98C3A-C054-464C-9594-F4EB7F7B2333}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Debug|x64.ActiveCfg = Debug|x64
 		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Debug|x64.Build.0 = Debug|x64
 		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Debug|x86.ActiveCfg = Debug|Win32
 		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Debug|x86.Build.0 = Debug|Win32
+		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Release|Any CPU.ActiveCfg = Debug|Win32
 		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Release|x64.ActiveCfg = Release|x64
-		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Release|x64.Build.0 = Release|x64
-		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Release|x86.ActiveCfg = Release|Win32
+		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Release|x86.ActiveCfg = Debug|Win32
 		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Release|x86.Build.0 = Release|Win32
+		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Debug|Any CPU.Build.0 = Debug|x64
+		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Debug|x64.ActiveCfg = Debug|x64
+		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Debug|x64.Build.0 = Debug|x64
+		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Debug|x86.ActiveCfg = Debug|x64
+		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Debug|x86.Build.0 = Debug|x64
+		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Release|Any CPU.ActiveCfg = Debug|x64
+		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Release|Any CPU.Build.0 = Debug|x64
+		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Release|x64.ActiveCfg = Release|x64
+		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Release|x64.Build.0 = Release|x64
+		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Release|x86.ActiveCfg = Debug|x64
+		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Release|x86.Build.0 = Debug|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
