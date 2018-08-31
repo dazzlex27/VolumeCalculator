@@ -7,7 +7,7 @@ namespace VolumeCheckerGUI
 {
     internal class Logger
     {
-        private string _filepath;
+        private readonly string _filepath;
 
         public Logger()
         {
@@ -16,7 +16,7 @@ namespace VolumeCheckerGUI
             var currentInstanceFolder = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
             var folderPath = Path.Combine(commonFolderPath, appName, currentInstanceFolder);
             Directory.CreateDirectory(folderPath);
-            _filepath = Path.Combine(folderPath, "log.txt");
+            _filepath = Path.Combine(folderPath, "main.log");
         }
 
         public void LogInfo(string info)
@@ -24,7 +24,7 @@ namespace VolumeCheckerGUI
             var time = DateTime.Now;
             using (var sw = File.AppendText(_filepath))
             {
-                sw.WriteLine($"{time.ToShortDateString()} {time.ToString("HH:mm:ss.fff")} INFO: {info}");
+                sw.WriteLine($"{time.ToShortDateString()} {time:HH:mm:ss.fff} INFO: {info}");
             }
         }
 
@@ -33,7 +33,7 @@ namespace VolumeCheckerGUI
             var time = DateTime.Now;
             using (var sw = File.AppendText(_filepath))
             {
-                sw.WriteLine($"{time.ToShortDateString()} {time.ToString("HH:mm:ss.fff")} ERROR: {info}");
+                sw.WriteLine($"{time.ToShortDateString()} {time:HH:mm:ss.fff} ERROR: {info}");
             }
         }
 
@@ -42,7 +42,7 @@ namespace VolumeCheckerGUI
             var time = DateTime.Now;
             using (var sw = File.AppendText(_filepath))
             {
-                sw.WriteLine($"{time.ToShortDateString()} {time.ToString("HH:mm:ss.fff")} EXCEPTION: {info} {ex.Message} : {ex.ToString()}");
+                sw.WriteLine($"{time.ToShortDateString()} {time:HH:mm:ss.fff} EXCEPTION: {info} {ex.Message} : {ex}");
             }
         }
     }

@@ -6,22 +6,14 @@
 
 const double PI = 3.141592653589793238463;
 
-VolumeChecker::VolumeChecker(const float fovX, const float fovY, const int mapWidth, const int mapHeight, const int floorDepth,
-	const int cutOffDepth)
+VolumeChecker::VolumeChecker(const float fovX, const float fovY)
 	: _halfFovX(fovX * 0.5 / 180.0 * PI),
-	_halfFovY(fovY * 0.5 / 180.0 * PI),
-	_mapWidth(mapWidth),
-	_mapHeight(mapHeight),
-	_mapLength(mapWidth * mapHeight),
-	_mapLengthBytes(sizeof(short) * _mapLength),
-	_floorDepth(floorDepth),
-	_cutOffDepth(cutOffDepth)
+	_halfFovY(fovY * 0.5 / 180.0 * PI)
 {
-	_mapBuffer = new short[_mapLength];
-	memset(_mapBuffer, 0, _mapLengthBytes);
-
-	_imgBuffer = new byte[_mapLength];
-	memset(_imgBuffer, 0, _mapLength);
+	_mapWidth = 0;
+	_mapHeight = 0;
+	_mapLength = 0;
+	_mapLengthBytes = 0;
 
 	_result = new ObjDimDescription();
 	memset(_result, 0, sizeof(ObjDimDescription));
@@ -39,24 +31,19 @@ VolumeChecker::~VolumeChecker()
 	_result = 0;
 }
 
-ObjDimDescription* VolumeChecker::GetVolume(const short*const mapData)
+void VolumeChecker::SetSettings(const short floorDepth, const short cutOffDepth)
 {
+	_floorDepth = floorDepth;
+	_cutOffDepth = cutOffDepth;
+}
+
+ObjDimDescription* VolumeChecker::GetVolume(const int mapWidth, const int mapHeight, const short*const mapData)
+{
+	if (_mapWidth != mapWidth || _mapHeight != mapHeight)
+		ResizeBuffers(mapWidth, mapHeight);
+
 	memset(_result, 0, sizeof(ObjDimDescription));
 	memcpy(_mapBuffer, mapData, _mapLengthBytes);
-
-	byte* imageData = new byte[_mapLength * 3];
-	DmUtils::ConvertDepthMapDataToImage(mapData, _mapLength, imageData);
-	cv::Mat input(_mapHeight, _mapWidth, CV_8UC3, imageData);
-	cv::imwrite("out/input.png", input);
-	delete[] imageData;
-
-	DmUtils::FilterDepthMap(_mapLength, _mapBuffer, _cutOffDepth);
-	byte* imageData2 = new byte[_mapLength * 3];
-	DmUtils::ConvertDepthMapDataToImage(_mapBuffer, _mapLength, imageData2);
-	cv::Mat input2(_mapHeight, _mapWidth, CV_8UC3, imageData2);
-	cv::imwrite("out/input2.png", input2);
-	delete[] imageData2;
-
 
 	const Contour& largestContour = GetLargestContour();
 
@@ -82,6 +69,24 @@ ObjDimDescription* VolumeChecker::GetVolume(const short*const mapData)
 	_result->Depth = (short)(planeSizeAtObjHeightMm.Height * contourRelRect.Height);
 
 	return _result;
+}
+
+void VolumeChecker::ResizeBuffers(const int mapWidth, const int mapHeight)
+{
+	_mapWidth = mapWidth;
+	_mapHeight = mapHeight;
+	_mapLength = mapWidth * mapHeight;
+	_mapLengthBytes = _mapLength * sizeof(short);
+
+	if (_mapBuffer != nullptr)
+		delete[] _mapBuffer;
+
+	_mapBuffer = new short[_mapLength];
+
+	if (_imgBuffer != nullptr)
+		delete[] _imgBuffer;
+
+	_imgBuffer = new byte[_mapLength];
 }
 
 const short VolumeChecker::GetAverageAreaValue(const std::vector<short>& values)

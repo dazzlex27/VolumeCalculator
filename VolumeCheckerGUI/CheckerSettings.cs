@@ -1,20 +1,23 @@
 ﻿namespace VolumeCheckerGUI
 {
-    internal class CheckerSettings
+    internal class ApplicationSettings
     {
         public short DistanceToFloor { get; }
 
         public short MinObjHeight { get; }
 
-        public CheckerSettings(short distanceToFloor, short minObjHeight)
-        {
-			DistanceToFloor = distanceToFloor;
-			MinObjHeight = minObjHeight;
-        }
+		public string OutputPath { get; }
 
-		public static CheckerSettings GetDefaultSettings()
+	    public ApplicationSettings(short distanceToFloor, short minObjHeight, string outputPath)
+	    {
+		    DistanceToFloor = distanceToFloor;
+		    MinObjHeight = minObjHeight;
+		    OutputPath = outputPath;
+	    }
+
+		public static ApplicationSettings GetDefaultSettings()
 		{
-			return new CheckerSettings(2000, 1900);
+			return new ApplicationSettings(1000, 950, "c:/VolumeChecker/");
 		}
     }
 }

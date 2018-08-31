@@ -2,37 +2,27 @@
 #include "VolumeChecker.h"
 #include <stdexcept>
 
-VolumeChecker* checker;
+VolumeChecker* Checker;
 
-DLL_EXPORT int TestExport()
+DLL_EXPORT int CreateVolumeChecker(const float fovX, const float fovY)
 {
-	return -1337;
-}
-
-DLL_EXPORT int CreateVolumeChecker(const float fovX, const float fovY, int mapWidth, int mapHeight, int floorDepth, int cutOffDepth)
-{
-	if (mapWidth <= 0 || mapHeight <= 0 || cutOffDepth <= 0)
+	if (fovX <= 0 || fovY <= 0 )
 		return -1;
 
-	if (checker != nullptr)
+	if (Checker != nullptr)
 		DestroyVolumeChecker();
 
-	checker = new VolumeChecker(fovX, fovY, mapWidth, mapHeight, floorDepth, cutOffDepth);
+	Checker = new VolumeChecker(fovX, fovY);
 
 	return 0;
 }
 
-DLL_EXPORT ImageFrame* GetNextRgbFrame()
+DLL_EXPORT void SetCheckerSettings(short floorDepth, short cutOffDepth)
 {
-	return nullptr;
+	Checker->SetSettings(floorDepth, cutOffDepth);
 }
 
-DLL_EXPORT DepthFrame* GetNextDepthFrame()
-{
-	return nullptr;
-}
-
-DLL_EXPORT ObjDimDescription* CheckVolume(short* mapData)
+DLL_EXPORT ObjDimDescription* CheckVolume(int mapWidth, int mapHeight, short* mapData)
 {
 	ObjDimDescription* test = new ObjDimDescription();
 	test->Width = 3;
@@ -41,24 +31,22 @@ DLL_EXPORT ObjDimDescription* CheckVolume(short* mapData)
 
 	return test;
 
-	if (checker == nullptr)
+	if (Checker == nullptr)
 		throw std::logic_error("The checker was not initialized");
 
 	if (mapData == nullptr)
 		throw std::invalid_argument("mapData was null");
 
-	return checker->GetVolume(mapData);
+	return Checker->GetVolume(mapWidth, mapHeight, mapData);
 }
 
 DLL_EXPORT int DestroyVolumeChecker()
 {
-	if (checker != nullptr)
-	{
-		delete checker;
-		checker = 0;
-
+	if (Checker == nullptr)
 		return 1;
-	}
+
+	delete Checker;
+	Checker = nullptr;
 
 	return 0;
 }

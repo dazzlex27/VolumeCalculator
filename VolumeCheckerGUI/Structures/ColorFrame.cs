@@ -3,7 +3,7 @@
 namespace VolumeCheckerGUI.Structures
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public unsafe struct ImageFrame
+	public unsafe struct ColorFrame
 	{
 		public int Width;
 		public int Height;

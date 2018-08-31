@@ -6,14 +6,15 @@ using System.Windows.Controls;
 
 namespace VolumeCheckerGUI
 {
-    internal partial class SettingsWindow : Window, INotifyPropertyChanged
+    internal partial class SettingsWindow : INotifyPropertyChanged
     {
 		private short _distanceToFloor;
 		private short _minObjHeight;
+	    private string _outputPath;
 
 		public short DistanceToFloor
 		{
-			get { return _distanceToFloor; }
+			get => _distanceToFloor;
 			set
 			{
 				if (_distanceToFloor == value)
@@ -26,7 +27,7 @@ namespace VolumeCheckerGUI
 
 		public short MinObjHeight
 		{
-			get { return _minObjHeight; }
+			get => _minObjHeight;
 			set
 			{
 				if (_minObjHeight == value)
@@ -37,19 +38,35 @@ namespace VolumeCheckerGUI
 			}
 		}
 
-		public SettingsWindow(CheckerSettings settings)
-        {
-			_distanceToFloor = settings.DistanceToFloor;
-			_minObjHeight = settings.MinObjHeight;
+	    public string OutputPath
+	    {
+		    get => _outputPath;
+		    set
+		    {
+			    if (_outputPath == value)
+				    return;
+
+			    _outputPath = value;
+			    OnPropertyChanged();
+		    }
+		}
+
+		public SettingsWindow(ApplicationSettings settings)
+		{
+			var oldSettings = settings ?? ApplicationSettings.GetDefaultSettings();
+
+			_distanceToFloor = oldSettings.DistanceToFloor;
+			_minObjHeight = oldSettings.MinObjHeight;
+	        _outputPath = oldSettings.OutputPath;
 
             InitializeComponent();
         }
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		public CheckerSettings GetSettings()
+		public ApplicationSettings GetSettings()
 		{
-			return new CheckerSettings(_distanceToFloor, _minObjHeight);
+			return new ApplicationSettings(_distanceToFloor, _minObjHeight, _outputPath);
 		}
 
 		private void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -59,7 +76,7 @@ namespace VolumeCheckerGUI
 
 		private void BtOk_Click(object sender, RoutedEventArgs e)
 		{
-			var validationPassed = IsValid(TbDistanceToFloor as DependencyObject) && IsValid(TbMinObjHeight as DependencyObject);
+			var validationPassed = IsValid(TbDistanceToFloor) && IsValid(TbMinObjHeight);
 			if (!validationPassed)
 				return;
 
@@ -73,14 +90,10 @@ namespace VolumeCheckerGUI
 			Close();
 		}
 
-		private bool IsValid(DependencyObject obj)
+		private static bool IsValid(DependencyObject obj)
 		{
-			// The dependency object is valid if it has no errors and all
-			// of its children (that are dependency objects) are error-free.
-			return !Validation.GetHasError(obj) &&
-			LogicalTreeHelper.GetChildren(obj)
-			.OfType<DependencyObject>()
-			.All(IsValid);
+			return !Validation.GetHasError(obj) && LogicalTreeHelper.GetChildren(obj).OfType<DependencyObject>().
+				       All(IsValid);
 		}
 	}
 }

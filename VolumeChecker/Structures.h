@@ -56,20 +56,6 @@ struct RotRelRect
 	float AngleDeg;
 };
 
-struct ImageFrame
-{
-	int Width;
-	int Height;
-	byte* Data;
-};
-
-struct DepthFrame
-{
-	int Width;
-	int Height;
-	short* Data;
-};
-
 struct DepthMap
 {
 	const int Width;

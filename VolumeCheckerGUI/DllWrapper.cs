@@ -5,22 +5,28 @@ namespace VolumeCheckerGUI
 {
     internal static class DllWrapper
     {
-        [DllImport("libvolumeChecker.dll", CallingConvention = CallingConvention.Cdecl)]
-        public extern static int TestExport();
+		[DllImport("libframefeeder.dll", CallingConvention = CallingConvention.Cdecl)]
+		public static extern int CreateFrameFeeder();
 
-        [DllImport("libvolumeChecker.dll", CallingConvention = CallingConvention.Cdecl)]
-        public extern static int CreateVolumeChecker(float fovX, float fovY, int mapWidth, int mapHeight, int floorDepth, int cutOffDepth);
+		[DllImport("libframefeeder.dll", CallingConvention = CallingConvention.Cdecl)]
+		public static extern bool IsDeviceAvailable();
+
+		[DllImport("libframefeeder.dll", CallingConvention = CallingConvention.Cdecl)]
+		public static extern unsafe ColorFrame* GetNextRgbFrame();
+
+		[DllImport("libframefeeder.dll", CallingConvention = CallingConvention.Cdecl)]
+		public static extern unsafe DepthFrame* GetNextDepthFrame();
+
+		[DllImport("libframefeeder.dll", CallingConvention = CallingConvention.Cdecl)]
+		public static extern int DestroyFrameFeeder();
 
 		[DllImport("libvolumeChecker.dll", CallingConvention = CallingConvention.Cdecl)]
-		public extern static unsafe ImageFrame* GetNextRgbFrame();
+		public static extern int CreateVolumeChecker(float fovX, float fovY);
 
 		[DllImport("libvolumeChecker.dll", CallingConvention = CallingConvention.Cdecl)]
-		public extern static unsafe DepthFrame* GetNextDepthFrame();
+		public static extern unsafe ObjDimDescription* CheckVolume(int mapWidth, int mapHeight, short* mapData);
 
 		[DllImport("libvolumeChecker.dll", CallingConvention = CallingConvention.Cdecl)]
-		public extern static unsafe ObjDimDescription* CheckVolume(short* mapData);
-
-		[DllImport("libvolumeChecker.dll", CallingConvention = CallingConvention.Cdecl)]
-        public extern static int DestroyVolumeChecker();
+        public static extern int DestroyVolumeChecker();
     }
 }

@@ -5,26 +5,46 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VolumeCheckerGUI"
         mc:Ignorable="d"
-        Title="VolumeCheckerGUI" Height="450" Width="800" WindowStartupLocation="CenterScreen" 
-		ResizeMode="CanMinimize" Closing="Window_Closing" ContentRendered="Window_ContentRendered">
+        Title="VolumeCheckerGUI" SizeToContent="WidthAndHeight" MinHeight="250" MinWidth="600" WindowStartupLocation="CenterScreen" 
+		ResizeMode="CanMinimize" Closing="Window_Closing" ContentRendered="Window_ContentRendered"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<StackPanel>
 		<Menu>
 			<MenuItem Header="Действия">
-				<MenuItem Name="MiOpenSettings" Header="Открыть настройки..." Click="MiOpenSettings_Click"/>
+				<MenuItem Name="MiOpenSettings" Header="Изменить настройки..." Click="MiOpenSettings_Click"/>
 				<MenuItem Name="MiExitApp" Header="Выйти из приложения" Click="MiExitApp_Click"/>
 			</MenuItem>
 		</Menu>
-		<Grid Margin="2">
-			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="Auto"/>
-			</Grid.RowDefinitions>
+		<Grid Margin="5">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition/>
+				<ColumnDefinition/>
+			</Grid.ColumnDefinitions>
 			<StackPanel Margin="5" Grid.Row="0" Width="Auto" HorizontalAlignment="Left">
-				<Canvas Width="480" Height="360" Background="Black"/>
+				<Canvas Width="480" Height="360" Background="{Binding Path=LatestDepthImage}"/>
 				<Button Margin="2" MinHeight="25" Name="BtMeasureVolume" Content="Выполнить измерение" Click="BtMeasureVolume_Click"/>
 			</StackPanel>
-			<StackPanel Margin="5" Grid.Row="1">
-				
+			<StackPanel Margin="5" Grid.Column="1">
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="W = "/>
+					<TextBlock Text="{Binding Path=ObjWidth}"/>
+					<TextBlock Text="  mm"/>
+				</StackPanel>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="H = "/>
+					<TextBlock Text="{Binding Path=ObjHeight}"/>
+					<TextBlock Text="  mm"/>
+				</StackPanel>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="D = "/>
+					<TextBlock Text="{Binding Path=ObjDepth}"/>
+					<TextBlock Text="  mm"/>
+				</StackPanel>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="V = "/>
+					<TextBlock Text="{Binding Path=ObjVolume}"/>
+					<TextBlock Text="  mm"/>
+				</StackPanel>
 			</StackPanel>
 		</Grid>
 	</StackPanel>

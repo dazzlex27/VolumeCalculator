@@ -17,6 +17,10 @@
 			<TextBlock Margin="0, 0, 0, 2" Text="Минимальная высота объекта от пола, мм (от 5 мм)"/>
 			<TextBox Name="TbMinObjHeight" Text="{Binding Path=MinObjHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 		</StackPanel>
+		<StackPanel MaxWidth="300" Margin="3">
+			<TextBlock Margin="0, 0, 0, 2" Text="Путь для сохранения результатов"/>
+			<TextBox Name="TbOutputPath" Text="{Binding Path=OutputPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+		</StackPanel>
 		<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 			<Button Name="BtOk" Margin="5" Width="100" Content="OK" Click="BtOk_Click"/>
 			<Button Name="BtCancel" Margin="5" Width="100" Content="Отмена" Click="BtCancel_Click"/>

@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VolumeChecker", "VolumeChec
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCheckerGUI", "VolumeCheckerGUI\VolumeCheckerGUI.csproj", "{08B98C3A-C054-464C-9594-F4EB7F7B2333}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrameFeeder", "FrameFeeder\FrameFeeder.vcxproj", "{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,16 @@ Global
 		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Release|x64.Build.0 = Release|x64
 		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Release|x86.ActiveCfg = Debug|x64
 		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Release|x86.Build.0 = Debug|x64
+		{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}.Debug|x64.ActiveCfg = Debug|x64
+		{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}.Debug|x64.Build.0 = Debug|x64
+		{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}.Debug|x86.ActiveCfg = Debug|Win32
+		{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}.Debug|x86.Build.0 = Debug|Win32
+		{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}.Release|Any CPU.ActiveCfg = Release|Win32
+		{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}.Release|x64.ActiveCfg = Release|x64
+		{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}.Release|x64.Build.0 = Release|x64
+		{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}.Release|x86.ActiveCfg = Release|Win32
+		{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -3,11 +3,11 @@ using System.IO;
 
 namespace VolumeCheckerGUI
 {
-	internal static class IOUtils
+	internal static class IoUtils
 	{
-		const string ConfigFileName = "settings.cfg";
+		private const string ConfigFileName = "settings.cfg";
 
-		public static void SerializeSettings(CheckerSettings settings)
+		public static void SerializeSettings(ApplicationSettings settings)
 		{
 			if (settings == null)
 				return;
@@ -17,13 +17,13 @@ namespace VolumeCheckerGUI
 			File.WriteAllText(ConfigFileName, settingsText);
 		}
 
-		public static CheckerSettings DeserializeSettings()
+		public static ApplicationSettings DeserializeSettings()
 		{
 			if (!File.Exists(ConfigFileName))
 				return null;
 
 			var settingsText = File.ReadAllText(ConfigFileName);
-			return JsonConvert.DeserializeObject<CheckerSettings>(settingsText);
+			return JsonConvert.DeserializeObject<ApplicationSettings>(settingsText);
 		}
 	}
 }

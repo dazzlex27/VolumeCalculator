@@ -42,6 +42,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -61,14 +62,19 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CheckerSettings.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="DepthMapUtils.cs" />
     <Compile Include="DllWrapper.cs" />
-    <Compile Include="IOUtils.cs" />
+    <Compile Include="Logic\FrameFeeder.cs" />
+    <Compile Include="IoUtils.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="Logic\VolumeCalculator.cs" />
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Structures\DepthFrame.cs" />
-    <Compile Include="Structures\ImageFrame.cs" />
+    <Compile Include="Structures\ColorFrame.cs" />
+    <Compile Include="Structures\DepthMap.cs" />
     <Compile Include="Structures\ObjDimDescription.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
