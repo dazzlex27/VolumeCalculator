@@ -1,11 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Drawing;
-using System.IO;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using VolumeCheckerGUI.Entities;
@@ -16,31 +12,20 @@ namespace VolumeCheckerGUI.GUI
 {
     public partial class MainWindow : INotifyPropertyChanged
     {
-        private readonly Logger _logger;
+	    private static readonly int BytesPerPixel24 = (PixelFormats.Bgr24.BitsPerPixel + 7) / 8;
+
+		private readonly Logger _logger;
 		private ApplicationSettings _settings;
 	    private readonly FrameFeeder _frameFeeder;
 	    private readonly VolumeCalculator _volumeCalculator;
-	    private ImageSource _depthMapImage;
-	    private WriteableBitmap outputBitmap;
+	    private WriteableBitmap _colorImageBitmap;
+		private WriteableBitmap _depthMapBitmap;
 
 		private volatile DepthMap _latestDepthMap;
 	    private int _objWidth;
 	    private int _objHeight;
 	    private int _objDepth;
 	    private long _objVolume;
-
-	    public ImageSource DepthMapImage
-		{
-		    get => _depthMapImage;
-		    set
-		    {
-			    if (Equals(_depthMapImage, value))
-				    return;
-
-			    _depthMapImage = value;
-				OnPropertyChanged();
-		    }
-	    }
 
 	    public int ObjWidth
 	    {
@@ -102,11 +87,28 @@ namespace VolumeCheckerGUI.GUI
 			InitializeComponent();
 
 	        _frameFeeder = new FrameFeeder(_logger);
+			_frameFeeder.ColorFrameReady += FrameFeeder_ColorFrameReady;
 	        _frameFeeder.DepthFrameReady += FrameFeeder_DepthFrameReady;
 
 	        _volumeCalculator = new VolumeCalculator(_logger);
 
 			LoadApplicationData();
+		}
+
+		private void FrameFeeder_ColorFrameReady(ImageData image)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				var imageWidth = image.Width;
+				var imageHeight = image.Height;
+
+				_colorImageBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, PixelFormats.Rgb24, null);
+
+				ImgColor.Source = _colorImageBitmap;
+
+				var fullRect = new Int32Rect(0, 0, imageWidth, imageHeight);
+				_colorImageBitmap.WritePixels(fullRect, image.Data, imageWidth * BytesPerPixel24, 0);
+			});
 		}
 
 		private void FrameFeeder_DepthFrameReady(DepthMap depthMap)
@@ -117,39 +119,18 @@ namespace VolumeCheckerGUI.GUI
 			var depthMapData = DepthMapUtils.GetBitmapFromDepthMap(_latestDepthMap, Constants.MinDepth,
 				_settings.DistanceToFloor, cutOffDepth);
 
-			this.Dispatcher.Invoke(() =>
+			Dispatcher.Invoke(() =>
 			{
 				var imageWidth = depthMap.Width;
 				var imageHeight = depthMap.Height;
 
-				this.outputBitmap = new WriteableBitmap(
-					imageWidth,
-					imageHeight,
-					96, // DpiX
-					96, // DpiY
-					PixelFormats.Bgr24,
-					null);
+				_depthMapBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, PixelFormats.Rgb24, null);
 
-				ImgDm.Source = outputBitmap;
+				ImgDm.Source = _depthMapBitmap;
 
-				var Bgr32BytesPerPixel = (PixelFormats.Bgr24.BitsPerPixel + 7) / 8;
-
-				this.outputBitmap.WritePixels(
-					new Int32Rect(0, 0, imageWidth, imageHeight),
-					depthMapData,
-					imageWidth * Bgr32BytesPerPixel,
-					0);
+				var fullRect = new Int32Rect(0, 0, imageWidth, imageHeight);
+				_depthMapBitmap.WritePixels(fullRect, depthMapData, imageWidth * BytesPerPixel24, 0);
 			});
-
-			//depthMapImageBmp.Save($"c:/temp/bmps/{DateTime.Now.Ticks}.png");
-
-			//Dispatcher.Invoke(() =>
-			//{
-			//	return DepthMapImageSource = BitmapToImageSource(depthImageBmp);
-			//});
-
-			//var depthImageSource = BitmapToImageSource(depthImage);
-			//Dispatcher.Invoke(AssignNewSource(depthImageSource));
 		}
 
 		private void LoadApplicationData()
@@ -168,6 +149,8 @@ namespace VolumeCheckerGUI.GUI
 			{
 				_frameFeeder.Start();
 				_volumeCalculator.Initialize(Constants.FovX, Constants.FovY);
+				_volumeCalculator.SetSettings(_settings.DistanceToFloor,
+					(short) (_settings.DistanceToFloor - _settings.MinObjHeight));
 			}
 			catch (Exception ex)
 			{
@@ -220,7 +203,9 @@ namespace VolumeCheckerGUI.GUI
 
 			_settings = settingsWindow.GetSettings();
 	        IoUtils.SerializeSettings(_settings);
-	        _logger.LogInfo("New settings have been applied: " + 
+	        _volumeCalculator.SetSettings(_settings.DistanceToFloor,
+		        (short)(_settings.DistanceToFloor - _settings.MinObjHeight));
+			_logger.LogInfo("New settings have been applied: " + 
 		        $"floorDepth={_settings.DistanceToFloor} minObjHeight={_settings.MinObjHeight} outputPath={_settings.OutputPath}");
         }
 

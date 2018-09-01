@@ -47,4 +47,6 @@ DLL_EXPORT int DestroyFrameFeeder()
 
 	delete Wrapper;
 	Wrapper = nullptr;
+
+	return 0;
 }

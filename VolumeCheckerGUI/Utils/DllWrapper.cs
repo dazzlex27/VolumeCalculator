@@ -38,6 +38,9 @@ namespace VolumeCheckerGUI.Utils
 		[DllImport("libvolumeChecker.dll", CallingConvention = CallingConvention.Cdecl)]
 		public static extern unsafe ObjDimDescription* CheckVolume(int mapWidth, int mapHeight, short* mapData);
 
+	    [DllImport("libvolumeChecker.dll", CallingConvention = CallingConvention.Cdecl)]
+	    public static extern void SetCheckerSettings(short minDepth, short floorDepth, short cutOffDepth);
+
 		[DllImport("libvolumeChecker.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int DestroyVolumeChecker();
     }

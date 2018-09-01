@@ -3,6 +3,7 @@
 #include <numeric>
 #include <cmath>
 #include "DmUtils.h"
+#include <climits>
 
 const double PI = 3.141592653589793238463;
 
@@ -31,8 +32,9 @@ VolumeChecker::~VolumeChecker()
 	_result = 0;
 }
 
-void VolumeChecker::SetSettings(const short floorDepth, const short cutOffDepth)
+void VolumeChecker::SetSettings(const short minDepth, const short floorDepth, const short cutOffDepth)
 {
+	_minDepth = minDepth;
 	_floorDepth = floorDepth;
 	_cutOffDepth = cutOffDepth;
 }
@@ -44,6 +46,8 @@ ObjDimDescription* VolumeChecker::GetVolume(const int mapWidth, const int mapHei
 
 	memset(_result, 0, sizeof(ObjDimDescription));
 	memcpy(_mapBuffer, mapData, _mapLengthBytes);
+
+	DmUtils::FilterDepthMap(_mapLength, _mapBuffer, _cutOffDepth);
 
 	const Contour& largestContour = GetLargestContour();
 
@@ -98,7 +102,7 @@ const short VolumeChecker::GetAverageAreaValue(const std::vector<short>& values)
 	std::sort(tempArr, tempArr + size);
 	
 	const int top10PercentIndex = 0;
-	short number = tempArr[top10PercentIndex];
+	short number = INT16_MAX;
 	short mode = number;
 	int count = 1;
 	int countMode = 1;
@@ -140,6 +144,8 @@ const Contour VolumeChecker::GetLargestContour()
 {
 	DmUtils::ConvertDepthMapDataToBinaryMask(_mapLength, _mapBuffer, _imgBuffer);
 	cv::Mat img(_mapHeight, _mapWidth, CV_8UC1, _imgBuffer);
+
+	cv::imwrite("out/input.png", img);
 
 	std::vector<Contour> contours;
 	cv::findContours(img, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);

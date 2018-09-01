@@ -13,8 +13,9 @@ private:
 	int _mapHeight;
 	int _mapLength;
 	int _mapLengthBytes;
-	int _floorDepth;
-	int _cutOffDepth;
+	short _minDepth;
+	short _floorDepth;
+	short _cutOffDepth;
 
 	short* _mapBuffer;
 	byte* _imgBuffer;
@@ -25,7 +26,7 @@ public:
 	~VolumeChecker();
 
 	ObjDimDescription* GetVolume(const int mapWidth, const int mapHeight, const short*const mapData);
-	void SetSettings(const short floorDepth, const short cutOffDepth);
+	void SetSettings(const short minDepth, const short floorDepth, const short cutOffDepth);
 
 private:
 	const short GetAverageAreaValue(const std::vector<short>& values);

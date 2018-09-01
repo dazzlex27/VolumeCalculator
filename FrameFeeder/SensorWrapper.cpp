@@ -1,6 +1,9 @@
 #include "SensorWrapper.h"
 #include <algorithm>
 
+const short MIN_DEPTH = 300;
+const short MAX_DEPTH = 10000;
+
 SensorWrapper::SensorWrapper()
 {
 	_colorFrame = new ColorFrame();
@@ -43,10 +46,21 @@ void SensorWrapper::RemoveDepthSubscriber(DepthFrameCallback callback)
 
 ColorFrame* SensorWrapper::GetNextColorFrame(const rs2::video_frame& videoFrame)
 {
-	_colorFrame->Width = videoFrame.get_width();
-	_colorFrame->Height = videoFrame.get_height();
-	//_colorFrame->Data = ;
-	auto data = videoFrame.get_data();
+	const int frameWidth = videoFrame.get_width();
+	const int frameHeight = videoFrame.get_height();
+
+	const bool frameSizeChanged = frameWidth != _colorFrame->Width || frameHeight != _colorFrame->Height;
+	if (frameSizeChanged)
+	{
+		if (_colorFrame->Data)
+			delete[] _colorFrame->Data;
+
+		_colorFrame->Width = frameWidth;
+		_colorFrame->Height = frameHeight;
+		_colorFrame->Data = new byte[frameWidth * frameHeight * sizeof(byte) * 3];
+	}
+
+	ConvertFrameToColorFrame(videoFrame, _colorFrame->Data);
 
 	return _colorFrame;
 }
@@ -119,6 +133,13 @@ void SensorWrapper::Run()
 	}
 }
 
+void SensorWrapper::ConvertFrameToColorFrame(const rs2::video_frame& frame, byte*const data)
+{
+	const int frameSize = frame.get_width() * frame.get_height() * 3;
+
+	memcpy(data, frame.get_data(), frameSize);
+}
+
 void SensorWrapper::ConvertFrameToDepthFrame(const rs2::depth_frame& frame, short*const data)
 {
 	const int width = frame.get_width();
@@ -132,7 +153,8 @@ void SensorWrapper::ConvertFrameToDepthFrame(const rs2::depth_frame& frame, shor
 		for (int i = 0; i < width; i++)
 		{
 			float dist_to_center = frame.get_distance(i, j);
-			const short value = (short)(dist_to_center * 1000);
+			const short valueToAdd = (short)(dist_to_center * 1000);
+			const short value = valueToAdd > MIN_DEPTH && valueToAdd < MAX_DEPTH ? valueToAdd : 0;
 			depthValues.emplace_back(value);
 		}
 	}

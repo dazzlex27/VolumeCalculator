@@ -20,7 +20,10 @@
 				<ColumnDefinition/>
 			</Grid.ColumnDefinitions>
 			<StackPanel Margin="5" Grid.Row="0" Width="Auto" HorizontalAlignment="Left">
-				<Image Name="ImgDm" Width="800" Height="480" />
+				<StackPanel Orientation="Horizontal">
+				<Image Name="ImgColor" Width="480" Height="360"/>
+				<Image Name="ImgDm" Width="480" Height="360" />
+				</StackPanel>
 				<Button Margin="2" MinHeight="25" Name="BtMeasureVolume" Content="Выполнить измерение" 
 				        Click="BtMeasureVolume_Click"/>
 			</StackPanel>

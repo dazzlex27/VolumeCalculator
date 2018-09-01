@@ -6,7 +6,7 @@
 
 DLL_EXPORT int CreateVolumeChecker(const float fovX, const float fovY);
 
-DLL_EXPORT void SetCheckerSettings(short floorDepth, short cutOffDepth);
+DLL_EXPORT void SetCheckerSettings(short minDepth, short floorDepth, short cutOffDepth);
 
 DLL_EXPORT ObjDimDescription* CheckVolume(int mapWidth, int mapHeight, short* mapData);
 

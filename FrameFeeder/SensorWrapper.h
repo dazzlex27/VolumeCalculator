@@ -38,4 +38,5 @@ public:
 private:
 	void Run();
 	void ConvertFrameToDepthFrame(const rs2::depth_frame& frame, short*const data);
+	void ConvertFrameToColorFrame(const rs2::video_frame& frame, byte*const data);
 };

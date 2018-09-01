@@ -6,6 +6,6 @@
 
 		public const float FovY = 57; 
 
-		public const int MinDepth = 300;
+		public const short MinDepth = 300;
 	}
 }

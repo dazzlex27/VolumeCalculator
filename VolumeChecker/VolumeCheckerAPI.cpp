@@ -17,20 +17,13 @@ DLL_EXPORT int CreateVolumeChecker(const float fovX, const float fovY)
 	return 0;
 }
 
-DLL_EXPORT void SetCheckerSettings(short floorDepth, short cutOffDepth)
+DLL_EXPORT void SetCheckerSettings(short minDepth, short floorDepth, short cutOffDepth)
 {
-	Checker->SetSettings(floorDepth, cutOffDepth);
+	Checker->SetSettings(minDepth, floorDepth, cutOffDepth);
 }
 
 DLL_EXPORT ObjDimDescription* CheckVolume(int mapWidth, int mapHeight, short* mapData)
 {
-	ObjDimDescription* test = new ObjDimDescription();
-	test->Width = 3;
-	test->Height = 4;
-	test->Depth = 8;
-
-	return test;
-
 	if (Checker == nullptr)
 		throw std::logic_error("The checker was not initialized");
 

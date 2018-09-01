@@ -37,6 +37,11 @@ namespace VolumeCheckerGUI.Logic
 			}
 		}
 
+		public void SetSettings(short floorDepth, short cutOffDepth)
+		{
+			DllWrapper.SetCheckerSettings(Constants.MinDepth, floorDepth, cutOffDepth);
+		}
+
 		public void Dispose()
 		{
 			_logger.LogInfo("Disposing volume calculator...");
