@@ -3,8 +3,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using VolumeCheckerGUI.Entities;
 
-namespace VolumeCheckerGUI
+namespace VolumeCheckerGUI.GUI
 {
     internal partial class SettingsWindow : INotifyPropertyChanged
     {

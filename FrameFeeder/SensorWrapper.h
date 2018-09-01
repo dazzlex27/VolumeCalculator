@@ -1,6 +1,7 @@
 #pragma once
 
 #include <librealsense2/rs.hpp>
+#include <vector>
 #include <thread>
 #include "Structures.h"
 
@@ -9,8 +10,9 @@ class SensorWrapper
 private:
 	rs2::context _context;
 	rs2::pipeline _pipe;
-	rs2::frame_queue _frameQueue;
 	std::thread _queueThread;
+	std::vector<ColorFrameCallback> _colorSubscribers;
+	std::vector<DepthFrameCallback> _depthSubscribers;
 
 	bool _running;
 	bool _connected;
@@ -24,8 +26,14 @@ public:
 
 	bool IsSensorAvailable() const { return _connected; }
 
-	ColorFrame* GetNextRgbFrame();
-	DepthFrame* GetNextDepthFrame();
+	void AddColorSubscriber(ColorFrameCallback callback);
+	void RemoveColorSubscriber(ColorFrameCallback callback);
+
+	void AddDepthSubscriber(DepthFrameCallback callback);
+	void RemoveDepthSubscriber(DepthFrameCallback callback);
+
+	ColorFrame* GetNextColorFrame(const rs2::video_frame& videoFrame);
+	DepthFrame* GetNextDepthFrame(const rs2::depth_frame& depthFrame);
 
 private:
 	void Run();

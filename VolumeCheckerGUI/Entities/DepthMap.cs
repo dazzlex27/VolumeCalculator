@@ -1,4 +1,4 @@
-﻿namespace VolumeCheckerGUI.Structures
+﻿namespace VolumeCheckerGUI.Entities
 {
 	internal class DepthMap
 	{

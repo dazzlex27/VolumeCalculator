@@ -1,7 +1,8 @@
-﻿using Newtonsoft.Json;
-using System.IO;
+﻿using System.IO;
+using Newtonsoft.Json;
+using VolumeCheckerGUI.Entities;
 
-namespace VolumeCheckerGUI
+namespace VolumeCheckerGUI.Utils
 {
 	internal static class IoUtils
 	{

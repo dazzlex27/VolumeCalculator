@@ -1,9 +1,8 @@
 ﻿using System;
-using System.IO;
 using System.Diagnostics;
-using static System.Environment;
+using System.IO;
 
-namespace VolumeCheckerGUI
+namespace VolumeCheckerGUI.Utils
 {
     internal class Logger
     {
@@ -11,7 +10,7 @@ namespace VolumeCheckerGUI
 
         public Logger()
         {
-            var commonFolderPath = GetFolderPath(SpecialFolder.CommonApplicationData);
+            var commonFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
             var appName = Process.GetCurrentProcess().ProcessName;
             var currentInstanceFolder = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
             var folderPath = Path.Combine(commonFolderPath, appName, currentInstanceFolder);

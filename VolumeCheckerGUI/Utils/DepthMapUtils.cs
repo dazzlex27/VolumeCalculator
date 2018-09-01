@@ -2,26 +2,26 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using VolumeCheckerGUI.Structures;
+using VolumeCheckerGUI.Entities;
 
-namespace VolumeCheckerGUI
+namespace VolumeCheckerGUI.Utils
 {
 	internal static class DepthMapUtils
 	{
-		public static Bitmap GetBitmapFromDepthMap(DepthMap map, short minDepth, short maxDepth, short cutOffDepth)
+		public static byte[] GetBitmapFromDepthMap(DepthMap map, short minDepth, short maxDepth, short cutOffDepth)
 		{
 			var bmp = new Bitmap(map.Width, map.Height, PixelFormat.Format24bppRgb);
 
 			var imageData = GetImageBytesFromDepthPixels(map.Data, minDepth, maxDepth, cutOffDepth);
 
-			var fullRect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-			var bmpData = bmp.LockBits(fullRect, ImageLockMode.WriteOnly, bmp.PixelFormat);
+			//var fullRect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+			//var bmpData = bmp.LockBits(fullRect, ImageLockMode.WriteOnly, bmp.PixelFormat);
 
-			Marshal.Copy(imageData, 0, bmpData.Scan0, imageData.Length);
+			//Marshal.Copy(imageData, 0, bmpData.Scan0, imageData.Length);
 
-			bmp.UnlockBits(bmpData);
+			//bmp.UnlockBits(bmpData);
 
-			return bmp;
+			return imageData;
 		}
 
 		private static byte[] GetImageBytesFromDepthPixels(IReadOnlyCollection<short> depthPixels, short minDepth, 

@@ -1,4 +1,4 @@
-﻿namespace VolumeCheckerGUI
+﻿namespace VolumeCheckerGUI.Entities
 {
     internal class ApplicationSettings
     {

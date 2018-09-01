@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace VolumeCheckerGUI
+namespace VolumeCheckerGUI.Entities
 {
 	[StructLayout(LayoutKind.Sequential)]
 	public struct ObjDimDescription

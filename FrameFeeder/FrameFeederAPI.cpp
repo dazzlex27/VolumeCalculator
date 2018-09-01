@@ -15,19 +15,29 @@ DLL_EXPORT int CreateFrameFeeder()
 	return 0;
 }
 
+DLL_EXPORT void SubscribeToColorFrames(ColorFrameCallback callback)
+{
+	Wrapper->AddColorSubscriber(callback);
+}
+
+DLL_EXPORT void UnsubscribeFromColorFrames(ColorFrameCallback callback)
+{
+	Wrapper->RemoveColorSubscriber(callback);
+}
+
+DLL_EXPORT void SubscribeToDepthFrames(DepthFrameCallback callback)
+{
+	Wrapper->AddDepthSubscriber(callback);
+}
+
+DLL_EXPORT void UnsubscribeFromDepthFrames(DepthFrameCallback callback)
+{
+	Wrapper->RemoveDepthSubscriber(callback);
+}
+
 DLL_EXPORT bool IsDeviceAvailable()
 {
 	return Wrapper->IsSensorAvailable();
-}
-
-DLL_EXPORT ColorFrame* GetNextRgbFrame()
-{
-	return Wrapper->GetNextRgbFrame();
-}
-
-DLL_EXPORT DepthFrame* GetNextDepthFrame()
-{
-	return Wrapper->GetNextDepthFrame();
 }
 
 DLL_EXPORT int DestroyFrameFeeder()

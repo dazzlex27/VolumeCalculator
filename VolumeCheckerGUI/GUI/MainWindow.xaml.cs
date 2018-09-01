@@ -1,12 +1,18 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using VolumeCheckerGUI.Entities;
 using VolumeCheckerGUI.Logic;
-using VolumeCheckerGUI.Structures;
+using VolumeCheckerGUI.Utils;
 
-namespace VolumeCheckerGUI
+namespace VolumeCheckerGUI.GUI
 {
     public partial class MainWindow : INotifyPropertyChanged
     {
@@ -14,26 +20,29 @@ namespace VolumeCheckerGUI
 		private ApplicationSettings _settings;
 	    private readonly FrameFeeder _frameFeeder;
 	    private readonly VolumeCalculator _volumeCalculator;
+	    private ImageSource _depthMapImage;
+	    private WriteableBitmap outputBitmap;
 
 		private volatile DepthMap _latestDepthMap;
-	    private short _objWidth;
-	    private short _objHeight;
-	    private short _objDepth;
+	    private int _objWidth;
+	    private int _objHeight;
+	    private int _objDepth;
 	    private long _objVolume;
 
-	    private Bitmap _depthImage;
-
-	    public Bitmap LatestDepthImage
-	    {
-		    get => _depthImage;
+	    public ImageSource DepthMapImage
+		{
+		    get => _depthMapImage;
 		    set
 		    {
-			    _depthImage = value;
-			    OnPropertyChanged();
+			    if (Equals(_depthMapImage, value))
+				    return;
+
+			    _depthMapImage = value;
+				OnPropertyChanged();
 		    }
 	    }
 
-	    public short ObjWidth
+	    public int ObjWidth
 	    {
 		    get => _objWidth;
 		    set
@@ -46,7 +55,7 @@ namespace VolumeCheckerGUI
 		    }
 	    }
 
-	    public short ObjHeight
+	    public int ObjHeight
 	    {
 		    get => _objHeight;
 		    set
@@ -59,7 +68,7 @@ namespace VolumeCheckerGUI
 		    }
 	    }
 
-	    public short ObjDepth
+	    public int ObjDepth
 		{
 		    get => _objDepth;
 		    set
@@ -105,8 +114,42 @@ namespace VolumeCheckerGUI
 			_latestDepthMap = depthMap;
 
 			var cutOffDepth = (short) (_settings.DistanceToFloor - _settings.MinObjHeight);
-			LatestDepthImage = DepthMapUtils.GetBitmapFromDepthMap(_latestDepthMap, Constants.MinDepth,
+			var depthMapData = DepthMapUtils.GetBitmapFromDepthMap(_latestDepthMap, Constants.MinDepth,
 				_settings.DistanceToFloor, cutOffDepth);
+
+			this.Dispatcher.Invoke(() =>
+			{
+				var imageWidth = depthMap.Width;
+				var imageHeight = depthMap.Height;
+
+				this.outputBitmap = new WriteableBitmap(
+					imageWidth,
+					imageHeight,
+					96, // DpiX
+					96, // DpiY
+					PixelFormats.Bgr24,
+					null);
+
+				ImgDm.Source = outputBitmap;
+
+				var Bgr32BytesPerPixel = (PixelFormats.Bgr24.BitsPerPixel + 7) / 8;
+
+				this.outputBitmap.WritePixels(
+					new Int32Rect(0, 0, imageWidth, imageHeight),
+					depthMapData,
+					imageWidth * Bgr32BytesPerPixel,
+					0);
+			});
+
+			//depthMapImageBmp.Save($"c:/temp/bmps/{DateTime.Now.Ticks}.png");
+
+			//Dispatcher.Invoke(() =>
+			//{
+			//	return DepthMapImageSource = BitmapToImageSource(depthImageBmp);
+			//});
+
+			//var depthImageSource = BitmapToImageSource(depthImage);
+			//Dispatcher.Invoke(AssignNewSource(depthImageSource));
 		}
 
 		private void LoadApplicationData()
@@ -196,35 +239,33 @@ namespace VolumeCheckerGUI
 	        {
 		        _logger.LogInfo("Starting a volume check...");
 
-				unsafe
+		        var volumeData = _volumeCalculator.CalculateVolume(_latestDepthMap);
+		        _latestDepthMap = null;
+
+		        if (volumeData == null)
 		        {
-			        fixed (short* data = _latestDepthMap.Data)
-			        {
-				        var res = DllWrapper.CheckVolume(_latestDepthMap.Width, _latestDepthMap.Height, data);
-				        if (res == null)
-				        {
-					        MessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка",
-						        MessageBoxButton.OK, MessageBoxImage.Error);
-							_logger.LogError("Volume check returned null");
-							return;
-				        }
+			        MessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка",
+				        MessageBoxButton.OK, MessageBoxImage.Error);
+			        _logger.LogError("Volume check returned null");
 
-				        ObjWidth = res->Width;
-				        ObjHeight = res->Height;
-				        ObjDepth = res->Depth;
-				        ObjVolume = ObjWidth * ObjHeight * ObjDepth;
+			        ObjWidth = ObjHeight = ObjDepth = 0;
+			        ObjVolume = 0;
 
-				        _latestDepthMap = null;
-			        }
+			        return;
 		        }
 
+		        ObjWidth = volumeData.Width;
+		        ObjHeight = volumeData.Height;
+		        ObjDepth = volumeData.Depth;
+		        ObjVolume = ObjWidth * ObjHeight * ObjDepth;
+
 		        _logger.LogInfo($"Completed a volume check, W={ObjWidth} H={ObjHeight} D={ObjDepth} V={ObjVolume}");
-			}
+	        }
 	        catch (Exception ex)
 	        {
 		        _logger.LogException("Failed to complete volume measurement", ex);
-				MessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка", 
-					MessageBoxButton.OK, MessageBoxImage.Error);
+		        MessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка",
+			        MessageBoxButton.OK, MessageBoxImage.Error);
 	        }
         }
 
@@ -239,5 +280,5 @@ namespace VolumeCheckerGUI
 	    {
 		    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	    }
-    }
+	}
 }

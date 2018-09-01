@@ -1,6 +1,7 @@
 #pragma once
 
 typedef unsigned char byte;
+typedef unsigned int uint;
 
 struct ColorFrame
 {
@@ -15,3 +16,7 @@ struct DepthFrame
 	int Height;
 	short* Data;
 };
+
+typedef void(__stdcall * ColorFrameCallback)(ColorFrame*);
+
+typedef void(__stdcall * DepthFrameCallback)(DepthFrame*);

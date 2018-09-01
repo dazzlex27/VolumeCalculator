@@ -1,4 +1,5 @@
 #include "SensorWrapper.h"
+#include <algorithm>
 
 SensorWrapper::SensorWrapper()
 {
@@ -16,94 +17,100 @@ SensorWrapper::SensorWrapper()
 SensorWrapper::~SensorWrapper()
 {
 	_running = false;
-	_queueThread.join();
 }
 
-ColorFrame* SensorWrapper::GetNextRgbFrame()
+void SensorWrapper::AddColorSubscriber(ColorFrameCallback callback)
 {
-	if (!_connected)
-		return nullptr;
+	_colorSubscribers.emplace_back(callback);
+}
 
-	rs2::frameset frameset;
-	if (_frameQueue.poll_for_frame(&frameset))
+void SensorWrapper::RemoveColorSubscriber(ColorFrameCallback callback)
+{
+	_colorSubscribers.erase(std::remove(_colorSubscribers.begin(), _colorSubscribers.end(), callback),
+		_colorSubscribers.end());
+}
+
+void SensorWrapper::AddDepthSubscriber(DepthFrameCallback callback)
+{
+	_depthSubscribers.emplace_back(callback);
+}
+
+void SensorWrapper::RemoveDepthSubscriber(DepthFrameCallback callback)
+{
+	_depthSubscribers.erase(std::remove(_depthSubscribers.begin(), _depthSubscribers.end(), callback), 
+		_depthSubscribers.end());
+}
+
+ColorFrame* SensorWrapper::GetNextColorFrame(const rs2::video_frame& videoFrame)
+{
+	_colorFrame->Width = videoFrame.get_width();
+	_colorFrame->Height = videoFrame.get_height();
+	//_colorFrame->Data = ;
+	auto data = videoFrame.get_data();
+
+	return _colorFrame;
+}
+
+DepthFrame* SensorWrapper::GetNextDepthFrame(const rs2::depth_frame& depthFrame)
+{
+	const int frameWidth = depthFrame.get_width();
+	const int frameHeight = depthFrame.get_height();
+
+	const bool frameSizeChanged = frameWidth != _depthFrame->Width || frameHeight != _depthFrame->Height;
+	if (frameSizeChanged)
 	{
-		const rs2::depth_frame& colorFrame = frameset.get_color_frame();
+		if (_depthFrame->Data)
+			delete[] _depthFrame->Data;
 
-		_colorFrame->Width = colorFrame.get_width();
-		_colorFrame->Height = colorFrame.get_height();
-		//_colorFrame->Data = ;
-		auto data = colorFrame.get_data();
-
-		return _colorFrame;
+		_depthFrame->Width = frameWidth;
+		_depthFrame->Height = frameHeight;
+		_depthFrame->Data = new short[frameWidth * frameHeight * sizeof(short)];
 	}
 
-	return nullptr;
+	ConvertFrameToDepthFrame(depthFrame, _depthFrame->Data);
+
+	return _depthFrame;
 }
-
-DepthFrame* SensorWrapper::GetNextDepthFrame()
-{
-	if (!_connected)
-		return nullptr;
-
-	rs2::frameset frameset;
-	if (_frameQueue.poll_for_frame(&frameset))
-	{
-		const rs2::depth_frame& depthFrame = frameset.get_depth_frame();
-
-		const int frameWidth = depthFrame.get_width();
-		const int frameHeight = depthFrame.get_height();
-
-		const bool frameSizeChanged = frameWidth != _depthFrame->Width || frameHeight != _depthFrame->Height;
-		if (frameSizeChanged)
-		{
-			if (_depthFrame->Data)
-				delete[] _depthFrame->Data;
-
-			_depthFrame->Width = frameWidth;
-			_depthFrame->Height = frameHeight;
-			_depthFrame->Data = new short[frameWidth * frameHeight * sizeof(short)];
-		}
-
-		ConvertFrameToDepthFrame(depthFrame, _depthFrame->Data);
-		
-		return _depthFrame;
-	}
-
-	return nullptr;
-}
-
-#include <iostream>
 
 void SensorWrapper::Run()
 {
 	_pipe.start();
-	_frameQueue = rs2::frame_queue(2);
 
 	while (_running)
 	{
 		try
 		{
+			_connected = false;
 			auto frameset = _pipe.wait_for_frames();
-			rs2::depth_frame depth = frameset.get_depth_frame();
-			// The frameset might not contain a depth frame, if so continue until it does
-			if (!depth)
+
+			const rs2::depth_frame& depth = frameset.get_depth_frame();
+			if (depth)
 			{
-				_connected = false;
-				continue;
+				_connected = true;
+
+				if (_depthSubscribers.size() == 0)
+					continue;
+
+				DepthFrame* depthFrame = GetNextDepthFrame(depth);
+
+				for (uint i = 0; i < _depthSubscribers.size(); i++)
+					_depthSubscribers[i](depthFrame);
 			}
 
-			rs2::depth_frame colorFrame = frameset.get_depth_frame();
-			auto d1 = colorFrame.get_data();
-			float* data = (float*)colorFrame.get_data();
-			for (int i = 0; i < colorFrame.get_width() * colorFrame.get_height(); i++)
+			const rs2::video_frame& color = frameset.get_color_frame();
+			if (color)
 			{
-				std::cout << data[i];
-				getchar();
+				_connected = true;
+
+				if (_colorSubscribers.size() == 0)
+					continue;
+
+				ColorFrame* depthFrame = GetNextColorFrame(color);
+
+				for (uint i = 0; i < _colorSubscribers.size(); i++)
+					_colorSubscribers[i](depthFrame);
 			}
 
-
-			_frameQueue.enqueue(frameset);
-			_connected = true;
 		}
 		catch (std::exception ex)
 		{
