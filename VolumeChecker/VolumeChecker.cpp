@@ -49,28 +49,86 @@ ObjDimDescription* VolumeChecker::GetVolume(const int mapWidth, const int mapHei
 
 	DmUtils::FilterDepthMap(_mapLength, _mapBuffer, _cutOffDepth);
 
-	const Contour& largestContour = GetLargestContour();
+	const Contour& largestContour = GetLargestContour(_mapBuffer);
 
-	cv::RotatedRect rotBoundingRect = cv::minAreaRect(cv::Mat(largestContour));
+	const cv::RotatedRect& rotBoundingRect = cv::minAreaRect(cv::Mat(largestContour));
 
-	float angle = rotBoundingRect.angle;
+	const float angle = rotBoundingRect.angle;
 	//if (angle < 0)
 	//	angle = 90 + rotBoundingRect.angle;
 
-	const std::vector<short>& contourValues = DmUtils::GetContourDepthValues(_mapWidth, _mapHeight, _mapBuffer, rotBoundingRect, 
-		largestContour);
+	const float angleCos = cos(angle / 180 * PI);
 
-	const int mapWidthAngled = _mapWidth / (cos(angle / 180 * PI));
-	const int mapHeightAngled = _mapHeight / (cos(angle / 180 * PI));
+	const int mapWidthAngled = _mapWidth / angleCos;
+	const int mapHeightAngled = _mapHeight / angleCos;
 
 	const RotRelRect& contourRelRect = DmUtils::RotAbsRectToRel(mapWidthAngled, mapHeightAngled, rotBoundingRect);
+
+	const std::vector<short>& contourValues = DmUtils::GetContourDepthValues(_mapWidth, _mapHeight, _mapBuffer, 
+		rotBoundingRect, largestContour);
 
 	const short contourClosestPoint = GetAverageAreaValue(contourValues);
 	const AbsRect& planeSizeAtObjHeightMm = CalculatePlaneSizeAtGivenHeight(contourClosestPoint);
 
-	_result->Width = (short)(planeSizeAtObjHeightMm.Width * contourRelRect.Width);
+	_result->Width = (short)(planeSizeAtObjHeightMm.Width / angleCos * contourRelRect.Width);
 	_result->Height = _floorDepth - contourClosestPoint;
-	_result->Depth = (short)(planeSizeAtObjHeightMm.Height * contourRelRect.Height);
+	_result->Depth = (short)(planeSizeAtObjHeightMm.Height / angleCos * contourRelRect.Height);
+
+	return _result;
+}
+
+ObjDimDescription* VolumeChecker::GetVolumeFromStereo(const int mapWidth, const int mapHeight, const short*const mapData1, 
+	const short*const mapData2, const int offsetXmm, const int offsetYmm)
+{
+	if (_mapWidth != mapWidth || _mapHeight != mapHeight)
+		ResizeBuffers(mapWidth, mapHeight);
+
+	memset(_result, 0, sizeof(ObjDimDescription));
+	memcpy(_mapBuffer, mapData1, _mapLengthBytes);
+	memcpy(_mapBuffer2, mapData2, _mapLengthBytes);
+
+	DmUtils::FilterDepthMap(_mapLength, _mapBuffer, _cutOffDepth);
+	DmUtils::FilterDepthMap(_mapLength, _mapBuffer2, _cutOffDepth);
+
+	const Contour& largestContour1 = GetLargestContour(_mapBuffer);
+	const Contour& largestContour2 = GetLargestContour(_mapBuffer2);
+
+	const cv::RotatedRect& rotBoundingRect1 = cv::minAreaRect(cv::Mat(largestContour1));
+	const cv::RotatedRect& rotBoundingRect2 = cv::minAreaRect(cv::Mat(largestContour2));
+	
+	const float angle = rotBoundingRect1.angle;
+	const float angleCos = cos(angle / 180 * PI);
+	const int mapWidthAngled = _mapWidth / angleCos;
+	const int mapHeightAngled = _mapHeight / angleCos;
+
+	const std::vector<short>& contourValues1 = DmUtils::GetContourDepthValues(_mapWidth, _mapHeight, _mapBuffer,
+		rotBoundingRect1, largestContour1);
+	const short contourClosestPoint1 = GetAverageAreaValue(contourValues1);
+	const AbsRect& planeSizeAtObjHeightMm1 = CalculatePlaneSizeAtGivenHeight(contourClosestPoint1);
+
+	const std::vector<short>& contourValues2 = DmUtils::GetContourDepthValues(_mapWidth, _mapHeight, _mapBuffer2, 
+		rotBoundingRect2, largestContour2);
+	const short contourClosestPoint2 = GetAverageAreaValue(contourValues2);
+	const AbsRect& planeSizeAtObjHeightMm2 = CalculatePlaneSizeAtGivenHeight(contourClosestPoint2);
+
+	const cv::RotatedRect& mappedSecondContourRect = MapSecondContourBoxToFirstImage(rotBoundingRect2, planeSizeAtObjHeightMm2, offsetXmm, offsetYmm);
+
+	Contour mergedContour;
+	//mergedContour.emplace_back(rotBoundingRect1.points[0]);
+	//mergedContour.emplace_back(rotBoundingRect1.points[1]);
+	//mergedContour.emplace_back(rotBoundingRect1.points[2]);
+	//mergedContour.emplace_back(rotBoundingRect1.points[3]);
+	//mergedContour.emplace_back(rotBoundingRect2.points[0]);
+	//mergedContour.emplace_back(rotBoundingRect2.points[1]);
+	//mergedContour.emplace_back(rotBoundingRect2.points[2]);
+	//mergedContour.emplace_back(rotBoundingRect2.points[3]);
+
+	const cv::RotatedRect& totalContour = cv::minAreaRect(cv::Mat(mergedContour));
+	const RotRelRect& totaContourRelRect = DmUtils::RotAbsRectToRel(mapWidthAngled, mapHeightAngled, totalContour);
+
+	_result->Width = (short)(planeSizeAtObjHeightMm1.Width / angleCos * totaContourRelRect.Width);
+	_result->Height = _floorDepth - contourClosestPoint1;
+	_result->Depth = (short)(planeSizeAtObjHeightMm1.Height / angleCos * totaContourRelRect.Height);
 
 	return _result;
 }
@@ -84,13 +142,25 @@ void VolumeChecker::ResizeBuffers(const int mapWidth, const int mapHeight)
 
 	if (_mapBuffer != nullptr)
 		delete[] _mapBuffer;
-
 	_mapBuffer = new short[_mapLength];
+
+	if (_mapBuffer2 != nullptr)
+		delete[] _mapBuffer2;
+	_mapBuffer2 = new short[_mapLength];
 
 	if (_imgBuffer != nullptr)
 		delete[] _imgBuffer;
-
 	_imgBuffer = new byte[_mapLength];
+}
+
+const cv::RotatedRect VolumeChecker::MapSecondContourBoxToFirstImage(const cv::RotatedRect& rect, const AbsRect& planeRect,
+	const int offsetXmm, const int offsetYmm)
+{
+	cv::RotatedRect result;
+
+
+
+	return result;
 }
 
 const short VolumeChecker::GetAverageAreaValue(const std::vector<short>& values)
@@ -140,12 +210,12 @@ const AbsRect VolumeChecker::CalculatePlaneSizeAtGivenHeight(const short height)
 	return AbsRect{ 0, 0, horizontalPlaneLength, verticalPlaneLength };
 }
 
-const Contour VolumeChecker::GetLargestContour()
+const Contour VolumeChecker::GetLargestContour(const short*const mapBuffer, const int mapNum)
 {
-	DmUtils::ConvertDepthMapDataToBinaryMask(_mapLength, _mapBuffer, _imgBuffer);
+	DmUtils::ConvertDepthMapDataToBinaryMask(_mapLength, mapBuffer, _imgBuffer);
 	cv::Mat img(_mapHeight, _mapWidth, CV_8UC1, _imgBuffer);
 
-	cv::imwrite("out/input.png", img);
+	cv::imwrite("out/input" + std::to_string(mapNum) + ".png", img);
 
 	std::vector<Contour> contours;
 	cv::findContours(img, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
@@ -188,7 +258,7 @@ const Contour VolumeChecker::GetLargestContour()
 	for (size_t idx = 0; idx < contoursToDraw.size(); idx++) 
 		cv::drawContours(img2, contoursToDraw, idx, colors[idx % 2]);
 	
-	cv::imwrite("out/object.png", img2);
+	cv::imwrite("out/output" + std::to_string(mapNum) + ".png", img2);
 
 	return largestContour;
 }

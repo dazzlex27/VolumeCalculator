@@ -19,7 +19,7 @@ namespace VolumeCheckerGUI.GUI
 	    private readonly FrameFeeder _frameFeeder;
 	    private readonly VolumeCalculator _volumeCalculator;
 	    private WriteableBitmap _colorImageBitmap;
-		private WriteableBitmap _depthMapBitmap;
+		private WriteableBitmap _depthImageBitmap;
 
 		private volatile DepthMap _latestDepthMap;
 	    private int _objWidth;
@@ -124,12 +124,12 @@ namespace VolumeCheckerGUI.GUI
 				var imageWidth = depthMap.Width;
 				var imageHeight = depthMap.Height;
 
-				_depthMapBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, PixelFormats.Rgb24, null);
+				_depthImageBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, PixelFormats.Rgb24, null);
 
-				ImgDm.Source = _depthMapBitmap;
+				ImgDm.Source = _depthImageBitmap;
 
 				var fullRect = new Int32Rect(0, 0, imageWidth, imageHeight);
-				_depthMapBitmap.WritePixels(fullRect, depthMapData, imageWidth * BytesPerPixel24, 0);
+				_depthImageBitmap.WritePixels(fullRect, depthMapData, imageWidth * BytesPerPixel24, 0);
 			});
 		}
 
@@ -224,7 +224,10 @@ namespace VolumeCheckerGUI.GUI
 	        {
 		        _logger.LogInfo("Starting a volume check...");
 
-		        var volumeData = _volumeCalculator.CalculateVolume(_latestDepthMap);
+		        IoUtils.SaveWriteableBitmap("out/color.png", _colorImageBitmap);
+		        IoUtils.SaveWriteableBitmap("out/depth.png", _depthImageBitmap);
+
+				var volumeData = _volumeCalculator.CalculateVolume(_latestDepthMap);
 		        _latestDepthMap = null;
 
 		        if (volumeData == null)

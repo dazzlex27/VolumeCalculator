@@ -10,4 +10,6 @@ DLL_EXPORT void SetCheckerSettings(short minDepth, short floorDepth, short cutOf
 
 DLL_EXPORT ObjDimDescription* CheckVolume(int mapWidth, int mapHeight, short* mapData);
 
+DLL_EXPORT ObjDimDescription* CheckVolumeFromStereo(int mapWidth, int mapHeight, short* mapData1, short* mapData2, int offsetXmm, int offsetYmm);
+
 DLL_EXPORT int DestroyVolumeChecker();

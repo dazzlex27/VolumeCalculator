@@ -33,6 +33,17 @@ DLL_EXPORT ObjDimDescription* CheckVolume(int mapWidth, int mapHeight, short* ma
 	return Checker->GetVolume(mapWidth, mapHeight, mapData);
 }
 
+DLL_EXPORT ObjDimDescription* CheckVolumeFromStereo(int mapWidth, int mapHeight, short * mapData1, short * mapData2, int offsetXmm, int offsetYmm)
+{
+	if (Checker == nullptr)
+		throw std::logic_error("The checker was not initialized");
+
+	if (mapData1 == nullptr || mapData2 == nullptr)
+		throw std::invalid_argument("mapData was null");
+
+	return Checker->GetVolumeFromStereo(mapWidth, mapHeight, mapData1, mapData2, offsetXmm, offsetYmm);
+}
+
 DLL_EXPORT int DestroyVolumeChecker()
 {
 	if (Checker == nullptr)
