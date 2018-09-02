@@ -63,6 +63,9 @@
     </ApplicationDefinition>
     <Compile Include="Entities\CheckerSettings.cs" />
     <Compile Include="Entities\ImageData.cs" />
+    <Compile Include="GUI\BaseViewModel.cs" />
+    <Compile Include="GUI\MainWindowVm.cs" />
+    <Compile Include="GUI\SettingsWindowVm.cs" />
     <Compile Include="Utils\Constants.cs" />
     <Compile Include="Utils\DepthMapUtils.cs" />
     <Compile Include="Utils\DllWrapper.cs" />

@@ -4,6 +4,7 @@
 #include <cmath>
 #include "DmUtils.h"
 #include <climits>
+#include <map>
 
 const double PI = 3.141592653589793238463;
 
@@ -39,7 +40,7 @@ void VolumeChecker::SetSettings(const short minDepth, const short floorDepth, co
 	_cutOffDepth = cutOffDepth;
 }
 
-ObjDimDescription* VolumeChecker::GetVolume(const int mapWidth, const int mapHeight, const short*const mapData)
+ObjDimDescription* VolumeChecker::CalculateVolume(const int mapWidth, const int mapHeight, const short*const mapData)
 {
 	if (_mapWidth != mapWidth || _mapHeight != mapHeight)
 		ResizeBuffers(mapWidth, mapHeight);
@@ -53,11 +54,7 @@ ObjDimDescription* VolumeChecker::GetVolume(const int mapWidth, const int mapHei
 
 	const cv::RotatedRect& rotBoundingRect = cv::minAreaRect(cv::Mat(largestContour));
 
-	const float angle = rotBoundingRect.angle;
-	//if (angle < 0)
-	//	angle = 90 + rotBoundingRect.angle;
-
-	const float angleCos = cos(angle / 180 * PI);
+	const float angleCos = cos(rotBoundingRect.angle / 180 * PI);
 
 	const int mapWidthAngled = _mapWidth / angleCos;
 	const int mapHeightAngled = _mapHeight / angleCos;
@@ -96,8 +93,7 @@ ObjDimDescription* VolumeChecker::GetVolumeFromStereo(const int mapWidth, const 
 	const cv::RotatedRect& rotBoundingRect1 = cv::minAreaRect(cv::Mat(largestContour1));
 	const cv::RotatedRect& rotBoundingRect2 = cv::minAreaRect(cv::Mat(largestContour2));
 	
-	const float angle = rotBoundingRect1.angle;
-	const float angleCos = cos(angle / 180 * PI);
+	const float angleCos = cos(rotBoundingRect1.angle / 180 * PI);
 	const int mapWidthAngled = _mapWidth / angleCos;
 	const int mapHeightAngled = _mapHeight / angleCos;
 
@@ -131,6 +127,42 @@ ObjDimDescription* VolumeChecker::GetVolumeFromStereo(const int mapWidth, const 
 	_result->Depth = (short)(planeSizeAtObjHeightMm1.Height / angleCos * totaContourRelRect.Height);
 
 	return _result;
+}
+
+short VolumeChecker::CalculateFloorDepth(const int mapWidth, const int mapHeight, const short*const mapData)
+{
+	if (_mapWidth != mapWidth || _mapHeight != mapHeight)
+		ResizeBuffers(mapWidth, mapHeight);
+
+	memcpy(_mapBuffer, mapData, _mapLengthBytes);
+
+	std::map<short, int> mapValues;
+
+	for (int i = 0; i < _mapLength; i++)
+	{
+		const short value = _mapBuffer[i];
+
+		const std::map<short, int>::iterator& it = mapValues.find(value);
+
+		if (it == mapValues.end())
+			mapValues[value] = 0;
+		else
+			mapValues[value]++;
+	}
+
+	int maxOccurence = -1;
+	auto maxOccurenceIterator = mapValues.begin();
+
+	for (auto it = mapValues.begin(); it != mapValues.end(); it++)
+	{
+		if (it->second > maxOccurence)
+		{
+			maxOccurence = it->second;
+			maxOccurenceIterator = it;
+		}
+	}
+
+	return maxOccurenceIterator->first;
 }
 
 void VolumeChecker::ResizeBuffers(const int mapWidth, const int mapHeight)

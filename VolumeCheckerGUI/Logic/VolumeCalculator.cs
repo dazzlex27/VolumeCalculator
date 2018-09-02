@@ -27,12 +27,23 @@ namespace VolumeCheckerGUI.Logic
 			{
 				fixed (short* data = depthMap.Data)
 				{
-					var res = DllWrapper.CheckVolume(depthMap.Width, depthMap.Height, data);
+					var res = DllWrapper.CalculateVolume(depthMap.Width, depthMap.Height, data);
 					if (res == null)
 						return null;
 
 					var volume = res->Width * res->Height * res->Depth;
 					return new ObjectVolumeData(res->Width, res->Height, res->Depth, volume);
+				}
+			}
+		}
+
+		public short CalculateFloorDepth(DepthMap depthMap)
+		{
+			unsafe
+			{
+				fixed (short* data = depthMap.Data)
+				{
+					return DllWrapper.CalculateFloorDepth(depthMap.Width, depthMap.Height, data);
 				}
 			}
 		}

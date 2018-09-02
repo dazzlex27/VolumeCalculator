@@ -22,7 +22,7 @@ DLL_EXPORT void SetCheckerSettings(short minDepth, short floorDepth, short cutOf
 	Checker->SetSettings(minDepth, floorDepth, cutOffDepth);
 }
 
-DLL_EXPORT ObjDimDescription* CheckVolume(int mapWidth, int mapHeight, short* mapData)
+DLL_EXPORT ObjDimDescription* CalculateVolume(int mapWidth, int mapHeight, short* mapData)
 {
 	if (Checker == nullptr)
 		throw std::logic_error("The checker was not initialized");
@@ -30,7 +30,18 @@ DLL_EXPORT ObjDimDescription* CheckVolume(int mapWidth, int mapHeight, short* ma
 	if (mapData == nullptr)
 		throw std::invalid_argument("mapData was null");
 
-	return Checker->GetVolume(mapWidth, mapHeight, mapData);
+	return Checker->CalculateVolume(mapWidth, mapHeight, mapData);
+}
+
+DLL_EXPORT short CalculateFloorDepth(int mapWidth, int mapHeight, short* mapData)
+{
+	if (Checker == nullptr)
+		throw std::logic_error("The checker was not initialized");
+
+	if (mapData == nullptr)
+		throw std::invalid_argument("mapData was null");
+
+	return Checker->CalculateFloorDepth(mapWidth, mapHeight, mapData);
 }
 
 DLL_EXPORT ObjDimDescription* CheckVolumeFromStereo(int mapWidth, int mapHeight, short * mapData1, short * mapData2, int offsetXmm, int offsetYmm)

@@ -26,8 +26,9 @@ public:
 	VolumeChecker(const float fovX, const float fovY);
 	~VolumeChecker();
 
-	ObjDimDescription* GetVolume(const int mapWidth, const int mapHeight, const short*const mapData);
+	ObjDimDescription* CalculateVolume(const int mapWidth, const int mapHeight, const short*const mapData);
 	ObjDimDescription* GetVolumeFromStereo(const int mapWidth, const int mapHeight, const short*const mapData1, const short*const mapData2, const int offsetXmm, const int offsetYmm);
+	short CalculateFloorDepth(const int mapWidth, const int mapHeight, const short*const mapData);
 	void SetSettings(const short minDepth, const short floorDepth, const short cutOffDepth);
 
 private:

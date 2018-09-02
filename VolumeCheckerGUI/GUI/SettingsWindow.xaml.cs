@@ -1,78 +1,45 @@
-﻿using System.ComponentModel;
+﻿using System;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using VolumeCheckerGUI.Entities;
+using VolumeCheckerGUI.Logic;
+using VolumeCheckerGUI.Utils;
 
 namespace VolumeCheckerGUI.GUI
 {
-    internal partial class SettingsWindow : INotifyPropertyChanged
+    internal partial class SettingsWindow
     {
-		private short _distanceToFloor;
-		private short _minObjHeight;
-	    private string _outputPath;
-
-		public short DistanceToFloor
+	    private readonly SettingsWindowVm _vm;
+	    private readonly VolumeCalculator _volumeCalculator;
+		private readonly DepthMap _lastReceivedDepthMap;
+	    private readonly Logger _logger;
+		
+		public SettingsWindow(ApplicationSettings settings, Logger logger, VolumeCalculator volumeCalculator, DepthMap lastReceivedDepthMap)
 		{
-			get => _distanceToFloor;
-			set
-			{
-				if (_distanceToFloor == value)
-					return;
-
-				_distanceToFloor = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public short MinObjHeight
-		{
-			get => _minObjHeight;
-			set
-			{
-				if (_minObjHeight == value)
-					return;
-
-				_minObjHeight = value;
-				OnPropertyChanged();
-			}
-		}
-
-	    public string OutputPath
-	    {
-		    get => _outputPath;
-		    set
-		    {
-			    if (_outputPath == value)
-				    return;
-
-			    _outputPath = value;
-			    OnPropertyChanged();
-		    }
-		}
-
-		public SettingsWindow(ApplicationSettings settings)
-		{
-			var oldSettings = settings ?? ApplicationSettings.GetDefaultSettings();
-
-			_distanceToFloor = oldSettings.DistanceToFloor;
-			_minObjHeight = oldSettings.MinObjHeight;
-	        _outputPath = oldSettings.OutputPath;
+			_logger = logger;
+			_volumeCalculator = volumeCalculator;
+			_lastReceivedDepthMap = lastReceivedDepthMap;
 
             InitializeComponent();
-        }
 
-		public event PropertyChangedEventHandler PropertyChanged;
+			_vm = (SettingsWindowVm) DataContext;
+
+			var oldSettings = settings ?? ApplicationSettings.GetDefaultSettings();
+			_vm.DistanceToFloor = oldSettings.DistanceToFloor;
+			_vm.MinObjHeight = oldSettings.MinObjHeight;
+			_vm.OutputPath = oldSettings.OutputPath;
+
+			if (_lastReceivedDepthMap != null)
+				return;
+
+			BtCalculateFloorDepth.IsEnabled = false;
+			BtCalculateFloorDepth.ToolTip = "Нет данных для вычисления";
+		}
 
 		public ApplicationSettings GetSettings()
 		{
-			return new ApplicationSettings(_distanceToFloor, _minObjHeight, _outputPath);
-		}
-
-		private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			return new ApplicationSettings(_vm.DistanceToFloor, _vm.MinObjHeight, _vm.OutputPath);
 		}
 
 		private void BtOk_Click(object sender, RoutedEventArgs e)
@@ -96,5 +63,22 @@ namespace VolumeCheckerGUI.GUI
 			return !Validation.GetHasError(obj) && LogicalTreeHelper.GetChildren(obj).OfType<DependencyObject>().
 				       All(IsValid);
 		}
-	}
+
+	    private void BtCalculateFloorDepth_OnClick(object sender, RoutedEventArgs e)
+	    {
+		    try
+		    {
+			    var floorDepth = _volumeCalculator.CalculateFloorDepth(_lastReceivedDepthMap);
+			    _vm.DistanceToFloor = floorDepth;
+			    _logger.LogInfo($"Caculated floor depth as {floorDepth}mm");
+		    }
+		    catch (Exception ex)
+		    {
+			    _logger.LogException("Failed to calculate floor depth!", ex);
+
+				MessageBox.Show("Во время вычисления произошла ошибка, автоматический расчёт не был выполнен", "Ошибка", 
+				    MessageBoxButton.OK, MessageBoxImage.Error);
+		    }
+	    }
+    }
 }

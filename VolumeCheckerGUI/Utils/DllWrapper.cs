@@ -27,18 +27,18 @@ namespace VolumeCheckerGUI.Utils
 	    public static extern void UnsubscribeFromDepthFrames(DepthFrameCallback progressCallback);
 
 		[DllImport("libframefeeder.dll", CallingConvention = CallingConvention.Cdecl)]
-		public static extern bool IsDeviceAvailable();
-
-		[DllImport("libframefeeder.dll", CallingConvention = CallingConvention.Cdecl)]
 		public static extern int DestroyFrameFeeder();
 
 		[DllImport("libvolumeChecker.dll", CallingConvention = CallingConvention.Cdecl)]
 		public static extern int CreateVolumeChecker(float fovX, float fovY);
 
 		[DllImport("libvolumeChecker.dll", CallingConvention = CallingConvention.Cdecl)]
-		public static extern unsafe ObjDimDescription* CheckVolume(int mapWidth, int mapHeight, short* mapData);
+		public static extern unsafe ObjDimDescription* CalculateVolume(int mapWidth, int mapHeight, short* mapData);
 
 	    [DllImport("libvolumeChecker.dll", CallingConvention = CallingConvention.Cdecl)]
+	    public static extern unsafe short CalculateFloorDepth(int mapWidth, int mapHeight, short* mapData);
+
+		[DllImport("libvolumeChecker.dll", CallingConvention = CallingConvention.Cdecl)]
 	    public static extern void SetCheckerSettings(short minDepth, short floorDepth, short cutOffDepth);
 
 		[DllImport("libvolumeChecker.dll", CallingConvention = CallingConvention.Cdecl)]

@@ -70,7 +70,7 @@ void CalculateVolume(int argc, char* argv[])
 	const int cutOffDepth = 450;
 	CreateVolumeChecker(86, 57);
 
-	const ObjDimDescription* desc = CheckVolume(mapWidth, mapHeight, depthMap->Data);
+	const ObjDimDescription* desc = CalculateVolume(mapWidth, mapHeight, depthMap->Data);
 	std::cout << "w=" << desc->Width << " h=" << desc->Height << " d=" << desc->Depth << std::endl;
 	std::cout << "debug info saved in out/ if the directory was present" << std::endl;
 
