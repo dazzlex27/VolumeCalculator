@@ -18,27 +18,30 @@
     <ClCompile Include="test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SensorWrapper.cpp">
+    <ClCompile Include="DepthMapProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FrameFeederAPI.cpp">
+    <ClCompile Include="DepthMapProcessorAPI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SensorTest.cpp">
+    <ClCompile Include="DmUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SensorWrapper.h">
+    <ClInclude Include="DepthMapProcessor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FrameFeederAPI.h">
+    <ClInclude Include="DepthMapProcessorAPI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DmUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Structures.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SensorTest.h">
+    <ClInclude Include="OpenCVInclude.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

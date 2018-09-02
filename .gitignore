@@ -1,7 +1,7 @@
-/ext
 /!!bin
-/VolumeChecker/trash
+/ext
 /.vs
-/VolumeChecker/samples
-/VolumeCheckerGUI/obj
-/FrameFeeder/trash
+/DepthMapProcessor/obj
+/DepthMapProcessor/samples
+/VolumeCalculatorGUI/obj
+/FrameFeeder/obj
