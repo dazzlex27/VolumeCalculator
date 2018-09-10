@@ -2,9 +2,9 @@
 using System.Diagnostics;
 using System.IO;
 
-namespace DepthMapProcessorGUI.Utils
+namespace Common
 {
-    internal class Logger
+    public class Logger
     {
         private readonly string _filepath;
 

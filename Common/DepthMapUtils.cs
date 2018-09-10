@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using DepthMapProcessorGUI.Entities;
-using VolumeCalculatorGUI.Entities;
+﻿using Common;
 
-namespace DepthMapProcessorGUI.Utils
+namespace Common
 {
-	internal static class DepthMapUtils
+	public static class DepthMapUtils
 	{
 		public static byte[] GetColorizedDepthMapData(DepthMap map, short minDepth, short maxDepth, short cutOffDepth)
 		{

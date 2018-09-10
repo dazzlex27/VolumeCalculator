@@ -2,11 +2,12 @@
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
+using Common;
 using DepthMapProcessorGUI.Entities;
 using DepthMapProcessorGUI.Logic;
 using DepthMapProcessorGUI.Utils;
-using VolumeCalculatorGUI.Entities;
-using VolumeCalculatorGUI.Logic.FrameSources;
+using FrameSources;
+using FrameSources.KinectV2;
 
 namespace DepthMapProcessorGUI.GUI
 {
@@ -16,6 +17,7 @@ namespace DepthMapProcessorGUI.GUI
 		private readonly Logger _logger;
 	    private readonly FrameSource _frameFeeder;
 	    private readonly DepthMapProcessor _volumeCalculator;
+		private DeviceParams _deviceParams;
 
 		private volatile DepthMap _latestDepthMap;
 		private ApplicationSettings _settings;
@@ -31,6 +33,7 @@ namespace DepthMapProcessorGUI.GUI
 			_vm.UseDepthStreamChanged += Vm_UseDepthStreamChanged;
 
 			_frameFeeder = new KinectV2FrameSource(_logger);
+			_deviceParams = _frameFeeder.GetDeviceParams();
 			_frameFeeder.ColorFrameReady += FrameFeeder_ColorFrameReady;
 	        _frameFeeder.DepthFrameReady += FrameFeeder_DepthFrameReady;
 
@@ -61,7 +64,7 @@ namespace DepthMapProcessorGUI.GUI
 			{
 				_frameFeeder.SuspendDepthStream();
 				var emptyMap = new DepthMap(1, 1, new short[1]);
-				Dispatcher.Invoke(() => { _vm.UpdateDepthImage(emptyMap, _settings.DistanceToFloor, 0); });
+				Dispatcher.Invoke(() => { _vm.UpdateDepthImage(emptyMap, _deviceParams.MinDepth, _settings.DistanceToFloor, 0); });
 			}
 		}
 
@@ -85,7 +88,7 @@ namespace DepthMapProcessorGUI.GUI
 		    });
 
 		    var cutOffDepth = (short) (_settings.DistanceToFloor - _settings.MinObjHeight);
-		    Dispatcher.Invoke(() => { _vm.UpdateDepthImage(depthMap, _settings.DistanceToFloor, cutOffDepth); });
+		    Dispatcher.Invoke(() => { _vm.UpdateDepthImage(depthMap, _deviceParams.MinDepth, _settings.DistanceToFloor, cutOffDepth); });
 	    }
 
 		private void LoadApplicationData()
@@ -103,8 +106,8 @@ namespace DepthMapProcessorGUI.GUI
 			try
 			{
 				_frameFeeder.Start();
-				_volumeCalculator.Initialize(Constants.FovX, Constants.FovY);
-				_volumeCalculator.SetSettings(_settings.DistanceToFloor,
+				_volumeCalculator.Initialize(_deviceParams.FovX, _deviceParams.FovY);
+				_volumeCalculator.SetSettings(_settings.DistanceToFloor, _deviceParams.MinDepth,
 					(short) (_settings.DistanceToFloor - _settings.MinObjHeight));
 			}
 			catch (Exception ex)
@@ -161,7 +164,7 @@ namespace DepthMapProcessorGUI.GUI
 
 			_settings = settingsWindow.GetSettings();
 	        IoUtils.SerializeSettings(_settings);
-	        _volumeCalculator.SetSettings(_settings.DistanceToFloor,
+	        _volumeCalculator.SetSettings(_deviceParams.MinDepth, _settings.DistanceToFloor,
 		        (short)(_settings.DistanceToFloor - _settings.MinObjHeight));
 			_logger.LogInfo("New settings have been applied: " + 
 		        $"floorDepth={_settings.DistanceToFloor} minObjHeight={_settings.MinObjHeight} outputPath={_settings.OutputPath}");

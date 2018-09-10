@@ -2,10 +2,9 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Common;
 using DepthMapProcessorGUI.Entities;
 using DepthMapProcessorGUI.Logic;
-using DepthMapProcessorGUI.Utils;
-using VolumeCalculatorGUI.Entities;
 
 namespace DepthMapProcessorGUI.GUI
 {
@@ -16,7 +15,8 @@ namespace DepthMapProcessorGUI.GUI
 		private readonly DepthMap _lastReceivedDepthMap;
 	    private readonly Logger _logger;
 		
-		public SettingsWindow(ApplicationSettings settings, Logger logger, DepthMapProcessor volumeCalculator, DepthMap lastReceivedDepthMap)
+		public SettingsWindow(ApplicationSettings settings, Logger logger, DepthMapProcessor volumeCalculator,
+			DepthMap lastReceivedDepthMap)
 		{
 			_logger = logger;
 			_volumeCalculator = volumeCalculator;

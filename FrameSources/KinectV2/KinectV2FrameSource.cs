@@ -1,12 +1,11 @@
-﻿using DepthMapProcessorGUI.Utils;
-using Microsoft.Kinect;
+﻿using Microsoft.Kinect;
 using System;
 using System.Runtime.InteropServices;
-using VolumeCalculatorGUI.Entities;
+using Common;
 
-namespace VolumeCalculatorGUI.Logic.FrameSources
+namespace FrameSources.KinectV2
 {
-	internal class KinectV2FrameSource : FrameSource
+	public class KinectV2FrameSource : FrameSource
 	{
 		private readonly KinectSensor _kinectSensor;
 		private readonly ColorFrameReader _colorFrameReader;
@@ -79,9 +78,9 @@ namespace VolumeCalculatorGUI.Logic.FrameSources
 			_depthStreamSuspended = false;
 		}
 
-		public override FovDescription GetFovDescription()
+		public override DeviceParams GetDeviceParams()
 		{
-			return new FovDescription(70.6f, 60.0f);
+			return new DeviceParams(70.6f, 60.0f, 600, 8000);
 		}
 
 		private void ColorFrameReader_FrameArrived(object sender, ColorFrameArrivedEventArgs e)
@@ -89,7 +88,7 @@ namespace VolumeCalculatorGUI.Logic.FrameSources
 			if (_colorStreamSuspended)
 				return;
 
-			using (ColorFrame colorFrame = e.FrameReference.AcquireFrame())
+			using (var colorFrame = e.FrameReference.AcquireFrame())
 			{
 				if (colorFrame == null)
 					return;
@@ -119,7 +118,7 @@ namespace VolumeCalculatorGUI.Logic.FrameSources
 			if (_depthStreamSuspended)
 				return;
 
-			using (DepthFrame depthFrame = e.FrameReference.AcquireFrame())
+			using (var depthFrame = e.FrameReference.AcquireFrame())
 			{
 				if (depthFrame == null)
 					return;

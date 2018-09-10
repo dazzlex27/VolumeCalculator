@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using DepthMapProcessorGUI.Entities;
-using DepthMapProcessorGUI.Utils;
-using VolumeCalculatorGUI.Entities;
+using Common;
 
-namespace VolumeCalculatorGUI.Logic.FrameSources
+namespace FrameSources.D435
 {
 	internal unsafe class RealsenseD435FrameSource : FrameSource
 	{
@@ -39,9 +37,9 @@ namespace VolumeCalculatorGUI.Logic.FrameSources
 			DllWrapper.DestroyFrameFeeder();
 		}
 
-		public override FovDescription GetFovDescription()
+		public override DeviceParams GetDeviceParams()
 		{
-			return new FovDescription(91, 57);
+			return new DeviceParams(86, 57, 300, 10000);
 		}
 
 		public override void SuspendColorStream()

@@ -1,8 +1,10 @@
 /!!bin
 /ext
 /.vs
+/Common/obj
 /DepthMapProcessor/obj
 /DepthMapProcessor/samples
 /VolumeCalculatorGUI/obj
+/FrameSources/obj
 /FrameFeeder/obj
 /UtilsApp/obj

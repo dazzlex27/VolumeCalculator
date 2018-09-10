@@ -1,17 +1,16 @@
-﻿using DepthMapProcessorGUI.Utils;
+﻿using Common;
 using System;
-using VolumeCalculatorGUI.Entities;
 
-namespace VolumeCalculatorGUI.Logic.FrameSources
+namespace FrameSources
 {
-	internal abstract class FrameSource : IDisposable
+	public abstract class FrameSource : IDisposable
 	{
 		protected Logger Log;
 
 		public event Action<ImageData> ColorFrameReady;
 		public event Action<DepthMap> DepthFrameReady;
 
-		public abstract FovDescription GetFovDescription();
+		public abstract DeviceParams GetDeviceParams();
 
 		public FrameSource(Logger logger)
 		{

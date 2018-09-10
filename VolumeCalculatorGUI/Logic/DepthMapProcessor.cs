@@ -1,7 +1,7 @@
 ﻿using System;
 using DepthMapProcessorGUI.Entities;
 using DepthMapProcessorGUI.Utils;
-using VolumeCalculatorGUI.Entities;
+using Common;
 
 namespace DepthMapProcessorGUI.Logic
 {
@@ -49,9 +49,9 @@ namespace DepthMapProcessorGUI.Logic
 			}
 		}
 
-		public void SetSettings(short floorDepth, short cutOffDepth)
+		public void SetSettings(short minDepth, short floorDepth, short cutOffDepth)
 		{
-			DllWrapper.SetCalculatorSettings(Constants.MinDepth, floorDepth, cutOffDepth);
+			DllWrapper.SetCalculatorSettings(minDepth, floorDepth, cutOffDepth);
 		}
 
 		public void Dispose()

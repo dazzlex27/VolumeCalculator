@@ -37,12 +37,19 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Kinect, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\!!bin\$(Platform)\$(Configuration)\Microsoft.Kinect.dll</HintPath>
+      <HintPath>..\!!bin\$(Platform)\$(Configuration)\Common.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="FrameSources, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\!!bin\$(Platform)\$(Configuration)\FrameSources.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -59,26 +66,16 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Entities\ApplicationSettings.cs" />
-    <Compile Include="Entities\FovDescription.cs" />
-    <Compile Include="Entities\ImageData.cs" />
     <Compile Include="GUI\BaseViewModel.cs" />
     <Compile Include="GUI\MainWindowVm.cs" />
     <Compile Include="GUI\SettingsWindowVm.cs" />
-    <Compile Include="Logic\FrameSources\FrameSource.cs" />
-    <Compile Include="Logic\FrameSources\KinectV2FrameSource.cs" />
     <Compile Include="Utils\Constants.cs" />
-    <Compile Include="Utils\DepthMapUtils.cs" />
     <Compile Include="Utils\DllWrapper.cs" />
-    <Compile Include="Logic\FrameSources\RealsenseD435FrameSource.cs" />
     <Compile Include="Utils\IoUtils.cs" />
-    <Compile Include="Utils\Logger.cs" />
     <Compile Include="Logic\DepthMapProcessor.cs" />
     <Compile Include="GUI\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Entities\DepthFrame.cs" />
-    <Compile Include="Entities\ColorFrame.cs" />
-    <Compile Include="Entities\DepthMap.cs" />
     <Compile Include="Entities\ObjDimDescription.cs" />
     <Compile Include="Entities\ObjectVolumeData.cs" />
     <Page Include="GUI\MainWindow.xaml">

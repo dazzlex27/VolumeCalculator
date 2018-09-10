@@ -2,8 +2,8 @@
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Common;
 using DepthMapProcessorGUI.Utils;
-using VolumeCalculatorGUI.Entities;
 
 namespace DepthMapProcessorGUI.GUI
 {
@@ -159,10 +159,10 @@ namespace DepthMapProcessorGUI.GUI
 			ColorImageBitmap = colorImageBitmap;
 		}
 
-		public void UpdateDepthImage(DepthMap depthMap, short distanceToFloor, short cutOffDepth)
+		public void UpdateDepthImage(DepthMap depthMap, short minDepth, short distanceToFloor, short cutOffDepth)
 		{
-			var depthMapData = DepthMapUtils.GetColorizedDepthMapData(depthMap, Constants.MinDepth,
-				distanceToFloor, cutOffDepth);
+			var depthMapData = DepthMapUtils.GetColorizedDepthMapData(depthMap, minDepth, distanceToFloor, 
+				cutOffDepth);
 
 			var imageWidth = depthMap.Width;
 			var imageHeight = depthMap.Height;

@@ -1,6 +1,6 @@
-﻿namespace VolumeCalculatorGUI.Entities
+﻿namespace Common
 {
-	internal class DepthMap
+	public class DepthMap
 	{
 		public int Width { get; }
 

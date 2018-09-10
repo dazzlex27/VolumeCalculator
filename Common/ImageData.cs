@@ -1,6 +1,6 @@
-﻿namespace VolumeCalculatorGUI.Entities
+﻿namespace Common
 {
-	internal class ImageData
+	public class ImageData
 	{
 		public int Width { get; }
 
