@@ -1,19 +1,53 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using DepthMapProcessorGUI.Entities;
 using DepthMapProcessorGUI.Utils;
+using VolumeCalculatorGUI.Entities;
 
 namespace DepthMapProcessorGUI.GUI
 {
 	internal class MainWindowVm : BaseViewModel
 	{
+		private bool _useColorStream;
+		private bool _useDepthStream;
 		private int _objWidth;
 		private int _objHeight;
 		private int _objDepth;
 		private long _objVolume;
 		private WriteableBitmap _colorImageBitmap;
 		private WriteableBitmap _depthImageBitmap;
+
+		public event Action<bool> UseColorStreamChanged;
+		public event Action<bool> UseDepthStreamChanged;
+
+		public bool UseColorStream
+		{
+			get => _useColorStream;
+			set
+			{
+				if (_useColorStream == value)
+					return;
+
+				_useColorStream = value;
+				OnPropertyChanged();
+				UseColorStreamChanged?.Invoke(value);
+			}
+		}
+
+		public bool UseDepthStream
+		{
+			get => _useDepthStream;
+			set
+			{
+				if (_useDepthStream == value)
+					return;
+
+				_useDepthStream = value;
+				OnPropertyChanged();
+				UseDepthStreamChanged?.Invoke(value);
+			}
+		}
 
 		public int ObjWidth
 		{
@@ -93,14 +127,34 @@ namespace DepthMapProcessorGUI.GUI
 			}
 		}
 
+		public MainWindowVm()
+		{
+			_useColorStream = true;
+			_useDepthStream = true;
+		}
+
 		public void UpdateColorImage(ImageData image)
 		{
 			var imageWidth = image.Width;
 			var imageHeight = image.Height;
 			var fullRect = new Int32Rect(0, 0, imageWidth, imageHeight);
 
-			var colorImageBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, PixelFormats.Rgb24, null);
-			colorImageBitmap.WritePixels(fullRect, image.Data, imageWidth * Constants.BytesPerPixel24, 0);
+			PixelFormat format = PixelFormats.BlackWhite;
+			int bytesPerPixel = 0;
+			switch (image.BytesPerPixel)
+			{
+
+				case 3:
+					format = PixelFormats.Rgb24;
+					bytesPerPixel = Constants.BytesPerPixel24;
+					break;
+				case 4:
+					format = PixelFormats.Bgra32;
+					bytesPerPixel = Constants.BytesPerPixel32;
+					break;
+			}
+			var colorImageBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, format, null);
+			colorImageBitmap.WritePixels(fullRect, image.Data, imageWidth * bytesPerPixel, 0);
 
 			ColorImageBitmap = colorImageBitmap;
 		}

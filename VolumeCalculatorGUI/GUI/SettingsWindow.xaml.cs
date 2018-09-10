@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using DepthMapProcessorGUI.Entities;
 using DepthMapProcessorGUI.Logic;
 using DepthMapProcessorGUI.Utils;
+using VolumeCalculatorGUI.Entities;
 
 namespace DepthMapProcessorGUI.GUI
 {

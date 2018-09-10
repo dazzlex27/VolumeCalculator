@@ -1,4 +1,4 @@
-﻿namespace VolumeCalculatorGUI.Entities
+﻿namespace UtilsApp
 {
 	internal class DepthMap
 	{

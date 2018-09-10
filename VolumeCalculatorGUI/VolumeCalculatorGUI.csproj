@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{08B98C3A-C054-464C-9594-F4EB7F7B2333}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>DepthMapProcessorGUI</RootNamespace>
-    <AssemblyName>DepthMapProcessorGUI</AssemblyName>
+    <RootNamespace>VolumeCalculatorGUI</RootNamespace>
+    <AssemblyName>VolumeCalculatorGUI</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -37,6 +37,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Kinect, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\!!bin\$(Platform)\$(Configuration)\Microsoft.Kinect.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -55,14 +59,17 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Entities\ApplicationSettings.cs" />
+    <Compile Include="Entities\FovDescription.cs" />
     <Compile Include="Entities\ImageData.cs" />
     <Compile Include="GUI\BaseViewModel.cs" />
     <Compile Include="GUI\MainWindowVm.cs" />
     <Compile Include="GUI\SettingsWindowVm.cs" />
+    <Compile Include="Logic\FrameSources\FrameSource.cs" />
+    <Compile Include="Logic\FrameSources\KinectV2FrameSource.cs" />
     <Compile Include="Utils\Constants.cs" />
     <Compile Include="Utils\DepthMapUtils.cs" />
     <Compile Include="Utils\DllWrapper.cs" />
-    <Compile Include="Logic\FrameFeeder.cs" />
+    <Compile Include="Logic\FrameSources\RealsenseD435FrameSource.cs" />
     <Compile Include="Utils\IoUtils.cs" />
     <Compile Include="Utils\Logger.cs" />
     <Compile Include="Logic\DepthMapProcessor.cs" />

@@ -1,9 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
 using System.Windows;
 using DepthMapProcessorGUI.Entities;
 using DepthMapProcessorGUI.Logic;
 using DepthMapProcessorGUI.Utils;
+using VolumeCalculatorGUI.Entities;
+using VolumeCalculatorGUI.Logic.FrameSources;
 
 namespace DepthMapProcessorGUI.GUI
 {
@@ -11,7 +14,7 @@ namespace DepthMapProcessorGUI.GUI
     {
 	    private readonly MainWindowVm _vm;
 		private readonly Logger _logger;
-	    private readonly FrameFeeder _frameFeeder;
+	    private readonly FrameSource _frameFeeder;
 	    private readonly DepthMapProcessor _volumeCalculator;
 
 		private volatile DepthMap _latestDepthMap;
@@ -24,14 +27,42 @@ namespace DepthMapProcessorGUI.GUI
 
 			InitializeComponent();
 	        _vm = (MainWindowVm) DataContext;
+			_vm.UseColorStreamChanged += Vm_UseColorStreamChanged;
+			_vm.UseDepthStreamChanged += Vm_UseDepthStreamChanged;
 
-			_frameFeeder = new FrameFeeder(_logger);
+			_frameFeeder = new KinectV2FrameSource(_logger);
 			_frameFeeder.ColorFrameReady += FrameFeeder_ColorFrameReady;
 	        _frameFeeder.DepthFrameReady += FrameFeeder_DepthFrameReady;
 
 	        _volumeCalculator = new DepthMapProcessor(_logger);
 
 			LoadApplicationData();
+
+	        Directory.CreateDirectory("out");
+        }
+
+		private void Vm_UseColorStreamChanged(bool UseColorStream)
+		{
+			if (UseColorStream)
+				_frameFeeder.ResumeColorStream();
+			else
+			{
+				_frameFeeder.SuspendColorStream();
+				var emptyImage = new ImageData(1, 1, new byte[3], 3);
+				Dispatcher.Invoke(() => { _vm.UpdateColorImage(emptyImage); });
+			}
+		}
+
+		private void Vm_UseDepthStreamChanged(bool useDepthStream)
+		{
+			if (useDepthStream)
+				_frameFeeder.ResumeDepthStream();
+			else
+			{
+				_frameFeeder.SuspendDepthStream();
+				var emptyMap = new DepthMap(1, 1, new short[1]);
+				Dispatcher.Invoke(() => { _vm.UpdateDepthImage(emptyMap, _settings.DistanceToFloor, 0); });
+			}
 		}
 
 		private void FrameFeeder_ColorFrameReady(ImageData image)
@@ -41,6 +72,10 @@ namespace DepthMapProcessorGUI.GUI
 
 	    private void FrameFeeder_DepthFrameReady(DepthMap depthMap)
 	    {
+		    var terminationTime = new DateTime(2018, 11, 1);
+		    if (DateTime.Now > terminationTime)
+			    return;
+
 		    _latestDepthMap = depthMap;
 
 		    Dispatcher.Invoke(() =>

@@ -1,4 +1,4 @@
-﻿namespace DepthMapProcessorGUI.Entities
+﻿namespace VolumeCalculatorGUI.Entities
 {
 	internal class ImageData
 	{
@@ -8,11 +8,14 @@
 
 		public byte[] Data { get; }
 
-		public ImageData(int width, int height, byte[] data)
+		public byte BytesPerPixel { get; }
+
+		public ImageData(int width, int height, byte[] data, byte bytesPerPixel)
 		{
 			Width = width;
 			Height = height;
 			Data = data;
+			BytesPerPixel = bytesPerPixel;
 		}
 	}
 }

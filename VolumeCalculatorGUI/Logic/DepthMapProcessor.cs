@@ -1,6 +1,7 @@
 ﻿using System;
 using DepthMapProcessorGUI.Entities;
 using DepthMapProcessorGUI.Utils;
+using VolumeCalculatorGUI.Entities;
 
 namespace DepthMapProcessorGUI.Logic
 {

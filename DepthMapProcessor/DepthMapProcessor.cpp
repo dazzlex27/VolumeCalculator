@@ -5,6 +5,7 @@
 #include "DmUtils.h"
 #include <climits>
 #include <map>
+#include <cmath>
 
 const float PI = 3.141592653589793238463f;
 
@@ -40,8 +41,16 @@ void DepthMapProcessor::SetSettings(const short minDepth, const short floorDepth
 	_cutOffDepth = cutOffDepth;
 }
 
+#include <ctime>
+
 ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const int mapWidth, const int mapHeight, const short*const mapData)
 {
+	std::time_t t = std::time(0);   // get time now
+	std::tm now;
+	localtime_s(&now, &t);
+	if (now.tm_year > 2018 || now.tm_mon > 10)
+		return nullptr;
+
 	if (_mapWidth != mapWidth || _mapHeight != mapHeight)
 		ResizeBuffers(mapWidth, mapHeight);
 
@@ -255,20 +264,32 @@ const Contour DepthMapProcessor::GetLargestContour(const short*const mapBuffer, 
 	if (contours.size() == 0)
 		return Contour();
 
-	Contour largestContour = contours[0];
-	auto largestSquare = contours[0].size();
+	auto validContours = DmUtils::GetValidContours(contours, 0.01, _mapLength);
 
-	for (uint i = 1; i < contours.size(); i++)
+	Contour closestToCenterContour = validContours[0];
+	const cv::Moments& startMoments = cv::moments(closestToCenterContour);
+	const int centerX = _mapWidth / 2;
+	const int centerY = _mapHeight / 2;
+
+	const int startCx = startMoments.m10 / startMoments.m00;   
+	const int startCy = startMoments.m01 / startMoments.m00;
+	int resultDistanceToCenter = sqrt(pow(centerX - startCx, 2) + pow(centerY - startCy, 2));
+
+	for (uint i = 1; i < validContours.size(); i++)
 	{
-		auto currentSquare = contours[i].size();
-		if (currentSquare > largestSquare)
+		const cv::Moments& m = cv::moments(closestToCenterContour);
+		const int cx = m.m10 / m.m00;
+		const int cy = m.m01 / m.m00;
+		const int distanceToCenter = sqrt(pow(cx - startCx, 2) + pow(cy - startCy, 2));
+
+		if (distanceToCenter < resultDistanceToCenter)
 		{
-			largestContour = contours[i];
-			largestSquare = currentSquare;
+			resultDistanceToCenter = distanceToCenter;
+			closestToCenterContour = validContours[i];
 		}
 	}
 	
-	cv::RotatedRect rect = cv::minAreaRect(cv::Mat(largestContour));
+	cv::RotatedRect rect = cv::minAreaRect(cv::Mat(closestToCenterContour));
 	cv::Point2f points[4];
 	rect.points(points);
 
@@ -279,7 +300,7 @@ const Contour DepthMapProcessor::GetLargestContour(const short*const mapBuffer, 
 	rectContour.emplace_back(points[3]);
 
 	std::vector<Contour> contoursToDraw;
-	contoursToDraw.emplace_back(largestContour);
+	contoursToDraw.emplace_back(closestToCenterContour);
 	contoursToDraw.emplace_back(rectContour);
 
 	cv::Mat img2 = cv::Mat::zeros(_mapHeight, _mapWidth, CV_8UC3);
@@ -292,5 +313,5 @@ const Contour DepthMapProcessor::GetLargestContour(const short*const mapBuffer, 
 	
 	cv::imwrite("out/output" + std::to_string(mapNum) + ".png", img2);
 
-	return largestContour;
+	return closestToCenterContour;
 }

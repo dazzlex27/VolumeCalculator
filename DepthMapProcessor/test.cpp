@@ -6,9 +6,9 @@
 #include "DmUtils.h"
 #include <fstream>
 
-void FindFilteringDepth()
+void FindFilteringDepth(const char* path)
 {
-	const DepthMap*const depthMap = DmUtils::ReadDepthMapFromFile("in/box1.txt");
+	const DepthMap*const depthMap = DmUtils::ReadDepthMapFromFile(path);
 	const int mapWidth = depthMap->Width;
 	const int mapHeight = depthMap->Height;
 	const int mapLength = depthMap->Length;
@@ -18,7 +18,7 @@ void FindFilteringDepth()
 
 	byte* binaryMask = new byte[mapLength];
 
-	for (int i = 1300; i >= 900; i--)
+	for (int i = 3000; i >= 2300; i--)
 	{
 		DmUtils::FilterDepthMap(mapLength, dataCopy, i);
 
@@ -41,34 +41,18 @@ void FindFilteringDepth()
 	delete depthMap;
 }
 
-void CalculateVolume(int argc, char* argv[])
+void CalculateVolume(const char* path, const short cutOffDepth)
 {
-	//if (argc < 4)
-	//{
-	//	std::cout << "Usage: " << argv[0] << " inputfile.txt floorDepth cutOffDepth" << std::endl;
-	//	return;
-	//}
-
-	//const char* filepath = argv[1];
-	//const DepthMap* depthMap = DmUtils::ReadDepthMapFromFile(filepath);
-	//if (depthMap == nullptr)
-	//{
-	//	std::cout << "Error! Cannot open " << filepath << std::endl;
-	//	return;
-	//}
-
-	const DepthMap* depthMap = DmUtils::ReadDepthMapFromFile("in/close_box0.txt");
+	const DepthMap* depthMap = DmUtils::ReadDepthMapFromFile(path);
 	
 	const int mapWidth = depthMap->Width;
 	const int mapHeight = depthMap->Height;
 	std::cout << "map found, " << mapWidth << "x" << mapHeight << std::endl;
 
-	//const int floorDepth = atoi(argv[2]);
-	//const int cutOffDepth = atoi(argv[3]);
-
-	const int floorDepth = 467;
-	const int cutOffDepth = 450;
-	CreateDepthMapProcessor(86, 57);
+	const int minDepth = 600;
+	const int floorDepth = 2400;
+	CreateDepthMapProcessor(60, 49.5);
+	SetCalculatorSettings(minDepth, floorDepth, cutOffDepth);
 
 	const ObjDimDescription* desc = CalculateObjectVolume(mapWidth, mapHeight, depthMap->Data);
 	std::cout << "w=" << desc->Width << " h=" << desc->Height << " d=" << desc->Depth << std::endl;
@@ -79,5 +63,7 @@ void CalculateVolume(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+	CalculateVolume("636717673292564039.txt", 2300);
+
 	return 0;
 }
