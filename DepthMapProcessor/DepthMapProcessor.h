@@ -16,10 +16,9 @@ private:
 	short _floorDepth;
 	short _cutOffDepth;
 
+	ObjDimDescription _result;
 	short* _mapBuffer;
-	short* _mapBuffer2;
 	byte* _imgBuffer;
-	ObjDimDescription* _result;
 
 public:
 	DepthMapProcessor(const float fovX, const float fovY);
@@ -33,9 +32,9 @@ private:
 	void ResizeBuffers(const int mapWidth, const int mapHeight);
 	const short GetContourTopPlaneDepth(const Contour& contour, const cv::RotatedRect& rotBoundingRect) const;
 	const Contour GetTargetContour(const short*const mapBuffer, const int mapNum = 0) const;
+	const ObjDimDescription CalculateContourDimensions(const Contour& contour) const;
 	const Contour GetContourClosestToCenter(const std::vector<Contour>& contours) const;
-	void DrawTargetContour(const Contour& contour, const int contourNum) const;
-
-	const AbsRect CalculatePlaneSizeAtGivenHeight(const short height) const;
 	const short FindModeInSortedArray(const short*const array, const int count) const;
+	const AbsRect CalculatePlaneSizeAtGivenHeight(const short height) const;
+	void DrawTargetContour(const Contour& contour, const int contourNum) const;
 };
