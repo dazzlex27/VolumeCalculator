@@ -1,40 +1,57 @@
 ﻿using Common;
 using DepthMapProcessorGUI.Utils;
-using FrameSources;
+using System;
 using System.IO;
+using VolumeCalculatorGUI.Entities;
 
 namespace VolumeCalculatorGUI.Logic
 {
     internal class TestDataGenerator
     {
-        private readonly string _directory;
-        private readonly string _casename;
-        private readonly int _timesToSave;
-        private int _remainingTimesToSave;
+		private readonly TestCaseData _testCaseData;
+		private int _remainingTimesToSave;
 
-        public TestDataGenerator(string directory, string casename, int timesToSave, ImageData image, DepthMap map, DeviceParams deviceParams)
+		public bool IsActive { get; private set; }
+
+		public event Action FinishedSaving;
+
+        public TestDataGenerator(TestCaseData testCaseData)
         {
-            _directory = directory;
-            _casename = casename;
-            _timesToSave = timesToSave;
+			_testCaseData = testCaseData;
+			_remainingTimesToSave = _testCaseData.TimesToSave;
 
-            _remainingTimesToSave = _timesToSave;
+			Directory.CreateDirectory(_testCaseData.SavingDirectory);
+			SaveInitialData();
 
-            SaveInitialData(image, map, deviceParams);
-        }
+			IsActive = true;
+		}
 
         public void AdvanceDataSaving(DepthMap map)
         {
-            
-        }
+			var mapIndex = _testCaseData.TimesToSave - _remainingTimesToSave;
+			var fullMapPath = Path.Combine(_testCaseData.SavingDirectory, $"{mapIndex}.dm");
 
-        private void SaveInitialData(ImageData image, DepthMap map, DeviceParams deviceParams)
+			DepthMapUtils.SaveDepthMapToFile(map, fullMapPath);
+
+			_remainingTimesToSave--;
+
+			if (_remainingTimesToSave == 0)
+			{
+				IsActive = false;
+				FinishedSaving?.Invoke();
+			}
+		}
+
+        private void SaveInitialData()
         {
-            var bmp = IoUtils.CreateBitmapFromImageData(image);
-            bmp.Save(Path.Combine(_directory, "rgb.png"));
+            var bmp = IoUtils.CreateBitmapFromImageData(_testCaseData.Image);
+            bmp.Save(Path.Combine(_testCaseData.SavingDirectory, "rgb.png"));
 
-            var dmBmp = IoUtils.CreateBitmapFromDepthMap(map, deviceParams.MinDepth, deviceParams.MaxDepth, deviceParams.MaxDepth);
-            dmBmp.Save(Path.Combine(_directory, "depth.png"));
+            var dmBmp = IoUtils.CreateBitmapFromDepthMap(_testCaseData.Map, _testCaseData.DeviceParams.MinDepth, 
+				_testCaseData.DeviceParams.MaxDepth, _testCaseData.DeviceParams.MaxDepth);
+            dmBmp.Save(Path.Combine(_testCaseData.SavingDirectory, "depth.png"));
+
+            File.WriteAllText(Path.Combine(_testCaseData.SavingDirectory, "floor.txt"), _testCaseData.DistanceToFloor.ToString());
         }
     }
 }

@@ -7,6 +7,7 @@ namespace FrameSources.KinectV2
 {
 	public class KinectV2FrameSource : FrameSource
 	{
+		private readonly Logger _logger;
 		private readonly KinectSensor _kinectSensor;
 		private readonly ColorFrameReader _colorFrameReader;
 		private readonly DepthFrameReader _depthFrameReader;
@@ -14,10 +15,10 @@ namespace FrameSources.KinectV2
 		private bool _colorStreamSuspended;
 		private bool _depthStreamSuspended;
 
-		public KinectV2FrameSource(Logger log)
-			: base(log)
+		public KinectV2FrameSource(Logger logger)
 		{
-			Log.LogInfo("Creating KinectV2 frame receiver...");
+			_logger = logger;
+			_logger.LogInfo("Creating KinectV2 frame receiver...");
 
 			_kinectSensor = KinectSensor.GetDefault();
 
@@ -33,13 +34,13 @@ namespace FrameSources.KinectV2
 
 		public override void Start()
 		{
-			Log.LogInfo("Starting KinectV2 frame receiver...");
+			_logger.LogInfo("Starting KinectV2 frame receiver...");
 			_kinectSensor.Open();
 		}
 
 		public override void Dispose()
 		{
-			Log.LogInfo("Disposing KinectV2 frame receiver...");
+			_logger.LogInfo("Disposing KinectV2 frame receiver...");
 
 			_colorFrameReader.Dispose();
 			_depthFrameReader.Dispose();

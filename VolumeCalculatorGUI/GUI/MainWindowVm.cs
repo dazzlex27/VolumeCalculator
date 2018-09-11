@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Common;
+using DepthMapProcessorGUI.Entities;
 using DepthMapProcessorGUI.Utils;
 
 namespace DepthMapProcessorGUI.GUI
@@ -172,6 +173,14 @@ namespace DepthMapProcessorGUI.GUI
 			depthImageBitmap.WritePixels(fullRect, depthMapData, imageWidth * Constants.BytesPerPixel24, 0);
 
 			DepthImageBitmap = depthImageBitmap;
+		}
+
+		public void UpdateVolumeDisplay(ObjectVolumeData volumeData)
+		{
+			ObjWidth = volumeData.Width;
+			ObjHeight = volumeData.Height;
+			ObjDepth = volumeData.Depth;
+			ObjVolume = ObjWidth * ObjHeight * ObjDepth;
 		}
 	}
 }

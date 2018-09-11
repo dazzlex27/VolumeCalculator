@@ -4,18 +4,19 @@ using Common;
 
 namespace FrameSources.D435
 {
-	internal unsafe class RealsenseD435FrameSource : FrameSource
+	public class RealsenseD435FrameSource : FrameSource
 	{
+		private readonly Logger _logger;
 		private readonly DllWrapper.ColorFrameCallback _colorFrameCallback;
 		private readonly DllWrapper.DepthFrameCallback _depthFramesCallback;
 
 		private bool _colorStreamSuspended;
 		private bool _depthStreamSuspended;
 
-		public RealsenseD435FrameSource(Logger logger)
-			: base(logger)
+		public unsafe RealsenseD435FrameSource(Logger logger)
 		{
-			Log.LogInfo("Creating Realsense D435 frame receiver...");
+			_logger = logger;
+			_logger.LogInfo("Creating Realsense D435 frame receiver...");
 
 			_colorFrameCallback = ColorFrameCallback;
 			_depthFramesCallback = DepthFrameCallback;
@@ -23,7 +24,7 @@ namespace FrameSources.D435
 
 		public override void Start()
 		{
-			Log.LogInfo("Starting Realsense D435 frame receiver...");
+			_logger.LogInfo("Starting Realsense D435 frame receiver...");
 			DllWrapper.CreateFrameFeeder();
 			DllWrapper.SubscribeToColorFrames(_colorFrameCallback);
 			DllWrapper.SubscribeToDepthFrames(_depthFramesCallback);
@@ -31,7 +32,7 @@ namespace FrameSources.D435
 
 		public override void Dispose()
 		{
-			Log.LogInfo("Disposing Realsense D435 frame receiver...");
+			_logger.LogInfo("Disposing Realsense D435 frame receiver...");
 			DllWrapper.UnsubscribeFromColorFrames(_colorFrameCallback);
 			DllWrapper.UnsubscribeFromDepthFrames(_depthFramesCallback);
 			DllWrapper.DestroyFrameFeeder();
@@ -82,7 +83,7 @@ namespace FrameSources.D435
 			_depthStreamSuspended = false;
 		}
 
-		private void ColorFrameCallback(ColorFrame* frame)
+		private unsafe void ColorFrameCallback(ColorFrame* frame)
 		{
 			var dataLength = frame->Width * frame->Height * 3;
 
@@ -94,7 +95,7 @@ namespace FrameSources.D435
 			RaiseColorFrameReadyEvent(image);
 		}
 
-		private void DepthFrameCallback(DepthFrame* frame)
+		private unsafe void DepthFrameCallback(DepthFrame* frame)
 		{
 			var mapLength = frame->Width * frame->Height;
 			var data = new short[mapLength];

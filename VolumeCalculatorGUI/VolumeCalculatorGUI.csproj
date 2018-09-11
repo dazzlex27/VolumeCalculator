@@ -67,6 +67,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Entities\ApplicationSettings.cs" />
+    <Compile Include="Entities\TestCaseData.cs" />
     <Compile Include="GUI\BaseViewModel.cs" />
     <Compile Include="GUI\MainWindowVm.cs" />
     <Compile Include="GUI\SettingsWindowVm.cs" />

@@ -78,7 +78,7 @@
 							<TextBlock Text="Папка для сохранения: "/>
 							<TextBox Name="TbSaveFolder" Width="70" Text="C:/3D/" TextAlignment="Center"  VerticalAlignment="Top" HorizontalAlignment="Left" MaxLength="2"/>
 						</StackPanel>
-						<Button Name="BtSaveTestData" Margin="0,2" Content="Сохранить тестовые данные" Click="Button_Click"/>
+						<Button Name="BtSaveTestData" Margin="0,2" Content="Сохранить тестовые данные" Click="SaveTestData_Click"/>
 					</StackPanel>
 				</Grid>
 				<Button Grid.Row="2" Grid.ColumnSpan="2" IsEnabled="False" Margin="2" MinHeight="25" ToolTipService.ShowOnDisabled="True" ToolTip="Нет данных для вычисления" 

@@ -8,6 +8,8 @@ using DepthMapProcessorGUI.Logic;
 using DepthMapProcessorGUI.Utils;
 using FrameSources;
 using FrameSources.KinectV2;
+using VolumeCalculatorGUI.Entities;
+using VolumeCalculatorGUI.Logic;
 
 namespace DepthMapProcessorGUI.GUI
 {
@@ -17,21 +19,19 @@ namespace DepthMapProcessorGUI.GUI
 		private readonly Logger _logger;
 	    private readonly FrameSource _frameFeeder;
 	    private readonly DepthMapProcessor _volumeCalculator;
+
+		private ApplicationSettings _settings;
 		private DeviceParams _deviceParams;
+		private TestDataGenerator _testDataGenerator;
 
 		private volatile ImageData _latestImageData;
 		private volatile DepthMap _latestDepthMap;
-		private ApplicationSettings _settings;
-
-		private string TEST_DATA_FOLDER_NAME = "";
-		private volatile bool SAVE_TEST_DATA = false;
-		private volatile int SAVE_TEST_DATA_COUNT = 0;
-		private volatile int SAVE_TEST_DATA_CURRENT_COUNT = 0;
 
 		public MainWindow()
         {
             _logger = new Logger();
             _logger.LogInfo("Starting up...");
+			AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
 			InitializeComponent();
 	        _vm = (MainWindowVm) DataContext;
@@ -46,8 +46,6 @@ namespace DepthMapProcessorGUI.GUI
 	        _volumeCalculator = new DepthMapProcessor(_logger);
 
 			LoadApplicationData();
-
-	        Directory.CreateDirectory("out");
         }
 
 		private void Vm_UseColorStreamChanged(bool UseColorStream)
@@ -89,8 +87,8 @@ namespace DepthMapProcessorGUI.GUI
 
 		    _latestDepthMap = depthMap;
 
-			if (SAVE_TEST_DATA)
-				SaveTestData();
+			if (_testDataGenerator != null && _testDataGenerator.IsActive)
+				_testDataGenerator.AdvanceDataSaving(depthMap);
 
             Dispatcher.Invoke(() =>
             {
@@ -101,38 +99,6 @@ namespace DepthMapProcessorGUI.GUI
             var cutOffDepth = (short) (_settings.DistanceToFloor - _settings.MinObjHeight);
 		    Dispatcher.Invoke(() => { _vm.UpdateDepthImage(depthMap, _deviceParams.MinDepth, _settings.DistanceToFloor, cutOffDepth); });
 	    }
-
-		private void SaveTestData()
-		{
-			if (SAVE_TEST_DATA_COUNT == SAVE_TEST_DATA_CURRENT_COUNT)
-			{
-				var bmp = IoUtils.CreateBitmapFromImageData(_latestImageData);
-				bmp.Save(Path.Combine(TEST_DATA_FOLDER_NAME, "rgb.png"));
-
-				var dmBmp = IoUtils.CreateBitmapFromDepthMap(_latestDepthMap, _deviceParams.MinDepth, _deviceParams.MaxDepth,
-	_deviceParams.MaxDepth);
-				dmBmp.Save(Path.Combine(TEST_DATA_FOLDER_NAME, "depth.png"));
-
-				string[] d = new string[1];
-				d[0] = _settings.DistanceToFloor.ToString();
-				File.WriteAllLines(Path.Combine(TEST_DATA_FOLDER_NAME, "floor.txt"), d);
-			}
-
-			var fullPath = Path.Combine(TEST_DATA_FOLDER_NAME, $"{SAVE_TEST_DATA_COUNT - SAVE_TEST_DATA_CURRENT_COUNT}.dm");
-
-			DepthMapUtils.SaveDepthMapToFile(_latestDepthMap, fullPath);
-
-			SAVE_TEST_DATA_CURRENT_COUNT--;
-
-			if (SAVE_TEST_DATA_CURRENT_COUNT == 0)
-			{
-				SAVE_TEST_DATA = false;
-				Dispatcher.Invoke(() =>
-				{
-					BtSaveTestData.IsEnabled = true;
-				});
-			}
-		}
 
 		private void LoadApplicationData()
 		{
@@ -200,17 +166,26 @@ namespace DepthMapProcessorGUI.GUI
 
         private void MiOpenSettings_Click(object sender, RoutedEventArgs e)
         {
-	        var settingsWindow = new SettingsWindow(_settings, _logger, _volumeCalculator, _latestDepthMap) {Owner = this};
+			try
+			{
+				var settingsWindow = new SettingsWindow(_settings, _logger, _volumeCalculator, _latestDepthMap) { Owner = this };
 
-	        if (settingsWindow.ShowDialog() != true)
-				return;
+				if (settingsWindow.ShowDialog() != true)
+					return;
 
-			_settings = settingsWindow.GetSettings();
-	        IoUtils.SerializeSettings(_settings);
-	        _volumeCalculator.SetSettings(_deviceParams.MinDepth, _settings.DistanceToFloor,
-		        (short)(_settings.DistanceToFloor - _settings.MinObjHeight));
-			_logger.LogInfo("New settings have been applied: " + 
-		        $"floorDepth={_settings.DistanceToFloor} minObjHeight={_settings.MinObjHeight} outputPath={_settings.OutputPath}");
+				_settings = settingsWindow.GetSettings();
+				IoUtils.SerializeSettings(_settings);
+				_volumeCalculator.SetSettings(_deviceParams.MinDepth, _settings.DistanceToFloor,
+					(short)(_settings.DistanceToFloor - _settings.MinObjHeight));
+				_logger.LogInfo("New settings have been applied: " +
+					$"floorDepth={_settings.DistanceToFloor} minObjHeight={_settings.MinObjHeight} outputPath={_settings.OutputPath}");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Exception occured during a settings change", ex);
+				MessageBox.Show("Во время задания настроек произошла ошибка. Информация записана в журнал", "Ошибка",
+					MessageBoxButton.OK, MessageBoxImage.Error);
+			}
         }
 
         private void BtMeasureVolume_Click(object sender, RoutedEventArgs e)
@@ -248,10 +223,7 @@ namespace DepthMapProcessorGUI.GUI
 
 		        _logger.LogInfo($"Completed a volume check, W={_vm.ObjWidth} H={_vm.ObjHeight} D={_vm.ObjDepth} V={_vm.ObjVolume}");
 
-				_vm.ObjWidth = volumeData.Width;
-		        _vm.ObjHeight = volumeData.Height;
-		        _vm.ObjDepth = volumeData.Depth;
-		        _vm.ObjVolume = _vm.ObjWidth * _vm.ObjHeight * _vm.ObjDepth;
+				_vm.UpdateVolumeDisplay(volumeData);
 	        }
 	        catch (Exception ex)
 	        {
@@ -266,26 +238,55 @@ namespace DepthMapProcessorGUI.GUI
             _logger.LogInfo("Finished loading the main window");
         }
 
-		private void Button_Click(object sender, RoutedEventArgs e)
+		private void SaveTestData_Click(object sender, RoutedEventArgs e)
 		{
 			var button = sender as System.Windows.Controls.Button;
 			if (button == null)
 				return;
 
-			button.IsEnabled = false;
+			try
+			{
+				button.IsEnabled = false;
 
-			SAVE_TEST_DATA_COUNT = int.Parse(TbTimeToRun.Text);
-			SAVE_TEST_DATA_CURRENT_COUNT = int.Parse(TbTimeToRun.Text);
-			TEST_DATA_FOLDER_NAME = Path.Combine(TbSaveFolder.Text, $"{DateTime.Now.Ticks}");
-			Directory.CreateDirectory(TEST_DATA_FOLDER_NAME);
+				var timesToSave = int.Parse(TbTimeToRun.Text);
+				var testCaseFolder = Path.Combine(TbSaveFolder.Text, $"{DateTime.Now.Ticks}");
+				var testCaseName = "obj1";
 
-			SAVE_TEST_DATA = true;
+				var testCaseData = new TestCaseData(testCaseName, testCaseFolder, timesToSave, _latestImageData, _latestDepthMap,
+					_deviceParams, _settings.DistanceToFloor);
+
+				_testDataGenerator = new TestDataGenerator(testCaseData);
+				_testDataGenerator.FinishedSaving += TestDataGenerator_FinishedSaving;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to initiate test data generation", ex);
+				MessageBox.Show("Во время создания сессии сохранения данных произошла ошибка. Информация записана в журнал", "Ошибка",
+					MessageBoxButton.OK, MessageBoxImage.Error);
+			}
+		}
+
+		private void TestDataGenerator_FinishedSaving()
+		{
+			_testDataGenerator.FinishedSaving -= TestDataGenerator_FinishedSaving;
+			_testDataGenerator = null;
+
+			Dispatcher.Invoke(() =>
+			{
+				BtSaveTestData.IsEnabled = true;
+			});
 		}
 
 		private void TextBlock_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
 		{
 			var regex = new System.Text.RegularExpressions.Regex("[^0-9]+");
 			e.Handled = regex.IsMatch(e.Text);
+		}
+
+		private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+		{
+			_logger.LogException("Unhandled exception in application domain occured, app terminates...",
+				(Exception)e.ExceptionObject);
 		}
 	}
 }
