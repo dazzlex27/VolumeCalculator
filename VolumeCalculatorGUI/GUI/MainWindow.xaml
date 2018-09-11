@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:gui1="clr-namespace:DepthMapProcessorGUI.GUI"
         mc:Ignorable="d"
-        Title="VolumeCheckerGUI" SizeToContent="WidthAndHeight" MinHeight="250" MinWidth="600" WindowStartupLocation="CenterScreen" 
+        Title="Volume Calculator" SizeToContent="WidthAndHeight" MinHeight="250" MinWidth="600" WindowStartupLocation="CenterScreen" 
 		ResizeMode="CanMinimize" Closing="Window_Closing" ContentRendered="Window_ContentRendered">
 	<Window.DataContext>
 		<gui1:MainWindowVm/>
