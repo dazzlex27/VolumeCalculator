@@ -287,6 +287,8 @@ namespace DepthMapProcessorGUI.GUI
 		{
 			_logger.LogException("Unhandled exception in application domain occured, app terminates...",
 				(Exception)e.ExceptionObject);
+			MessageBox.Show("Произошла критическая ошибка, приложение будет закрыто. Информация записана в журнал", 
+				"Критическая ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
 		}
 	}
 }

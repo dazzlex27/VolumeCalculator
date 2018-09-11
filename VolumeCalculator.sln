@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DepthMapProcessor", "DepthMapProcessor\DepthMapProcessor.vcxproj", "{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCalculatorGUI", "VolumeCalculatorGUI\VolumeCalculatorGUI.csproj", "{08B98C3A-C054-464C-9594-F4EB7F7B2333}"
 	ProjectSection(ProjectDependencies) = postProject
 		{90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B} = {90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B}
@@ -18,7 +16,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilsApp", "UtilsApp\UtilsApp.csproj", "{5A0AEC4E-A3F9-4314-A0E6-F97C1037A888}"
 	ProjectSection(ProjectDependencies) = postProject
 		{90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B} = {90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B}
-		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB} = {EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}
 		{F9973DC5-0D7C-4805-A622-E99492CD3714} = {F9973DC5-0D7C-4805-A622-E99492CD3714}
 		{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D} = {0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}
 	EndProjectSection
@@ -26,9 +23,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameSources", "FrameSources\FrameSources.csproj", "{F9973DC5-0D7C-4805-A622-E99492CD3714}"
 	ProjectSection(ProjectDependencies) = postProject
 		{90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B} = {90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B}
+		{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D} = {0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DepthMapProcessor", "DepthMapProcessor\DepthMapProcessor.vcxproj", "{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,14 +38,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Debug|x64.ActiveCfg = Debug|x64
-		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Debug|x64.Build.0 = Debug|x64
-		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Debug|x86.ActiveCfg = Debug|Win32
-		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Debug|x86.Build.0 = Debug|Win32
-		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Release|x64.ActiveCfg = Release|x64
-		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Release|x64.Build.0 = Release|x64
-		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Release|x86.ActiveCfg = Debug|Win32
-		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Release|x86.Build.0 = Release|Win32
 		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Debug|x64.ActiveCfg = Debug|x64
 		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Debug|x64.Build.0 = Debug|x64
 		{08B98C3A-C054-464C-9594-F4EB7F7B2333}.Debug|x86.ActiveCfg = Debug|x64
@@ -78,6 +70,12 @@ Global
 		{90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B}.Release|x64.ActiveCfg = Release|x64
 		{90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B}.Release|x64.Build.0 = Release|x64
 		{90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B}.Release|x86.ActiveCfg = Release|x64
+		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Debug|x64.ActiveCfg = Debug|x64
+		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Debug|x64.Build.0 = Debug|x64
+		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Debug|x86.ActiveCfg = Debug|x64
+		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Release|x64.ActiveCfg = Release|x64
+		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Release|x64.Build.0 = Release|x64
+		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
