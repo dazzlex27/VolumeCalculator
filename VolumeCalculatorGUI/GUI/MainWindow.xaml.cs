@@ -19,8 +19,14 @@ namespace DepthMapProcessorGUI.GUI
 	    private readonly DepthMapProcessor _volumeCalculator;
 		private DeviceParams _deviceParams;
 
+		private volatile ImageData _latestImageData;
 		private volatile DepthMap _latestDepthMap;
 		private ApplicationSettings _settings;
+
+		private string TEST_DATA_FOLDER_NAME = "";
+		private volatile bool SAVE_TEST_DATA = false;
+		private volatile int SAVE_TEST_DATA_COUNT = 0;
+		private volatile int SAVE_TEST_DATA_CURRENT_COUNT = 0;
 
 		public MainWindow()
         {
@@ -70,6 +76,8 @@ namespace DepthMapProcessorGUI.GUI
 
 		private void FrameFeeder_ColorFrameReady(ImageData image)
 		{
+			_latestImageData = image;
+
 			Dispatcher.Invoke(() => { _vm.UpdateColorImage(image); });
 		}
 
@@ -81,15 +89,50 @@ namespace DepthMapProcessorGUI.GUI
 
 		    _latestDepthMap = depthMap;
 
-		    Dispatcher.Invoke(() =>
-		    {
-			    BtMeasureVolume.IsEnabled = true;
-			    BtMeasureVolume.ToolTip = "";
-		    });
+			if (SAVE_TEST_DATA)
+				SaveTestData();
 
-		    var cutOffDepth = (short) (_settings.DistanceToFloor - _settings.MinObjHeight);
+            Dispatcher.Invoke(() =>
+            {
+                BtMeasureVolume.IsEnabled = true;
+                BtMeasureVolume.ToolTip = "";
+            });
+
+            var cutOffDepth = (short) (_settings.DistanceToFloor - _settings.MinObjHeight);
 		    Dispatcher.Invoke(() => { _vm.UpdateDepthImage(depthMap, _deviceParams.MinDepth, _settings.DistanceToFloor, cutOffDepth); });
 	    }
+
+		private void SaveTestData()
+		{
+			if (SAVE_TEST_DATA_COUNT == SAVE_TEST_DATA_CURRENT_COUNT)
+			{
+				var bmp = IoUtils.CreateBitmapFromImageData(_latestImageData);
+				bmp.Save(Path.Combine(TEST_DATA_FOLDER_NAME, "rgb.png"));
+
+				var dmBmp = IoUtils.CreateBitmapFromDepthMap(_latestDepthMap, _deviceParams.MinDepth, _deviceParams.MaxDepth,
+	_deviceParams.MaxDepth);
+				dmBmp.Save(Path.Combine(TEST_DATA_FOLDER_NAME, "depth.png"));
+
+				string[] d = new string[1];
+				d[0] = _settings.DistanceToFloor.ToString();
+				File.WriteAllLines(Path.Combine(TEST_DATA_FOLDER_NAME, "floor.txt"), d);
+			}
+
+			var fullPath = Path.Combine(TEST_DATA_FOLDER_NAME, $"{SAVE_TEST_DATA_COUNT - SAVE_TEST_DATA_CURRENT_COUNT}.dm");
+
+			DepthMapUtils.SaveDepthMapToFile(_latestDepthMap, fullPath);
+
+			SAVE_TEST_DATA_CURRENT_COUNT--;
+
+			if (SAVE_TEST_DATA_CURRENT_COUNT == 0)
+			{
+				SAVE_TEST_DATA = false;
+				Dispatcher.Invoke(() =>
+				{
+					BtSaveTestData.IsEnabled = true;
+				});
+			}
+		}
 
 		private void LoadApplicationData()
 		{
@@ -222,5 +265,27 @@ namespace DepthMapProcessorGUI.GUI
         {
             _logger.LogInfo("Finished loading the main window");
         }
+
+		private void Button_Click(object sender, RoutedEventArgs e)
+		{
+			var button = sender as System.Windows.Controls.Button;
+			if (button == null)
+				return;
+
+			button.IsEnabled = false;
+
+			SAVE_TEST_DATA_COUNT = int.Parse(TbTimeToRun.Text);
+			SAVE_TEST_DATA_CURRENT_COUNT = int.Parse(TbTimeToRun.Text);
+			TEST_DATA_FOLDER_NAME = Path.Combine(TbSaveFolder.Text, $"{DateTime.Now.Ticks}");
+			Directory.CreateDirectory(TEST_DATA_FOLDER_NAME);
+
+			SAVE_TEST_DATA = true;
+		}
+
+		private void TextBlock_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+		{
+			var regex = new System.Text.RegularExpressions.Regex("[^0-9]+");
+			e.Handled = regex.IsMatch(e.Text);
+		}
 	}
 }
