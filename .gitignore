@@ -3,9 +3,10 @@
 /.vs
 /Common/obj
 /DepthMapProcessor/obj
-/DepthMapProcessor/samples
+/DepthMapProcessorTest/obj
+/DepthMapProcessorWrapper/obj
+/DepthMapProcessorWrapper/samples
 /VolumeCalculatorGUI/obj
 /FrameSources/obj
 /FrameFeeder/obj
 /UtilsApp/obj
-/VolumeCalculator.sln.DotSettings.user

@@ -40,7 +40,7 @@ namespace FrameSources.D435
 
 		public override DeviceParams GetDeviceParams()
 		{
-			return new DeviceParams(86, 57, 300, 10000);
+			return new DeviceParams(86, 57, -1, -1, 300, 10000);
 		}
 
 		public override void SuspendColorStream()

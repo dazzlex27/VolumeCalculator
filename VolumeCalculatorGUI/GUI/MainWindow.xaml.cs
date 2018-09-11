@@ -116,7 +116,7 @@ namespace DepthMapProcessorGUI.GUI
 			{
 				_frameFeeder.Start();
 				_volumeCalculator.Initialize(_deviceParams.FovX, _deviceParams.FovY);
-				_volumeCalculator.SetSettings(_settings.DistanceToFloor, _deviceParams.MinDepth,
+				_volumeCalculator.SetSettings(_deviceParams.MinDepth, _settings.DistanceToFloor,
 					(short) (_settings.DistanceToFloor - _settings.MinObjHeight));
 			}
 			catch (Exception ex)
@@ -202,6 +202,7 @@ namespace DepthMapProcessorGUI.GUI
 	        try
 	        {
 		        _logger.LogInfo("Starting a volume check...");
+				Directory.CreateDirectory("out");
 
 		        IoUtils.SaveWriteableBitmap("out/color.png", _vm.ColorImageBitmap);
 		        IoUtils.SaveWriteableBitmap("out/depth.png", _vm.DepthImageBitmap);

@@ -264,7 +264,10 @@ const Contour DepthMapProcessor::GetLargestContour(const short*const mapBuffer, 
 	if (contours.size() == 0)
 		return Contour();
 
-	auto validContours = DmUtils::GetValidContours(contours, 0.01, _mapLength);
+	auto validContours = DmUtils::GetValidContours(contours, 0.0001, _mapLength);
+
+	if (validContours.size() == 0)
+		return Contour();
 
 	Contour closestToCenterContour = validContours[0];
 	const cv::Moments& startMoments = cv::moments(closestToCenterContour);

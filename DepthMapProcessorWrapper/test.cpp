@@ -1,14 +1,13 @@
 #include <iostream>
-#include "DepthMapProcessorAPI.h"
+#include <DepthMapProcessorAPI.h>
 #include "OpenCVInclude.h"
-#include "DmUtils.h"
 #include "Structures.h"
-#include "DmUtils.h"
+#include "Utils.h"
 #include <fstream>
 
 void FindFilteringDepth(const char* path)
 {
-	const DepthMap*const depthMap = DmUtils::ReadDepthMapFromFile(path);
+	const DepthMap*const depthMap = Utils::ReadDepthMapFromFile(path);
 	const int mapWidth = depthMap->Width;
 	const int mapHeight = depthMap->Height;
 	const int mapLength = depthMap->Length;
@@ -20,7 +19,7 @@ void FindFilteringDepth(const char* path)
 
 	for (int i = 3000; i >= 2300; i--)
 	{
-		DmUtils::FilterDepthMap(mapLength, dataCopy, i);
+		Utils::FilterDepthMap(mapLength, dataCopy, i);
 
 		memset(binaryMask, 0, mapLength);
 
@@ -43,8 +42,8 @@ void FindFilteringDepth(const char* path)
 
 void CalculateVolume(const char* path, const short cutOffDepth)
 {
-	const DepthMap* depthMap = DmUtils::ReadDepthMapFromFile(path);
-	
+	const DepthMap* depthMap = Utils::ReadDepthMapFromFile(path);
+
 	const int mapWidth = depthMap->Width;
 	const int mapHeight = depthMap->Height;
 	std::cout << "map found, " << mapWidth << "x" << mapHeight << std::endl;

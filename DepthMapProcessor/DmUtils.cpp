@@ -66,46 +66,7 @@ const std::vector<short> DmUtils::GetContourDepthValues(const int mapWidth, cons
 	return result;
 }
 
-const DepthMap*const DmUtils::ReadDepthMapFromFile(const char* filepath)
-{
-	std::ifstream stream(filepath);
-	if (!stream.good())
-		return nullptr;
 
-	int width = 0;
-	stream >> width;
-	int height = 0;
-	stream >> height;
-	DepthMap* dm = new DepthMap(width, height);
-
-	short value;
-	int index = 0;
-
-	while (stream >> value)
-	{
-		dm->Data[index++] = value;
-	}
-
-	stream.close();
-
-	return dm;
-}
-
-void DmUtils::SaveDepthMapToFile(const std::string& filename, const DepthMap& map)
-{
-	std::ofstream file;
-	file.open(filename);
-
-	const int frameSize = map.Width * map.Height;
-
-	file << map.Width;
-	file << map.Height;
-
-	for (int i = 0; i < frameSize; i++)
-		file << map.Data[i] << std::endl;
-
-	file.close();
-}
 
 const RotRelRect DmUtils::RotAbsRectToRel(const int rotWidth, const int rotHeight, const cv::RotatedRect& rect)
 {

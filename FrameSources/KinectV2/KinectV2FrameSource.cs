@@ -81,7 +81,7 @@ namespace FrameSources.KinectV2
 
 		public override DeviceParams GetDeviceParams()
 		{
-			return new DeviceParams(70.6f, 60.0f, 600, 8000);
+			return new DeviceParams(70.6f, 60.0f, 391.096f, 463.098f, 600, 8000);
 		}
 
 		private void ColorFrameReader_FrameArrived(object sender, ColorFrameArrivedEventArgs e)
