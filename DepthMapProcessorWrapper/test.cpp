@@ -40,7 +40,8 @@ void FindFilteringDepth(const char* path)
 	delete depthMap;
 }
 
-void CalculateVolume(const char* path, const short cutOffDepth)
+void CalculateVolume(const float fovX, const float fovY, const char* path, const short minDepth, 
+	const short floorDepth, const short cutOffDepth)
 {
 	const DepthMap* depthMap = Utils::ReadDepthMapFromFile(path);
 
@@ -48,9 +49,7 @@ void CalculateVolume(const char* path, const short cutOffDepth)
 	const int mapHeight = depthMap->Height;
 	std::cout << "map found, " << mapWidth << "x" << mapHeight << std::endl;
 
-	const int minDepth = 600;
-	const int floorDepth = 2400;
-	CreateDepthMapProcessor(60, 49.5);
+	CreateDepthMapProcessor(fovX, fovY);
 	SetCalculatorSettings(minDepth, floorDepth, cutOffDepth);
 
 	const ObjDimDescription* desc = CalculateObjectVolume(mapWidth, mapHeight, depthMap->Data);
@@ -62,7 +61,7 @@ void CalculateVolume(const char* path, const short cutOffDepth)
 
 int main(int argc, char* argv[])
 {
-	CalculateVolume("636717673292564039.txt", 2300);
+	CalculateVolume(70.6f, 60.0f, "0.dm", 600, 686, 670);
 
 	return 0;
 }

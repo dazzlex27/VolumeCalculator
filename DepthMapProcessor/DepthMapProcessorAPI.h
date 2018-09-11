@@ -12,6 +12,4 @@ DLL_EXPORT ObjDimDescription* CalculateObjectVolume(int mapWidth, int mapHeight,
 
 DLL_EXPORT short CalculateFloorDepth(int mapWidth, int mapHeight, short* mapData);
 
-DLL_EXPORT ObjDimDescription* CalculateVolumeFromStereo(int mapWidth, int mapHeight, short* mapData1, short* mapData2, int offsetXmm, int offsetYmm);
-
 DLL_EXPORT int DestroyDepthMapProcessor();

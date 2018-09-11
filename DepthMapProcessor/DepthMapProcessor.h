@@ -26,14 +26,14 @@ public:
 	~DepthMapProcessor();
 
 	ObjDimDescription* CalculateObjectVolume(const int mapWidth, const int mapHeight, const short*const mapData);
-	ObjDimDescription* GetVolumeFromStereo(const int mapWidth, const int mapHeight, const short*const mapData1, const short*const mapData2, const int offsetXmm, const int offsetYmm);
 	short CalculateFloorDepth(const int mapWidth, const int mapHeight, const short*const mapData);
 	void SetSettings(const short minDepth, const short floorDepth, const short cutOffDepth);
 
 private:
+	void ResizeBuffers(const int mapWidth, const int mapHeight);
 	const short GetAverageAreaValue(const std::vector<short>& values);
 	const AbsRect CalculatePlaneSizeAtGivenHeight(const short height);
-	const Contour GetLargestContour(const short*const mapBuffer, const int mapNum = 0);
-	void ResizeBuffers(const int mapWidth, const int mapHeight);
-	const cv::RotatedRect MapSecondContourBoxToFirstImage(const cv::RotatedRect& rect, const AbsRect& planeRect, const int offsetXmm, const int offsetYmm);
+	const Contour GetTargetContour(const short*const mapBuffer, const int mapNum = 0);
+	const Contour GetContourClosestToCenter(const std::vector<Contour>& contours);
+	void DrawTargetContour(const Contour& contour, const int contourNum);
 };

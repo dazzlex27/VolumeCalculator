@@ -1,6 +1,5 @@
 #include "DepthMapProcessorAPI.h"
 #include "DepthMapProcessor.h"
-#include <stdexcept>
 
 DepthMapProcessor* Processor = nullptr;
 
@@ -42,17 +41,6 @@ DLL_EXPORT short CalculateFloorDepth(int mapWidth, int mapHeight, short* mapData
 		return -1;
 
 	return Processor->CalculateFloorDepth(mapWidth, mapHeight, mapData);
-}
-
-DLL_EXPORT ObjDimDescription* CalculateVolumeFromStereo(int mapWidth, int mapHeight, short * mapData1, short * mapData2, int offsetXmm, int offsetYmm)
-{
-	if (Processor == nullptr)
-		return nullptr;
-
-	if (mapData1 == nullptr || mapData2 == nullptr)
-		return nullptr;
-
-	return Processor->GetVolumeFromStereo(mapWidth, mapHeight, mapData1, mapData2, offsetXmm, offsetYmm);
 }
 
 DLL_EXPORT int DestroyDepthMapProcessor()
