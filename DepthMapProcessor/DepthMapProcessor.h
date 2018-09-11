@@ -31,9 +31,11 @@ public:
 
 private:
 	void ResizeBuffers(const int mapWidth, const int mapHeight);
-	const short GetAverageAreaValue(const std::vector<short>& values);
-	const AbsRect CalculatePlaneSizeAtGivenHeight(const short height);
-	const Contour GetTargetContour(const short*const mapBuffer, const int mapNum = 0);
-	const Contour GetContourClosestToCenter(const std::vector<Contour>& contours);
-	void DrawTargetContour(const Contour& contour, const int contourNum);
+	const short GetContourTopPlaneDepth(const Contour& contour, const cv::RotatedRect& rotBoundingRect) const;
+	const Contour GetTargetContour(const short*const mapBuffer, const int mapNum = 0) const;
+	const Contour GetContourClosestToCenter(const std::vector<Contour>& contours) const;
+	void DrawTargetContour(const Contour& contour, const int contourNum) const;
+
+	const AbsRect CalculatePlaneSizeAtGivenHeight(const short height) const;
+	const short FindModeInSortedArray(const short*const array, const int count) const;
 };

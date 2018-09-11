@@ -21,7 +21,7 @@
     <ClCompile Include="DepthMapProcessorAPI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DmUtils.cpp">
+    <ClCompile Include="ProcessingUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -32,13 +32,13 @@
     <ClInclude Include="DepthMapProcessorAPI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DmUtils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Structures.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OpenCVInclude.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessingUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

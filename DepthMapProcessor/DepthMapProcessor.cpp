@@ -2,10 +2,8 @@
 #include <string>
 #include <numeric>
 #include <cmath>
-#include "DmUtils.h"
 #include <climits>
-#include <map>
-#include <cmath>
+#include "ProcessingUtils.h"
 
 const float PI = 3.141592653589793238463f;
 
@@ -70,14 +68,11 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const int mapWidth, 
 
 	const RotRelRect& contourRelRect = DmUtils::RotAbsRectToRel(mapWidthAngled, mapHeightAngled, rotBoundingRect);
 
-	const std::vector<short>& contourValues = DmUtils::GetContourDepthValues(_mapWidth, _mapHeight, _mapBuffer, 
-		rotBoundingRect, objectContour);
-
-	const short contourClosestPoint = GetAverageAreaValue(contourValues);
-	const AbsRect& planeSizeAtObjHeightMm = CalculatePlaneSizeAtGivenHeight(contourClosestPoint);
+	const short contourTopPlaneDepth = GetContourTopPlaneDepth(objectContour, rotBoundingRect);
+	const AbsRect& planeSizeAtObjHeightMm = CalculatePlaneSizeAtGivenHeight(contourTopPlaneDepth);
 
 	_result->Width = (short)(planeSizeAtObjHeightMm.Width / angleCos * contourRelRect.Width);
-	_result->Height = _floorDepth - contourClosestPoint;
+	_result->Height = _floorDepth - contourTopPlaneDepth;
 	_result->Depth = (short)(planeSizeAtObjHeightMm.Height / angleCos * contourRelRect.Height);
 
 	return _result;
@@ -139,53 +134,25 @@ void DepthMapProcessor::ResizeBuffers(const int mapWidth, const int mapHeight)
 	_imgBuffer = new byte[_mapLength];
 }
 
-const short DepthMapProcessor::GetAverageAreaValue(const std::vector<short>& values)
+const short DepthMapProcessor::GetContourTopPlaneDepth(const Contour& contour, 
+	const cv::RotatedRect& rotBoundingRect) const
 {
-	const int size = (int)values.size();
-	short* tempArr = new short[size];
-	memcpy(tempArr, values.data(), size * sizeof(short));
+	const std::vector<short>& contourNonZeroValues = DmUtils::GetNonZeroContourDepthValues(_mapWidth, _mapHeight, 
+		_mapBuffer, rotBoundingRect, contour);
 
-	std::sort(tempArr, tempArr + size);
-	
-	const int top10PercentIndex = 0;
-	short number = INT16_MAX;
-	short mode = number;
-	int count = 1;
-	int countMode = 1;
+	const int size = (int)contourNonZeroValues.size();
+	short* sortedNonZeroMapValues = new short[size];
+	memcpy(sortedNonZeroMapValues, contourNonZeroValues.data(), size * sizeof(short));
+	std::sort(sortedNonZeroMapValues, sortedNonZeroMapValues + size);
 
-	for (int i = top10PercentIndex + 1; i < size / 10; i++)
-	{
-		if (tempArr[i] == number)
-		{
-			count++;
-		}
-		else
-		{
-			if (count > countMode)
-			{
-				countMode = count;
-				mode = number;
-			}
-			count = 1;
-			number = tempArr[i];
-		}
-	}
+	const short mode = FindModeInSortedArray(sortedNonZeroMapValues, size / 10);
 
-	 return (short)mode;
+	delete[] sortedNonZeroMapValues;
+
+	return mode;
 }
 
-const AbsRect DepthMapProcessor::CalculatePlaneSizeAtGivenHeight(const short height)
-{
-	const float tnX = tan(_halfFovX);
-	const float tnY = tan(_halfFovY);
-
-	const int horizontalPlaneLength = (int)(height * tnX * 2);
-	const int verticalPlaneLength = (int)(height * tnY * 2);
-
-	return AbsRect{ 0, 0, horizontalPlaneLength, verticalPlaneLength };
-}
-
-const Contour DepthMapProcessor::GetTargetContour(const short*const mapBuffer, const int mapNum)
+const Contour DepthMapProcessor::GetTargetContour(const short*const mapBuffer, const int mapNum) const
 {
 	DmUtils::ConvertDepthMapDataToBinaryMask(_mapLength, mapBuffer, _imgBuffer);
 	cv::Mat imageForContourSearch(_mapHeight, _mapWidth, CV_8UC1, _imgBuffer);
@@ -205,7 +172,7 @@ const Contour DepthMapProcessor::GetTargetContour(const short*const mapBuffer, c
 	return contourClosestToCenter;
 }
 
-const Contour DepthMapProcessor::GetContourClosestToCenter(const std::vector<Contour>& contours)
+const Contour DepthMapProcessor::GetContourClosestToCenter(const std::vector<Contour>& contours) const
 {
 	const int centerX = _mapWidth / 2;
 	const int centerY = _mapHeight / 2;
@@ -230,7 +197,7 @@ const Contour DepthMapProcessor::GetContourClosestToCenter(const std::vector<Con
 	return closestToCenterContour;
 }
 
-void DepthMapProcessor::DrawTargetContour(const Contour& contour, const int contourNum)
+void DepthMapProcessor::DrawTargetContour(const Contour& contour, const int contourNum) const
 {
 	cv::RotatedRect rect = cv::minAreaRect(cv::Mat(contour));
 	cv::Point2f points[4];
@@ -255,4 +222,39 @@ void DepthMapProcessor::DrawTargetContour(const Contour& contour, const int cont
 		cv::drawContours(img2, contoursToDraw, i, colors[i]);
 
 	cv::imwrite("out/target" + std::to_string(contourNum) + ".png", img2);
+}
+
+
+const AbsRect DepthMapProcessor::CalculatePlaneSizeAtGivenHeight(const short height) const
+{
+	const float tnX = tan(_halfFovX);
+	const float tnY = tan(_halfFovY);
+
+	const int horizontalPlaneLength = (int)(height * tnX * 2);
+	const int verticalPlaneLength = (int)(height * tnY * 2);
+
+	return AbsRect{ 0, 0, horizontalPlaneLength, verticalPlaneLength };
+}
+
+const short DepthMapProcessor::FindModeInSortedArray(const short*const array, const int count) const
+{
+	int mode = array[0];
+	int currentCount = 1;
+	int currentMax = 1;
+	for (int i = 1; i < count; i++)
+	{
+		if (array[i] == array[i - 1])
+		{
+			currentCount++;
+			if (currentCount <= currentMax)
+				continue;
+			
+			currentMax = currentCount;
+			mode = array[i];
+		}
+		else
+			currentCount = 1;
+	}
+
+	return mode;
 }

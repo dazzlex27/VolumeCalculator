@@ -1,4 +1,4 @@
-#include "DmUtils.h"
+#include "ProcessingUtils.h"
 #include <cmath>
 #include <climits>
 #include <fstream>
@@ -44,29 +44,27 @@ void DmUtils::FilterDepthMap(const int mapDataLength, short*const mapData,  cons
 	}
 }
 
-const std::vector<short> DmUtils::GetContourDepthValues(const int mapWidth, const int mapHeight, const short*const mapData, 
-	const cv::RotatedRect& roi, const Contour& contour)
+const std::vector<short> DmUtils::GetNonZeroContourDepthValues(const int mapWidth, const int mapHeight, 
+	const short*const mapData, const cv::RotatedRect& roi, const Contour& contour)
 {
 	cv::Rect boundingRect = roi.boundingRect();
 
-	std::vector<short> result;
-	result.emplace_back(boundingRect.width * boundingRect.height);
+	std::vector<short> nonZeroValues;
+	nonZeroValues.reserve(boundingRect.width * boundingRect.height);
 
 	for (int j = boundingRect.y; j < boundingRect.y + boundingRect.height; j++)
 	{
 		for (int i = boundingRect.x; i < boundingRect.x + boundingRect.width; i++)
 		{
-			if (cv::pointPolygonTest(contour, cv::Point(i, j), false) >= 0.0)
-			{
-				result.emplace_back(mapData[j * mapWidth + i]);
-			}
+			const short value = mapData[j * mapWidth + i];
+			const bool valueIsInContour = cv::pointPolygonTest(contour, cv::Point(i, j), false) >= 0.0;
+			if (valueIsInContour && value > 0)
+				nonZeroValues.emplace_back(value);
 		}
 	}
 
-	return result;
+	return nonZeroValues;
 }
-
-
 
 const RotRelRect DmUtils::RotAbsRectToRel(const int rotWidth, const int rotHeight, const cv::RotatedRect& rect)
 {
