@@ -18,6 +18,7 @@ namespace DepthMapProcessorGUI.GUI
 		private long _objVolume;
 		private WriteableBitmap _colorImageBitmap;
 		private WriteableBitmap _depthImageBitmap;
+		private bool _showTestDataGenerator;
 
 		public event Action<bool> UseColorStreamChanged;
 		public event Action<bool> UseDepthStreamChanged;
@@ -124,6 +125,19 @@ namespace DepthMapProcessorGUI.GUI
 					return;
 
 				_depthImageBitmap = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public bool ShowTestDataGenerator
+		{
+			get => _showTestDataGenerator;
+			set
+			{
+				if (_showTestDataGenerator == value)
+					return;
+
+				_showTestDataGenerator = value;
 				OnPropertyChanged();
 			}
 		}

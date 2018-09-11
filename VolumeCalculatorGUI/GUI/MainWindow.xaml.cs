@@ -17,7 +17,7 @@ namespace DepthMapProcessorGUI.GUI
     {
 	    private readonly MainWindowVm _vm;
 		private readonly Logger _logger;
-	    private readonly FrameSource _frameFeeder;
+	    private readonly FrameSource _frameSource;
 	    private readonly DepthMapProcessor _volumeCalculator;
 
 		private ApplicationSettings _settings;
@@ -38,10 +38,10 @@ namespace DepthMapProcessorGUI.GUI
 			_vm.UseColorStreamChanged += Vm_UseColorStreamChanged;
 			_vm.UseDepthStreamChanged += Vm_UseDepthStreamChanged;
 
-			_frameFeeder = new KinectV2FrameSource(_logger);
-			_deviceParams = _frameFeeder.GetDeviceParams();
-			_frameFeeder.ColorFrameReady += FrameFeeder_ColorFrameReady;
-	        _frameFeeder.DepthFrameReady += FrameFeeder_DepthFrameReady;
+			_frameSource = new KinectV2FrameSource(_logger);
+			_deviceParams = _frameSource.GetDeviceParams();
+			_frameSource.ColorFrameReady += FrameFeeder_ColorFrameReady;
+	        _frameSource.DepthFrameReady += FrameFeeder_DepthFrameReady;
 
 	        _volumeCalculator = new DepthMapProcessor(_logger);
 
@@ -51,10 +51,10 @@ namespace DepthMapProcessorGUI.GUI
 		private void Vm_UseColorStreamChanged(bool UseColorStream)
 		{
 			if (UseColorStream)
-				_frameFeeder.ResumeColorStream();
+				_frameSource.ResumeColorStream();
 			else
 			{
-				_frameFeeder.SuspendColorStream();
+				_frameSource.SuspendColorStream();
 				var emptyImage = new ImageData(1, 1, new byte[3], 3);
 				Dispatcher.Invoke(() => { _vm.UpdateColorImage(emptyImage); });
 			}
@@ -63,10 +63,10 @@ namespace DepthMapProcessorGUI.GUI
 		private void Vm_UseDepthStreamChanged(bool useDepthStream)
 		{
 			if (useDepthStream)
-				_frameFeeder.ResumeDepthStream();
+				_frameSource.ResumeDepthStream();
 			else
 			{
-				_frameFeeder.SuspendDepthStream();
+				_frameSource.SuspendDepthStream();
 				var emptyMap = new DepthMap(1, 1, new short[1]);
 				Dispatcher.Invoke(() => { _vm.UpdateDepthImage(emptyMap, _deviceParams.MinDepth, _settings.DistanceToFloor, 0); });
 			}
@@ -114,7 +114,7 @@ namespace DepthMapProcessorGUI.GUI
 
 			try
 			{
-				_frameFeeder.Start();
+				_frameSource.Start();
 				_volumeCalculator.Initialize(_deviceParams.FovX, _deviceParams.FovY);
 				_volumeCalculator.SetSettings(_deviceParams.MinDepth, _settings.DistanceToFloor,
 					(short) (_settings.DistanceToFloor - _settings.MinObjHeight));
@@ -129,13 +129,13 @@ namespace DepthMapProcessorGUI.GUI
 		{
 			try
 			{
-				_logger.LogInfo("Shut down begins...");
+				_logger.LogInfo("Shutting down...");
 
 				_logger.LogInfo("Saving settings...");
 				IoUtils.SerializeSettings(_settings);
 
 				_logger.LogInfo("Disposing libs...");
-				_frameFeeder.Dispose();
+				_frameSource.Dispose();
 				_volumeCalculator.Dispose();
 
 				_logger.LogInfo("App terminated");
@@ -290,6 +290,16 @@ namespace DepthMapProcessorGUI.GUI
 				(Exception)e.ExceptionObject);
 			MessageBox.Show("Произошла критическая ошибка, приложение будет закрыто. Информация записана в журнал", 
 				"Критическая ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+		}
+
+		private void ShowTestDataGeneratorMenuItem_Checked(object sender, RoutedEventArgs e)
+		{
+			_vm.ShowTestDataGenerator = true;
+		}
+
+		private void ShowTestDataGeneratorMenuItem_Unchecked(object sender, RoutedEventArgs e)
+		{
+			_vm.ShowTestDataGenerator = false;
 		}
 	}
 }
