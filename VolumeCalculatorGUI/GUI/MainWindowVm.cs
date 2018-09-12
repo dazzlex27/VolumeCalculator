@@ -3,10 +3,10 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Common;
-using DepthMapProcessorGUI.Entities;
-using DepthMapProcessorGUI.Utils;
+using VolumeCalculatorGUI.Entities;
+using VolumeCalculatorGUI.Utils;
 
-namespace DepthMapProcessorGUI.GUI
+namespace VolumeCalculatorGUI.GUI
 {
 	internal class MainWindowVm : BaseViewModel
 	{

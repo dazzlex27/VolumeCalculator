@@ -1,12 +1,12 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace DepthMapProcessorGUI.Entities
+namespace VolumeCalculatorGUI.Entities
 {
 	[StructLayout(LayoutKind.Sequential)]
 	public struct ObjDimDescription
 	{
-		public short Width;
-		public short Height;
-		public short Depth;
+		public int Width;
+		public int Height;
+		public int Depth;
 	}
 }

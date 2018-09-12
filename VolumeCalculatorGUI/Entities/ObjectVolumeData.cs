@@ -1,4 +1,4 @@
-﻿namespace DepthMapProcessorGUI.Entities
+﻿namespace VolumeCalculatorGUI.Entities
 {
 	internal class ObjectVolumeData
 	{
@@ -10,12 +10,12 @@
 
 		public long Volume { get; }
 
-		public ObjectVolumeData(int width, int height, int depth, long volume)
+		public ObjectVolumeData(int width, int height, int depth)
 		{
 			Width = width;
 			Height = height;
 			Depth = depth;
-			Volume = volume;
+			Volume = width * height * depth;
 		}
 	}
 }

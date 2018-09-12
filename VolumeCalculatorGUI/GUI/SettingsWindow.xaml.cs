@@ -3,19 +3,19 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Common;
-using DepthMapProcessorGUI.Entities;
-using DepthMapProcessorGUI.Logic;
+using VolumeCalculatorGUI.Entities;
+using VolumeCalculatorGUI.Logic;
 
-namespace DepthMapProcessorGUI.GUI
+namespace VolumeCalculatorGUI.GUI
 {
     internal partial class SettingsWindow
     {
 	    private readonly SettingsWindowVm _vm;
 	    private readonly DepthMapProcessor _volumeCalculator;
 		private readonly DepthMap _lastReceivedDepthMap;
-	    private readonly Logger _logger;
+	    private readonly ILogger _logger;
 		
-		public SettingsWindow(ApplicationSettings settings, Logger logger, DepthMapProcessor volumeCalculator,
+		public SettingsWindow(ApplicationSettings settings, ILogger logger, DepthMapProcessor volumeCalculator,
 			DepthMap lastReceivedDepthMap)
 		{
 			_logger = logger;

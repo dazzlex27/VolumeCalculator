@@ -1,25 +1,28 @@
 ﻿using System;
-using DepthMapProcessorGUI.Entities;
-using DepthMapProcessorGUI.Utils;
 using Common;
-
-namespace DepthMapProcessorGUI.Logic
+using FrameSources;
+using VolumeCalculatorGUI.Entities;
+namespace VolumeCalculatorGUI.Logic
 {
 	internal class DepthMapProcessor : IDisposable
 	{
-		private readonly Logger _logger;
+		private readonly ILogger _logger;
+		private readonly IntPtr _nativeHandle;
 
-		public DepthMapProcessor(Logger logger)
+		public DepthMapProcessor(ILogger logger, DeviceParams deviceParams)
 		{
 			_logger = logger;
 
 			_logger.LogInfo("Creating depth map processor...");
-		}
 
-		public void Initialize(float fovX, float fovY)
-		{
-			_logger.LogInfo("Initializing depth map processor...");
-			DllWrapper.CreateDepthMapProcessor(fovX, fovY);
+			unsafe
+			{
+				var ptr = DepthMapProcessorDll.CreateDepthMapProcessor(deviceParams.FocalLengthX,
+					deviceParams.FocalLengthY,
+					deviceParams.PrincipalX, deviceParams.PrincipalY, deviceParams.MinDepth, deviceParams.MaxDepth);
+
+				_nativeHandle = new IntPtr(ptr);
+			}
 		}
 
 		public ObjectVolumeData CalculateVolume(DepthMap depthMap)
@@ -28,12 +31,8 @@ namespace DepthMapProcessorGUI.Logic
 			{
 				fixed (short* data = depthMap.Data)
 				{
-					var res = DllWrapper.CalculateObjectVolume(depthMap.Width, depthMap.Height, data);
-					if (res == null)
-						return null;
-
-					var volume = res->Width * res->Height * res->Depth;
-					return new ObjectVolumeData(res->Width, res->Height, res->Depth, volume);
+					var res = DepthMapProcessorDll.CalculateObjectVolume(_nativeHandle.ToPointer(), depthMap.Width, depthMap.Height, data);
+					return res == null ? null : new ObjectVolumeData(res->Width, res->Height, res->Depth);
 				}
 			}
 		}
@@ -44,20 +43,26 @@ namespace DepthMapProcessorGUI.Logic
 			{
 				fixed (short* data = depthMap.Data)
 				{
-					return DllWrapper.CalculateFloorDepth(depthMap.Width, depthMap.Height, data);
+					return DepthMapProcessorDll.CalculateFloorDepth(_nativeHandle.ToPointer(), depthMap.Width, depthMap.Height, data);
 				}
 			}
 		}
 
-		public void SetSettings(short minDepth, short floorDepth, short cutOffDepth)
+		public void SetCalculatorSettings(short floorDepth, short cutOffDepth)
 		{
-			DllWrapper.SetCalculatorSettings(minDepth, floorDepth, cutOffDepth);
+			unsafe
+			{
+				DepthMapProcessorDll.SetCalculatorSettings(_nativeHandle.ToPointer(), floorDepth, cutOffDepth);
+			}
 		}
 
 		public void Dispose()
 		{
 			_logger.LogInfo("Disposing depth map processor...");
-			DllWrapper.DestroyDepthMapProcessor();
+			unsafe
+			{
+				DepthMapProcessorDll.DestroyDepthMapProcessor(_nativeHandle.ToPointer());
+			}
 		}
 	}
 }

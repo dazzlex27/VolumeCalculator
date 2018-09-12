@@ -1,4 +1,4 @@
-﻿namespace DepthMapProcessorGUI.GUI
+﻿namespace VolumeCalculatorGUI.GUI
 {
 	internal class SettingsWindowVm : BaseViewModel
 	{

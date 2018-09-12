@@ -5,9 +5,13 @@
 
 const std::vector<Contour> DmUtils::GetValidContours(const std::vector<Contour>& contours, const float minAreaRatio, const int imageDataLength)
 {
-	const int minContourAreaPixels = (const int)(imageDataLength * minAreaRatio);
 	std::vector<Contour> contoursValid;
+
+	if (contours.size() == 0)
+		return contoursValid;
+
 	contoursValid.reserve(contours.size());
+	const int minContourAreaPixels = (const int)(imageDataLength * minAreaRatio);
 	for (int i = 0; i < contours.size(); i++)
 	{
 		if (contourArea(contours[i]) >= minContourAreaPixels)
@@ -44,12 +48,35 @@ void DmUtils::FilterDepthMap(const int mapDataLength, short*const mapData,  cons
 	}
 }
 
+const std::vector<short> DmUtils::GetNonZeroContourDepthValues(const int mapWidth, const int mapHeight, const short*const mapData)
+{
+	std::vector<short> nonZeroValues;
+	const int mapLength = mapWidth * mapHeight;
+	if (mapLength <= 0)
+		return nonZeroValues;
+
+	nonZeroValues.reserve(mapLength);
+
+	for (int i = 0; i < mapLength; i++)
+	{
+		const short value = mapData[i];
+		if (value > 0)
+			nonZeroValues.emplace_back(value);
+	}
+
+	return nonZeroValues;
+}
+
 const std::vector<short> DmUtils::GetNonZeroContourDepthValues(const int mapWidth, const int mapHeight, 
 	const short*const mapData, const cv::RotatedRect& roi, const Contour& contour)
 {
+	std::vector<short> nonZeroValues;
+	if (contour.size() == 0)
+		return nonZeroValues;
+
 	cv::Rect boundingRect = roi.boundingRect();
 
-	std::vector<short> nonZeroValues;
+
 	nonZeroValues.reserve(boundingRect.width * boundingRect.height);
 
 	for (int j = boundingRect.y; j < boundingRect.y + boundingRect.height; j++)

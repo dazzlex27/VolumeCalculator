@@ -6,13 +6,17 @@
 class DepthMapProcessor
 {
 private:
-	const float _halfFovX;
-	const float _halfFovY;
+	const float _focalLengthX;
+	const float _focalLengthY;
+	const float _principalX;
+	const float _principalY;
+	const short _minDepth;
+	const short _maxDepth;
+
 	int _mapWidth;
 	int _mapHeight;
 	int _mapLength;
 	int _mapLengthBytes;
-	short _minDepth;
 	short _floorDepth;
 	short _cutOffDepth;
 
@@ -21,12 +25,13 @@ private:
 	byte* _imgBuffer;
 
 public:
-	DepthMapProcessor(const float fovX, const float fovY);
+	DepthMapProcessor(const float focalLengthX, const float focalLengthY, const float principalX,
+		const float principalY, const short minDepth, const short maxDepth);
 	~DepthMapProcessor();
 
 	ObjDimDescription* CalculateObjectVolume(const int mapWidth, const int mapHeight, const short*const mapData);
-	short CalculateFloorDepth(const int mapWidth, const int mapHeight, const short*const mapData);
-	void SetSettings(const short minDepth, const short floorDepth, const short cutOffDepth);
+	const short CalculateFloorDepth(const int mapWidth, const int mapHeight, const short*const mapData);
+	void SetSettings(const short floorDepth, const short cutOffDepth);
 
 private:
 	void ResizeBuffers(const int mapWidth, const int mapHeight);
@@ -35,6 +40,5 @@ private:
 	const ObjDimDescription CalculateContourDimensions(const Contour& contour) const;
 	const Contour GetContourClosestToCenter(const std::vector<Contour>& contours) const;
 	const short FindModeInSortedArray(const short*const array, const int count) const;
-	const AbsRect CalculatePlaneSizeAtGivenHeight(const short height) const;
 	void DrawTargetContour(const Contour& contour, const int contourNum) const;
 };

@@ -1,6 +1,6 @@
 ﻿using System.Windows.Media;
 
-namespace DepthMapProcessorGUI.Utils
+namespace VolumeCalculatorGUI.Utils
 {
 	internal static class Constants
 	{

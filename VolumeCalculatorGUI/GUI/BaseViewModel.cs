@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace DepthMapProcessorGUI.GUI
+namespace VolumeCalculatorGUI.GUI
 {
 	internal class BaseViewModel : INotifyPropertyChanged
 	{

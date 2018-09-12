@@ -1,4 +1,4 @@
-﻿namespace DepthMapProcessorGUI.Entities
+﻿namespace VolumeCalculatorGUI.Entities
 {
     internal class ApplicationSettings
     {

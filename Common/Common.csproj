@@ -49,8 +49,8 @@
     <Compile Include="DepthFrame.cs" />
     <Compile Include="DepthMap.cs" />
     <Compile Include="DepthMapUtils.cs" />
+    <Compile Include="ILogger.cs" />
     <Compile Include="ImageData.cs" />
-    <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

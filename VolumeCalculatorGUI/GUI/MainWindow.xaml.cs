@@ -3,25 +3,24 @@ using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using Common;
-using DepthMapProcessorGUI.Entities;
-using DepthMapProcessorGUI.Logic;
-using DepthMapProcessorGUI.Utils;
 using FrameSources;
 using FrameSources.KinectV2;
 using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.Logic;
+using VolumeCalculatorGUI.Utils;
+using System.Windows.Controls;
 
-namespace DepthMapProcessorGUI.GUI
+namespace VolumeCalculatorGUI.GUI
 {
 	public partial class MainWindow
     {
 	    private readonly MainWindowVm _vm;
-		private readonly Logger _logger;
+		private readonly ILogger _logger;
 	    private readonly FrameSource _frameSource;
 	    private readonly DepthMapProcessor _volumeCalculator;
+		private readonly DeviceParams _deviceParams;
 
 		private ApplicationSettings _settings;
-		private DeviceParams _deviceParams;
 		private TestDataGenerator _testDataGenerator;
 
 		private volatile ImageData _latestImageData;
@@ -38,19 +37,37 @@ namespace DepthMapProcessorGUI.GUI
 			_vm.UseColorStreamChanged += Vm_UseColorStreamChanged;
 			_vm.UseDepthStreamChanged += Vm_UseDepthStreamChanged;
 
-			_frameSource = new KinectV2FrameSource(_logger);
-			_deviceParams = _frameSource.GetDeviceParams();
-			_frameSource.ColorFrameReady += FrameFeeder_ColorFrameReady;
-	        _frameSource.DepthFrameReady += FrameFeeder_DepthFrameReady;
+	        _logger.LogInfo("Trying to read settings from file...");
+	        var settingsFromFile = IoUtils.DeserializeSettings();
+	        if (settingsFromFile == null)
+	        {
+		        _logger.LogInfo("Failed to read settings from file, will use default settings");
+		        _settings = ApplicationSettings.GetDefaultSettings();
+	        }
+	        else
+		        _settings = settingsFromFile;
 
-	        _volumeCalculator = new DepthMapProcessor(_logger);
+	        try
+	        {
+		        _frameSource = new KinectV2FrameSource(_logger);
+		        _frameSource.Start();
+		        _deviceParams = _frameSource.GetDeviceParams();
+		        _frameSource.ColorFrameReady += FrameFeeder_ColorFrameReady;
+		        _frameSource.DepthFrameReady += FrameFeeder_DepthFrameReady;
 
-			LoadApplicationData();
+		        _volumeCalculator = new DepthMapProcessor(_logger, _deviceParams);
+		        var cutOffDepth = (short) (_settings.DistanceToFloor - _settings.MinObjHeight);
+				_volumeCalculator.SetCalculatorSettings(_settings.DistanceToFloor, cutOffDepth);
+	        }
+	        catch (Exception ex)
+	        {
+		        _logger.LogException("Failed to initialize the application!", ex);
+	        }
         }
 
-		private void Vm_UseColorStreamChanged(bool UseColorStream)
+		private void Vm_UseColorStreamChanged(bool useColorStream)
 		{
-			if (UseColorStream)
+			if (useColorStream)
 				_frameSource.ResumeColorStream();
 			else
 			{
@@ -100,31 +117,6 @@ namespace DepthMapProcessorGUI.GUI
 		    Dispatcher.Invoke(() => { _vm.UpdateDepthImage(depthMap, _deviceParams.MinDepth, _settings.DistanceToFloor, cutOffDepth); });
 	    }
 
-		private void LoadApplicationData()
-		{
-			_logger.LogInfo("Trying to read settings from file...");
-			var settingsFromFile = IoUtils.DeserializeSettings();
-			if (settingsFromFile == null)
-			{
-				_logger.LogInfo("Failed to read settings from file, will use default settings");
-				_settings = ApplicationSettings.GetDefaultSettings();
-			}
-			else
-				_settings = settingsFromFile;
-
-			try
-			{
-				_frameSource.Start();
-				_volumeCalculator.Initialize(_deviceParams.FovX, _deviceParams.FovY);
-				_volumeCalculator.SetSettings(_deviceParams.MinDepth, _settings.DistanceToFloor,
-					(short) (_settings.DistanceToFloor - _settings.MinObjHeight));
-			}
-			catch (Exception ex)
-			{
-				_logger.LogException("Failed to initialize the application!", ex);
-			}
-		}
-
 		private void ExitApplication()
 		{
 			try
@@ -169,14 +161,13 @@ namespace DepthMapProcessorGUI.GUI
 			try
 			{
 				var settingsWindow = new SettingsWindow(_settings, _logger, _volumeCalculator, _latestDepthMap) { Owner = this };
-
 				if (settingsWindow.ShowDialog() != true)
 					return;
 
 				_settings = settingsWindow.GetSettings();
 				IoUtils.SerializeSettings(_settings);
-				_volumeCalculator.SetSettings(_deviceParams.MinDepth, _settings.DistanceToFloor,
-					(short)(_settings.DistanceToFloor - _settings.MinObjHeight));
+				var cutOffDepth = (short) (_settings.DistanceToFloor - _settings.MinObjHeight);
+				_volumeCalculator.SetCalculatorSettings(_settings.DistanceToFloor, cutOffDepth);
 				_logger.LogInfo("New settings have been applied: " +
 					$"floorDepth={_settings.DistanceToFloor} minObjHeight={_settings.MinObjHeight} outputPath={_settings.OutputPath}");
 			}
@@ -241,7 +232,7 @@ namespace DepthMapProcessorGUI.GUI
 
 		private void SaveTestData_Click(object sender, RoutedEventArgs e)
 		{
-			var button = sender as System.Windows.Controls.Button;
+			var button = sender as Button;
 			if (button == null)
 				return;
 

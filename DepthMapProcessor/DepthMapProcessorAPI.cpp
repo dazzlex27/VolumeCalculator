@@ -1,55 +1,54 @@
 #include "DepthMapProcessorAPI.h"
 #include "DepthMapProcessor.h"
 
-DepthMapProcessor* Processor = nullptr;
-
-DLL_EXPORT int CreateDepthMapProcessor(const float fovX, const float fovY)
+DLL_EXPORT void* CreateDepthMapProcessor(float focalLengthX, float focalLengthY, float principalX,
+	float principalY, short minDepth, short maxDepth)
 {
-	if (fovX <= 0 || fovY <= 0 )
-		return -1;
+	if (focalLengthX <= 0 || focalLengthY <= 0 || principalX <= 0 || principalY <= 0 || minDepth <= 0 || maxDepth <= 0)
+		return nullptr;
 
-	if (Processor != nullptr)
-		DestroyDepthMapProcessor();
-
-	Processor = new DepthMapProcessor(fovX, fovY);
-
-	return 0;
+	return new DepthMapProcessor(focalLengthX, focalLengthY, principalX, principalY, minDepth, maxDepth);
 }
 
-DLL_EXPORT void SetCalculatorSettings(short minDepth, short floorDepth, short cutOffDepth)
+DLL_EXPORT void SetCalculatorSettings(void* handle, short floorDepth, short cutOffDepth)
 {
-	Processor->SetSettings(minDepth, floorDepth, cutOffDepth);
+	auto processor = (DepthMapProcessor*)handle;
+	processor->SetSettings(floorDepth, cutOffDepth);
 }
 
-DLL_EXPORT ObjDimDescription* CalculateObjectVolume(int mapWidth, int mapHeight, short* mapData)
+DLL_EXPORT ObjDimDescription* CalculateObjectVolume(void* handle, int mapWidth, int mapHeight, short* mapData)
 {
-	if (Processor == nullptr)
+	auto processor = (DepthMapProcessor*)handle;
+
+	if (processor == nullptr)
 		return nullptr;
 
 	if (mapData == nullptr)
 		return nullptr;
 
-	return Processor->CalculateObjectVolume(mapWidth, mapHeight, mapData);
+	return processor->CalculateObjectVolume(mapWidth, mapHeight, mapData);
 }
 
-DLL_EXPORT short CalculateFloorDepth(int mapWidth, int mapHeight, short* mapData)
+DLL_EXPORT short CalculateFloorDepth(void* handle, int mapWidth, int mapHeight, short* mapData)
 {
-	if (Processor == nullptr)
+	auto processor = (DepthMapProcessor*)handle;
+
+	if (processor == nullptr)
 		return -1;
 
 	if (mapData == nullptr)
 		return -1;
 
-	return Processor->CalculateFloorDepth(mapWidth, mapHeight, mapData);
+	return processor->CalculateFloorDepth(mapWidth, mapHeight, mapData);
 }
 
-DLL_EXPORT int DestroyDepthMapProcessor()
+DLL_EXPORT void DestroyDepthMapProcessor(void* handle)
 {
-	if (Processor == nullptr)
-		return 1;
+	auto processor = (DepthMapProcessor*)handle;
 
-	delete Processor;
-	Processor = nullptr;
+	if (processor == nullptr)
+		return;
 
-	return 0;
+	delete processor;
+	processor = nullptr;
 }

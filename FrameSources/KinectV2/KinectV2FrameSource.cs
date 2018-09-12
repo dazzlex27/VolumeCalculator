@@ -7,7 +7,7 @@ namespace FrameSources.KinectV2
 {
 	public class KinectV2FrameSource : FrameSource
 	{
-		private readonly Logger _logger;
+		private readonly ILogger _logger;
 		private readonly KinectSensor _kinectSensor;
 		private readonly ColorFrameReader _colorFrameReader;
 		private readonly DepthFrameReader _depthFrameReader;
@@ -15,7 +15,7 @@ namespace FrameSources.KinectV2
 		private bool _colorStreamSuspended;
 		private bool _depthStreamSuspended;
 
-		public KinectV2FrameSource(Logger logger)
+		public KinectV2FrameSource(ILogger logger)
 		{
 			_logger = logger;
 			_logger.LogInfo("Creating KinectV2 frame receiver...");
@@ -81,7 +81,21 @@ namespace FrameSources.KinectV2
 
 		public override DeviceParams GetDeviceParams()
 		{
-			return new DeviceParams(70.6f, 60.0f, 391.096f, 463.098f, 600, 8000);
+			if (!_kinectSensor.IsAvailable)
+				return GetOfflineParams();
+
+			var frameSource = _kinectSensor.DepthFrameSource;
+			var frameDescription = frameSource.FrameDescription;
+			var intristics = _kinectSensor.CoordinateMapper.GetDepthCameraIntrinsics();
+			return new DeviceParams(frameDescription.HorizontalFieldOfView, frameDescription.VerticalFieldOfView,
+				intristics.FocalLengthX, intristics.FocalLengthY, intristics.PrincipalPointX,
+				intristics.PrincipalPointY, (short) frameSource.DepthMinReliableDistance,
+				(short) frameSource.DepthMaxReliableDistance);
+		}
+
+		private static DeviceParams GetOfflineParams()
+		{
+			return new DeviceParams(70.6f, 60.0f, 367.7066f, 367.7066f, 257.8094f, 207.3965f, 600, 5000);
 		}
 
 		private void ColorFrameReader_FrameArrived(object sender, ColorFrameArrivedEventArgs e)

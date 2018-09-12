@@ -1,6 +1,5 @@
 #include "DepthMapProcessor.h"
 #include <string>
-#include <numeric>
 #include <cmath>
 #include <climits>
 #include <ctime>
@@ -8,9 +7,14 @@
 
 const float PI = 3.141592653589793238463f;
 
-DepthMapProcessor::DepthMapProcessor(const float fovX, const float fovY)
-	: _halfFovX(fovX * 0.5f / 180.0f * PI),
-	_halfFovY(fovY * 0.5f / 180.0f * PI)
+DepthMapProcessor::DepthMapProcessor(const float focalLengthX, const float focalLengthY, const float principalX,
+	const float principalY, const short minDepth, const short maxDepth)
+	: _focalLengthX(focalLengthX),
+	_focalLengthY(focalLengthY),
+	_principalX(principalX),
+	_principalY(principalY),
+	_minDepth(minDepth),
+	_maxDepth(maxDepth)
 {
 	_mapWidth = 0;
 	_mapHeight = 0;
@@ -27,9 +31,8 @@ DepthMapProcessor::~DepthMapProcessor()
 	_imgBuffer = 0;
 }
 
-void DepthMapProcessor::SetSettings(const short minDepth, const short floorDepth, const short cutOffDepth)
+void DepthMapProcessor::SetSettings(const short floorDepth, const short cutOffDepth)
 {
-	_minDepth = minDepth;
 	_floorDepth = floorDepth;
 	_cutOffDepth = cutOffDepth;
 }
@@ -57,40 +60,18 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const int mapWidth, 
 	return &_result;
 }
 
-short DepthMapProcessor::CalculateFloorDepth(const int mapWidth, const int mapHeight, const short*const mapData)
+const short DepthMapProcessor::CalculateFloorDepth(const int mapWidth, const int mapHeight, const short*const mapData)
 {
 	if (_mapWidth != mapWidth || _mapHeight != mapHeight)
 		ResizeBuffers(mapWidth, mapHeight);
 
-	memcpy(_mapBuffer, mapData, _mapLengthBytes);
+	std::vector<short> nonZeroValues = DmUtils::GetNonZeroContourDepthValues(mapWidth, mapHeight, mapData);
+	if (nonZeroValues.size() == 0)
+		return 0;
 
-	std::map<short, int> mapValues;
+	std::sort(nonZeroValues.begin(), nonZeroValues.end());
 
-	for (int i = 0; i < _mapLength; i++)
-	{
-		const short value = _mapBuffer[i];
-
-		const std::map<short, int>::iterator& it = mapValues.find(value);
-
-		if (it == mapValues.end())
-			mapValues[value] = 0;
-		else
-			mapValues[value]++;
-	}
-
-	int maxOccurence = -1;
-	auto maxOccurenceIterator = mapValues.begin();
-
-	for (auto it = mapValues.begin(); it != mapValues.end(); it++)
-	{
-		if (it->second > maxOccurence)
-		{
-			maxOccurence = it->second;
-			maxOccurenceIterator = it;
-		}
-	}
-
-	return maxOccurenceIterator->first;
+	return FindModeInSortedArray(nonZeroValues.data(), (int)nonZeroValues.size());
 }
 
 void DepthMapProcessor::ResizeBuffers(const int mapWidth, const int mapHeight)
@@ -114,6 +95,9 @@ const short DepthMapProcessor::GetContourTopPlaneDepth(const Contour& contour,
 {
 	const std::vector<short>& contourNonZeroValues = DmUtils::GetNonZeroContourDepthValues(_mapWidth, _mapHeight, 
 		_mapBuffer, rotBoundingRect, contour);
+
+	if (contourNonZeroValues.size() == 0)
+		return 0;
 
 	const int size = (int)contourNonZeroValues.size();
 	short* sortedNonZeroMapValues = new short[size];
@@ -149,22 +133,31 @@ const Contour DepthMapProcessor::GetTargetContour(const short*const mapBuffer, c
 
 const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Contour& objectContour) const
 {
+	if (objectContour.size() == 0)
+		return ObjDimDescription();
+
 	const cv::RotatedRect& rotBoundingRect = cv::minAreaRect(cv::Mat(objectContour));
 
-	const float angleCos = cos(rotBoundingRect.angle / 180 * PI);
-
-	const int mapWidthAngled = (int)(_mapWidth / angleCos);
-	const int mapHeightAngled = (int)(_mapHeight / angleCos);
-
-	const RotRelRect& contourRelRect = DmUtils::RotAbsRectToRel(mapWidthAngled, mapHeightAngled, rotBoundingRect);
-
 	const short contourTopPlaneDepth = GetContourTopPlaneDepth(objectContour, rotBoundingRect);
-	const AbsRect& planeSizeAtObjHeightMm = CalculatePlaneSizeAtGivenHeight(contourTopPlaneDepth);
+
+	cv::Point2f points[4];
+	rotBoundingRect.points(points);
+
+	cv::Point2i pointsWorld[4];
+	for (int i = 0; i < 4; i++)
+	{
+		const int x = (int)((points[i].x + 1 - _principalX) * contourTopPlaneDepth / _focalLengthX);
+		const int y = (int)(-(points[i].y + 1 - _principalY) * contourTopPlaneDepth / _focalLengthY);
+		pointsWorld[i] = cv::Point(x, y);
+	}
+
+	const int objectWidth = (int)(sqrt(pow(pointsWorld[0].x - pointsWorld[1].x, 2) + pow(pointsWorld[0].y - pointsWorld[1].y, 2)));
+	const int objectDepth = (int)(sqrt(pow(pointsWorld[0].x - pointsWorld[3].x, 2) + pow(pointsWorld[0].y - pointsWorld[3].y, 2)));
 
 	ObjDimDescription result;
-	result.Width = (short)(planeSizeAtObjHeightMm.Width / angleCos * contourRelRect.Width);
+	result.Width = objectWidth;
 	result.Height = _floorDepth - contourTopPlaneDepth;
-	result.Depth = (short)(planeSizeAtObjHeightMm.Height / angleCos * contourRelRect.Height);
+	result.Depth = objectDepth;
 
 	return result;
 }
@@ -196,6 +189,9 @@ const Contour DepthMapProcessor::GetContourClosestToCenter(const std::vector<Con
 
 const short DepthMapProcessor::FindModeInSortedArray(const short*const array, const int count) const
 {
+	if (count == 0)
+		return 0;
+
 	int mode = array[0];
 	int currentCount = 1;
 	int currentMax = 1;
@@ -215,17 +211,6 @@ const short DepthMapProcessor::FindModeInSortedArray(const short*const array, co
 	}
 
 	return mode;
-}
-
-const AbsRect DepthMapProcessor::CalculatePlaneSizeAtGivenHeight(const short height) const
-{
-	const float tnX = tan(_halfFovX);
-	const float tnY = tan(_halfFovY);
-
-	const int horizontalPlaneLength = (int)(height * tnX * 2);
-	const int verticalPlaneLength = (int)(height * tnY * 2);
-
-	return AbsRect{ 0, 0, horizontalPlaneLength, verticalPlaneLength };
 }
 
 void DepthMapProcessor::DrawTargetContour(const Contour& contour, const int contourNum) const

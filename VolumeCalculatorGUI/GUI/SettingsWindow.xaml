@@ -1,15 +1,15 @@
-﻿<Window x:Class="DepthMapProcessorGUI.GUI.SettingsWindow"
+﻿<Window x:Class="VolumeCalculatorGUI.GUI.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:gui="clr-namespace:DepthMapProcessorGUI.GUI"
+        xmlns:gui1="clr-namespace:VolumeCalculatorGUI.GUI"
         mc:Ignorable="d"
 		x:ClassModifier="internal"
         Title="Настройки приложения" Height="Auto" Width="Auto"
         SizeToContent="WidthAndHeight"  WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
 	<Window.DataContext>
-		<gui:SettingsWindowVm/>
+		<gui1:SettingsWindowVm/>
 	</Window.DataContext>
 	<StackPanel Margin="10">
 		<StackPanel MaxWidth="300" Margin="3">

@@ -7,9 +7,9 @@ typedef unsigned int uint;
 
 struct ObjDimDescription
 {
-	short Width;
-	short Height;
-	short Depth;
+	int Width;
+	int Height;
+	int Depth;
 };
 
 struct RelPoint

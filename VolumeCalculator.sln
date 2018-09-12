@@ -23,14 +23,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csp
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DepthMapProcessor", "DepthMapProcessor\DepthMapProcessor.vcxproj", "{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utils", "Utils", "{6AF5FFB4-9230-437F-B802-E0122EB628D3}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6AF5FFB4-9230-437F-B802-E0122EB628D3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DepthMapProcessorWrapper", "DepthMapProcessorWrapper\DepthMapProcessorWrapper.vcxproj", "{00177CBE-E05E-42BB-8155-BE5F82EAC285}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DepthMapProcessorTest", "Tests\DepthMapProcessorTest\DepthMapProcessorTest.vcxproj", "{00177CBE-E05E-42BB-8155-BE5F82EAC285}"
 	ProjectSection(ProjectDependencies) = postProject
 		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB} = {EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DepthMapProcessorTest", "DepthMapProcessorTest\DepthMapProcessorTest.csproj", "{625A5AC1-109E-4BA7-A488-69999233BC76}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCalculatorTest", "Tests\VolumeCalculatorTest\VolumeCalculatorTest.csproj", "{4EBE3F89-1320-4565-8F28-C9B6AB9C0797}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,17 +62,17 @@ Global
 		{00177CBE-E05E-42BB-8155-BE5F82EAC285}.Debug|x64.Build.0 = Debug|x64
 		{00177CBE-E05E-42BB-8155-BE5F82EAC285}.Release|x64.ActiveCfg = Release|x64
 		{00177CBE-E05E-42BB-8155-BE5F82EAC285}.Release|x64.Build.0 = Release|x64
-		{625A5AC1-109E-4BA7-A488-69999233BC76}.Debug|x64.ActiveCfg = Debug|x64
-		{625A5AC1-109E-4BA7-A488-69999233BC76}.Debug|x64.Build.0 = Debug|x64
-		{625A5AC1-109E-4BA7-A488-69999233BC76}.Release|x64.ActiveCfg = Release|x64
-		{625A5AC1-109E-4BA7-A488-69999233BC76}.Release|x64.Build.0 = Release|x64
+		{4EBE3F89-1320-4565-8F28-C9B6AB9C0797}.Debug|x64.ActiveCfg = Debug|x64
+		{4EBE3F89-1320-4565-8F28-C9B6AB9C0797}.Debug|x64.Build.0 = Debug|x64
+		{4EBE3F89-1320-4565-8F28-C9B6AB9C0797}.Release|x64.ActiveCfg = Release|x64
+		{4EBE3F89-1320-4565-8F28-C9B6AB9C0797}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{00177CBE-E05E-42BB-8155-BE5F82EAC285} = {6AF5FFB4-9230-437F-B802-E0122EB628D3}
-		{625A5AC1-109E-4BA7-A488-69999233BC76} = {6AF5FFB4-9230-437F-B802-E0122EB628D3}
+		{4EBE3F89-1320-4565-8F28-C9B6AB9C0797} = {6AF5FFB4-9230-437F-B802-E0122EB628D3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2C1AE4EA-452B-4AFD-A6A6-98D4514E4441}

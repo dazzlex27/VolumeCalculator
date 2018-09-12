@@ -79,7 +79,7 @@
     <Compile Include="GUI\SettingsWindowVm.cs" />
     <Compile Include="Logic\TestDataGenerator.cs" />
     <Compile Include="Utils\Constants.cs" />
-    <Compile Include="Utils\DllWrapper.cs" />
+    <Compile Include="Logic\DepthMapProcessorDll.cs" />
     <Compile Include="Utils\IoUtils.cs" />
     <Compile Include="Logic\DepthMapProcessor.cs" />
     <Compile Include="GUI\SettingsWindow.xaml.cs">
@@ -87,6 +87,7 @@
     </Compile>
     <Compile Include="Entities\ObjDimDescription.cs" />
     <Compile Include="Entities\ObjectVolumeData.cs" />
+    <Compile Include="Utils\Logger.cs" />
     <Page Include="GUI\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

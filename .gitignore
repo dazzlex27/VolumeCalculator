@@ -4,8 +4,9 @@
 /Common/obj
 /DepthMapProcessor/obj
 /DepthMapProcessorTest/obj
-/DepthMapProcessorWrapper/obj
-/DepthMapProcessorWrapper/samples
+Tests/DepthMapProcessorTest/obj
+Tests/DepthMapProcessorTest/samples
+Tests/VolumeCalculatorTest/obj
 /VolumeCalculatorGUI/obj
 /FrameSources/obj
 /FrameFeeder/obj

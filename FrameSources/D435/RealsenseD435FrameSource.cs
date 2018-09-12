@@ -6,20 +6,23 @@ namespace FrameSources.D435
 {
 	public class RealsenseD435FrameSource : FrameSource
 	{
-		private readonly Logger _logger;
+		private readonly ILogger _logger;
 		private readonly DllWrapper.ColorFrameCallback _colorFrameCallback;
 		private readonly DllWrapper.DepthFrameCallback _depthFramesCallback;
 
 		private bool _colorStreamSuspended;
 		private bool _depthStreamSuspended;
 
-		public unsafe RealsenseD435FrameSource(Logger logger)
+		public RealsenseD435FrameSource(ILogger logger)
 		{
 			_logger = logger;
 			_logger.LogInfo("Creating Realsense D435 frame receiver...");
 
-			_colorFrameCallback = ColorFrameCallback;
-			_depthFramesCallback = DepthFrameCallback;
+			unsafe
+			{
+				_colorFrameCallback = ColorFrameCallback;
+				_depthFramesCallback = DepthFrameCallback;
+			}
 		}
 
 		public override void Start()
@@ -40,7 +43,7 @@ namespace FrameSources.D435
 
 		public override DeviceParams GetDeviceParams()
 		{
-			return new DeviceParams(86, 57, -1, -1, 300, 10000);
+			return new DeviceParams(86, 57, -1, -1, -1, -1, 300, 10000);
 		}
 
 		public override void SuspendColorStream()
