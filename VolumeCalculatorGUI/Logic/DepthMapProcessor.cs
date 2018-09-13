@@ -31,7 +31,8 @@ namespace VolumeCalculatorGUI.Logic
 			{
 				fixed (short* data = depthMap.Data)
 				{
-					var res = DepthMapProcessorDll.CalculateObjectVolume(_nativeHandle.ToPointer(), depthMap.Width, depthMap.Height, data);
+					var res = DepthMapProcessorDll.CalculateObjectVolume(_nativeHandle.ToPointer(), depthMap.Width, 
+						depthMap.Height, data);
 					return res == null ? null : new ObjectVolumeData(res->Width, res->Height, res->Depth);
 				}
 			}

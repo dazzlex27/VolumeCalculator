@@ -80,16 +80,34 @@
 						</StackPanel>
 					</StackPanel>
 				</Grid>
-				<Button Grid.Row="2" Grid.ColumnSpan="2" IsEnabled="False" Margin="2" MinHeight="25" ToolTipService.ShowOnDisabled="True" ToolTip="Нет данных для вычисления" 
+				<Button Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" IsEnabled="False" Margin="2" MinHeight="25" ToolTipService.ShowOnDisabled="True" ToolTip="Нет данных для вычисления" 
 				        Name="BtMeasureVolume" Content="Выполнить измерение" Click="BtMeasureVolume_Click"/>
-				<StackPanel Margin="5" Grid.Row="3" Visibility="{Binding Path=ShowTestDataGenerator, Converter={StaticResource BoolToVisibilityConverter}}">
+				<StackPanel Grid.Column="0" Margin="5" Grid.Row="3" Visibility="{Binding Path=ShowTestDataGenerator, Converter={StaticResource BoolToVisibilityConverter}}">
 					<StackPanel  Orientation="Horizontal">
 						<TextBlock Text="Число прогонов: " PreviewTextInput="TextBlock_PreviewTextInput"/>
 						<TextBox Name="TbTimeToRun" Width="30" Text="1" TextAlignment="Center" VerticalAlignment="Top" HorizontalAlignment="Left" MaxLength="2"/>
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock Text="Папка для сохранения: "/>
-						<TextBox Name="TbSaveFolder" Width="70" Text="C:/3D/" TextAlignment="Center"  VerticalAlignment="Top" HorizontalAlignment="Left" MaxLength="2"/>
+						<TextBox Name="TbSaveFolder" Width="70" Text="C:/3D/" TextAlignment="Center"  VerticalAlignment="Top" HorizontalAlignment="Left"/>
+					</StackPanel>
+					<StackPanel VerticalAlignment="Center" Margin="2" Orientation="Horizontal">
+						<TextBlock VerticalAlignment="Center" Text="W="/>
+						<TextBox VerticalAlignment="Center" Name="TbTestW" Width="30" Margin="2" PreviewTextInput="TextBlock_PreviewTextInput"/>
+						<TextBlock VerticalAlignment="Center" Text="H="/>
+						<TextBox VerticalAlignment="Center" Name="TbTestH" Width="30" Margin="2" PreviewTextInput="TextBlock_PreviewTextInput"/>
+						<TextBlock VerticalAlignment="Center" Text="D="/>
+						<TextBox VerticalAlignment="Center" Name="TbTestD" Width="30" Margin="2" PreviewTextInput="TextBlock_PreviewTextInput"/>
+					</StackPanel>
+					<StackPanel>
+						<StackPanel Margin="2" Orientation="Horizontal">
+							<TextBlock VerticalAlignment="Center" Text="Наименование кейса: "/>
+							<TextBox VerticalAlignment="Center" Name="TbCaseName" Width="200" Text="Объект1"/>
+						</StackPanel>
+						<StackPanel Margin="2" Orientation="Horizontal">
+							<TextBlock VerticalAlignment="Center" Text="Описание (необязательно): "/>
+							<TextBox VerticalAlignment="Center" Width="200" Name="TbDescription"/>
+						</StackPanel>
 					</StackPanel>
 					<Button Name="BtSaveTestData" Margin="0,2" Content="Сохранить тестовые данные" Click="SaveTestData_Click"/>
 				</StackPanel>

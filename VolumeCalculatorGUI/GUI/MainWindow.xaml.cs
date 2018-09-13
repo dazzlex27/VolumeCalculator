@@ -240,12 +240,17 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				button.IsEnabled = false;
 
+				var testCaseName = TbCaseName.Text;
+				var testCaseFolder = Path.Combine(TbSaveFolder.Text, $"{testCaseName}");
 				var timesToSave = int.Parse(TbTimeToRun.Text);
-				var testCaseFolder = Path.Combine(TbSaveFolder.Text, $"{DateTime.Now.Ticks}");
-				var testCaseName = "obj1";
+				var testCaseDescription = TbDescription.Text;
+				var testObjWIdth = TbTestW.Text;
+				var testObjHeight = TbTestH.Text;
+				var testObjDepth = TbTestD.Text;
 
-				var testCaseData = new TestCaseData(testCaseName, testCaseFolder, timesToSave, _latestImageData, _latestDepthMap,
-					_deviceParams, _settings.DistanceToFloor);
+				var testCaseData = new TestCaseData(testCaseName, testCaseDescription, testCaseFolder, testObjWIdth, 
+					testObjHeight, testObjDepth, timesToSave, _latestImageData, _latestDepthMap, _deviceParams, 
+					_settings.DistanceToFloor, _settings.MinObjHeight);
 
 				_testDataGenerator = new TestDataGenerator(testCaseData);
 				_testDataGenerator.FinishedSaving += TestDataGenerator_FinishedSaving;

@@ -14,7 +14,7 @@ namespace VolumeCalculatorTest
 	[TestFixture]
 	internal class VolumeCalculationTest
 	{
-		private const string TestFolderFullPath = "C:/3D/";
+		private const string TestFolderFullPath = "C:/3DTest/";
 		private readonly ILogger _logger;
 
 		public VolumeCalculationTest()
@@ -46,7 +46,7 @@ namespace VolumeCalculatorTest
 				var testIndex = 1;
 				foreach (var testCaseDirectory in testCaseFolders)
 				{
-					Console.WriteLine($"== [{testIndex++}/{totalCaseCount}] Running testcase {testCaseDirectory.Name} ==");
+					Console.WriteLine($"== [{testIndex++}/{totalCaseCount}] testcase: {testCaseDirectory.Name} ==");
 
 					try
 					{
@@ -56,8 +56,6 @@ namespace VolumeCalculatorTest
 					{
 						Console.WriteLine(e);
 					}
-
-					Console.WriteLine($"== Testcase {testCaseDirectory.Name} finished ==");
 				}
 			}
 
@@ -65,14 +63,18 @@ namespace VolumeCalculatorTest
 			Console.WriteLine($"All cases test finished. Time elapsed: {sw.Elapsed:c}");
 		}
 
-		private void TestOneCase(DirectoryInfo testCaseDirectory, DepthMapProcessor processor)
+		private static void TestOneCase(DirectoryInfo testCaseDirectory, DepthMapProcessor processor)
 		{
 			var testCaseData = TestDataReader.ReadTestData(testCaseDirectory);
+			Console.WriteLine(testCaseData.Description);
+			Console.WriteLine($"Floor depth = {testCaseData.FloorDepth}, min obj height = {testCaseData.MinObjHeight}");
+
 			if (testCaseData.DepthMaps == null || testCaseData.DepthMaps.Length == 0)
 			{
 				Console.WriteLine("Skipping the test case as no maps were found");
 				return;
 			}
+			Console.WriteLine($"Found {testCaseData.DepthMaps.Length} maps");
 
 			var cutOffDepth = (short) (testCaseData.FloorDepth - testCaseData.MinObjHeight);
 			processor.SetCalculatorSettings(testCaseData.FloorDepth, cutOffDepth);
@@ -102,6 +104,10 @@ namespace VolumeCalculatorTest
 			var maxHeight = heights.Max();
 			var maxDepth = depths.Max();
 
+			var widthDeviation = Math.Abs(testCaseData.ObjWidth - modeWidth);
+			var heightDeviation = Math.Abs(testCaseData.ObjHeight - modeHeight);
+			var depthDeviation = Math.Abs(testCaseData.ObjDepth - modeDepth);
+
 			var widthSpread = maxWidth - minWidth;
 			var heightSpread = maxHeight - minHeight;
 			var depthSpread = maxDepth - minDepth;
@@ -109,7 +115,8 @@ namespace VolumeCalculatorTest
 			Console.WriteLine($@"GT = {{{testCaseData.ObjWidth} {testCaseData.ObjHeight} {testCaseData.ObjDepth}}}");
 			Console.WriteLine($"Mode = {{{modeWidth} {modeHeight} {modeDepth}}}");
 			Console.WriteLine($"Min = {{{minWidth} {minHeight} {minDepth}}}");
-			Console.WriteLine($"Min = {{{maxWidth} {maxHeight} {maxDepth}}}");
+			Console.WriteLine($"Max = {{{maxWidth} {maxHeight} {maxDepth}}}");
+			Console.WriteLine($"Deviation: devW={widthDeviation}, devH={heightDeviation}, devD={depthDeviation}");
 			Console.WriteLine($"Spread: deltaW={widthSpread}, deltaH={heightSpread} deltaD={depthSpread}");
 		}
 

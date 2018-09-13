@@ -152,12 +152,15 @@ const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Cont
 	}
 
 	const int objectWidth = (int)(sqrt(pow(pointsWorld[0].x - pointsWorld[1].x, 2) + pow(pointsWorld[0].y - pointsWorld[1].y, 2)));
-	const int objectDepth = (int)(sqrt(pow(pointsWorld[0].x - pointsWorld[3].x, 2) + pow(pointsWorld[0].y - pointsWorld[3].y, 2)));
+	const int objectHeight = (int)(sqrt(pow(pointsWorld[0].x - pointsWorld[3].x, 2) + pow(pointsWorld[0].y - pointsWorld[3].y, 2)));
+
+	const int longerDim = objectWidth > objectHeight ? objectWidth : objectHeight;
+	const int shorterDim = objectWidth < objectHeight ? objectWidth : objectHeight;
 
 	ObjDimDescription result;
-	result.Width = objectWidth;
-	result.Height = _floorDepth - contourTopPlaneDepth;
-	result.Depth = objectDepth;
+	result.Width = longerDim;
+	result.Height = shorterDim;
+	result.Depth = _floorDepth - contourTopPlaneDepth;
 
 	return result;
 }
