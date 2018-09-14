@@ -9,6 +9,8 @@ namespace VolumeCalculatorGUI.Logic
 		private readonly ILogger _logger;
 		private readonly IntPtr _nativeHandle;
 
+		public bool IsActive { get; private set; }
+
 		public DepthMapProcessor(ILogger logger, DeviceParams deviceParams)
 		{
 			_logger = logger;
@@ -23,6 +25,8 @@ namespace VolumeCalculatorGUI.Logic
 
 				_nativeHandle = new IntPtr(ptr);
 			}
+
+			IsActive = true;
 		}
 
 		public ObjectVolumeData CalculateVolume(DepthMap depthMap)
@@ -59,6 +63,8 @@ namespace VolumeCalculatorGUI.Logic
 
 		public void Dispose()
 		{
+			IsActive = false;
+
 			_logger.LogInfo("Disposing depth map processor...");
 			unsafe
 			{

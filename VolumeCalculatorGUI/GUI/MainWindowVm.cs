@@ -1,200 +1,215 @@
-﻿using System;
+﻿using Common;
+using System;
+using System.Linq;
 using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using Common;
+using System.Windows.Input;
 using VolumeCalculatorGUI.Entities;
+using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
 
 namespace VolumeCalculatorGUI.GUI
 {
 	internal class MainWindowVm : BaseViewModel
 	{
-		private bool _useColorStream;
-		private bool _useDepthStream;
-		private int _objWidth;
-		private int _objHeight;
-		private int _objDepth;
-		private long _objVolume;
-		private WriteableBitmap _colorImageBitmap;
-		private WriteableBitmap _depthImageBitmap;
-		private bool _showTestDataGenerator;
+		private event Action<ApplicationSettings> ApplicationSettingsChanged;
 
-		public event Action<bool> UseColorStreamChanged;
-		public event Action<bool> UseDepthStreamChanged;
+		private readonly ILogger _logger;
 
-		public bool UseColorStream
+		private ApplicationSettings _settings;
+
+		private DepthMap _latestDepthMap;
+
+		private StreamViewControlVm _streamViewControlVm;
+		private CalculationDashboardControlVm _calculationDashboardControlVm;
+		private TestDataGenerationControlVm _testDataGenerationControlVm;
+
+		private ICommand _openSettingsCommand;
+
+		public StreamViewControlVm StreamViewControlVm
 		{
-			get => _useColorStream;
+			get => _streamViewControlVm;
 			set
 			{
-				if (_useColorStream == value)
+				if (Equals(_streamViewControlVm, value))
 					return;
 
-				_useColorStream = value;
-				OnPropertyChanged();
-				UseColorStreamChanged?.Invoke(value);
-			}
-		}
-
-		public bool UseDepthStream
-		{
-			get => _useDepthStream;
-			set
-			{
-				if (_useDepthStream == value)
-					return;
-
-				_useDepthStream = value;
-				OnPropertyChanged();
-				UseDepthStreamChanged?.Invoke(value);
-			}
-		}
-
-		public int ObjWidth
-		{
-			get => _objWidth;
-			set
-			{
-				if (_objWidth == value)
-					return;
-
-				_objWidth = value;
+				_streamViewControlVm = value;
 				OnPropertyChanged();
 			}
 		}
 
-		public int ObjHeight
+		public CalculationDashboardControlVm CalculationDashboardControlVm
 		{
-			get => _objHeight;
+			get => _calculationDashboardControlVm;
 			set
 			{
-				if (_objHeight == value)
+				if (_calculationDashboardControlVm == value)
 					return;
 
-				_objHeight = value;
+				_calculationDashboardControlVm = value;
 				OnPropertyChanged();
 			}
 		}
 
-		public int ObjDepth
+		public TestDataGenerationControlVm TestDataGenerationControlVm
 		{
-			get => _objDepth;
+			get => _testDataGenerationControlVm;
 			set
 			{
-				if (_objDepth == value)
+				if (_testDataGenerationControlVm == value)
 					return;
 
-				_objDepth = value;
+				_testDataGenerationControlVm = value;
 				OnPropertyChanged();
 			}
 		}
 
-		public long ObjVolume
+		private ApplicationSettings Settings
 		{
-			get => _objVolume;
+			get => _settings;
 			set
 			{
-				if (_objVolume == value)
+				if (_settings == value)
 					return;
 
-				_objVolume = value;
-				OnPropertyChanged();
+				_settings = value;
+				ApplicationSettingsChanged?.Invoke(value);
 			}
 		}
 
-		public WriteableBitmap ColorImageBitmap
-		{
-			get => _colorImageBitmap;
-			set
-			{
-				if (Equals(_colorImageBitmap, value))
-					return;
-
-				_colorImageBitmap = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public WriteableBitmap DepthImageBitmap
-		{
-			get => _depthImageBitmap;
-			set
-			{
-				if (Equals(_depthImageBitmap, value))
-					return;
-
-				_depthImageBitmap = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public bool ShowTestDataGenerator
-		{
-			get => _showTestDataGenerator;
-			set
-			{
-				if (_showTestDataGenerator == value)
-					return;
-
-				_showTestDataGenerator = value;
-				OnPropertyChanged();
-			}
-		}
+		public ICommand OpenSettingsCommand =>
+			_openSettingsCommand ?? (_openSettingsCommand = new CommandHandler(OpenSettings, true));
 
 		public MainWindowVm()
 		{
-			_useColorStream = true;
-			_useDepthStream = true;
-		}
-
-		public void UpdateColorImage(ImageData image)
-		{
-			var imageWidth = image.Width;
-			var imageHeight = image.Height;
-			var fullRect = new Int32Rect(0, 0, imageWidth, imageHeight);
-
-			PixelFormat format = PixelFormats.BlackWhite;
-			int bytesPerPixel = 0;
-			switch (image.BytesPerPixel)
+			try
 			{
+				_logger = new Logger();
+				_logger.LogInfo("Starting up...");
+				AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-				case 3:
-					format = PixelFormats.Rgb24;
-					bytesPerPixel = Constants.BytesPerPixel24;
-					break;
-				case 4:
-					format = PixelFormats.Bgra32;
-					bytesPerPixel = Constants.BytesPerPixel32;
-					break;
+				InitializeSettings();
+				InitializeSubViewModels();
+
+				_logger.LogInfo("Application is initalized");
 			}
-			var colorImageBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, format, null);
-			colorImageBitmap.WritePixels(fullRect, image.Data, imageWidth * bytesPerPixel, 0);
-
-			ColorImageBitmap = colorImageBitmap;
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to initialize the application!", ex);
+				ExitApplication();
+			}
 		}
 
-		public void UpdateDepthImage(DepthMap depthMap, short minDepth, short distanceToFloor, short cutOffDepth)
+		private void InitializeSubViewModels()
 		{
-			var depthMapData = DepthMapUtils.GetColorizedDepthMapData(depthMap, minDepth, distanceToFloor, 
-				cutOffDepth);
+			_streamViewControlVm = new StreamViewControlVm(_logger, _settings);
+			ApplicationSettingsChanged += _streamViewControlVm.ApplicationSettingsUpdate;
 
-			var imageWidth = depthMap.Width;
-			var imageHeight = depthMap.Height;
-			var fullRect = new Int32Rect(0, 0, imageWidth, imageHeight);
+			_streamViewControlVm.DepthFrameReady += DepthMapUpdated;
 
-			var depthImageBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, PixelFormats.Rgb24, null);
-			depthImageBitmap.WritePixels(fullRect, depthMapData, imageWidth * Constants.BytesPerPixel24, 0);
+			var deviceParams = _streamViewControlVm.GetDeviceParams();
 
-			DepthImageBitmap = depthImageBitmap;
+			_calculationDashboardControlVm = new CalculationDashboardControlVm(_logger, _settings, deviceParams);
+			_streamViewControlVm.DeviceParamsChanged += _calculationDashboardControlVm.DeviceParamsUpdated;
+			_streamViewControlVm.ColorFrameReady += _calculationDashboardControlVm.ColorFrameArrived;
+			_streamViewControlVm.DepthFrameReady += _calculationDashboardControlVm.DepthFrameArrived;
+			ApplicationSettingsChanged += _calculationDashboardControlVm.ApplicationSettingsUpdated;
+			_streamViewControlVm.DeviceParamsChanged += _calculationDashboardControlVm.DeviceParamsUpdated;
+
+			_testDataGenerationControlVm = new TestDataGenerationControlVm(_settings, deviceParams);
+			_streamViewControlVm.ColorFrameReady += _testDataGenerationControlVm.ColorFrameUpdated;
+			_streamViewControlVm.DepthFrameReady += _testDataGenerationControlVm.DepthFrameUpdated;
+			ApplicationSettingsChanged += _testDataGenerationControlVm.ApplicationSettingsUpdated;
+			_streamViewControlVm.DeviceParamsChanged += _testDataGenerationControlVm.DeviceParamsUpdated;
 		}
 
-		public void UpdateVolumeDisplay(ObjectVolumeData volumeData)
+		public void ExitApplication()
 		{
-			ObjWidth = volumeData.Width;
-			ObjHeight = volumeData.Height;
-			ObjDepth = volumeData.Depth;
-			ObjVolume = ObjWidth * ObjHeight * ObjDepth;
+			try
+			{
+				_logger.LogInfo("Shutting down...");
+
+				_logger.LogInfo("Saving settings...");
+				IoUtils.SerializeSettings(_settings);
+
+				_logger.LogInfo("Disposing libs...");
+				_streamViewControlVm.Dispose();
+				_calculationDashboardControlVm.Dispose();
+
+				_logger.LogInfo("App terminated");
+				Application.Current.Shutdown();
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to complete application clean up", ex);
+			}
+		}
+		
+		public void OpenSettings()
+		{
+			try
+			{
+				var volumeCalculator = CalculationDashboardControlVm.GetVolumeCalculator();
+
+				var settingsWindow = new SettingsWindow(_logger, _settings, volumeCalculator, _latestDepthMap)
+				{
+					Owner = Application.Current.Windows.OfType<Window>().SingleOrDefault(x => x.IsActive)
+				};
+				if (settingsWindow.ShowDialog() != true)
+					return;
+
+				Settings = settingsWindow.GetSettings();
+				IoUtils.SerializeSettings(Settings);
+				_logger.LogInfo("New settings have been applied: " +
+				                $"floorDepth={_settings.DistanceToFloor} minObjHeight={_settings.MinObjHeight} outputPath={_settings.OutputPath}");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Exception occured during a settings change", ex);
+				MessageBox.Show("Во время задания настроек произошла ошибка. Информация записана в журнал", "Ошибка",
+					MessageBoxButton.OK, MessageBoxImage.Error);
+			}
+		}
+
+		public bool IsTestDataGenerationControlVisible
+		{
+			get => _testDataGenerationControlVm?.ShowControl ?? false;
+			set
+			{
+				if (_testDataGenerationControlVm == null)
+					return;
+
+				if (_testDataGenerationControlVm.ShowControl == value)
+					return;
+
+				_testDataGenerationControlVm.ShowControl = value;
+				OnPropertyChanged();
+			}
+		}
+		private void DepthMapUpdated(DepthMap depthMap)
+		{
+			_latestDepthMap = depthMap;
+		}
+
+		private void InitializeSettings()
+		{
+			_logger.LogInfo("Trying to read settings from file...");
+			var settingsFromFile = IoUtils.DeserializeSettings();
+			if (settingsFromFile == null)
+			{
+				_logger.LogInfo("Failed to read settings from file, will use default settings");
+				Settings = ApplicationSettings.GetDefaultSettings();
+			}
+			else
+				Settings = settingsFromFile;
+		}
+
+		private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+		{
+			_logger.LogException("Unhandled exception in application domain occured, app terminates...",
+				(Exception)e.ExceptionObject);
+			MessageBox.Show("Произошла критическая ошибка, приложение будет закрыто. Информация записана в журнал",
+				"Критическая ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
 		}
 	}
 }

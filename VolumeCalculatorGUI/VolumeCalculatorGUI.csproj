@@ -73,13 +73,33 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Entities\ApplicationSettings.cs" />
+    <Compile Include="Entities\TestCaseBasicInfo.cs" />
     <Compile Include="Entities\TestCaseData.cs" />
-    <Compile Include="GUI\BaseViewModel.cs" />
+    <Compile Include="GUI\MaskPolygonControl.xaml.cs">
+      <DependentUpon>MaskPolygonControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\MaskPolygonControlVm.cs" />
+    <Compile Include="GUI\Utils\BaseViewModel.cs" />
+    <Compile Include="GUI\CalculationDashboardControl.xaml.cs">
+      <DependentUpon>CalculationDashboardControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\CalculationDashboardControlVm.cs" />
+    <Compile Include="GUI\Utils\CommandHandler.cs" />
+    <Compile Include="GUI\Utils\InverseBooleanConverter.cs" />
     <Compile Include="GUI\MainWindowVm.cs" />
     <Compile Include="GUI\SettingsWindowVm.cs" />
+    <Compile Include="GUI\StreamViewControl.xaml.cs">
+      <DependentUpon>StreamViewControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\StreamViewControlVm.cs" />
+    <Compile Include="GUI\TestDataGenerationControl.xaml.cs">
+      <DependentUpon>TestDataGenerationControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\TestDataGenerationControlVm.cs" />
     <Compile Include="Logic\TestDataGenerator.cs" />
     <Compile Include="Utils\Constants.cs" />
     <Compile Include="Logic\DepthMapProcessorDll.cs" />
+    <Compile Include="Utils\GeometryUtils.cs" />
     <Compile Include="Utils\IoUtils.cs" />
     <Compile Include="Logic\DepthMapProcessor.cs" />
     <Compile Include="GUI\SettingsWindow.xaml.cs">
@@ -88,6 +108,11 @@
     <Compile Include="Entities\ObjDimDescription.cs" />
     <Compile Include="Entities\ObjectVolumeData.cs" />
     <Compile Include="Utils\Logger.cs" />
+    <Compile Include="Entities\WorkingAreaMask.cs" />
+    <Page Include="GUI\CalculationDashboardControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="GUI\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -100,7 +125,19 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="GUI\MaskPolygonControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="GUI\SettingsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GUI\StreamViewControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GUI\TestDataGenerationControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

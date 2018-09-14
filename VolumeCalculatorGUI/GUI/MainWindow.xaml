@@ -5,113 +5,27 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:gui="clr-namespace:VolumeCalculatorGUI.GUI"
         mc:Ignorable="d"
-        Title="Volume Calculator" SizeToContent="WidthAndHeight" MinHeight="250" MinWidth="600" WindowStartupLocation="CenterScreen" 
-		ResizeMode="CanMinimize" Closing="Window_Closing" ContentRendered="Window_ContentRendered">
+        Title="Volume Calculator" SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" Closing="Window_Closing" x:ClassModifier="internal">
 	<Window.DataContext>
 		<gui:MainWindowVm/>
 	</Window.DataContext>
-	<Window.Resources>
-		<BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-	</Window.Resources>
 	<StackPanel>
 		<Menu>
 			<MenuItem Header="Действия">
-				<MenuItem Name="MiOpenSettings" Header="Изменить настройки..." Click="MiOpenSettings_Click"/>
-				<MenuItem Name="MiExitApp" Header="Выйти из приложения" Click="MiExitApp_Click"/>
+				<MenuItem Name="MiOpenSettings" Header="Открыть настройки" Command="{Binding OpenSettingsCommand}"/>
+				<MenuItem Name="MiExitApp" Header="Выйти из приложения" Click="MiExitApp_OnClick"/>
 			</MenuItem>
 			<MenuItem Header="Инструменты">
 				<MenuItem Header="Сохранение тестовых данных" 
 						  IsCheckable="True" 
-						  Checked="ShowTestDataGeneratorMenuItem_Checked"
-						  Unchecked="ShowTestDataGeneratorMenuItem_Unchecked"/>
+						  IsChecked="{Binding IsTestDataGenerationControlVisible, Mode=TwoWay}"/>
 			</MenuItem>
 		</Menu>
-		<StackPanel Name="SpMain">
-			<Grid Margin="5" Grid.Column="0" Grid.Row="0">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition/>
-					<ColumnDefinition/>
-				</Grid.ColumnDefinitions>
-				<Grid.RowDefinitions>
-					<RowDefinition/>
-					<RowDefinition/>
-					<RowDefinition/>
-					<RowDefinition/>
-				</Grid.RowDefinitions>
-				<StackPanel Grid.Column="0" Margin="2">
-					<TextBlock Margin="2" Text="RGB-поток"/>
-					<Canvas Width="480" Height="360" Background="Black" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-						<Image Source="{Binding ColorImageBitmap}" Name="ImgColor" Width="480" Height="360" />
-					</Canvas>
-					<CheckBox Margin="0,5" Content="Отображать" IsChecked="{Binding UseColorStream, Mode=TwoWay}"/>
-				</StackPanel>
-				<StackPanel Grid.Column="1" Margin="2">
-					<TextBlock Margin="2" Text="Поток глубины"/>
-					<Canvas Width="480" Height="360" Background="Black">
-						<Image Source="{Binding DepthImageBitmap}" Name="ImgDm" Width="480" Height="360" />
-					</Canvas>
-					<CheckBox Margin="0,5" Content="Отображать" IsChecked="{Binding UseDepthStream, Mode=TwoWay}"/>
-				</StackPanel>
-				<Grid Grid.Row="1">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition/>
-						<ColumnDefinition/>
-					</Grid.ColumnDefinitions>
-					<StackPanel Grid.Column="0" Name="SpCounters" Margin="5" >
-						<StackPanel Orientation="Horizontal">
-							<TextBlock Text="Ширина = "/>
-							<TextBlock Text="{Binding Path=ObjWidth}"/>
-							<TextBlock Text="  мм"/>
-						</StackPanel>
-						<StackPanel Orientation="Horizontal">
-							<TextBlock Text="Высота = "/>
-							<TextBlock Text="{Binding Path=ObjHeight}"/>
-							<TextBlock Text="  мм"/>
-						</StackPanel>
-						<StackPanel Orientation="Horizontal">
-							<TextBlock Text="Глубина = "/>
-							<TextBlock Text="{Binding Path=ObjDepth}"/>
-							<TextBlock Text="  мм"/>
-						</StackPanel>
-						<StackPanel Orientation="Horizontal">
-							<TextBlock Text="Объем = "/>
-							<TextBlock Text="{Binding Path=ObjVolume}"/>
-							<TextBlock Text="  мм"/>
-						</StackPanel>
-					</StackPanel>
-				</Grid>
-				<Button Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" IsEnabled="False" Margin="2" MinHeight="25" ToolTipService.ShowOnDisabled="True" ToolTip="Нет данных для вычисления" 
-				        Name="BtMeasureVolume" Content="Выполнить измерение" Click="BtMeasureVolume_Click"/>
-				<StackPanel Grid.Column="0" Margin="5" Grid.Row="3" Visibility="{Binding Path=ShowTestDataGenerator, Converter={StaticResource BoolToVisibilityConverter}}">
-					<StackPanel  Orientation="Horizontal">
-						<TextBlock Text="Число прогонов: " PreviewTextInput="TextBlock_PreviewTextInput"/>
-						<TextBox Name="TbTimeToRun" Width="30" Text="1" TextAlignment="Center" VerticalAlignment="Top" HorizontalAlignment="Left" MaxLength="2"/>
-					</StackPanel>
-					<StackPanel Orientation="Horizontal">
-						<TextBlock Text="Папка для сохранения: "/>
-						<TextBox Name="TbSaveFolder" Width="70" Text="C:/3D/" TextAlignment="Center"  VerticalAlignment="Top" HorizontalAlignment="Left"/>
-					</StackPanel>
-					<StackPanel VerticalAlignment="Center" Margin="2" Orientation="Horizontal">
-						<TextBlock VerticalAlignment="Center" Text="W="/>
-						<TextBox VerticalAlignment="Center" Name="TbTestW" Width="30" Margin="2" PreviewTextInput="TextBlock_PreviewTextInput"/>
-						<TextBlock VerticalAlignment="Center" Text="H="/>
-						<TextBox VerticalAlignment="Center" Name="TbTestH" Width="30" Margin="2" PreviewTextInput="TextBlock_PreviewTextInput"/>
-						<TextBlock VerticalAlignment="Center" Text="D="/>
-						<TextBox VerticalAlignment="Center" Name="TbTestD" Width="30" Margin="2" PreviewTextInput="TextBlock_PreviewTextInput"/>
-					</StackPanel>
-					<StackPanel>
-						<StackPanel Margin="2" Orientation="Horizontal">
-							<TextBlock VerticalAlignment="Center" Text="Наименование кейса: "/>
-							<TextBox VerticalAlignment="Center" Name="TbCaseName" Width="200" Text="Объект1"/>
-						</StackPanel>
-						<StackPanel Margin="2" Orientation="Horizontal">
-							<TextBlock VerticalAlignment="Center" Text="Описание (необязательно): "/>
-							<TextBox VerticalAlignment="Center" Width="200" Name="TbDescription"/>
-						</StackPanel>
-					</StackPanel>
-					<Button Name="BtSaveTestData" Margin="0,2" Content="Сохранить тестовые данные" Click="SaveTestData_Click"/>
-				</StackPanel>
-			</Grid>
+		<StackPanel Margin="5">
+			<gui:StreamViewControl DataContext="{Binding StreamViewControlVm}"/>
+			<gui:CalculationDashboardControl DataContext="{Binding CalculationDashboardControlVm}"/>
+			<gui:TestDataGenerationControl DataContext="{Binding TestDataGenerationControlVm}"/>
 		</StackPanel>
 	</StackPanel>
 </Window>

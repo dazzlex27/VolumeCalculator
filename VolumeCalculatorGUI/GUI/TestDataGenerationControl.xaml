@@ -1,0 +1,62 @@
+﻿<UserControl x:Class="VolumeCalculatorGUI.GUI.TestDataGenerationControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             xmlns:gui="clr-namespace:VolumeCalculatorGUI.GUI"
+             d:DesignHeight="450" d:DesignWidth="800" x:ClassModifier="internal"
+             Visibility="{Binding ShowControl, Mode=TwoWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+             d:DataContext="{d:DesignInstance gui:TestDataGenerationControlVm}">
+	<StackPanel Margin="5">
+		<StackPanel  Orientation="Horizontal">
+			<TextBlock Text="Число прогонов: "/>
+			<TextBox Width="30" 
+			         Text="{Binding TimesToSave, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+			         TextAlignment="Center" 
+			         VerticalAlignment="Top" 
+			         HorizontalAlignment="Left" 
+			         MaxLength="2"/>
+		</StackPanel>
+		<StackPanel Orientation="Horizontal">
+			<TextBlock Text="Папка для сохранения: "/>
+			<TextBox Width="70" 
+			         Text="{Binding TestCaseFolderPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+			         TextAlignment="Center"  
+			         VerticalAlignment="Top" 
+			         HorizontalAlignment="Left"/>
+		</StackPanel>
+		<StackPanel VerticalAlignment="Center" Margin="2" Orientation="Horizontal">
+			<TextBlock VerticalAlignment="Center" Text="W="/>
+			<TextBox VerticalAlignment="Center" 
+				Text="{Binding ObjWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+				Width="30" 
+				Margin="2" />
+			<TextBlock VerticalAlignment="Center" Text="H="/>
+			<TextBox VerticalAlignment="Center" 
+			         Text="{Binding ObjHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+			         Width="30" 
+			         Margin="2"/>
+			<TextBlock VerticalAlignment="Center" Text="D="/>
+			<TextBox VerticalAlignment="Center" 
+			         Text="{Binding ObjDepth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+			         Width="30" 
+			         Margin="2"/>
+		</StackPanel>
+		<StackPanel>
+			<StackPanel Margin="2" Orientation="Horizontal">
+				<TextBlock VerticalAlignment="Center" Text="Наименование кейса: "/>
+				<TextBox VerticalAlignment="Center" 
+				         Text="{Binding TestCaseName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+				         Width="200"/>
+			</StackPanel>
+			<StackPanel Margin="2" Orientation="Horizontal">
+				<TextBlock VerticalAlignment="Center" Text="Описание (необязательно): "/>
+				<TextBox VerticalAlignment="Center" 
+				         Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+				         Width="200"/>
+			</StackPanel>
+		</StackPanel>
+		<Button Name="BtSaveTestData" Margin="0,2" Content="Сохранить тестовые данные" Command="{Binding RunTestDataGenerationCommand}"/>
+	</StackPanel>
+</UserControl>

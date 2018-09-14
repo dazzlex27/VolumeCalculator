@@ -9,6 +9,7 @@ namespace VolumeCalculatorGUI.Logic
     internal class TestDataGenerator
     {
 		private readonly TestCaseData _testCaseData;
+	    private readonly TestCaseBasicInfo _basicCaseInfo;
 		private int _remainingTimesToSave;
 	    private string _mapSavingPath;
 
@@ -19,9 +20,11 @@ namespace VolumeCalculatorGUI.Logic
         public TestDataGenerator(TestCaseData testCaseData)
         {
 			_testCaseData = testCaseData;
-			_remainingTimesToSave = _testCaseData.TimesToSave;
+	        _basicCaseInfo = _testCaseData.BasicInfo;
 
-			Directory.CreateDirectory(_testCaseData.SavingDirectory);
+			_remainingTimesToSave = _basicCaseInfo.TimesToSave;
+
+			Directory.CreateDirectory(_basicCaseInfo.SavingDirectory);
 			SaveInitialData();
 
 			IsActive = true;
@@ -30,7 +33,7 @@ namespace VolumeCalculatorGUI.Logic
         public void AdvanceDataSaving(DepthMap map)
         {
 	        Directory.CreateDirectory(_mapSavingPath);	
-			var mapIndex = _testCaseData.TimesToSave - _remainingTimesToSave;
+			var mapIndex = _basicCaseInfo.TimesToSave - _remainingTimesToSave;
 			var fullMapPath = Path.Combine(_mapSavingPath, $"{mapIndex}.dm");
 
 			DepthMapUtils.SaveDepthMapToFile(map, fullMapPath);
@@ -46,34 +49,34 @@ namespace VolumeCalculatorGUI.Logic
 
         private void SaveInitialData()
         {
-	        if (Directory.Exists(_testCaseData.SavingDirectory))
-		        Directory.Delete(_testCaseData.SavingDirectory, true);
+	        if (Directory.Exists(_basicCaseInfo.SavingDirectory))
+		        Directory.Delete(_basicCaseInfo.SavingDirectory, true);
 
-	        Directory.CreateDirectory(_testCaseData.SavingDirectory);
+	        Directory.CreateDirectory(_basicCaseInfo.SavingDirectory);
 
             var bmp = IoUtils.CreateBitmapFromImageData(_testCaseData.Image);
-            bmp.Save(Path.Combine(_testCaseData.SavingDirectory, "rgb.png"));
+            bmp.Save(Path.Combine(_basicCaseInfo.SavingDirectory, "rgb.png"));
 
             var dmBmp = IoUtils.CreateBitmapFromDepthMap(_testCaseData.Map, _testCaseData.DeviceParams.MinDepth, 
 				_testCaseData.DeviceParams.MaxDepth, _testCaseData.DeviceParams.MaxDepth);
-            dmBmp.Save(Path.Combine(_testCaseData.SavingDirectory, "depth.png"));
+            dmBmp.Save(Path.Combine(_basicCaseInfo.SavingDirectory, "depth.png"));
 
-	        var testCaseDataFilePath = Path.Combine(_testCaseData.SavingDirectory, "testdata.txt");
+	        var testCaseDataFilePath = Path.Combine(_basicCaseInfo.SavingDirectory, "testdata.txt");
 			if (File.Exists(testCaseDataFilePath))
 				File.Delete(testCaseDataFilePath);
 
 	        using (var file = File.AppendText(testCaseDataFilePath))
 	        {
-				file.WriteLine(_testCaseData.ObjWidth);
-		        file.WriteLine(_testCaseData.ObjHeight);
-		        file.WriteLine(_testCaseData.ObjDepth);
-		        file.WriteLine(_testCaseData.DistanceToFloor);
-		        file.Write(_testCaseData.MinObjHeight);
+				file.WriteLine(_basicCaseInfo.ObjWidth);
+		        file.WriteLine(_basicCaseInfo.ObjHeight);
+		        file.WriteLine(_basicCaseInfo.ObjDepth);
+		        file.WriteLine(_testCaseData.Settings.DistanceToFloor);
+		        file.Write(_testCaseData.Settings.MinObjHeight);
 	        }
 
-			File.WriteAllText(Path.Combine(_testCaseData.SavingDirectory, "description.txt"), _testCaseData.Description);
+			File.WriteAllText(Path.Combine(_basicCaseInfo.SavingDirectory, "description.txt"), _basicCaseInfo.Description);
 
-	        _mapSavingPath = Path.Combine(_testCaseData.SavingDirectory, "maps");
+	        _mapSavingPath = Path.Combine(_basicCaseInfo.SavingDirectory, "maps");
 
         }
     }

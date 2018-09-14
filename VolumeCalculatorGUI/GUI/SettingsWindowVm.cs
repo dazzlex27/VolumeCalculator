@@ -1,4 +1,6 @@
-﻿namespace VolumeCalculatorGUI.GUI
+﻿using VolumeCalculatorGUI.GUI.Utils;
+
+namespace VolumeCalculatorGUI.GUI
 {
 	internal class SettingsWindowVm : BaseViewModel
 	{
@@ -44,6 +46,5 @@
 				OnPropertyChanged();
 			}
 		}
-
 	}
 }

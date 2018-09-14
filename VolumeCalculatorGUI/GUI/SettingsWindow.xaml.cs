@@ -14,11 +14,13 @@ namespace VolumeCalculatorGUI.GUI
 	    private readonly DepthMapProcessor _volumeCalculator;
 		private readonly DepthMap _lastReceivedDepthMap;
 	    private readonly ILogger _logger;
+	    private readonly ApplicationSettings _initialSettings;
 		
-		public SettingsWindow(ApplicationSettings settings, ILogger logger, DepthMapProcessor volumeCalculator,
+		public SettingsWindow(ILogger logger, ApplicationSettings settings, DepthMapProcessor volumeCalculator,
 			DepthMap lastReceivedDepthMap)
 		{
 			_logger = logger;
+			_initialSettings = settings;
 			_volumeCalculator = volumeCalculator;
 			_lastReceivedDepthMap = lastReceivedDepthMap;
 
@@ -40,7 +42,8 @@ namespace VolumeCalculatorGUI.GUI
 
 		public ApplicationSettings GetSettings()
 		{
-			return new ApplicationSettings(_vm.DistanceToFloor, _vm.MinObjHeight, _vm.OutputPath);
+			return new ApplicationSettings(_vm.DistanceToFloor, _vm.MinObjHeight, _vm.OutputPath,
+				_initialSettings.UseWorkingAreaMask, _initialSettings.WorkingAreaContour);
 		}
 
 		private void BtOk_Click(object sender, RoutedEventArgs e)

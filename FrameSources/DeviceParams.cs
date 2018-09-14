@@ -1,6 +1,6 @@
 ﻿namespace FrameSources
 {
-	public struct DeviceParams
+	public class DeviceParams
 	{
 		public float FovX { get; }
 

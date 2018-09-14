@@ -1,0 +1,47 @@
+﻿<UserControl x:Class="VolumeCalculatorGUI.GUI.StreamViewControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:gui="clr-namespace:VolumeCalculatorGUI.GUI"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" x:ClassModifier="internal"
+             d:DataContext="{d:DesignInstance gui:StreamViewControlVm}">
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition/>
+			<ColumnDefinition/>
+		</Grid.ColumnDefinitions>
+		<StackPanel Grid.Column="0" Margin="2">
+			<TextBlock Margin="2" Text="RGB-поток"/>
+			<Canvas Name="CvColor" Width="480" Height="360" Background="Black" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+				<Image Source="{Binding ColorImageBitmap}" 
+				       Width="{Binding Path=ActualWidth, ElementName=CvColor}" 
+				       Height="{Binding Path=ActualHeight, ElementName=CvColor}"/>
+			</Canvas>
+			<CheckBox Margin="0,5" Content="Отображение потока" IsChecked="{Binding UseColorStream, Mode=TwoWay}"/>
+		</StackPanel>
+		<StackPanel Grid.Row="0" Grid.Column="1" Margin="2">
+			<TextBlock Margin="2" Text="Поток глубины"/>
+			<Canvas Name="CvDepth" Width="480" Height="360" Background="Black">
+				<Image Source="{Binding DepthImageBitmap}" 
+				       Name="ImgDm" 
+				       Width="{Binding Path=ActualWidth, ElementName=CvDepth}" 
+				       Height="{Binding Path=ActualHeight, ElementName=CvDepth}"/>
+				<StackPanel Visibility="{Binding UseAreaMask, Converter={StaticResource BooleanToVisibilityConverter}}">
+					<gui:MaskPolygonControl Width="{Binding Path=ActualWidth, ElementName=CvDepth}" 
+					                        Height="{Binding Path=ActualHeight, ElementName=CvDepth}"
+					                        DataContext="{Binding MaskPolygonControlVm}" 
+					                        HorizontalAlignment="Stretch" 
+					                        VerticalAlignment="Stretch"/>
+				</StackPanel>
+			</Canvas>
+			<StackPanel Margin="0,5">
+				<CheckBox  Content="Отображение потока" IsChecked="{Binding UseDepthStream, Mode=TwoWay}"/>
+				<CheckBox Margin="0,5" 
+				          Content="Ограничение зоны измерения" 
+				          IsChecked="{Binding UseAreaMask, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+			</StackPanel>
+		</StackPanel>
+	</Grid>
+</UserControl>

@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
 
-namespace VolumeCalculatorGUI.GUI
+namespace VolumeCalculatorGUI.GUI.Utils
 {
-	internal class BaseViewModel : INotifyPropertyChanged
+	internal class BaseViewModel : DependencyObject, INotifyPropertyChanged
 	{
 		public event PropertyChangedEventHandler PropertyChanged;
 
