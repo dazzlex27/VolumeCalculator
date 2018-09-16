@@ -7,11 +7,11 @@
         mc:Ignorable="d"
 		x:ClassModifier="internal"
         Title="Настройки приложения" Height="Auto" Width="Auto"
-        SizeToContent="WidthAndHeight"  WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"  WindowStartupLocation="CenterOwner" ResizeMode="NoResize" SizeChanged="SettingsWindow_OnSizeChanged"
         d:DataContext="{d:DesignInstance gui:SettingsWindowVm}">
 	<StackPanel Margin="10">
 		<StackPanel>
-			<Canvas Name="CvDepth" Width="{Binding DepthImageBitmap.Width}" Height="{Binding DepthImageBitmap.Height}" Background="Black">
+			<Canvas Name="CvDepth" Width="400" Height="300" Background="Black">
 				<Image Source="{Binding DepthImageBitmap}" 
 						Name="ImgDm" 
 						Width="{Binding Path=ActualWidth, ElementName=CvDepth}" 
@@ -28,7 +28,7 @@
 			</Canvas>
 			<CheckBox Margin="2" IsEnabled="{Binding HasReceivedADepthMap}" Content="Ограничение зоны измерения" IsChecked="{Binding UseAreaMask, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 		</StackPanel>
-		<StackPanel Name="SpParent" Margin="5" MaxWidth="300">
+		<StackPanel Name="SpParent" Margin="5">
 			<StackPanel Width="{Binding Path=ActualWidth, ElementName=SpParent}">
 				<TextBlock Margin="2,0" Text="Расстояние до плоскости пола, мм"/>
 				<Grid HorizontalAlignment="Stretch">
@@ -79,8 +79,9 @@
 				<TextBlock Text="Результаты будут записаны в 'results.csv'" HorizontalAlignment="Center" FontSize="10"/>
 			</StackPanel>
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-				<Button Name="BtOk" Margin="5" Width="100" Content="OK" Click="BtOk_Click" IsDefault="True"/>
-				<Button Name="BtCancel" Margin="5" Width="100" Content="Отмена" Click="BtCancel_Click" IsCancel="True"/>
+				<Button Margin="5" Width="100" Content="OK" Click="BtOk_Click" IsDefault="True"/>
+				<Button Margin="5" Width="100" Content="Отмена" Click="BtCancel_Click" IsCancel="True"/>
+				<Button Margin="5" Width="100" Content="По умолчанию" Command="{Binding ResetSettingsCommand}"/>
 			</StackPanel>
 		</StackPanel>
 	</StackPanel>

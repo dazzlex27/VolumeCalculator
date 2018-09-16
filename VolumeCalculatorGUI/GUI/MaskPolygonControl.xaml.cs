@@ -22,9 +22,7 @@ namespace VolumeCalculatorGUI.GUI
 		private Shape _selectedShape;
 
 		public static readonly DependencyProperty IsReadOnlyProperty =
-			DependencyProperty.Register(
-				"IsReadOnly", typeof(bool),
-				typeof(MaskPolygonControl));
+			DependencyProperty.Register(nameof(IsReadOnly), typeof(bool), typeof(MaskPolygonControl));
 
 		public bool IsReadOnly
 		{
@@ -34,6 +32,15 @@ namespace VolumeCalculatorGUI.GUI
 				SetValue(IsReadOnlyProperty, value);
 				SetPoints(value ? new List<Point>() : _vm.PolygonPoints.ToList());
 			}
+		}
+
+		public static readonly DependencyProperty MainCanvasProperty =
+			DependencyProperty.Register(nameof(MainCanvas), typeof(Canvas), typeof(MaskPolygonControl));
+
+		public Canvas MainCanvas
+		{
+			get => (Canvas) GetValue(MainCanvasProperty);
+			set => SetValue(MainCanvasProperty, value);
 		}
 
 		public MaskPolygonControl()
@@ -52,8 +59,8 @@ namespace VolumeCalculatorGUI.GUI
 
 			foreach (var ellipse in _polygonNodes)
 			{
-				var pointX = (Canvas.GetLeft(ellipse) + HalfNodeSize);
-				var pointY = (Canvas.GetTop(ellipse) + HalfNodeSize);
+				var pointX = Canvas.GetLeft(ellipse) + HalfNodeSize;
+				var pointY = Canvas.GetTop(ellipse) + HalfNodeSize;
 				var point = new Point(pointX, pointY);
 				points.Add(point);
 			}
@@ -153,6 +160,15 @@ namespace VolumeCalculatorGUI.GUI
 				return;
 
 			_selectedShape = null;
+		}
+
+		private void MaskPolygonControl_OnSizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			if (_vm == null)
+				return;
+
+			_vm.CanvasWidth = CvMain.ActualWidth;
+			_vm.CanvasHeight = CvMain.ActualHeight;
 		}
 	}
 }

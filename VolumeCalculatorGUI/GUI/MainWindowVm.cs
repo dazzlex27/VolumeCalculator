@@ -149,9 +149,9 @@ namespace VolumeCalculatorGUI.GUI
 			try
 			{
 				var deviceParams = _streamViewControlVm.GetDeviceParams();
-				var volumeCalculator = CalculationDashboardControlVm.GetVolumeCalculator();
+				var depthMapProcessor = CalculationDashboardControlVm.GetDepthMapProcessor();
 
-				var settingsWindowVm = new SettingsWindowVm(_logger, _settings, deviceParams, volumeCalculator, _latestDepthMap);
+				var settingsWindowVm = new SettingsWindowVm(_logger, _settings, deviceParams, depthMapProcessor, _latestDepthMap);
 				_streamViewControlVm.RawDepthFrameReady += settingsWindowVm.DepthFrameUpdated;
 				var settingsWindow = new SettingsWindow
 				{

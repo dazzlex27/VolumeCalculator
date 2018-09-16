@@ -40,12 +40,9 @@
 		</StackPanel>
 		<Button Grid.Column="0" 
 		        Grid.Row="1" 
-		        IsEnabled="False" 
 		        Margin="2" 
 		        MinHeight="25" 
 		        Name="BtCalcVolume"
-		        ToolTipService.ShowOnDisabled="{Binding Path=IsEnabled, ElementName=BtCalcVolume, Converter={StaticResource InverseBooleanConverter}}" 
-		        ToolTip="Нет данных для вычисления" 
 		        Content="Выполнить измерение" 
 		        Command="{Binding CalculateVolumeCommand}"/>
 	</Grid>

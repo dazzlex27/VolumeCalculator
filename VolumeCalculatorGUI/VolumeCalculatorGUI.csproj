@@ -55,6 +55,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
@@ -93,6 +94,7 @@
     <Compile Include="GUI\TestDataGenerationControlVm.cs" />
     <Compile Include="GUI\Utils\PathValidationRule.cs" />
     <Compile Include="Logic\TestDataGenerator.cs" />
+    <Compile Include="Logic\VolumeCalculator.cs" />
     <Compile Include="Utils\Constants.cs" />
     <Compile Include="Logic\DepthMapProcessorDll.cs" />
     <Compile Include="Utils\GeometryUtils.cs" />

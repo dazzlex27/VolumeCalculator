@@ -162,6 +162,8 @@ namespace VolumeCalculatorGUI.GUI
 
 		public ICommand CalculateFloorDepthCommand { get; }
 
+		public ICommand ResetSettingsCommand { get; }
+
 		public SettingsWindowVm(ILogger logger, ApplicationSettings settings, DeviceParams deviceParams, 
 			DepthMapProcessor volumeCalculator, DepthMap lastReceivedDepthMap)
 		{
@@ -170,6 +172,7 @@ namespace VolumeCalculatorGUI.GUI
 			_lastReceivedDepthMap = lastReceivedDepthMap;
 
 			CalculateFloorDepthCommand = new CommandHandler(CalculateFloorDepth, HasReceivedADepthMap);
+			ResetSettingsCommand = new CommandHandler(ResetSettings, true);
 
 			var oldSettings = settings ?? ApplicationSettings.GetDefaultSettings();
 			MinDepth = deviceParams.MinDepth;
@@ -221,6 +224,15 @@ namespace VolumeCalculatorGUI.GUI
 				MessageBox.Show("Во время вычисления произошла ошибка, автоматический расчёт не был выполнен", "Ошибка",
 					MessageBoxButton.OK, MessageBoxImage.Error);
 			}
+		}
+
+		private void ResetSettings()
+		{
+			if (MessageBox.Show("Сбросить настройки", "Подтверждение", MessageBoxButton.YesNo,
+				    MessageBoxImage.Question) != MessageBoxResult.Yes)
+				return;
+
+			FillValuesFromSettings(ApplicationSettings.GetDefaultSettings());
 		}
 
 		private void FillValuesFromSettings(ApplicationSettings settings)

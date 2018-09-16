@@ -1,8 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Interop;
+using TextBox = System.Windows.Controls.TextBox;
 
 namespace VolumeCalculatorGUI.GUI
 {
@@ -54,5 +58,24 @@ namespace VolumeCalculatorGUI.GUI
 
 		    e.Handled = !_numericNonZeroValidationRegex.IsMatch(e.Text);
 	    }
-	}
+
+	    private void SettingsWindow_OnSizeChanged(object sender, SizeChangedEventArgs e)
+	    {
+		    if (!(sender is Window window))
+			    return;
+
+		    var currentScreenHandle = new WindowInteropHelper(window).Handle;
+			var currentScreem = Screen.FromHandle(currentScreenHandle);
+
+		    var source = PresentationSource.FromVisual(window);
+		    var dpiScaling = source?.CompositionTarget?.TransformFromDevice.M11 ?? 1;
+
+		    var workingArea = currentScreem.WorkingArea;
+		    var workAreaWidth = (int)Math.Floor(workingArea.Width * dpiScaling);
+		    var workAreaHeight = (int)Math.Floor(workingArea.Height * dpiScaling);
+
+		    window.Left = (workAreaWidth - e.NewSize.Width * dpiScaling) / 2 + workingArea.Left * dpiScaling;
+		    window.Top = (workAreaHeight - e.NewSize.Height * dpiScaling) / 2 + workingArea.Top * dpiScaling;
+		}
+    }
 }

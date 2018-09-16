@@ -14,12 +14,14 @@ namespace VolumeCalculatorGUI.GUI
     {
 	    private readonly ILogger _logger;
 
-		private DepthMapProcessor _volumeCalculator;
 	    private ApplicationSettings _applicationSettings;
 	    private DeviceParams _deviceParams;
 
 	    private ImageData _latestImageData;
 	    private DepthMap _latestDepthMap;
+
+	    private DepthMapProcessor _processor;
+	    private VolumeCalculator _volumeCalculator;
 
 		private int _objWidth;
 	    private int _objHeight;
@@ -28,10 +30,8 @@ namespace VolumeCalculatorGUI.GUI
 
 	    private ICommand _measureVolumeCommand;
 
-	    private bool CanCalculateVolume => _volumeCalculator != null && _latestDepthMap != null;
-
 		public ICommand CalculateVolumeCommand => _measureVolumeCommand ?? (_measureVolumeCommand =
-		                                              new CommandHandler(CalculateObjectVolume, CanCalculateVolume));
+		                                              new CommandHandler(CalculateObjectVolume, true));
 
 	    public int ObjLength
 	    {
@@ -95,14 +95,14 @@ namespace VolumeCalculatorGUI.GUI
 	    public void Dispose()
 	    {
 			if (_volumeCalculator != null && _volumeCalculator.IsActive)
-				_volumeCalculator.Dispose();
+				_processor.Dispose();
 		}
 
 	    public void ApplicationSettingsUpdated(ApplicationSettings applicationSettings)
 	    {
 		    _applicationSettings = applicationSettings;
 		    var cutOffDepth = (short)(_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
-		    _volumeCalculator.SetCalculatorSettings(_applicationSettings.DistanceToFloor, cutOffDepth);
+		    _processor.SetCalculatorSettings(_applicationSettings.DistanceToFloor, cutOffDepth);
 	    }
 
 	    public void DeviceParamsUpdated(DeviceParams deviceParams)
@@ -110,7 +110,9 @@ namespace VolumeCalculatorGUI.GUI
 		    _deviceParams = deviceParams;
 		    Dispose();
 
-			_volumeCalculator = new DepthMapProcessor(_logger, _deviceParams);
+			_processor = new DepthMapProcessor(_logger, _deviceParams);
+		    var cutOffDepth = (short)(_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
+		    _processor.SetCalculatorSettings(_applicationSettings.DistanceToFloor, cutOffDepth);
 		}
 
 		public void ColorFrameArrived(ImageData imageData)
@@ -121,11 +123,13 @@ namespace VolumeCalculatorGUI.GUI
 	    public void DepthFrameArrived(DepthMap depthMap)
 	    {
 		    _latestDepthMap = depthMap;
+		    if (_volumeCalculator != null && _volumeCalculator.IsActive)
+			    _volumeCalculator.AdvanceCalculation(depthMap);
 	    }
 
-	    public DepthMapProcessor GetVolumeCalculator()
+	    public DepthMapProcessor GetDepthMapProcessor()
 	    {
-		    return _volumeCalculator;
+		    return _processor;
 	    }
 
 		public void CalculateObjectVolume()
@@ -152,25 +156,8 @@ namespace VolumeCalculatorGUI.GUI
 			    DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, "out/depth.png", _deviceParams.MinDepth,
 				    _deviceParams.MaxDepth, cutOffDepth);
 
-			    var latestDepthMap = _latestDepthMap;
-			    _latestDepthMap = null;
-				var volumeData = _volumeCalculator.CalculateVolume(latestDepthMap);
-
-			    if (volumeData == null)
-			    {
-				    volumeData = new ObjectVolumeData(0, 0, 0);
-				    UpdateVolumeData(volumeData);
-
-				    MessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка",
-					    MessageBoxButton.OK, MessageBoxImage.Error);
-				    _logger.LogError("Volume check returned null");
-			    }
-			    else
-			    {
-				    _logger.LogInfo($"Completed a volume check, L={volumeData.Length} W={volumeData.Width} H={volumeData.Height}");
-
-				    UpdateVolumeData(volumeData);
-				}
+			    _volumeCalculator = new VolumeCalculator(_processor, _applicationSettings.SampleCount);
+				_volumeCalculator.CalculationFinished += VolumeCalculator_CalculationFinished;
 		    }
 		    catch (Exception ex)
 		    {
@@ -180,7 +167,29 @@ namespace VolumeCalculatorGUI.GUI
 		    }
 		}
 
-	    private void UpdateVolumeData(ObjectVolumeData volumeData)
+		private void VolumeCalculator_CalculationFinished(ObjectVolumeData volumeData)
+		{
+			_volumeCalculator.CalculationFinished -= VolumeCalculator_CalculationFinished;
+			_volumeCalculator = null;
+
+			if (volumeData == null)
+			{
+				volumeData = new ObjectVolumeData(0, 0, 0);
+				UpdateVolumeData(volumeData);
+
+				MessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка",
+					MessageBoxButton.OK, MessageBoxImage.Error);
+				_logger.LogError("Volume check returned null");
+			}
+			else
+			{
+				_logger.LogInfo($"Completed a volume check, L={volumeData.Length} W={volumeData.Width} H={volumeData.Height}");
+
+				UpdateVolumeData(volumeData);
+			}
+		}
+
+		private void UpdateVolumeData(ObjectVolumeData volumeData)
 	    {
 		    ObjLength = volumeData.Length;
 		    ObjWidth = volumeData.Width;

@@ -16,6 +16,9 @@ namespace VolumeCalculatorGUI.GUI
 
 		private bool _canEditPolygon;
 
+		private double _canvasWidth;
+		private double _canvasHeight;
+
 		public List<Ellipse> PolygonNodes { get; }
 
 		public PointCollection PolygonPoints
@@ -44,53 +47,36 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public double CanvasWidth => 400;
-		//{
-		//	get => _canvasWidth;
-		//	set
-		//	{
-		//		if (_canvasWidth == value)
-		//			return;
+		public double CanvasWidth
+		{
+			get => _canvasWidth;
+			set
+			{
+				if (_canvasWidth == value)
+					return;
 
-		//		_canvasWidth = value;
-		//		OnPropertyChanged();
-		//	}
-		//}
+				_canvasWidth = value;
+				OnPropertyChanged();
+			}
+		}
 
-		public double CanvasHeight => 300;
-		//{
-		//	get => _canvasHeight;
-		//	set
-		//	{
-		//		if (_canvasHeight == value)
-		//			return;
+		public double CanvasHeight
+		{
+			get => _canvasHeight;
+			set
+			{
+				if (_canvasHeight == value)
+					return;
 
-		//		_canvasHeight = value;
-		//		OnPropertyChanged();
-		//	}
-		//}
-
-		//public double CanvasWidth
-		//{
-		//	get => (double)GetValue(CanvasWidthProperty);
-		//	set => SetValue(CanvasWidthProperty, value);
-		//}
-
-		//public static readonly DependencyProperty CanvasWidthProperty =
-		//	DependencyProperty.Register(nameof(CanvasWidth), typeof(double), typeof(MaskPolygonControl));
-
-		//public double CanvasHeight
-		//{
-		//	get => (double)GetValue(CanvasHeightProperty);
-		//	set => SetValue(CanvasHeightProperty, value);
-		//}
-
-		//public static readonly DependencyProperty CanvasHeightProperty =
-		//	DependencyProperty.Register(nameof(CanvasHeight), typeof(double), typeof(MaskPolygonControl));
+				_canvasHeight = value;
+				OnPropertyChanged();
+			}
+		}
 
 		public MaskPolygonControlVm(IReadOnlyList<Point> points)
 		{
 			PolygonNodes = new List<Ellipse>();
+
 			SetPolygonPoints(points);
 		}
 
