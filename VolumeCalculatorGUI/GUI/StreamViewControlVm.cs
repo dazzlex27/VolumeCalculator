@@ -4,8 +4,8 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Common;
-using FrameSources;
-using FrameSources.KinectV2;
+using FrameProviders;
+using FrameProviders.LocalFiles;
 using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
@@ -17,7 +17,7 @@ namespace VolumeCalculatorGUI.GUI
 	    private ApplicationSettings _applicationSettings;
 
 	    private DeviceParams _deviceParams;
-	    private readonly FrameSource _frameSource;
+	    private readonly FrameProvider _frameProvider;
 
 		private WriteableBitmap _colorImageBitmap;
 	    private WriteableBitmap _depthImageBitmap;
@@ -32,8 +32,8 @@ namespace VolumeCalculatorGUI.GUI
 
 		public event Action<ImageData> ColorFrameReady
 	    {
-		    add => _frameSource.ColorFrameReady += value;
-		    remove => _frameSource.ColorFrameReady -= value;
+		    add => _frameProvider.ColorFrameReady += value;
+		    remove => _frameProvider.ColorFrameReady -= value;
 	    }
 
 	    public event Action<DepthMap> RawDepthFrameReady;
@@ -143,12 +143,12 @@ namespace VolumeCalculatorGUI.GUI
 			_useColorStream = true;
 		    _useDepthStream = true;
 
-		    _frameSource = new KinectV2FrameSource(logger);
-		    _frameSource.Start();
-		    DeviceParams = _frameSource.GetDeviceParams();
+		    _frameProvider = new LocalFileFrameProvider(logger);
+		    _frameProvider.Start();
+		    DeviceParams = _frameProvider.GetDeviceParams();
 
-		    _frameSource.ColorFrameReady += ColorImageUpdated;
-		    _frameSource.DepthFrameReady += DepthImageUpdated;
+		    _frameProvider.ColorFrameReady += ColorImageUpdated;
+		    _frameProvider.DepthFrameReady += DepthImageUpdated;
 
 		    UseColorStreamChanged += ToggleUseColorStream;
 		    UseDepthStreamChanged += ToggleUseDepthStream;
@@ -159,7 +159,7 @@ namespace VolumeCalculatorGUI.GUI
 		
 		public void Dispose()
 	    {
-		    _frameSource.Dispose();
+		    _frameProvider.Dispose();
 		}
 
 	    public DeviceParams GetDeviceParams()
@@ -195,6 +195,7 @@ namespace VolumeCalculatorGUI.GUI
 		    }
 		    var colorImageBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, format, null);
 		    colorImageBitmap.WritePixels(fullRect, image.Data, imageWidth * bytesPerPixel, 0);
+			colorImageBitmap.Freeze();
 
 		    ColorImageBitmap = colorImageBitmap;
 	    }
@@ -215,6 +216,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		    var depthImageBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, PixelFormats.Rgb24, null);
 		    depthImageBitmap.WritePixels(fullRect, depthMapData, imageWidth * Constants.BytesPerPixel24, 0);
+			depthImageBitmap.Freeze();
 
 		    DepthImageBitmap = depthImageBitmap;
 
@@ -232,9 +234,23 @@ namespace VolumeCalculatorGUI.GUI
 		                      _workingAreaMask?.Height == depthMap.Height && !_polygonPointsChaged;
 		    if (!maskIsValid)
 		    {
-			    var maskData = GeometryUtils.CreateWorkingAreaMask(MaskPolygonControlVm.PolygonPoints.ToList(), depthMap.Width, depthMap.Height);
-			    _workingAreaMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
-			    _polygonPointsChaged = false;
+			    Dispatcher.Invoke(() =>
+			    {
+				    if (UseAreaMask)
+				    {
+					    var points = MaskPolygonControlVm.PolygonPoints.ToList();
+					    var maskData = GeometryUtils.CreateWorkingAreaMask(points,
+						    depthMap.Width, depthMap.Height);
+					    _workingAreaMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
+				    }
+				    else
+				    {
+					    var maskData = Enumerable.Repeat(true, depthMap.Width * depthMap.Height).ToArray();
+					    _workingAreaMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
+					}
+
+				    _polygonPointsChaged = false;
+			    });
 		    }
 
 		    GeometryUtils.ApplyWorkingAreaMask(maskedMap, _workingAreaMask.Data);
@@ -245,10 +261,10 @@ namespace VolumeCalculatorGUI.GUI
 	    private void ToggleUseColorStream(bool useColorStream)
 	    {
 		    if (useColorStream)
-			    _frameSource.ResumeColorStream();
+			    _frameProvider.ResumeColorStream();
 		    else
 		    {
-			    _frameSource.SuspendColorStream();
+			    _frameProvider.SuspendColorStream();
 			    var emptyImage = new ImageData(1, 1, new byte[3], 3);
 			    ColorImageUpdated(emptyImage);
 		    }
@@ -257,10 +273,10 @@ namespace VolumeCalculatorGUI.GUI
 	    private void ToggleUseDepthStream(bool useDepthStream)
 	    {
 		    if (useDepthStream)
-			    _frameSource.ResumeDepthStream();
+			    _frameProvider.ResumeDepthStream();
 		    else
 		    {
-			    _frameSource.SuspendDepthStream();
+			    _frameProvider.SuspendDepthStream();
 			    var emptyMap = new DepthMap(1, 1, new short[1]);
 			    DepthImageUpdated(emptyMap);
 		    }

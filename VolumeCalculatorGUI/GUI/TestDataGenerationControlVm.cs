@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 using Common;
-using FrameSources;
+using FrameProviders;
 using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Logic;

@@ -2,9 +2,9 @@
 using System.Runtime.InteropServices;
 using Common;
 
-namespace FrameSources.D435
+namespace FrameProviders.D435
 {
-	public class RealsenseD435FrameSource : FrameSource
+	public class RealsenseD435FrameProvider : FrameProvider
 	{
 		private readonly ILogger _logger;
 		private readonly DllWrapper.ColorFrameCallback _colorFrameCallback;
@@ -13,7 +13,7 @@ namespace FrameSources.D435
 		private bool _colorStreamSuspended;
 		private bool _depthStreamSuspended;
 
-		public RealsenseD435FrameSource(ILogger logger)
+		public RealsenseD435FrameProvider(ILogger logger)
 		{
 			_logger = logger;
 			_logger.LogInfo("Creating Realsense D435 frame receiver...");

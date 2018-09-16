@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using VolumeCalculatorGUI.Entities;
-using VolumeCalculatorGUI.Utils;
 
 namespace VolumeCalculatorGUI.Logic
 {
@@ -36,7 +35,7 @@ namespace VolumeCalculatorGUI.Logic
 			var mapIndex = _basicCaseInfo.TimesToSave - _remainingTimesToSave;
 			var fullMapPath = Path.Combine(_mapSavingPath, $"{mapIndex}.dm");
 
-			DepthMapUtils.SaveDepthMapToFile(map, fullMapPath);
+			DepthMapUtils.SaveDepthMapToRawFile(map, fullMapPath);
 
 			_remainingTimesToSave--;
 
@@ -54,12 +53,11 @@ namespace VolumeCalculatorGUI.Logic
 
 	        Directory.CreateDirectory(_basicCaseInfo.SavingDirectory);
 
-            var bmp = IoUtils.CreateBitmapFromImageData(_testCaseData.Image);
-            bmp.Save(Path.Combine(_basicCaseInfo.SavingDirectory, "rgb.png"));
+	        ImageUtils.SaveImageDataToFile(_testCaseData.Image,
+		        Path.Combine(_basicCaseInfo.SavingDirectory, "rgb.png"));
 
-            var dmBmp = IoUtils.CreateBitmapFromDepthMap(_testCaseData.Map, _testCaseData.DeviceParams.MinDepth, 
-				_testCaseData.DeviceParams.MaxDepth, _testCaseData.DeviceParams.MaxDepth);
-            dmBmp.Save(Path.Combine(_basicCaseInfo.SavingDirectory, "depth.png"));
+            DepthMapUtils.SaveDepthMapImageToFile(_testCaseData.Map, Path.Combine(_basicCaseInfo.SavingDirectory, "depth.png"),
+	            _testCaseData.DeviceParams.MinDepth, _testCaseData.DeviceParams.MaxDepth, _testCaseData.DeviceParams.MaxDepth);
 
 	        var testCaseDataFilePath = Path.Combine(_basicCaseInfo.SavingDirectory, "testdata.txt");
 			if (File.Exists(testCaseDataFilePath))

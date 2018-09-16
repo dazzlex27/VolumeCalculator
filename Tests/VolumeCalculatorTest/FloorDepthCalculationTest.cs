@@ -1,5 +1,5 @@
 ﻿using Common;
-using FrameSources;
+using FrameProviders;
 using NUnit.Framework;
 using VolumeCalculatorGUI.Logic;
 

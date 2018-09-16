@@ -1,7 +1,7 @@
-﻿using Common;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
+using Common;
 
-namespace FrameSources.D435
+namespace FrameProviders.D435
 {
 	internal static class DllWrapper
 	{

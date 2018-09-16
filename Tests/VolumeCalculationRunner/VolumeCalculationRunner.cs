@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Common;
-using FrameSources;
+using FrameProviders;
 using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.Logic;
 

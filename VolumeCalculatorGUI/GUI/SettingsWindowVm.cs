@@ -5,7 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Common;
-using FrameSources;
+using FrameProviders;
 using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Logic;
@@ -22,14 +22,13 @@ namespace VolumeCalculatorGUI.GUI
 		private WriteableBitmap _depthImageBitmap;
 		private bool _useAreaMask;
 		private MaskPolygonControlVm _maskPolygonControlVm;
-		private bool _canCalculateFloorDepth;
 		private short _maxDepth;
 		private short _minDepth;
 		private short _distanceToFloor;
 		private short _minObjHeight;
+		private byte _sampleCount;
 		private string _outputPath;
-
-		private ICommand _calculateFloorDepthCommand;
+		private bool _hasReceivedDepthMap;
 
 		public WriteableBitmap DepthImageBitmap
 		{
@@ -62,23 +61,10 @@ namespace VolumeCalculatorGUI.GUI
 			get => _maskPolygonControlVm;
 			set
 			{
-				if (_maskPolygonControlVm == value)
+				if (ReferenceEquals(_maskPolygonControlVm, value))
 					return;
 
 				_maskPolygonControlVm = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public bool CanCalculateFloorDepth
-		{
-			get => _canCalculateFloorDepth;
-			set
-			{
-				if (_canCalculateFloorDepth == value)
-					return;
-
-				_canCalculateFloorDepth = value;
 				OnPropertyChanged();
 			}
 		}
@@ -135,6 +121,19 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
+		public byte SampleCount
+		{
+			get => _sampleCount;
+			set
+			{
+				if (value == _sampleCount)
+					return;
+
+				_sampleCount = value;
+				OnPropertyChanged();
+			}
+		}
+
 		public string OutputPath
 		{
 			get => _outputPath;
@@ -148,10 +147,20 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public ICommand CalculateFloorDepthCommand => _calculateFloorDepthCommand ??
-		                                              (_calculateFloorDepthCommand =
-			                                              new CommandHandler(CalculateFloorDepth,
-				                                              CanCalculateFloorDepth));
+		public bool HasReceivedADepthMap
+		{
+			get => _hasReceivedDepthMap;
+			set
+			{
+				if (_hasReceivedDepthMap == value)
+					return;
+
+				_hasReceivedDepthMap = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public ICommand CalculateFloorDepthCommand { get; }
 
 		public SettingsWindowVm(ILogger logger, ApplicationSettings settings, DeviceParams deviceParams, 
 			DepthMapProcessor volumeCalculator, DepthMap lastReceivedDepthMap)
@@ -160,24 +169,25 @@ namespace VolumeCalculatorGUI.GUI
 			_volumeCalculator = volumeCalculator;
 			_lastReceivedDepthMap = lastReceivedDepthMap;
 
+			CalculateFloorDepthCommand = new CommandHandler(CalculateFloorDepth, HasReceivedADepthMap);
+
 			var oldSettings = settings ?? ApplicationSettings.GetDefaultSettings();
 			MinDepth = deviceParams.MinDepth;
 			MaxDepth = deviceParams.MaxDepth;
-			FloorDepth = oldSettings.DistanceToFloor;
-			MinObjHeight = oldSettings.MinObjHeight;
-			OutputPath = oldSettings.OutputPath;
-			UseAreaMask = oldSettings.UseAreaMask;
-			MaskPolygonControlVm = new MaskPolygonControlVm(oldSettings.WorkingAreaContour);
+			FillValuesFromSettings(oldSettings);
 		}
 
 		public ApplicationSettings GetSettings()
 		{
-			return new ApplicationSettings(FloorDepth, MinObjHeight, OutputPath,
-				UseAreaMask, new List<Point>(MaskPolygonControlVm.GetPolygonPoints()));
+			return new ApplicationSettings(FloorDepth, MinObjHeight, SampleCount, OutputPath, UseAreaMask, 
+				new List<Point>(MaskPolygonControlVm.GetPolygonPoints()));
 		}
 
 		public void DepthFrameUpdated(DepthMap depthMap)
 		{
+			HasReceivedADepthMap = true;
+			MaskPolygonControlVm.CanEditPolygon = true;
+
 			var cutOffDepth = (short)(FloorDepth - MinObjHeight);
 			var depthMapData = DepthMapUtils.GetColorizedDepthMapData(depthMap, MinDepth, FloorDepth,
 				cutOffDepth);
@@ -188,6 +198,7 @@ namespace VolumeCalculatorGUI.GUI
 
 			var depthImageBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, PixelFormats.Rgb24, null);
 			depthImageBitmap.WritePixels(fullRect, depthMapData, imageWidth * Constants.BytesPerPixel24, 0);
+			depthImageBitmap.Freeze();
 
 			DepthImageBitmap = depthImageBitmap;
 		}
@@ -210,6 +221,16 @@ namespace VolumeCalculatorGUI.GUI
 				MessageBox.Show("Во время вычисления произошла ошибка, автоматический расчёт не был выполнен", "Ошибка",
 					MessageBoxButton.OK, MessageBoxImage.Error);
 			}
+		}
+
+		private void FillValuesFromSettings(ApplicationSettings settings)
+		{
+			FloorDepth = settings.DistanceToFloor;
+			MinObjHeight = settings.MinObjHeight;
+			OutputPath = settings.OutputPath;
+			SampleCount = settings.SampleCount;
+			UseAreaMask = settings.UseAreaMask;
+			MaskPolygonControlVm = new MaskPolygonControlVm(settings.WorkingAreaContour);
 		}
 	}
 }

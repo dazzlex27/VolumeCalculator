@@ -21,7 +21,20 @@ namespace VolumeCalculatorGUI.GUI
 		private Point _clickPoint;
 		private Shape _selectedShape;
 
-		public bool IsReadOnly { get; set; }
+		public static readonly DependencyProperty IsReadOnlyProperty =
+			DependencyProperty.Register(
+				"IsReadOnly", typeof(bool),
+				typeof(MaskPolygonControl));
+
+		public bool IsReadOnly
+		{
+			get => (bool)GetValue(IsReadOnlyProperty);
+			set
+			{
+				SetValue(IsReadOnlyProperty, value);
+				SetPoints(value ? new List<Point>() : _vm.PolygonPoints.ToList());
+			}
+		}
 
 		public MaskPolygonControl()
 		{
@@ -53,6 +66,9 @@ namespace VolumeCalculatorGUI.GUI
 			if (IsReadOnly)
 				return;
 
+			foreach (var node in _polygonNodes)
+				CvMain.Children.Remove(node);
+			CvMain.InvalidateVisual();
 			_polygonNodes.Clear();
 
 			foreach (var point in absPoints)
@@ -137,14 +153,6 @@ namespace VolumeCalculatorGUI.GUI
 				return;
 
 			_selectedShape = null;
-		}
-
-		private void Vm_PolygonPointUpdated(IReadOnlyList<Point> absPoints)
-		{
-			if (IsReadOnly)
-				return;
-
-			SetPoints(absPoints);
 		}
 	}
 }

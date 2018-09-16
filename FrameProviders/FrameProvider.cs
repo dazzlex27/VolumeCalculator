@@ -1,9 +1,9 @@
-﻿using Common;
-using System;
+﻿using System;
+using Common;
 
-namespace FrameSources
+namespace FrameProviders
 {
-	public abstract class FrameSource : IDisposable
+	public abstract class FrameProvider : IDisposable
 	{
 		public event Action<ImageData> ColorFrameReady;
 		public event Action<DepthMap> DepthFrameReady;

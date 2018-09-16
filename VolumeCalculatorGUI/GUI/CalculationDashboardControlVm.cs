@@ -3,11 +3,10 @@ using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using Common;
-using FrameSources;
+using FrameProviders;
 using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Logic;
-using VolumeCalculatorGUI.Utils;
 
 namespace VolumeCalculatorGUI.GUI
 {
@@ -149,10 +148,9 @@ namespace VolumeCalculatorGUI.GUI
 			    _logger.LogInfo("Starting a volume check...");
 			    Directory.CreateDirectory("out");
 
-			    IoUtils.CreateBitmapFromImageData(_latestImageData);
 			    var cutOffDepth = (short) (_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
-			    var depthBmp = IoUtils.CreateBitmapFromDepthMap(_latestDepthMap, _deviceParams.MinDepth, _deviceParams.MaxDepth, cutOffDepth);
-			    depthBmp.Save("out/depth.png");
+			    DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, "out/depth.png", _deviceParams.MinDepth,
+				    _deviceParams.MaxDepth, cutOffDepth);
 
 			    var latestDepthMap = _latestDepthMap;
 			    _latestDepthMap = null;

@@ -23,8 +23,6 @@ namespace VolumeCalculatorGUI.GUI
 		private CalculationDashboardControlVm _calculationDashboardControlVm;
 		private TestDataGenerationControlVm _testDataGenerationControlVm;
 
-		private ICommand _openSettingsCommand;
-
 		public StreamViewControlVm StreamViewControlVm
 		{
 			get => _streamViewControlVm;
@@ -77,8 +75,7 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public ICommand OpenSettingsCommand =>
-			_openSettingsCommand ?? (_openSettingsCommand = new CommandHandler(OpenSettings, true));
+		public ICommand OpenSettingsCommand { get; }
 
 		public MainWindowVm()
 		{
@@ -87,6 +84,8 @@ namespace VolumeCalculatorGUI.GUI
 				_logger = new Logger();
 				_logger.LogInfo("Starting up...");
 				AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
+				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
 
 				InitializeSettings();
 				InitializeSubViewModels();
@@ -168,8 +167,9 @@ namespace VolumeCalculatorGUI.GUI
 
 				Settings = settingsWindowVm.GetSettings();
 				IoUtils.SerializeSettings(Settings);
+				ApplicationSettingsChanged?.Invoke(Settings);
 				_logger.LogInfo("New settings have been applied: " +
-				                $"floorDepth={_settings.DistanceToFloor} minObjHeight={_settings.MinObjHeight} outputPath={_settings.OutputPath}");
+				                $"floorDepth={_settings.DistanceToFloor} useAreaMask={_settings.UseAreaMask} minObjHeight={_settings.MinObjHeight} sampleCount={_settings.SampleCount} outputPath={_settings.OutputPath}");
 			}
 			catch (Exception ex)
 			{

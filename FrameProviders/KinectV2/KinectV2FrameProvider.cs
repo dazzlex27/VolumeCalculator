@@ -1,11 +1,11 @@
-﻿using Microsoft.Kinect;
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using Common;
+using Microsoft.Kinect;
 
-namespace FrameSources.KinectV2
+namespace FrameProviders.KinectV2
 {
-	public class KinectV2FrameSource : FrameSource
+	public class KinectV2FrameProvider : FrameProvider
 	{
 		private readonly ILogger _logger;
 		private readonly KinectSensor _kinectSensor;
@@ -15,7 +15,7 @@ namespace FrameSources.KinectV2
 		private bool _colorStreamSuspended;
 		private bool _depthStreamSuspended;
 
-		public KinectV2FrameSource(ILogger logger)
+		public KinectV2FrameProvider(ILogger logger)
 		{
 			_logger = logger;
 			_logger.LogInfo("Creating KinectV2 frame receiver...");

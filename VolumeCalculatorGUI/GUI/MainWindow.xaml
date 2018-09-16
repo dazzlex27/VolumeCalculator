@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:gui="clr-namespace:VolumeCalculatorGUI.GUI"
         mc:Ignorable="d"
-        Title="Volume Calculator" SizeToContent="WidthAndHeight"
+        Title="VolumeCalculator 0.86 Beta" SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" Closing="Window_Closing" x:ClassModifier="internal">
 	<Window.DataContext>
 		<gui:MainWindowVm/>

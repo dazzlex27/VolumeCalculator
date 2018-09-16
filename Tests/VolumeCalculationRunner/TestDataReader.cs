@@ -48,7 +48,7 @@ namespace VolumeCalculationRunner
 			var depthMaps = new List<DepthMap>(files.Count);
 			foreach (var file in files)
 			{
-				var depthMap = DepthMapUtils.ReadDepthMapFromFile(file.FullName);
+				var depthMap = DepthMapUtils.ReadDepthMapFromRawFile(file.FullName);
 				if (depthMap == null)
 				{
 					Console.WriteLine($@"Failed to read depth map from {file.Name} for {testCaseName}");

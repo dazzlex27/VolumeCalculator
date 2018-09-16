@@ -37,7 +37,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Designcontest-Outline-3D.ico</ApplicationIcon>
+    <ApplicationIcon>3d-icon-9795-Windows.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <NoWin32Manifest>true</NoWin32Manifest>
@@ -46,11 +46,6 @@
     <Reference Include="Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\!!bin\$(Platform)\$(Configuration)\Common.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="FrameSources, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\!!bin\$(Platform)\$(Configuration)\FrameSources.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -96,6 +91,7 @@
       <DependentUpon>TestDataGenerationControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="GUI\TestDataGenerationControlVm.cs" />
+    <Compile Include="GUI\Utils\PathValidationRule.cs" />
     <Compile Include="Logic\TestDataGenerator.cs" />
     <Compile Include="Utils\Constants.cs" />
     <Compile Include="Logic\DepthMapProcessorDll.cs" />
@@ -170,7 +166,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Designcontest-Outline-3D.ico" />
+    <Resource Include="3d-icon-9795-Windows.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FrameProviders\FrameProviders.csproj">
+      <Project>{f9973dc5-0d7c-4805-a622-e99492cd3714}</Project>
+      <Name>FrameProviders</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

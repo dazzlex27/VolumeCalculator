@@ -9,6 +9,6 @@ Tests/DepthMapProcessorTest/samples
 Tests/VolumeCalculatorTest/obj
 Tests/VolumeCalculationRunner/obj
 /VolumeCalculatorGUI/obj
-/FrameSources/obj
+/FrameProviders/obj
 /FrameFeeder/obj
 /UtilsApp/obj

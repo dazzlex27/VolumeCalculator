@@ -12,9 +12,9 @@ namespace VolumeCalculatorGUI.GUI
 	{
 		public event Action<IReadOnlyList<Point>> PolygonPointsChanged;
 
-		private static readonly Color PolygonColor = Colors.DarkGreen;
-
 		private PointCollection _polygonPoints;
+
+		private bool _canEditPolygon;
 
 		public List<Ellipse> PolygonNodes { get; }
 
@@ -27,6 +27,19 @@ namespace VolumeCalculatorGUI.GUI
 					return;
 
 				_polygonPoints = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public bool CanEditPolygon
+		{
+			get => _canEditPolygon;
+			set
+			{
+				if (_canEditPolygon == value)
+					return;
+
+				_canEditPolygon = value;
 				OnPropertyChanged();
 			}
 		}

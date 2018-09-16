@@ -1,4 +1,4 @@
-﻿namespace FrameSources
+﻿namespace FrameProviders
 {
 	public class DeviceParams
 	{

@@ -9,17 +9,20 @@ namespace VolumeCalculatorGUI.Entities
 
         public short MinObjHeight { get; }
 
+		public byte SampleCount { get; }
+
 		public string OutputPath { get; }
 
 		public bool UseAreaMask { get; }
 
 		public List<Point> WorkingAreaContour { get; }
 
-	    public ApplicationSettings(short distanceToFloor, short minObjHeight, string outputPath, bool useAreaMask, 
+	    public ApplicationSettings(short distanceToFloor, short minObjHeight, byte sampleCount, string outputPath, bool useAreaMask, 
 		    List<Point> workingAreaContour)
 	    {
-		    DistanceToFloor = distanceToFloor;
-		    MinObjHeight = minObjHeight;
+		    DistanceToFloor = distanceToFloor > 0 ? distanceToFloor : (short) 1000;
+		    MinObjHeight = minObjHeight > 0 ? minObjHeight : (short) 5;
+		    SampleCount = sampleCount > 0 ? sampleCount : (byte) 10;
 		    OutputPath = outputPath;
 		    UseAreaMask = useAreaMask;
 		    WorkingAreaContour = workingAreaContour ?? GetDefaultAreaContour();
@@ -27,7 +30,7 @@ namespace VolumeCalculatorGUI.Entities
 
 		public static ApplicationSettings GetDefaultSettings()
 		{
-			return new ApplicationSettings(1000, 5, "C:/VolumeChecker/", false, GetDefaultAreaContour());
+			return new ApplicationSettings(1000, 5, 10, "C:/VolumeChecker/", false, GetDefaultAreaContour());
 		}
 
 	    private static List<Point> GetDefaultAreaContour()

@@ -1,10 +1,13 @@
-﻿using System.IO;
+﻿using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Runtime.InteropServices;
 
 namespace Common
 {
 	public static class DepthMapUtils
 	{
-		public static DepthMap ReadDepthMapFromFile(string filepath)
+		public static DepthMap ReadDepthMapFromRawFile(string filepath)
 		{
 			var fileLines = File.ReadAllLines(filepath);
 
@@ -22,7 +25,7 @@ namespace Common
 			return new DepthMap(width, height, data);
 		}
 
-		public static void SaveDepthMapToFile(DepthMap depthMap, string filepath)
+		public static void SaveDepthMapToRawFile(DepthMap depthMap, string filepath)
 		{
 			if (File.Exists(filepath))
 				File.Delete(filepath);
@@ -37,7 +40,22 @@ namespace Common
 			}
 		}
 
-public static byte[] GetColorizedDepthMapData(DepthMap map, short minDepth, short maxDepth, short cutOffDepth)
+		public static void SaveDepthMapImageToFile(DepthMap map, string filepath, short minDepth, short maxDepth, short cutOffDepth)
+		{
+			var bitmap = new Bitmap(map.Width, map.Height, PixelFormat.Format24bppRgb);
+
+			var fullRect = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
+			var bmpData = bitmap.LockBits(fullRect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
+
+			var data = GetColorizedDepthMapData(map, minDepth, maxDepth, cutOffDepth);
+			Marshal.Copy(data, 0, bmpData.Scan0, data.Length);
+
+			bitmap.UnlockBits(bmpData);
+
+			bitmap.Save(filepath);
+		}
+
+		public static byte[] GetColorizedDepthMapData(DepthMap map, short minDepth, short maxDepth, short cutOffDepth)
 		{
 			var resultBytes = new byte[map.Data.Length * 3];
 

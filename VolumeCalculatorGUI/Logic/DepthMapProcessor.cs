@@ -1,6 +1,6 @@
 ﻿using System;
 using Common;
-using FrameSources;
+using FrameProviders;
 using VolumeCalculatorGUI.Entities;
 namespace VolumeCalculatorGUI.Logic
 {
