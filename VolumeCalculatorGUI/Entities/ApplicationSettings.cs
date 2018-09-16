@@ -30,7 +30,7 @@ namespace VolumeCalculatorGUI.Entities
 
 		public static ApplicationSettings GetDefaultSettings()
 		{
-			return new ApplicationSettings(1000, 5, 10, "C:/VolumeChecker/", false, GetDefaultAreaContour());
+			return new ApplicationSettings(1000, 5, 10, "C:/VolumeCalculator/", false, GetDefaultAreaContour());
 		}
 
 	    private static List<Point> GetDefaultAreaContour()

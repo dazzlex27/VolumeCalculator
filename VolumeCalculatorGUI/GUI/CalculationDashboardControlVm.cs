@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using Common;
@@ -12,6 +13,8 @@ namespace VolumeCalculatorGUI.GUI
 {
     internal class CalculationDashboardControlVm : BaseViewModel, IDisposable
     {
+	    private const string ResultFileName = "results.csv";
+
 	    private readonly ILogger _logger;
 
 	    private ApplicationSettings _applicationSettings;
@@ -23,15 +26,28 @@ namespace VolumeCalculatorGUI.GUI
 	    private DepthMapProcessor _processor;
 	    private VolumeCalculator _volumeCalculator;
 
+	    private int _measurementCount;
+
+	    private string _objName;
 		private int _objWidth;
 	    private int _objHeight;
 	    private int _objLength;
 	    private long _objVolume;
 
-	    private ICommand _measureVolumeCommand;
+		public ICommand CalculateVolumeCommand { get; }
 
-		public ICommand CalculateVolumeCommand => _measureVolumeCommand ?? (_measureVolumeCommand =
-		                                              new CommandHandler(CalculateObjectVolume, true));
+	    public string ObjName
+	    {
+		    get => _objName;
+		    set
+		    {
+			    if (_objName == value)
+				    return;
+
+			    _objName = value;
+				OnPropertyChanged();
+		    }
+	    }
 
 	    public int ObjLength
 	    {
@@ -90,6 +106,8 @@ namespace VolumeCalculatorGUI.GUI
 		    _logger = logger;
 		    _applicationSettings = settings;
 		    DeviceParamsUpdated(deviceParams);
+
+		    CalculateVolumeCommand = new CommandHandler(CalculateObjectVolume, true);
 	    }
 
 	    public void Dispose()
@@ -186,6 +204,16 @@ namespace VolumeCalculatorGUI.GUI
 				_logger.LogInfo($"Completed a volume check, L={volumeData.Length} W={volumeData.Width} H={volumeData.Height}");
 
 				UpdateVolumeData(volumeData);
+			}
+
+			Directory.CreateDirectory(_applicationSettings.OutputPath);
+			var fullPath = Path.Combine(_applicationSettings.OutputPath, ResultFileName);
+			using (var resultFile = new StreamWriter(fullPath, true, Encoding.Default))
+			{
+				var time = DateTime.Now;
+				var resultString =
+					$@"{++_measurementCount},{time.ToShortDateString()},{time.ToShortTimeString()},{ObjName},{ObjLength},{ObjWidth},{ObjHeight},{ObjVolume}";
+				resultFile.WriteLine(resultString);
 			}
 		}
 

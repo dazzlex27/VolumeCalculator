@@ -8,17 +8,22 @@
              d:DesignHeight="450" d:DesignWidth="800" x:ClassModifier="internal"
              d:DataContext="{d:DesignInstance gui:CalculationDashboardControlVm}">
 	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition/>
-			<RowDefinition/>
-		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition/>
 			<ColumnDefinition/>
 		</Grid.ColumnDefinitions>
-		<StackPanel Grid.Column="0" Name="SpCounters" Margin="5" >
+		<Grid.RowDefinitions>
+			<RowDefinition/>
+			<RowDefinition/>
+			<RowDefinition/>
+		</Grid.RowDefinitions>
+		<StackPanel Margin="3">
+			<TextBlock Margin="2,0" Text="Код объекта"/>
+			<TextBox Margin="2,2,2,0" Text="{Binding Path=ObjName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+		</StackPanel>
+		<StackPanel Grid.Row="1" Grid.Column="0" Name="SpCounters" Margin="5">
 			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Длина = "/>
+				<TextBlock Text="Длина: "/>
 				<TextBlock Text="{Binding Path=ObjLength}"/>
 				<TextBlock Text="  мм"/>
 			</StackPanel>
@@ -28,18 +33,18 @@
 				<TextBlock Text="  мм"/>
 			</StackPanel>
 			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Высота = "/>
+				<TextBlock Text="Высота: "/>
 				<TextBlock Text="{Binding Path=ObjHeight}"/>
 				<TextBlock Text="  мм"/>
 			</StackPanel>
 			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Объем = "/>
+				<TextBlock Text="Объем: "/>
 				<TextBlock Text="{Binding Path=ObjVolume}"/>
 				<TextBlock Text="  мм"/>
 			</StackPanel>
 		</StackPanel>
-		<Button Grid.Column="0" 
-		        Grid.Row="1" 
+		<Button Grid.Row="2" 
+				Grid.Column="0"
 		        Margin="2" 
 		        MinHeight="25" 
 		        Name="BtCalcVolume"
