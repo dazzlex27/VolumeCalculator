@@ -11,23 +11,23 @@ namespace VolumeCalculatorGUI.Entities
 
 		public string OutputPath { get; }
 
-		public bool UseWorkingAreaMask { get; }
+		public bool UseAreaMask { get; }
 
 		public List<Point> WorkingAreaContour { get; }
 
-	    public ApplicationSettings(short distanceToFloor, short minObjHeight, string outputPath, bool useWorkingAreaMask, 
+	    public ApplicationSettings(short distanceToFloor, short minObjHeight, string outputPath, bool useAreaMask, 
 		    List<Point> workingAreaContour)
 	    {
 		    DistanceToFloor = distanceToFloor;
 		    MinObjHeight = minObjHeight;
 		    OutputPath = outputPath;
-		    UseWorkingAreaMask = useWorkingAreaMask;
+		    UseAreaMask = useAreaMask;
 		    WorkingAreaContour = workingAreaContour ?? GetDefaultAreaContour();
 	    }
 
 		public static ApplicationSettings GetDefaultSettings()
 		{
-			return new ApplicationSettings(1000, 995, "C:/VolumeChecker/", false, GetDefaultAreaContour());
+			return new ApplicationSettings(1000, 5, "C:/VolumeChecker/", false, GetDefaultAreaContour());
 		}
 
 	    private static List<Point> GetDefaultAreaContour()

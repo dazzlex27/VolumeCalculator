@@ -33,15 +33,11 @@
 					                        Height="{Binding Path=ActualHeight, ElementName=CvDepth}"
 					                        DataContext="{Binding MaskPolygonControlVm}" 
 					                        HorizontalAlignment="Stretch" 
-					                        VerticalAlignment="Stretch"/>
+					                        VerticalAlignment="Stretch"
+					                        IsReadOnly="True"/>
 				</StackPanel>
 			</Canvas>
-			<StackPanel Margin="0,5">
-				<CheckBox  Content="Отображение потока" IsChecked="{Binding UseDepthStream, Mode=TwoWay}"/>
-				<CheckBox Margin="0,5" 
-				          Content="Ограничение зоны измерения" 
-				          IsChecked="{Binding UseAreaMask, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-			</StackPanel>
+			<CheckBox Margin="0,5" Content="Отображение потока" IsChecked="{Binding UseDepthStream, Mode=TwoWay}"/>
 		</StackPanel>
 	</Grid>
 </UserControl>

@@ -158,9 +158,9 @@ const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Cont
 	const int shorterDim = objectWidth < objectHeight ? objectWidth : objectHeight;
 
 	ObjDimDescription result;
-	result.Width = longerDim;
-	result.Height = shorterDim;
-	result.Depth = _floorDepth - contourTopPlaneDepth;
+	result.Length = longerDim;
+	result.Width = shorterDim;
+	result.Height = _floorDepth - contourTopPlaneDepth;
 
 	return result;
 }

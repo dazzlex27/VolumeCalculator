@@ -16,7 +16,9 @@
 			         TextAlignment="Center" 
 			         VerticalAlignment="Top" 
 			         HorizontalAlignment="Left" 
-			         MaxLength="2"/>
+			         MaxLength="2"
+			         AcceptsReturn="False"
+			         AcceptsTab="False"/>
 		</StackPanel>
 		<StackPanel Orientation="Horizontal">
 			<TextBlock Text="Папка для сохранения: "/>
@@ -24,37 +26,49 @@
 			         Text="{Binding TestCaseFolderPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 			         TextAlignment="Center"  
 			         VerticalAlignment="Top" 
-			         HorizontalAlignment="Left"/>
+			         HorizontalAlignment="Left"
+			         AcceptsReturn="False"
+			         AcceptsTab="False"/>
 		</StackPanel>
 		<StackPanel VerticalAlignment="Center" Margin="2" Orientation="Horizontal">
-			<TextBlock VerticalAlignment="Center" Text="W="/>
+			<TextBlock VerticalAlignment="Center" Text="Длина: "/>
 			<TextBox VerticalAlignment="Center" 
-				Text="{Binding ObjWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-				Width="30" 
-				Margin="2" />
-			<TextBlock VerticalAlignment="Center" Text="H="/>
+					Text="{Binding ObjLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+					Width="30" 
+					Margin="2" 
+			        AcceptsReturn="False"
+			        AcceptsTab="False"/>
+			<TextBlock VerticalAlignment="Center" Text="Ширина: "/>
+			<TextBox VerticalAlignment="Center" 
+			         Text="{Binding ObjWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+			         Width="30" 
+			         Margin="2"
+			         AcceptsReturn="False"
+			         AcceptsTab="False"/>
+			<TextBlock VerticalAlignment="Center" Text="Высота: "/>
 			<TextBox VerticalAlignment="Center" 
 			         Text="{Binding ObjHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 			         Width="30" 
-			         Margin="2"/>
-			<TextBlock VerticalAlignment="Center" Text="D="/>
-			<TextBox VerticalAlignment="Center" 
-			         Text="{Binding ObjDepth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-			         Width="30" 
-			         Margin="2"/>
+			         Margin="2"
+			         AcceptsReturn="False"
+			         AcceptsTab="False"/>
 		</StackPanel>
 		<StackPanel>
 			<StackPanel Margin="2" Orientation="Horizontal">
 				<TextBlock VerticalAlignment="Center" Text="Наименование кейса: "/>
 				<TextBox VerticalAlignment="Center" 
 				         Text="{Binding TestCaseName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-				         Width="200"/>
+				         Width="200"
+				         AcceptsReturn="False"
+				         AcceptsTab="False"/>
 			</StackPanel>
 			<StackPanel Margin="2" Orientation="Horizontal">
 				<TextBlock VerticalAlignment="Center" Text="Описание (необязательно): "/>
 				<TextBox VerticalAlignment="Center" 
 				         Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-				         Width="200"/>
+				         Width="200"
+				         AcceptsReturn="False"
+				         AcceptsTab="False"/>
 			</StackPanel>
 		</StackPanel>
 		<Button Name="BtSaveTestData" Margin="0,2" Content="Сохранить тестовые данные" Command="{Binding RunTestDataGenerationCommand}"/>

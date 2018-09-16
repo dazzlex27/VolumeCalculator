@@ -18,6 +18,11 @@
 		</Grid.ColumnDefinitions>
 		<StackPanel Grid.Column="0" Name="SpCounters" Margin="5" >
 			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="Длина = "/>
+				<TextBlock Text="{Binding Path=ObjLength}"/>
+				<TextBlock Text="  мм"/>
+			</StackPanel>
+			<StackPanel Orientation="Horizontal">
 				<TextBlock Text="Ширина = "/>
 				<TextBlock Text="{Binding Path=ObjWidth}"/>
 				<TextBlock Text="  мм"/>
@@ -25,11 +30,6 @@
 			<StackPanel Orientation="Horizontal">
 				<TextBlock Text="Высота = "/>
 				<TextBlock Text="{Binding Path=ObjHeight}"/>
-				<TextBlock Text="  мм"/>
-			</StackPanel>
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Глубина = "/>
-				<TextBlock Text="{Binding Path=ObjDepth}"/>
 				<TextBlock Text="  мм"/>
 			</StackPanel>
 			<StackPanel Orientation="Horizontal">

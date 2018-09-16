@@ -67,9 +67,17 @@ namespace VolumeCalculatorGUI.Logic
 
 	        using (var file = File.AppendText(testCaseDataFilePath))
 	        {
-				file.WriteLine(_basicCaseInfo.ObjWidth);
+		        var largerDimension = _basicCaseInfo.ObjLength > _basicCaseInfo.ObjWidth
+			        ? _basicCaseInfo.ObjLength
+			        : _basicCaseInfo.ObjWidth;
+
+		        var smallerDimension = _basicCaseInfo.ObjLength > _basicCaseInfo.ObjWidth
+			        ? _basicCaseInfo.ObjWidth
+			        : _basicCaseInfo.ObjLength;
+
+				file.WriteLine(largerDimension);
+				file.WriteLine(smallerDimension);
 		        file.WriteLine(_basicCaseInfo.ObjHeight);
-		        file.WriteLine(_basicCaseInfo.ObjDepth);
 		        file.WriteLine(_testCaseData.Settings.DistanceToFloor);
 		        file.Write(_testCaseData.Settings.MinObjHeight);
 	        }

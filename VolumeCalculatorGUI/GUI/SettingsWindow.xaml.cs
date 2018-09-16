@@ -1,49 +1,14 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Common;
-using VolumeCalculatorGUI.Entities;
-using VolumeCalculatorGUI.Logic;
 
 namespace VolumeCalculatorGUI.GUI
 {
     internal partial class SettingsWindow
     {
-	    private readonly SettingsWindowVm _vm;
-	    private readonly DepthMapProcessor _volumeCalculator;
-		private readonly DepthMap _lastReceivedDepthMap;
-	    private readonly ILogger _logger;
-	    private readonly ApplicationSettings _initialSettings;
-		
-		public SettingsWindow(ILogger logger, ApplicationSettings settings, DepthMapProcessor volumeCalculator,
-			DepthMap lastReceivedDepthMap)
-		{
-			_logger = logger;
-			_initialSettings = settings;
-			_volumeCalculator = volumeCalculator;
-			_lastReceivedDepthMap = lastReceivedDepthMap;
-
+		public SettingsWindow()
+	    {
             InitializeComponent();
-
-			_vm = (SettingsWindowVm) DataContext;
-
-			var oldSettings = settings ?? ApplicationSettings.GetDefaultSettings();
-			_vm.DistanceToFloor = oldSettings.DistanceToFloor;
-			_vm.MinObjHeight = oldSettings.MinObjHeight;
-			_vm.OutputPath = oldSettings.OutputPath;
-
-			if (_lastReceivedDepthMap != null)
-				return;
-
-			BtCalculateFloorDepth.IsEnabled = false;
-			BtCalculateFloorDepth.ToolTip = "Нет данных для вычисления";
-		}
-
-		public ApplicationSettings GetSettings()
-		{
-			return new ApplicationSettings(_vm.DistanceToFloor, _vm.MinObjHeight, _vm.OutputPath,
-				_initialSettings.UseWorkingAreaMask, _initialSettings.WorkingAreaContour);
 		}
 
 		private void BtOk_Click(object sender, RoutedEventArgs e)
@@ -67,25 +32,5 @@ namespace VolumeCalculatorGUI.GUI
 			return !Validation.GetHasError(obj) && LogicalTreeHelper.GetChildren(obj).OfType<DependencyObject>().
 				       All(IsValid);
 		}
-
-	    private void BtCalculateFloorDepth_OnClick(object sender, RoutedEventArgs e)
-	    {
-		    try
-		    {
-			    var floorDepth = _volumeCalculator.CalculateFloorDepth(_lastReceivedDepthMap);
-			    if (floorDepth <= 0)
-				    throw new ArgumentException("Floor depth calculation: return a value less than zero");
-
-			    _vm.DistanceToFloor = floorDepth;
-			    _logger.LogInfo($"Caculated floor depth as {floorDepth}mm");
-		    }
-		    catch (Exception ex)
-		    {
-			    _logger.LogException("Failed to calculate floor depth!", ex);
-
-				MessageBox.Show("Во время вычисления произошла ошибка, автоматический расчёт не был выполнен", "Ошибка", 
-				    MessageBoxButton.OK, MessageBoxImage.Error);
-		    }
-	    }
     }
 }

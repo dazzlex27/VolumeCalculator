@@ -21,6 +21,8 @@ namespace VolumeCalculatorGUI.GUI
 		private Point _clickPoint;
 		private Shape _selectedShape;
 
+		public bool IsReadOnly { get; set; }
+
 		public MaskPolygonControl()
 		{
 			_polygonNodes = new List<Ellipse>();
@@ -30,6 +32,9 @@ namespace VolumeCalculatorGUI.GUI
 
 		private IEnumerable<Point> GetPoints()
 		{
+			if (IsReadOnly)
+				return null;
+
 			var points = new List<Point>(_polygonNodes.Count);
 
 			foreach (var ellipse in _polygonNodes)
@@ -45,6 +50,9 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void SetPoints(IEnumerable<Point> absPoints)
 		{
+			if (IsReadOnly)
+				return;
+
 			_polygonNodes.Clear();
 
 			foreach (var point in absPoints)
@@ -65,16 +73,11 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		private void UpdateSettingsIfNeeded()
-		{
-			if (_selectedShape == null)
-				return;
-
-			_vm.RaisePolygonPointsChangedEvent();
-		}
-
 		private void CvMain_MouseDown(object sender, MouseButtonEventArgs e)
 		{
+			if (IsReadOnly)
+				return;
+
 			foreach (var node in _polygonNodes)
 			{
 				if (!node.IsMouseDirectlyOver)
@@ -113,25 +116,34 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void CvMain_MouseUp(object sender, MouseButtonEventArgs e)
 		{
-			UpdateSettingsIfNeeded();
+			if (IsReadOnly)
+				return;
+
 			_selectedShape = null;
 		}
 
 		private void MaskPolygonControl_OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
 		{
+			if (IsReadOnly)
+				return;
+
 			_vm = (MaskPolygonControlVm)DataContext;
 			SetPoints(_vm.PolygonPoints.ToList());
-			_vm.AbsPolygonPointsUpdated += Vm_PolygonPointUpdated;
 		}
 
 		private void CvMain_OnMouseLeave(object sender, MouseEventArgs e)
 		{
-			UpdateSettingsIfNeeded();
+			if (IsReadOnly)
+				return;
+
 			_selectedShape = null;
 		}
 
 		private void Vm_PolygonPointUpdated(IReadOnlyList<Point> absPoints)
 		{
+			if (IsReadOnly)
+				return;
+
 			SetPoints(absPoints);
 		}
 	}

@@ -53,7 +53,7 @@ void CalculateVolume(const float focalX, const float focalY, const float princip
 	SetCalculatorSettings(handle, floorDepth, cutOffDepth);
 
 	const ObjDimDescription* desc = CalculateObjectVolume(handle, mapWidth, mapHeight, depthMap->Data);
-	std::cout << "w=" << desc->Width << " h=" << desc->Height << " d=" << desc->Depth << std::endl;
+	std::cout << "l=" << desc->Length << " w=" << desc->Width << " h=" << desc->Height << std::endl;
 	std::cout << "debug info saved in out/ if the directory was present" << std::endl;
 	DestroyDepthMapProcessor(handle);
 

@@ -9,7 +9,6 @@ using FrameSources.KinectV2;
 using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
-using System.Collections.Generic;
 
 namespace VolumeCalculatorGUI.GUI
 {
@@ -37,12 +36,12 @@ namespace VolumeCalculatorGUI.GUI
 		    remove => _frameSource.ColorFrameReady -= value;
 	    }
 
+	    public event Action<DepthMap> RawDepthFrameReady;
 	    public event Action<DepthMap> DepthFrameReady;
 
 	    public event Action<bool> UseColorStreamChanged;
 	    public event Action<bool> UseDepthStreamChanged;
 	    public event Action<DeviceParams> DeviceParamsChanged;
-	    public event Action<ApplicationSettings> ApplicationSettingsChanged;
 
 		public WriteableBitmap ColorImageBitmap
 	    {
@@ -154,22 +153,10 @@ namespace VolumeCalculatorGUI.GUI
 		    UseColorStreamChanged += ToggleUseColorStream;
 		    UseDepthStreamChanged += ToggleUseDepthStream;
 
-			_useAreaMask = settings.UseWorkingAreaMask;
+			_useAreaMask = settings.UseAreaMask;
 		    _maskPolygonControlVm = new MaskPolygonControlVm(settings.WorkingAreaContour);
-			    //_maskPolygonControlVm.PolygonPointsChanged += MaskPolygonControlVm_PolygonPointsChanged;
 	    }
-
-		//private void MaskPolygonControlVm_PolygonPointsChanged(IReadOnlyList<Point> points)
-		//{
-		//	var newSettings = new ApplicationSettings(_applicationSettings.DistanceToFloor,
-		//		_applicationSettings.MinObjHeight, _applicationSettings.OutputPath,
-		//		_applicationSettings.UseWorkingAreaMask, new List<Point>(points));
-
-		//	ApplicationSettingsChanged?.Invoke(newSettings);
-
-		//	СДЕЛАТЬ В НАСТРОЙКАХ ВОЗМОЖНОСТЬ ЗАДАВАТЬ ВСЁ ЭТО ПРЯМО С ЭКРАНЧИКОМ КАРТЫ ГЛУБИНЫ
-		//}
-
+		
 		public void Dispose()
 	    {
 		    _frameSource.Dispose();
@@ -214,7 +201,9 @@ namespace VolumeCalculatorGUI.GUI
 
 	    public void DepthImageUpdated(DepthMap depthMap)
 	    {
-		    var maskedMap = GetMaskedDepthMap(depthMap);
+		    RawDepthFrameReady?.Invoke(depthMap);
+
+			var maskedMap = GetMaskedDepthMap(depthMap);
 
 			var cutOffDepth = (short)(_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
 		    var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, _deviceParams.MinDepth, _applicationSettings.DistanceToFloor,

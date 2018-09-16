@@ -149,16 +149,24 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
+				var deviceParams = _streamViewControlVm.GetDeviceParams();
 				var volumeCalculator = CalculationDashboardControlVm.GetVolumeCalculator();
 
-				var settingsWindow = new SettingsWindow(_logger, _settings, volumeCalculator, _latestDepthMap)
+				var settingsWindowVm = new SettingsWindowVm(_logger, _settings, deviceParams, volumeCalculator, _latestDepthMap);
+				_streamViewControlVm.RawDepthFrameReady += settingsWindowVm.DepthFrameUpdated;
+				var settingsWindow = new SettingsWindow
 				{
-					Owner = Application.Current.Windows.OfType<Window>().SingleOrDefault(x => x.IsActive)
+					Owner = Application.Current.Windows.OfType<Window>().SingleOrDefault(x => x.IsActive),
+					DataContext = settingsWindowVm
 				};
-				if (settingsWindow.ShowDialog() != true)
+
+				var settingsChanged = settingsWindow.ShowDialog() == true;
+				_streamViewControlVm.RawDepthFrameReady -= settingsWindowVm.DepthFrameUpdated;
+
+				if (!settingsChanged)
 					return;
 
-				Settings = settingsWindow.GetSettings();
+				Settings = settingsWindowVm.GetSettings();
 				IoUtils.SerializeSettings(Settings);
 				_logger.LogInfo("New settings have been applied: " +
 				                $"floorDepth={_settings.DistanceToFloor} minObjHeight={_settings.MinObjHeight} outputPath={_settings.OutputPath}");

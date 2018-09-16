@@ -19,7 +19,7 @@ namespace VolumeCalculatorGUI.GUI
 	    private string _description;
 	    private int _objWidth;
 	    private int _objHeight;
-	    private int _objDepth;
+	    private int _objLength;
 	    private byte _timesToSave;
 	    private bool _showControl;
 
@@ -79,7 +79,23 @@ namespace VolumeCalculatorGUI.GUI
 		    }
 		}
 
-	    public int ObjWidth
+	    public int ObjLength
+	    {
+		    get => _objLength;
+		    set
+		    {
+			    if (value <= 0)
+				    throw new ArgumentOutOfRangeException();
+
+			    if (_objLength == value)
+				    return;
+
+			    _objLength = value;
+			    OnPropertyChanged();
+		    }
+	    }
+
+		public int ObjWidth
 	    {
 		    get => _objWidth;
 		    set
@@ -107,22 +123,6 @@ namespace VolumeCalculatorGUI.GUI
 				    return;
 
 				_objHeight = value;
-			    OnPropertyChanged();
-		    }
-		}
-
-	    public int ObjDepth
-	    {
-		    get => _objDepth;
-		    set
-			{
-				if (value <= 0)
-					throw new ArgumentOutOfRangeException();
-
-				if (_objDepth == value)
-				    return;
-
-				_objDepth = value;
 			    OnPropertyChanged();
 		    }
 		}
@@ -164,9 +164,9 @@ namespace VolumeCalculatorGUI.GUI
 			TestCaseName = "obj1";
 		    Description = "";
 		    TestCaseFolderPath = "C:/3D/";
+		    ObjLength = 1;
 		    ObjWidth = 1;
 		    ObjHeight = 1;
-		    ObjDepth = 1;
 		    TimesToSave = 30;
 	    }
 
@@ -195,8 +195,8 @@ namespace VolumeCalculatorGUI.GUI
 
 	    private void RunTestDataGeneration()
 	    {
-		    var basicTestInfo = new TestCaseBasicInfo(TestCaseName, Description, TestCaseFolderPath,
-			    ObjWidth, ObjHeight, ObjDepth, TimesToSave);
+		    var basicTestInfo = new TestCaseBasicInfo(TestCaseName, Description, TestCaseFolderPath, ObjLength,
+			    ObjWidth, ObjHeight, TimesToSave);
 
 		    var testCaseData = new TestCaseData(basicTestInfo, _latestColorFrame, _latestDepthMap, _deviceParams,
 			    _applicationSettings);

@@ -1,6 +1,5 @@
 ﻿using System.Drawing;
 using System.IO;
-using System.Windows.Media.Imaging;
 using System.Drawing.Imaging;
 using Common;
 using Newtonsoft.Json;
@@ -30,19 +29,6 @@ namespace VolumeCalculatorGUI.Utils
 
 			var settingsText = File.ReadAllText(ConfigFileName);
 			return JsonConvert.DeserializeObject<ApplicationSettings>(settingsText);
-		}
-
-		public static void SaveWriteableBitmap(string filename, BitmapSource image5)
-		{
-			if (filename == string.Empty)
-				return;
-
-			using (var stream5 = new FileStream(filename, FileMode.Create))
-			{
-				var encoder5 = new PngBitmapEncoder();
-				encoder5.Frames.Add(BitmapFrame.Create(image5));
-				encoder5.Save(stream5);
-			}
 		}
 
 		public static Bitmap CreateBitmapFromImageData(ImageData image)

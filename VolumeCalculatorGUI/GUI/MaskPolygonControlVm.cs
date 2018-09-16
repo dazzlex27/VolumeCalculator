@@ -11,15 +11,8 @@ namespace VolumeCalculatorGUI.GUI
 	internal class MaskPolygonControlVm : BaseViewModel
 	{
 		public event Action<IReadOnlyList<Point>> PolygonPointsChanged;
-		public event Action<IReadOnlyList<Point>> AbsPolygonPointsUpdated;
 
-		private static readonly int NodeSize = 4;
 		private static readonly Color PolygonColor = Colors.DarkGreen;
-
-		private bool _dragging;
-
-		private double _canvasWidth;
-		private double _canvasHeight;
 
 		private PointCollection _polygonPoints;
 
@@ -38,7 +31,7 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public double CanvasWidth => 480;
+		public double CanvasWidth => 400;
 		//{
 		//	get => _canvasWidth;
 		//	set
@@ -51,7 +44,7 @@ namespace VolumeCalculatorGUI.GUI
 		//	}
 		//}
 
-		public double CanvasHeight => 360;
+		public double CanvasHeight => 300;
 		//{
 		//	get => _canvasHeight;
 		//	set
@@ -95,10 +88,9 @@ namespace VolumeCalculatorGUI.GUI
 			PolygonPointsChanged?.Invoke(absPoints);
 		}
 
-		public void RaisePolygonPointsChangedEvent()
+		public IReadOnlyList<Point> GetPolygonPoints()
 		{
-			var relPoints = GetRelPoints(_polygonPoints.ToList());
-			PolygonPointsChanged?.Invoke(relPoints);
+			return GetRelPoints(_polygonPoints.ToList());
 		}
 
 		private IReadOnlyList<Point> GetAbsPoints(IReadOnlyCollection<Point> relPoints)

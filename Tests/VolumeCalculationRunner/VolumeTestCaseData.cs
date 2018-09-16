@@ -1,6 +1,6 @@
 ﻿using Common;
 
-namespace VolumeCalculatorTest
+namespace VolumeCalculationRunner
 {
 	internal class VolumeTestCaseData
 	{
@@ -10,17 +10,17 @@ namespace VolumeCalculatorTest
 
 		public DepthMap[] DepthMaps { get; }
 
+		public int ObjLength { get; }
+
 		public int ObjWidth { get; }
 
 		public int ObjHeight { get; }
-
-		public int ObjDepth { get; }
 
 		public short FloorDepth { get; }
 
 		public short MinObjHeight { get; }
 
-		public VolumeTestCaseData(string caseName, string description, DepthMap[] depthMaps, int objWidth, int objHeight, int objDepth, 
+		public VolumeTestCaseData(string caseName, string description, DepthMap[] depthMaps, int objLength, int objWidth, int objHeight,  
 			short floorDepth, short minObjHeight)
 		{
 			CaseName = caseName;
@@ -28,7 +28,7 @@ namespace VolumeCalculatorTest
 			DepthMaps = depthMaps;
 			ObjWidth = objWidth;
 			ObjHeight = objHeight;
-			ObjDepth = objDepth;
+			ObjLength = objLength;
 			FloorDepth = floorDepth;
 			MinObjHeight = minObjHeight;
 		}

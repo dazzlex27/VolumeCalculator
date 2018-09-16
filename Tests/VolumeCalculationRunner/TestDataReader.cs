@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Common;
 
-namespace VolumeCalculatorTest
+namespace VolumeCalculationRunner
 {
 	internal class TestDataReader
 	{
@@ -51,7 +51,7 @@ namespace VolumeCalculatorTest
 				var depthMap = DepthMapUtils.ReadDepthMapFromFile(file.FullName);
 				if (depthMap == null)
 				{
-					Console.WriteLine($"Failed to read depth map from {file.Name} for {testCaseName}");
+					Console.WriteLine($@"Failed to read depth map from {file.Name} for {testCaseName}");
 					continue;
 				}
 

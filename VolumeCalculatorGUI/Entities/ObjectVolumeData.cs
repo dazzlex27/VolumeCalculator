@@ -2,20 +2,20 @@
 {
 	internal class ObjectVolumeData
 	{
+		public int Length { get; }
+
 		public int Width { get; }
 
 		public int Height { get; }
 
-		public int Depth { get; }
-
 		public long Volume { get; }
 
-		public ObjectVolumeData(int width, int height, int depth)
+		public ObjectVolumeData(int length, int width, int height)
 		{
+			Length = length;
 			Width = width;
 			Height = height;
-			Depth = depth;
-			Volume = width * height * depth;
+			Volume = width * height * length;
 		}
 	}
 }

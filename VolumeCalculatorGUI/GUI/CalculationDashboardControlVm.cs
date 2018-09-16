@@ -24,7 +24,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		private int _objWidth;
 	    private int _objHeight;
-	    private int _objDepth;
+	    private int _objLength;
 	    private long _objVolume;
 
 	    private ICommand _measureVolumeCommand;
@@ -33,6 +33,19 @@ namespace VolumeCalculatorGUI.GUI
 
 		public ICommand CalculateVolumeCommand => _measureVolumeCommand ?? (_measureVolumeCommand =
 		                                              new CommandHandler(CalculateObjectVolume, CanCalculateVolume));
+
+	    public int ObjLength
+	    {
+		    get => _objLength;
+		    set
+		    {
+			    if (_objLength == value)
+				    return;
+
+			    _objLength = value;
+			    OnPropertyChanged();
+		    }
+	    }
 
 		public int ObjWidth
 	    {
@@ -58,19 +71,6 @@ namespace VolumeCalculatorGUI.GUI
 			    _objHeight = value;
 			    OnPropertyChanged();
 			}
-	    }
-
-	    public int ObjDepth
-	    {
-		    get => _objDepth;
-		    set
-		    {
-			    if (_objDepth == value)
-				    return;
-
-			    _objDepth = value;
-			    OnPropertyChanged();
-		    }
 	    }
 
 	    public long ObjVolume
@@ -169,7 +169,7 @@ namespace VolumeCalculatorGUI.GUI
 			    }
 			    else
 			    {
-				    _logger.LogInfo($"Completed a volume check, W={volumeData.Width} H={volumeData.Height} D={volumeData.Depth}");
+				    _logger.LogInfo($"Completed a volume check, L={volumeData.Length} W={volumeData.Width} H={volumeData.Height}");
 
 				    UpdateVolumeData(volumeData);
 				}
@@ -184,10 +184,10 @@ namespace VolumeCalculatorGUI.GUI
 
 	    private void UpdateVolumeData(ObjectVolumeData volumeData)
 	    {
+		    ObjLength = volumeData.Length;
 		    ObjWidth = volumeData.Width;
 		    ObjHeight = volumeData.Height;
-		    ObjDepth = volumeData.Depth;
-		    ObjVolume = ObjWidth * ObjHeight * ObjDepth;
-		}
+		    ObjVolume = ObjLength * ObjWidth * ObjHeight;
+	    }
     }
 }

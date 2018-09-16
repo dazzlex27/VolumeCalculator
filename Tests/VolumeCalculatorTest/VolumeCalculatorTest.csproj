@@ -51,12 +51,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DummyLogger.cs" />
     <Compile Include="FloorDepthCalculationTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="VolumeTestCaseData.cs" />
-    <Compile Include="TestDataReader.cs" />
-    <Compile Include="VolumeCalculationTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

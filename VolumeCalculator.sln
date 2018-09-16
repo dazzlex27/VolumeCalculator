@@ -32,6 +32,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DepthMapProcessorTest", "Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCalculatorTest", "Tests\VolumeCalculatorTest\VolumeCalculatorTest.csproj", "{4EBE3F89-1320-4565-8F28-C9B6AB9C0797}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCalculationRunner", "Tests\VolumeCalculationRunner\VolumeCalculationRunner.csproj", "{6F312ABD-BCA5-4F2D-A5CE-BACCE2A47EDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -66,6 +68,10 @@ Global
 		{4EBE3F89-1320-4565-8F28-C9B6AB9C0797}.Debug|x64.Build.0 = Debug|x64
 		{4EBE3F89-1320-4565-8F28-C9B6AB9C0797}.Release|x64.ActiveCfg = Release|x64
 		{4EBE3F89-1320-4565-8F28-C9B6AB9C0797}.Release|x64.Build.0 = Release|x64
+		{6F312ABD-BCA5-4F2D-A5CE-BACCE2A47EDE}.Debug|x64.ActiveCfg = Debug|x64
+		{6F312ABD-BCA5-4F2D-A5CE-BACCE2A47EDE}.Debug|x64.Build.0 = Debug|x64
+		{6F312ABD-BCA5-4F2D-A5CE-BACCE2A47EDE}.Release|x64.ActiveCfg = Release|x64
+		{6F312ABD-BCA5-4F2D-A5CE-BACCE2A47EDE}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -73,6 +79,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{00177CBE-E05E-42BB-8155-BE5F82EAC285} = {6AF5FFB4-9230-437F-B802-E0122EB628D3}
 		{4EBE3F89-1320-4565-8F28-C9B6AB9C0797} = {6AF5FFB4-9230-437F-B802-E0122EB628D3}
+		{6F312ABD-BCA5-4F2D-A5CE-BACCE2A47EDE} = {6AF5FFB4-9230-437F-B802-E0122EB628D3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2C1AE4EA-452B-4AFD-A6A6-98D4514E4441}

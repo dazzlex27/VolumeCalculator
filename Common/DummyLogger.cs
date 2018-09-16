@@ -1,9 +1,8 @@
 ﻿using System;
-using Common;
 
-namespace VolumeCalculatorTest
+namespace Common
 {
-	internal class DummyLogger : ILogger
+	public class DummyLogger : ILogger
 	{
 		public void LogInfo(string info)
 		{
