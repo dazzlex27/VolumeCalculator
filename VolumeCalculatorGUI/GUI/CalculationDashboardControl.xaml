@@ -40,7 +40,7 @@
 			<StackPanel Orientation="Horizontal">
 				<TextBlock Text="Объем: "/>
 				<TextBlock Text="{Binding Path=ObjVolume}"/>
-				<TextBlock Text="  мм"/>
+				<TextBlock Text="  мм²"/>
 			</StackPanel>
 		</StackPanel>
 		<Button Grid.Row="2" 
@@ -49,6 +49,7 @@
 		        MinHeight="25" 
 		        Name="BtCalcVolume"
 		        Content="Выполнить измерение" 
+				IsEnabled="{Binding CalculationInProgress, Converter={StaticResource InverseBooleanConverter}}"
 		        Command="{Binding CalculateVolumeCommand}"/>
 	</Grid>
 </UserControl>

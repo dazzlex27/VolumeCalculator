@@ -167,11 +167,17 @@ const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Cont
 
 const Contour DepthMapProcessor::GetContourClosestToCenter(const std::vector<Contour>& contours) const
 {
+	if (contours.size() == 0)
+		return Contour();
+
+	if (contours.size() == 1)
+		return contours[0];
+
 	const int centerX = _mapWidth / 2;
 	const int centerY = _mapHeight / 2;
 
 	double resultDistanceToCenter = INT32_MAX;
-	Contour closestToCenterContour;
+	Contour closestToCenterContour = contours[0];
 
 	for (uint i = 1; i < contours.size(); i++)
 	{

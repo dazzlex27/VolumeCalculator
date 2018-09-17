@@ -1,5 +1,6 @@
 ﻿using Common;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -16,8 +17,6 @@ namespace VolumeCalculatorGUI.GUI
 		private readonly ILogger _logger;
 
 		private ApplicationSettings _settings;
-
-		private DepthMap _latestDepthMap;
 
 		private StreamViewControlVm _streamViewControlVm;
 		private CalculationDashboardControlVm _calculationDashboardControlVm;
@@ -41,7 +40,7 @@ namespace VolumeCalculatorGUI.GUI
 			get => _calculationDashboardControlVm;
 			set
 			{
-				if (_calculationDashboardControlVm == value)
+				if (ReferenceEquals(_calculationDashboardControlVm, value))
 					return;
 
 				_calculationDashboardControlVm = value;
@@ -54,7 +53,7 @@ namespace VolumeCalculatorGUI.GUI
 			get => _testDataGenerationControlVm;
 			set
 			{
-				if (_testDataGenerationControlVm == value)
+				if (ReferenceEquals(_testDataGenerationControlVm, value))
 					return;
 
 				_testDataGenerationControlVm = value;
@@ -95,7 +94,9 @@ namespace VolumeCalculatorGUI.GUI
 			catch (Exception ex)
 			{
 				_logger.LogException("Failed to initialize the application!", ex);
-				ExitApplication();
+				MessageBox.Show("Ошибка инициализации приложения, информация записана в журнал.", "Ошибка",
+					MessageBoxButton.OK, MessageBoxImage.Error);
+				Process.GetCurrentProcess().Kill();
 			}
 		}
 
@@ -104,13 +105,10 @@ namespace VolumeCalculatorGUI.GUI
 			_streamViewControlVm = new StreamViewControlVm(_logger, _settings);
 			ApplicationSettingsChanged += _streamViewControlVm.ApplicationSettingsUpdated;
 
-			_streamViewControlVm.DepthFrameReady += DepthMapUpdated;
-
 			var deviceParams = _streamViewControlVm.GetDeviceParams();
 
 			_calculationDashboardControlVm = new CalculationDashboardControlVm(_logger, _settings, deviceParams);
 			_streamViewControlVm.DeviceParamsChanged += _calculationDashboardControlVm.DeviceParamsUpdated;
-			_streamViewControlVm.ColorFrameReady += _calculationDashboardControlVm.ColorFrameArrived;
 			_streamViewControlVm.DepthFrameReady += _calculationDashboardControlVm.DepthFrameArrived;
 			ApplicationSettingsChanged += _calculationDashboardControlVm.ApplicationSettingsUpdated;
 			_streamViewControlVm.DeviceParamsChanged += _calculationDashboardControlVm.DeviceParamsUpdated;
@@ -192,10 +190,6 @@ namespace VolumeCalculatorGUI.GUI
 				_testDataGenerationControlVm.ShowControl = value;
 				OnPropertyChanged();
 			}
-		}
-		private void DepthMapUpdated(DepthMap depthMap)
-		{
-			_latestDepthMap = depthMap;
 		}
 
 		private void InitializeSettings()

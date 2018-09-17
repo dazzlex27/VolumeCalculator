@@ -13,14 +13,12 @@ namespace VolumeCalculatorGUI.GUI
     internal partial class SettingsWindow
     {
 	    private readonly Regex _numericValidationRegex;
-	    private readonly Regex _numericNonZeroValidationRegex;
 
 		public SettingsWindow()
 	    {
             InitializeComponent();
 
 		    _numericValidationRegex = new Regex("[0-9]+");
-		    _numericNonZeroValidationRegex = new Regex("[1-9]([0-9]+)?");
 		}
 
 		private void BtOk_Click(object sender, RoutedEventArgs e)
@@ -56,7 +54,8 @@ namespace VolumeCalculatorGUI.GUI
 				return;
 		    }
 
-		    e.Handled = !_numericNonZeroValidationRegex.IsMatch(e.Text);
+		    var zeroInFirstPosition = e.Text == "0" && textBox.CaretIndex == 0;
+			e.Handled = !_numericValidationRegex.IsMatch(e.Text) || zeroInFirstPosition;
 	    }
 
 	    private void SettingsWindow_OnSizeChanged(object sender, SizeChangedEventArgs e)

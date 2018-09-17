@@ -8,19 +8,18 @@ using FrameProviders;
 using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Logic;
+using VolumeCalculatorGUI.Utils;
 
 namespace VolumeCalculatorGUI.GUI
 {
     internal class CalculationDashboardControlVm : BaseViewModel, IDisposable
     {
-	    private const string ResultFileName = "results.csv";
-
 	    private readonly ILogger _logger;
+	    private string _resultFullPath;
 
 	    private ApplicationSettings _applicationSettings;
 	    private DeviceParams _deviceParams;
 
-	    private ImageData _latestImageData;
 	    private DepthMap _latestDepthMap;
 
 	    private DepthMapProcessor _processor;
@@ -33,6 +32,7 @@ namespace VolumeCalculatorGUI.GUI
 	    private int _objHeight;
 	    private int _objLength;
 	    private long _objVolume;
+	    private bool _calculationInProgress;
 
 		public ICommand CalculateVolumeCommand { get; }
 
@@ -101,13 +101,32 @@ namespace VolumeCalculatorGUI.GUI
 		    }
 	    }
 
+	    public bool CalculationInProgress
+	    {
+		    get => _calculationInProgress;
+		    set
+		    {
+			    if (_calculationInProgress == value)
+				    return;
+
+			    _calculationInProgress = value;
+				OnPropertyChanged();
+		    }
+	    }
+
 		public CalculationDashboardControlVm(ILogger logger, ApplicationSettings settings, DeviceParams deviceParams)
 	    {
 		    _logger = logger;
 		    _applicationSettings = settings;
-		    DeviceParamsUpdated(deviceParams);
+			_deviceParams = deviceParams;
 
-		    CalculateVolumeCommand = new CommandHandler(CalculateObjectVolume, true);
+		    _processor = new DepthMapProcessor(_logger, _deviceParams);
+		    var cutOffDepth = (short)(_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
+		    _processor.SetCalculatorSettings(_applicationSettings.DistanceToFloor, cutOffDepth);
+
+		    _resultFullPath = Path.Combine(_applicationSettings.OutputPath, Constants.ResultFileName);
+
+			CalculateVolumeCommand = new CommandHandler(CalculateObjectVolume, !CalculationInProgress);
 	    }
 
 	    public void Dispose()
@@ -121,7 +140,8 @@ namespace VolumeCalculatorGUI.GUI
 		    _applicationSettings = applicationSettings;
 		    var cutOffDepth = (short)(_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
 		    _processor.SetCalculatorSettings(_applicationSettings.DistanceToFloor, cutOffDepth);
-	    }
+		    _resultFullPath = Path.Combine(_applicationSettings.OutputPath, Constants.ResultFileName);
+		}
 
 	    public void DeviceParamsUpdated(DeviceParams deviceParams)
 	    {
@@ -132,11 +152,6 @@ namespace VolumeCalculatorGUI.GUI
 		    var cutOffDepth = (short)(_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
 		    _processor.SetCalculatorSettings(_applicationSettings.DistanceToFloor, cutOffDepth);
 		}
-
-		public void ColorFrameArrived(ImageData imageData)
-	    {
-		    _latestImageData = imageData;
-	    }
 
 	    public void DepthFrameArrived(DepthMap depthMap)
 	    {
@@ -165,13 +180,24 @@ namespace VolumeCalculatorGUI.GUI
 			    return;
 		    }
 
+		    if (!IsResultFileAccessible())
+		    {
+			    MessageBox.Show("Пожалуйста убедитесь, что файл с результатами закрыт, прежде чем выполнять вычисление",
+				    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			    _logger.LogInfo("File");
+
+				return;
+		    }
+
 		    try
 		    {
+			    CalculationInProgress = true;
+
 			    _logger.LogInfo("Starting a volume check...");
 			    Directory.CreateDirectory("out");
 
 			    var cutOffDepth = (short) (_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
-			    DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, "out/depth.png", _deviceParams.MinDepth,
+				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, "out/depth.png", _deviceParams.MinDepth,
 				    _deviceParams.MaxDepth, cutOffDepth);
 
 			    _volumeCalculator = new VolumeCalculator(_processor, _applicationSettings.SampleCount);
@@ -179,14 +205,19 @@ namespace VolumeCalculatorGUI.GUI
 		    }
 		    catch (Exception ex)
 		    {
-			    _logger.LogException("Failed to complete volume measurement", ex);
+			    _logger.LogException("Failed to start volume calculation", ex);
 			    MessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка",
 				    MessageBoxButton.OK, MessageBoxImage.Error);
+
+			    CalculationInProgress = false;
+
 		    }
 		}
 
 		private void VolumeCalculator_CalculationFinished(ObjectVolumeData volumeData)
 		{
+			CalculationInProgress = false;
+
 			_volumeCalculator.CalculationFinished -= VolumeCalculator_CalculationFinished;
 			_volumeCalculator = null;
 
@@ -206,14 +237,38 @@ namespace VolumeCalculatorGUI.GUI
 				UpdateVolumeData(volumeData);
 			}
 
-			Directory.CreateDirectory(_applicationSettings.OutputPath);
-			var fullPath = Path.Combine(_applicationSettings.OutputPath, ResultFileName);
-			using (var resultFile = new StreamWriter(fullPath, true, Encoding.Default))
+			if (volumeData.Length == 0 || volumeData.Width == 0 || volumeData.Height == 0)
 			{
-				var time = DateTime.Now;
-				var resultString =
-					$@"{++_measurementCount},{time.ToShortDateString()},{time.ToShortTimeString()},{ObjName},{ObjLength},{ObjWidth},{ObjHeight},{ObjVolume}";
-				resultFile.WriteLine(resultString);
+				MessageBox.Show("Объект не найден", "Результат вычисления",
+					MessageBoxButton.OK, MessageBoxImage.Information);
+
+				return;
+			}
+
+			try
+			{
+				Directory.CreateDirectory(_applicationSettings.OutputPath);
+				using (var resultFile = new StreamWriter(_resultFullPath, true, Encoding.Default))
+				{
+					var dateTime = DateTime.Now;
+					var resultString = new StringBuilder(++_measurementCount);
+					resultString.Append($@"{Constants.CsvSeparator}{dateTime.ToShortDateString()}");
+					resultString.Append($@"{Constants.CsvSeparator}{dateTime.ToShortTimeString()}");
+					resultString.Append($@"{Constants.CsvSeparator}{ObjName}");
+					resultString.Append($@"{Constants.CsvSeparator}{ObjLength}");
+					resultString.Append($@"{Constants.CsvSeparator}{ObjWidth}");
+					resultString.Append($@"{Constants.CsvSeparator}{ObjHeight}");
+					resultString.Append($@"{Constants.CsvSeparator}{ObjVolume}");
+					resultFile.WriteLine(resultString);
+					resultFile.Flush();
+					_logger.LogInfo("Wrote the calculated values to csv");
+				}
+			}
+			catch (IOException ex)
+			{
+				_logger.LogException(
+					$@"Failed to write calculated values to {Constants.ResultFileName} ({_applicationSettings.OutputPath})",
+					ex);
 			}
 		}
 
@@ -224,5 +279,25 @@ namespace VolumeCalculatorGUI.GUI
 		    ObjHeight = volumeData.Height;
 		    ObjVolume = ObjLength * ObjWidth * ObjHeight;
 	    }
+
+	    private bool IsResultFileAccessible()
+	    {
+		    try
+		    {
+			    if (!File.Exists(_resultFullPath))
+				    return true;
+
+				using (Stream stream = new FileStream(_resultFullPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+				{
+					stream.ReadByte();
+				}
+
+			    return true;
+		    }
+		    catch (IOException)
+		    {
+			    return false;
+		    }
+		}
     }
 }

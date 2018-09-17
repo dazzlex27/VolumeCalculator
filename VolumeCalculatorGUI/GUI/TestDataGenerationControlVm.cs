@@ -22,17 +22,12 @@ namespace VolumeCalculatorGUI.GUI
 	    private int _objLength;
 	    private byte _timesToSave;
 	    private bool _showControl;
-
-	    private ICommand _runTestDataGenerationCommand;
-
-		public bool CanRunTestDataGeneration => true;
+	    private bool _generationInProgress;
 
 	    private ImageData _latestColorFrame;
 		private DepthMap _latestDepthMap;
 
-	    public ICommand RunTestDataGenerationCommand =>
-		    _runTestDataGenerationCommand ?? (_runTestDataGenerationCommand =
-			    new CommandHandler(RunTestDataGeneration, CanRunTestDataGeneration));
+	    public ICommand RunTestDataGenerationCommand { get; }
 
 		public string TestCaseName
 	    {
@@ -156,6 +151,19 @@ namespace VolumeCalculatorGUI.GUI
 		    }
 	    }
 
+	    public bool GenerationInProgress
+	    {
+		    get => _generationInProgress;
+		    set
+		    {
+			    if (_generationInProgress == value)
+				    return;
+
+			    _generationInProgress = value;
+				OnPropertyChanged();
+		    }
+	    }
+
 	    public TestDataGenerationControlVm(ApplicationSettings settings, DeviceParams deviceParams)
 	    {
 		    _applicationSettings = settings;
@@ -168,6 +176,8 @@ namespace VolumeCalculatorGUI.GUI
 		    ObjWidth = 1;
 		    ObjHeight = 1;
 		    TimesToSave = 30;
+
+		    RunTestDataGenerationCommand = new CommandHandler(RunTestDataGeneration, !GenerationInProgress);
 	    }
 
 	    public void ColorFrameUpdated(ImageData image)
@@ -181,6 +191,8 @@ namespace VolumeCalculatorGUI.GUI
 
 			if (_testDataGenerator != null && _testDataGenerator.IsActive)
 				_testDataGenerator.AdvanceDataSaving(depthMap);
+			else
+				GenerationInProgress = false;
 		}
 
 	    public void ApplicationSettingsUpdated(ApplicationSettings settings)
@@ -195,7 +207,9 @@ namespace VolumeCalculatorGUI.GUI
 
 	    private void RunTestDataGeneration()
 	    {
-		    var basicTestInfo = new TestCaseBasicInfo(TestCaseName, Description, TestCaseFolderPath, ObjLength,
+		    GenerationInProgress = true;
+
+			var basicTestInfo = new TestCaseBasicInfo(TestCaseName, Description, TestCaseFolderPath, ObjLength,
 			    ObjWidth, ObjHeight, TimesToSave);
 
 		    var testCaseData = new TestCaseData(basicTestInfo, _latestColorFrame, _latestDepthMap, _deviceParams,

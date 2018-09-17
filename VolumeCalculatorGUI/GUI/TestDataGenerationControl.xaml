@@ -71,6 +71,10 @@
 				         AcceptsTab="False"/>
 			</StackPanel>
 		</StackPanel>
-		<Button Name="BtSaveTestData" Margin="0,2" Content="Сохранить тестовые данные" Command="{Binding RunTestDataGenerationCommand}"/>
+		<Button Name="BtSaveTestData" 
+		        Margin="0,2" 
+		        Content="Сохранить тестовые данные"
+				IsEnabled="{Binding GenerationInProgress, Converter={StaticResource InverseBooleanConverter}}"
+		        Command="{Binding RunTestDataGenerationCommand}"/>
 	</StackPanel>
 </UserControl>
