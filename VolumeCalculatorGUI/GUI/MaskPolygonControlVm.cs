@@ -19,6 +19,8 @@ namespace VolumeCalculatorGUI.GUI
 		private double _canvasWidth;
 		private double _canvasHeight;
 
+		private List<Point> _relPoints;
+
 		public List<Ellipse> PolygonNodes { get; }
 
 		public PointCollection PolygonPoints
@@ -82,6 +84,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		public void SetPolygonPoints(IReadOnlyList<Point> relPoints)
 		{
+			_relPoints = new List<Point>(relPoints);
 			var absPoints = GetAbsPoints(relPoints);
 			PolygonPoints = new PointCollection(absPoints);
 			PolygonPointsChanged?.Invoke(absPoints);
@@ -90,6 +93,13 @@ namespace VolumeCalculatorGUI.GUI
 		public IReadOnlyList<Point> GetPolygonPoints()
 		{
 			return GetRelPoints(_polygonPoints.ToList());
+		}
+
+		public void SetCanvasSize(double width, double height)
+		{
+			_canvasWidth = width;
+			_canvasHeight = height;
+			SetPolygonPoints(_relPoints);
 		}
 
 		private IReadOnlyList<Point> GetAbsPoints(IReadOnlyCollection<Point> relPoints)

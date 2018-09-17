@@ -16,7 +16,7 @@ namespace VolumeCalculatorGUI.GUI
 	internal class SettingsWindowVm : BaseViewModel
 	{
 		private readonly DepthMapProcessor _volumeCalculator;
-		private readonly DepthMap _lastReceivedDepthMap;
+		private DepthMap _latestDepthMap;
 		private readonly ILogger _logger;
 
 		private WriteableBitmap _depthImageBitmap;
@@ -165,13 +165,12 @@ namespace VolumeCalculatorGUI.GUI
 		public ICommand ResetSettingsCommand { get; }
 
 		public SettingsWindowVm(ILogger logger, ApplicationSettings settings, DeviceParams deviceParams, 
-			DepthMapProcessor volumeCalculator, DepthMap lastReceivedDepthMap)
+			DepthMapProcessor volumeCalculator)
 		{
 			_logger = logger;
 			_volumeCalculator = volumeCalculator;
-			_lastReceivedDepthMap = lastReceivedDepthMap;
 
-			CalculateFloorDepthCommand = new CommandHandler(CalculateFloorDepth, HasReceivedADepthMap);
+			CalculateFloorDepthCommand = new CommandHandler(CalculateFloorDepth, true);
 			ResetSettingsCommand = new CommandHandler(ResetSettings, true);
 
 			var oldSettings = settings ?? ApplicationSettings.GetDefaultSettings();
@@ -190,6 +189,7 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			HasReceivedADepthMap = true;
 			MaskPolygonControlVm.CanEditPolygon = true;
+			_latestDepthMap = depthMap;
 
 			var cutOffDepth = (short)(FloorDepth - MinObjHeight);
 			var depthMapData = DepthMapUtils.GetColorizedDepthMapData(depthMap, MinDepth, FloorDepth,
@@ -210,7 +210,16 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
-				var floorDepth = _volumeCalculator.CalculateFloorDepth(_lastReceivedDepthMap);
+				if (_latestDepthMap == null)
+				{
+					MessageBox.Show("Нет кадров для обработки!", "Ошибка", MessageBoxButton.OK,
+						MessageBoxImage.Exclamation);
+					_logger.LogInfo("Attempted a volume check with no maps");
+
+					return;
+				}
+
+				var floorDepth = _volumeCalculator.CalculateFloorDepth(_latestDepthMap);
 				if (floorDepth <= 0)
 					throw new ArgumentException("Floor depth calculation: return a value less than zero");
 

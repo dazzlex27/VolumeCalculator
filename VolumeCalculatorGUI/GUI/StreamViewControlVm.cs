@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
@@ -115,7 +116,7 @@ namespace VolumeCalculatorGUI.GUI
 		    get => _maskPolygonControlVm;
 		    set
 		    {
-			    if (_maskPolygonControlVm == value)
+			    if (ReferenceEquals(_maskPolygonControlVm, value))
 				    return;
 
 			    _maskPolygonControlVm = value;
@@ -167,10 +168,12 @@ namespace VolumeCalculatorGUI.GUI
 		    return _deviceParams;
 	    }
 
-	    public void ApplicationSettingsUpdate(ApplicationSettings settings)
+	    public void ApplicationSettingsUpdated(ApplicationSettings settings)
 	    {
 		    _applicationSettings = settings;
+		    UseAreaMask = _applicationSettings.UseAreaMask;
 		    MaskPolygonControlVm.SetPolygonPoints(settings.WorkingAreaContour);
+		    _polygonPointsChaged = true;
 	    }
 
 	    public void ColorImageUpdated(ImageData image)
@@ -238,9 +241,8 @@ namespace VolumeCalculatorGUI.GUI
 			    {
 				    if (UseAreaMask)
 				    {
-					    var points = MaskPolygonControlVm.PolygonPoints.ToList();
-					    var maskData = GeometryUtils.CreateWorkingAreaMask(points,
-						    depthMap.Width, depthMap.Height);
+					    var points = _applicationSettings.WorkingAreaContour.ToArray();
+					    var maskData = GeometryUtils.CreateWorkingAreaMask(points, depthMap.Width, depthMap.Height);
 					    _workingAreaMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
 				    }
 				    else

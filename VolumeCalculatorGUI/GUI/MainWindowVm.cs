@@ -102,7 +102,7 @@ namespace VolumeCalculatorGUI.GUI
 		private void InitializeSubViewModels()
 		{
 			_streamViewControlVm = new StreamViewControlVm(_logger, _settings);
-			ApplicationSettingsChanged += _streamViewControlVm.ApplicationSettingsUpdate;
+			ApplicationSettingsChanged += _streamViewControlVm.ApplicationSettingsUpdated;
 
 			_streamViewControlVm.DepthFrameReady += DepthMapUpdated;
 
@@ -151,7 +151,7 @@ namespace VolumeCalculatorGUI.GUI
 				var deviceParams = _streamViewControlVm.GetDeviceParams();
 				var depthMapProcessor = CalculationDashboardControlVm.GetDepthMapProcessor();
 
-				var settingsWindowVm = new SettingsWindowVm(_logger, _settings, deviceParams, depthMapProcessor, _latestDepthMap);
+				var settingsWindowVm = new SettingsWindowVm(_logger, _settings, deviceParams, depthMapProcessor);
 				_streamViewControlVm.RawDepthFrameReady += settingsWindowVm.DepthFrameUpdated;
 				var settingsWindow = new SettingsWindow
 				{
@@ -167,7 +167,6 @@ namespace VolumeCalculatorGUI.GUI
 
 				Settings = settingsWindowVm.GetSettings();
 				IoUtils.SerializeSettings(Settings);
-				ApplicationSettingsChanged?.Invoke(Settings);
 				_logger.LogInfo("New settings have been applied: " +
 				                $"floorDepth={_settings.DistanceToFloor} useAreaMask={_settings.UseAreaMask} minObjHeight={_settings.MinObjHeight} sampleCount={_settings.SampleCount} outputPath={_settings.OutputPath}");
 			}

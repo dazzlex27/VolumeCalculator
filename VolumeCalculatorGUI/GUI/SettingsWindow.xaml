@@ -23,7 +23,7 @@
 											DataContext="{Binding MaskPolygonControlVm}" 
 											HorizontalAlignment="Stretch" 
 											VerticalAlignment="Stretch"
-					                        IsReadOnly="{Binding CanEditPolygon, Converter={StaticResource InverseBooleanConverter}}"/>
+					                        IsReadOnly="False"/>
 				</StackPanel>
 			</Canvas>
 			<CheckBox Margin="2" IsEnabled="{Binding HasReceivedADepthMap}" Content="Ограничение зоны измерения" IsChecked="{Binding UseAreaMask, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
@@ -50,7 +50,7 @@
 					         Text="{Binding Path=FloorDepth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 					         PreviewTextInput="CheckNumericTextPreview"/>
 				</Grid>
-				<Button Name="BtCalculateFloorDepth" Margin="2" IsEnabled="{Binding HasReceivedADepthMap, UpdateSourceTrigger=PropertyChanged}" Content="Рассчитать автоматически" Command="{Binding CalculateFloorDepthCommand}"/>
+				<Button Name="BtCalculateFloorDepth" Margin="2" Content="Рассчитать автоматически" Command="{Binding CalculateFloorDepthCommand}"/>
 			</StackPanel>
 			<StackPanel Margin="3" Orientation="Horizontal" VerticalAlignment="Center">
 				<TextBlock Margin="2,0" Text="Минимальная высота объекта, мм: " VerticalAlignment="Center"/>

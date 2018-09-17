@@ -8,7 +8,7 @@ using System.Windows.Shapes;
 
 namespace VolumeCalculatorGUI.GUI
 {
-	internal partial class MaskPolygonControl : UserControl
+	internal partial class MaskPolygonControl
 	{
 		private static readonly int NodeSize = 14;
 		private static readonly int HalfNodeSize = NodeSize / 2;
@@ -75,7 +75,6 @@ namespace VolumeCalculatorGUI.GUI
 
 			foreach (var node in _polygonNodes)
 				CvMain.Children.Remove(node);
-			CvMain.InvalidateVisual();
 			_polygonNodes.Clear();
 
 			foreach (var point in absPoints)
@@ -147,10 +146,13 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void MaskPolygonControl_OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
 		{
-			if (IsReadOnly)
-				return;
-
 			_vm = (MaskPolygonControlVm)DataContext;
+			_vm.PolygonPointsChanged += Vm_PolygonPointsChanged;
+			_vm.SetCanvasSize(CvMain.ActualWidth, CvMain.ActualHeight);
+		}
+
+		private void Vm_PolygonPointsChanged(IReadOnlyList<Point> obj)
+		{
 			SetPoints(_vm.PolygonPoints.ToList());
 		}
 
@@ -164,11 +166,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void MaskPolygonControl_OnSizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			if (_vm == null)
-				return;
-
-			_vm.CanvasWidth = CvMain.ActualWidth;
-			_vm.CanvasHeight = CvMain.ActualHeight;
+			_vm?.SetCanvasSize(CvMain.ActualWidth, CvMain.ActualHeight);
 		}
 	}
 }

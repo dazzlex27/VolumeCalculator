@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Common;
 using Point = System.Windows.Point;
 
@@ -9,6 +10,8 @@ namespace VolumeCalculatorGUI.Utils
 	{
 		public static bool[] CreateWorkingAreaMask(IReadOnlyList<Point> polygon, int width, int height)
 		{
+			var absPoints = polygon.Select(p => new Point(p.X * width, p.Y * height)).ToList();
+
 			var polygonMask = new bool[width * height];
 
 			var index = 0;
@@ -16,7 +19,7 @@ namespace VolumeCalculatorGUI.Utils
 			{
 				for (var i = 0; i < width; i++)
 				{
-					polygonMask[index] = IsPointInsidePolygon(polygon, i, j);
+					polygonMask[index] = IsPointInsidePolygon(absPoints, i, j);
 					index++;
 				}
 			}
