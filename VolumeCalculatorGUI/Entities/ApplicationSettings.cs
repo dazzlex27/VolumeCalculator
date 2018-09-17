@@ -1,20 +1,28 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using System.Windows;
 
 namespace VolumeCalculatorGUI.Entities
 {
-    internal class ApplicationSettings
+	[Obfuscation(ApplyToMembers = false)]
+	internal class ApplicationSettings
     {
-        public short DistanceToFloor { get; }
+	    [Obfuscation]
+		public short DistanceToFloor { get; }
 
-        public short MinObjHeight { get; }
+	    [Obfuscation]
+		public short MinObjHeight { get; }
 
+	    [Obfuscation]
 		public byte SampleCount { get; }
 
+	    [Obfuscation]
 		public string OutputPath { get; }
 
+	    [Obfuscation]
 		public bool UseAreaMask { get; }
 
+	    [Obfuscation]
 		public List<Point> WorkingAreaContour { get; }
 
 	    public ApplicationSettings(short distanceToFloor, short minObjHeight, byte sampleCount, string outputPath, bool useAreaMask, 
@@ -28,12 +36,14 @@ namespace VolumeCalculatorGUI.Entities
 		    WorkingAreaContour = workingAreaContour ?? GetDefaultAreaContour();
 	    }
 
+	    [Obfuscation(Exclude = true)]
 		public static ApplicationSettings GetDefaultSettings()
 		{
 			return new ApplicationSettings(1000, 5, 10, "C:/VolumeCalculator/", false, GetDefaultAreaContour());
 		}
 
-	    private static List<Point> GetDefaultAreaContour()
+	    [Obfuscation(Exclude = true)]
+		private static List<Point> GetDefaultAreaContour()
 	    {
 		   return new List<Point>
 		    {

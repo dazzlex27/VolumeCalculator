@@ -237,7 +237,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void ResetSettings()
 		{
-			if (MessageBox.Show("Сбросить настройки", "Подтверждение", MessageBoxButton.YesNo,
+			if (MessageBox.Show("Сбросить настройки?", "Подтверждение", MessageBoxButton.YesNo,
 				    MessageBoxImage.Question) != MessageBoxResult.Yes)
 				return;
 

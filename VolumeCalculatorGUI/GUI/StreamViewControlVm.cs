@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Common;
 using FrameProviders;
+using FrameProviders.KinectV2;
 using FrameProviders.LocalFiles;
 using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.GUI.Utils;
@@ -144,7 +145,7 @@ namespace VolumeCalculatorGUI.GUI
 			_useColorStream = true;
 		    _useDepthStream = true;
 
-		    _frameProvider = new LocalFileFrameProvider(logger);
+		    _frameProvider = new KinectV2FrameProvider(logger);
 		    _frameProvider.Start();
 		    DeviceParams = _frameProvider.GetDeviceParams();
 

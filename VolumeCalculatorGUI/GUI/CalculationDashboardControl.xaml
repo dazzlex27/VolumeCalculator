@@ -17,30 +17,32 @@
 			<RowDefinition/>
 			<RowDefinition/>
 		</Grid.RowDefinitions>
-		<StackPanel Margin="3">
-			<TextBlock Margin="2,0" Text="Код объекта"/>
-			<TextBox Margin="2,2,2,0" Text="{Binding Path=ObjName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+		<StackPanel Margin="3" Background="{StaticResource BackgroundKey}">
+			<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Код объекта"/>
+			<TextBox Style="{StaticResource TextBoxStyle}" 
+			         Margin="2,2,2,0" 
+			         Text="{Binding Path=ObjName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 		</StackPanel>
 		<StackPanel Grid.Row="1" Grid.Column="0" Name="SpCounters" Margin="5">
 			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Длина: "/>
-				<TextBlock Text="{Binding Path=ObjLength}"/>
-				<TextBlock Text="  мм"/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" Text="Длина: "/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" Text="{Binding Path=ObjLength}"/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" Text="  мм"/>
 			</StackPanel>
 			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Ширина = "/>
-				<TextBlock Text="{Binding Path=ObjWidth}"/>
-				<TextBlock Text="  мм"/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" Text="Ширина = "/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" Text="{Binding Path=ObjWidth}"/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" Text="  мм"/>
 			</StackPanel>
 			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Высота: "/>
-				<TextBlock Text="{Binding Path=ObjHeight}"/>
-				<TextBlock Text="  мм"/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" Text="Высота: "/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" Text="{Binding Path=ObjHeight}"/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" Text="  мм"/>
 			</StackPanel>
 			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Объем: "/>
-				<TextBlock Text="{Binding Path=ObjVolume}"/>
-				<TextBlock Text="  мм²"/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" Text="Объем: "/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" Text="{Binding Path=ObjVolume}"/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" Text="  мм²"/>
 			</StackPanel>
 		</StackPanel>
 		<Button Grid.Row="2" 

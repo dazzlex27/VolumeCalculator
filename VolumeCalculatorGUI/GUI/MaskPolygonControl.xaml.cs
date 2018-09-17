@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,7 +13,8 @@ namespace VolumeCalculatorGUI.GUI
 	{
 		private static readonly int NodeSize = 14;
 		private static readonly int HalfNodeSize = NodeSize / 2;
-		private static readonly Color PolygonColor = Colors.ForestGreen;
+
+		private static Color PolygonColor = Colors.Blue;
 
 		private readonly List<Ellipse> _polygonNodes;
 
@@ -47,7 +49,25 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			_polygonNodes = new List<Ellipse>();
 
+			AssignEllipseColor();
 			InitializeComponent();
+		}
+
+		private void AssignEllipseColor()
+		{
+			if (PolygonColor != Colors.Blue)
+				return;
+
+			try
+			{
+				var mainBrushColor = Application.Current.Resources["Brush01"];
+				// ReSharper disable once PossibleNullReferenceException
+				PolygonColor = (Color)ColorConverter.ConvertFromString(mainBrushColor.ToString());
+			}
+			catch (Exception)
+			{
+				// ignored
+			}
 		}
 
 		private IEnumerable<Point> GetPoints()

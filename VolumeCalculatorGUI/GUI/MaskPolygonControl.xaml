@@ -21,7 +21,7 @@
 				 HorizontalAlignment="Stretch"
 				 VerticalAlignment="Stretch"
 	             Fill="Transparent"
-	             Stroke="DarkGreen"
+	             Stroke="{StaticResource Brush01}"
 	             StrokeThickness="3"
 	             StrokeLineJoin="Round"
 				 IsHitTestVisible="False"

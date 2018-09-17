@@ -11,7 +11,7 @@
 		<gui:MainWindowVm/>
 	</Window.DataContext>
 	<StackPanel>
-		<Menu>
+		<Menu Background="{StaticResource BackgroundKey}">
 			<MenuItem Header="Действия">
 				<MenuItem Name="MiOpenSettings" Header="Открыть настройки" Command="{Binding OpenSettingsCommand}"/>
 				<MenuItem Name="MiExitApp" Header="Выйти из приложения" Click="MiExitApp_OnClick"/>

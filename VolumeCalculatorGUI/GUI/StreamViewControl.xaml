@@ -13,7 +13,7 @@
 			<ColumnDefinition/>
 		</Grid.ColumnDefinitions>
 		<StackPanel Grid.Column="0" Margin="2">
-			<TextBlock Margin="2" Text="RGB-поток"/>
+			<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2" Text="RGB-поток"/>
 			<Canvas Name="CvColor" Width="480" Height="360" Background="Black" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 				<Image Source="{Binding ColorImageBitmap}" 
 				       Width="{Binding Path=ActualWidth, ElementName=CvColor}" 
@@ -22,7 +22,7 @@
 			<CheckBox Margin="0,5" Content="Отображение потока" IsChecked="{Binding UseColorStream, Mode=TwoWay}"/>
 		</StackPanel>
 		<StackPanel Grid.Row="0" Grid.Column="1" Margin="2">
-			<TextBlock Margin="2" Text="Поток глубины"/>
+			<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2" Text="Поток глубины"/>
 			<Canvas Name="CvDepth" Width="480" Height="360" Background="Black">
 				<Image Source="{Binding DepthImageBitmap}" 
 				       Name="ImgDm" 

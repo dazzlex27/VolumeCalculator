@@ -4,7 +4,17 @@
              xmlns:utils="clr-namespace:VolumeCalculatorGUI.GUI.Utils"
              StartupUri="GUI/MainWindow.xaml">
 	<Application.Resources>
-		<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-		<utils:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="Themes/Metro/Metro.MSControls.Core.Implicit.xaml" />
+				<!--<ResourceDictionary Source="Themes/Metro/Metro.MSControls.Toolkit.Implicit.xaml" />-->
+			</ResourceDictionary.MergedDictionaries>
+
+			<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+			<utils:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+
+			<SolidColorBrush x:Key="BackgroundKey" Color="#FFFFFF" />
+		</ResourceDictionary>
 	</Application.Resources>
+
 </Application>
