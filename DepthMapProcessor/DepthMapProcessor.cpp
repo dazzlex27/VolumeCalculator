@@ -2,7 +2,6 @@
 #include <string>
 #include <cmath>
 #include <climits>
-#include <ctime>
 #include "ProcessingUtils.h"
 
 const float PI = 3.141592653589793238463f;
@@ -39,12 +38,6 @@ void DepthMapProcessor::SetSettings(const short floorDepth, const short cutOffDe
 
 ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const int mapWidth, const int mapHeight, const short*const mapData)
 {
-	std::time_t t = std::time(0);   // get time now
-	std::tm now;
-	localtime_s(&now, &t);
-	if (now.tm_year > 2018 || now.tm_mon > 10)
-		return nullptr;
-
 	if (_mapWidth != mapWidth || _mapHeight != mapHeight)
 		ResizeBuffers(mapWidth, mapHeight);
 

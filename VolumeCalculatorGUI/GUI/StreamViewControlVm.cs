@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
@@ -145,7 +145,10 @@ namespace VolumeCalculatorGUI.GUI
 			_useColorStream = true;
 		    _useDepthStream = true;
 
-		    _frameProvider = new KinectV2FrameProvider(logger);
+		    if (Directory.Exists(Constants.LocalFrameProviderFolderName))
+				_frameProvider = new LocalFileFrameProvider(logger);
+			else
+				_frameProvider = new KinectV2FrameProvider(logger);
 		    _frameProvider.Start();
 		    DeviceParams = _frameProvider.GetDeviceParams();
 

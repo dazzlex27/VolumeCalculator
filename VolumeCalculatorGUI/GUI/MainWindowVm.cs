@@ -21,6 +21,7 @@ namespace VolumeCalculatorGUI.GUI
 		private StreamViewControlVm _streamViewControlVm;
 		private CalculationDashboardControlVm _calculationDashboardControlVm;
 		private TestDataGenerationControlVm _testDataGenerationControlVm;
+		private bool _isFullScreen;
 
 		public StreamViewControlVm StreamViewControlVm
 		{
@@ -74,7 +75,22 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
+		public bool IsFullSreen
+		{
+			get => _isFullScreen;
+			set
+			{
+				if (_isFullScreen == value)
+					return;
+
+				_isFullScreen = value;
+				OnPropertyChanged();
+			}
+		}
+
 		public ICommand OpenSettingsCommand { get; }
+
+		public ICommand ToggleFullscreen { get; }
 
 		public MainWindowVm()
 		{
@@ -85,6 +101,7 @@ namespace VolumeCalculatorGUI.GUI
 				AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
 				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
+				ToggleFullscreen = new CommandHandler(SetFullScreenState, true);
 
 				InitializeSettings();
 				InitializeSubViewModels();
@@ -98,6 +115,11 @@ namespace VolumeCalculatorGUI.GUI
 					MessageBoxButton.OK, MessageBoxImage.Error);
 				Process.GetCurrentProcess().Kill();
 			}
+		}
+
+		private void SetFullScreenState()
+		{
+			IsFullSreen = !IsFullSreen;
 		}
 
 		private void InitializeSubViewModels()

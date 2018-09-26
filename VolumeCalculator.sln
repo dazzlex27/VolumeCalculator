@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCalculatorGUI", "Volu
 		{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D} = {0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrameFeeder", "FrameFeeder\FrameFeeder.vcxproj", "{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "D435FrameProvider", "D435FrameProvider\D435FrameProvider.vcxproj", "{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameProviders", "FrameProviders\FrameProviders.csproj", "{F9973DC5-0D7C-4805-A622-E99492CD3714}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -25,12 +25,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DepthMapProcessor", "DepthM
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6AF5FFB4-9230-437F-B802-E0122EB628D3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DepthMapProcessorTest", "Tests\DepthMapProcessorTest\DepthMapProcessorTest.vcxproj", "{00177CBE-E05E-42BB-8155-BE5F82EAC285}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DepthMapProcessorTests", "Tests\DepthMapProcessorTests\DepthMapProcessorTests.vcxproj", "{00177CBE-E05E-42BB-8155-BE5F82EAC285}"
 	ProjectSection(ProjectDependencies) = postProject
 		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB} = {EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCalculatorTest", "Tests\VolumeCalculatorTest\VolumeCalculatorTest.csproj", "{4EBE3F89-1320-4565-8F28-C9B6AB9C0797}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCalculatorTests", "Tests\VolumeCalculatorTests\VolumeCalculatorTests.csproj", "{4EBE3F89-1320-4565-8F28-C9B6AB9C0797}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCalculationRunner", "Tests\VolumeCalculationRunner\VolumeCalculationRunner.csproj", "{6F312ABD-BCA5-4F2D-A5CE-BACCE2A47EDE}"
 EndProject

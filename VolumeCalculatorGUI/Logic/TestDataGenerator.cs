@@ -9,8 +9,9 @@ namespace VolumeCalculatorGUI.Logic
     {
 		private readonly TestCaseData _testCaseData;
 	    private readonly TestCaseBasicInfo _basicCaseInfo;
+	    private readonly string _testCaseDirectory;
+	    private readonly string _mapSavingPath;
 		private int _remainingTimesToSave;
-	    private string _mapSavingPath;
 
 		public bool IsActive { get; private set; }
 
@@ -23,7 +24,12 @@ namespace VolumeCalculatorGUI.Logic
 
 			_remainingTimesToSave = _basicCaseInfo.TimesToSave;
 
-			Directory.CreateDirectory(_basicCaseInfo.SavingDirectory);
+	        _testCaseDirectory = Path.Combine(_testCaseData.BasicInfo.SavingDirectory, _testCaseData.BasicInfo.Casename);
+	        _mapSavingPath = Path.Combine(_testCaseDirectory, "maps");
+
+	        if (Directory.Exists(_testCaseDirectory))
+		        Directory.Delete(_testCaseDirectory, true);
+	        Directory.CreateDirectory(_testCaseDirectory);
 			SaveInitialData();
 
 			IsActive = true;
@@ -48,20 +54,12 @@ namespace VolumeCalculatorGUI.Logic
 
         private void SaveInitialData()
         {
-	        if (Directory.Exists(_basicCaseInfo.SavingDirectory))
-		        Directory.Delete(_basicCaseInfo.SavingDirectory, true);
+	        ImageUtils.SaveImageDataToFile(_testCaseData.Image, Path.Combine(_testCaseDirectory, "rgb.png"));
 
-	        Directory.CreateDirectory(_basicCaseInfo.SavingDirectory);
-
-	        ImageUtils.SaveImageDataToFile(_testCaseData.Image,
-		        Path.Combine(_basicCaseInfo.SavingDirectory, "rgb.png"));
-
-            DepthMapUtils.SaveDepthMapImageToFile(_testCaseData.Map, Path.Combine(_basicCaseInfo.SavingDirectory, "depth.png"),
+            DepthMapUtils.SaveDepthMapImageToFile(_testCaseData.Map, Path.Combine(_testCaseDirectory, "depth.png"),
 	            _testCaseData.DeviceParams.MinDepth, _testCaseData.DeviceParams.MaxDepth, _testCaseData.DeviceParams.MaxDepth);
 
-	        var testCaseDataFilePath = Path.Combine(_basicCaseInfo.SavingDirectory, "testdata.txt");
-			if (File.Exists(testCaseDataFilePath))
-				File.Delete(testCaseDataFilePath);
+	        var testCaseDataFilePath = Path.Combine(_testCaseDirectory, "testdata.txt");
 
 	        using (var file = File.AppendText(testCaseDataFilePath))
 	        {
@@ -80,10 +78,7 @@ namespace VolumeCalculatorGUI.Logic
 		        file.Write(_testCaseData.Settings.MinObjHeight);
 	        }
 
-			File.WriteAllText(Path.Combine(_basicCaseInfo.SavingDirectory, "description.txt"), _basicCaseInfo.Description);
-
-	        _mapSavingPath = Path.Combine(_basicCaseInfo.SavingDirectory, "maps");
-
+			File.WriteAllText(Path.Combine(_testCaseDirectory, "description.txt"), _basicCaseInfo.Description);
         }
     }
 }

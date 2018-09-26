@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" x:ClassModifier="internal"
              d:DataContext="{d:DesignInstance gui:CalculationDashboardControlVm}">
-	<Grid>
+	<Grid IsEnabled="{Binding CalculationInProgress, Converter={StaticResource InverseBooleanConverter}}">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition/>
 			<ColumnDefinition/>
@@ -51,7 +51,6 @@
 		        MinHeight="25" 
 		        Name="BtCalcVolume"
 		        Content="Выполнить измерение" 
-				IsEnabled="{Binding CalculationInProgress, Converter={StaticResource InverseBooleanConverter}}"
 		        Command="{Binding CalculateVolumeCommand}"/>
 	</Grid>
 </UserControl>

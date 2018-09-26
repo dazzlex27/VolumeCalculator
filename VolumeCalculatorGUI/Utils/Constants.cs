@@ -12,5 +12,7 @@ namespace VolumeCalculatorGUI.Utils
 		public static readonly string ResultFileName = "results.csv";
 
 		public static string CsvSeparator = CultureInfo.CurrentCulture.TextInfo.ListSeparator;
+
+		public static string LocalFrameProviderFolderName = "localFrameProvider";
 	}
 }

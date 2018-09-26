@@ -9,12 +9,10 @@
 				<ResourceDictionary Source="Themes/Metro/Metro.MSControls.Core.Implicit.xaml" />
 				<!--<ResourceDictionary Source="Themes/Metro/Metro.MSControls.Toolkit.Implicit.xaml" />-->
 			</ResourceDictionary.MergedDictionaries>
-
 			<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 			<utils:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
-
+			<utils:ConjunctionToVisibilityMultiConverter x:Key="ConjunctionToVisibilityMultiConverter"/>
 			<SolidColorBrush x:Key="BackgroundKey" Color="#FFFFFF" />
 		</ResourceDictionary>
 	</Application.Resources>
-
 </Application>

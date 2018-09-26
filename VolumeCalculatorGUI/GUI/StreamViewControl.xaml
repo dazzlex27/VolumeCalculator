@@ -1,43 +1,73 @@
 ﻿<UserControl x:Class="VolumeCalculatorGUI.GUI.StreamViewControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:gui="clr-namespace:VolumeCalculatorGUI.GUI"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800" x:ClassModifier="internal"
              d:DataContext="{d:DesignInstance gui:StreamViewControlVm}">
-	<Grid>
+	<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto">
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition/>
-			<ColumnDefinition/>
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="*" />
 		</Grid.ColumnDefinitions>
-		<StackPanel Grid.Column="0" Margin="2">
-			<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2" Text="RGB-поток"/>
-			<Canvas Name="CvColor" Width="480" Height="360" Background="Black" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-				<Image Source="{Binding ColorImageBitmap}" 
-				       Width="{Binding Path=ActualWidth, ElementName=CvColor}" 
-				       Height="{Binding Path=ActualHeight, ElementName=CvColor}"/>
+		<Grid Grid.Column="0" Margin="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="Auto">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="*" />
+			</Grid.RowDefinitions>
+			<CheckBox Grid.Row="0" Margin="0,5" Content="Поток камеры" IsChecked="{Binding UseColorStream, Mode=TwoWay}" />
+			<Canvas Grid.Row="1"
+			        Name="CvColor"
+			        Background="Black"
+			        HorizontalAlignment="Stretch"
+			        VerticalAlignment="Stretch">
+				<Image Name="ImColor"
+				       Source="{Binding ColorImageBitmap}"
+				       Width="{Binding Path=ActualWidth, ElementName=CvColor}"
+				       Height="{Binding Path=ActualHeight, ElementName=CvColor}"
+				       HorizontalAlignment="Stretch"
+				       VerticalAlignment="Stretch" />
 			</Canvas>
-			<CheckBox Margin="0,5" Content="Отображение потока" IsChecked="{Binding UseColorStream, Mode=TwoWay}"/>
-		</StackPanel>
-		<StackPanel Grid.Row="0" Grid.Column="1" Margin="2">
-			<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2" Text="Поток глубины"/>
-			<Canvas Name="CvDepth" Width="480" Height="360" Background="Black">
-				<Image Source="{Binding DepthImageBitmap}" 
-				       Name="ImgDm" 
-				       Width="{Binding Path=ActualWidth, ElementName=CvDepth}" 
-				       Height="{Binding Path=ActualHeight, ElementName=CvDepth}"/>
-				<StackPanel Visibility="{Binding UseAreaMask, Converter={StaticResource BooleanToVisibilityConverter}}">
-					<gui:MaskPolygonControl Width="{Binding Path=ActualWidth, ElementName=CvDepth}" 
-					                        Height="{Binding Path=ActualHeight, ElementName=CvDepth}"
-					                        DataContext="{Binding MaskPolygonControlVm}" 
-					                        HorizontalAlignment="Stretch" 
-					                        VerticalAlignment="Stretch"
-					                        IsReadOnly="True"/>
-				</StackPanel>
-			</Canvas>
-			<CheckBox Margin="0,5" Content="Отображение потока" IsChecked="{Binding UseDepthStream, Mode=TwoWay}"/>
-		</StackPanel>
+		</Grid>
+		<Grid Grid.Column="1" Margin="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="Auto">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="*" />
+			</Grid.RowDefinitions>
+			<CheckBox Grid.Row="0" Margin="0,5" Content="Поток 3D-сенсора" IsChecked="{Binding UseDepthStream, Mode=TwoWay}" />
+			<Grid Grid.Row="1">
+				<Canvas 
+			        Name="CvDepth"
+			        Background="Black"
+			        HorizontalAlignment="Stretch"
+			        VerticalAlignment="Stretch">
+					<Image Name="ImDepth"
+				       Source="{Binding DepthImageBitmap}"
+				       Width="{Binding Path=ActualWidth, ElementName=CvDepth}"
+				       Height="{Binding Path=ActualHeight, ElementName=CvDepth}"
+				       HorizontalAlignment="Stretch"
+				       VerticalAlignment="Stretch" 
+					       Visibility="{Binding UseDepthStream, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+				</Canvas>
+				<Grid HorizontalAlignment="Center"
+				      VerticalAlignment="Center">
+					<Grid.Visibility>
+						<MultiBinding Converter="{StaticResource ConjunctionToVisibilityMultiConverter}">
+							<Binding Path="UseAreaMask" />
+							<Binding Path="UseDepthStream"/>
+						</MultiBinding> 
+					</Grid.Visibility>
+					<gui:MaskPolygonControl
+						DataContext="{Binding MaskPolygonControlVm}"
+						Width="{Binding Path=ActualWidth, ElementName=ImDepth}"
+						Height="{Binding Path=ActualHeight, ElementName=ImDepth}"
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						IsReadOnly="True" />
+				</Grid>
+			</Grid>
+		</Grid>
 	</Grid>
 </UserControl>

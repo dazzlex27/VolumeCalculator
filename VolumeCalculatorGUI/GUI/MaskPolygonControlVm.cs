@@ -28,7 +28,7 @@ namespace VolumeCalculatorGUI.GUI
 			get => _polygonPoints;
 			set
 			{
-				if (_polygonPoints == value)
+				if (ReferenceEquals(_polygonPoints, value))
 					return;
 
 				_polygonPoints = value;
@@ -54,7 +54,7 @@ namespace VolumeCalculatorGUI.GUI
 			get => _canvasWidth;
 			set
 			{
-				if (_canvasWidth == value)
+				if (Math.Abs(_canvasWidth - value) < 0.001)
 					return;
 
 				_canvasWidth = value;
@@ -67,7 +67,7 @@ namespace VolumeCalculatorGUI.GUI
 			get => _canvasHeight;
 			set
 			{
-				if (_canvasHeight == value)
+				if (Math.Abs(_canvasHeight - value) < 0.001)
 					return;
 
 				_canvasHeight = value;

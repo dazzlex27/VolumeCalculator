@@ -3,12 +3,10 @@
 /.vs
 /Common/obj
 /DepthMapProcessor/obj
-/DepthMapProcessorTest/obj
-Tests/DepthMapProcessorTest/obj
-Tests/DepthMapProcessorTest/samples
-Tests/VolumeCalculatorTest/obj
+Tests/DepthMapProcessorTests/obj
+Tests/DepthMapProcessorTests/samples
+Tests/VolumeCalculatorTests/obj
 Tests/VolumeCalculationRunner/obj
 /VolumeCalculatorGUI/obj
 /FrameProviders/obj
-/FrameFeeder/obj
-/UtilsApp/obj
+/D435FrameProvider/obj

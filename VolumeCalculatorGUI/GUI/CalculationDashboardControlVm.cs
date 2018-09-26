@@ -167,10 +167,6 @@ namespace VolumeCalculatorGUI.GUI
 
 		public void CalculateObjectVolume()
 	    {
-		    var terminationTime = new DateTime(2018, 11, 1);
-		    if (DateTime.Now > terminationTime)
-			    return;
-
 			if (_latestDepthMap == null)
 		    {
 			    MessageBox.Show("Нет кадров для обработки!", "Ошибка", MessageBoxButton.OK,
@@ -180,11 +176,19 @@ namespace VolumeCalculatorGUI.GUI
 			    return;
 		    }
 
+		    if (string.IsNullOrEmpty(ObjName))
+		    {
+			    MessageBox.Show("Код объекта не может быть пустым",
+				    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+
+			    return;
+			}
+
 		    if (!IsResultFileAccessible())
 		    {
 			    MessageBox.Show("Пожалуйста убедитесь, что файл с результатами закрыт, прежде чем выполнять вычисление",
 				    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-			    _logger.LogInfo("File");
+			    _logger.LogInfo("Failed to access the result file");
 
 				return;
 		    }
@@ -202,6 +206,7 @@ namespace VolumeCalculatorGUI.GUI
 
 			    _volumeCalculator = new VolumeCalculator(_processor, _applicationSettings.SampleCount);
 				_volumeCalculator.CalculationFinished += VolumeCalculator_CalculationFinished;
+				_volumeCalculator.CalculationCancelled += VolumeCalculator_CalculationCancelled;
 		    }
 		    catch (Exception ex)
 		    {
@@ -214,12 +219,21 @@ namespace VolumeCalculatorGUI.GUI
 		    }
 		}
 
-		private void VolumeCalculator_CalculationFinished(ObjectVolumeData volumeData)
+		private void VolumeCalculator_CalculationCancelled()
 		{
 			CalculationInProgress = false;
 
-			_volumeCalculator.CalculationFinished -= VolumeCalculator_CalculationFinished;
-			_volumeCalculator = null;
+			DisposeVolumeCalculator();
+
+			_logger.LogError("Calculation cancelled on timeout");
+			MessageBox.Show("Не удалось собрать указанное количество образцов для измерения, проверьте соединение с устройством", 
+				"Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+		}
+
+		private void VolumeCalculator_CalculationFinished(ObjectVolumeData volumeData)
+		{
+			CalculationInProgress = false;
+			DisposeVolumeCalculator();
 
 			if (volumeData == null)
 			{
@@ -247,14 +261,22 @@ namespace VolumeCalculatorGUI.GUI
 
 			try
 			{
+				var safeName = ObjName;
+				if (!string.IsNullOrEmpty(safeName))
+				{
+					var nameWithoutReturns = ObjName.Replace(Environment.NewLine, " ");
+					safeName = nameWithoutReturns.Replace(Constants.CsvSeparator, " ");
+				}
+
 				Directory.CreateDirectory(_applicationSettings.OutputPath);
 				using (var resultFile = new StreamWriter(_resultFullPath, true, Encoding.Default))
 				{
 					var dateTime = DateTime.Now;
-					var resultString = new StringBuilder(++_measurementCount);
+					var resultString = new StringBuilder();
+					resultString.Append(++_measurementCount);
+					resultString.Append($@"{Constants.CsvSeparator}{safeName}");
 					resultString.Append($@"{Constants.CsvSeparator}{dateTime.ToShortDateString()}");
 					resultString.Append($@"{Constants.CsvSeparator}{dateTime.ToShortTimeString()}");
-					resultString.Append($@"{Constants.CsvSeparator}{ObjName}");
 					resultString.Append($@"{Constants.CsvSeparator}{ObjLength}");
 					resultString.Append($@"{Constants.CsvSeparator}{ObjWidth}");
 					resultString.Append($@"{Constants.CsvSeparator}{ObjHeight}");
@@ -266,6 +288,8 @@ namespace VolumeCalculatorGUI.GUI
 			}
 			catch (IOException ex)
 			{
+				MessageBox.Show("Не удалось записать результат измерений в файл, проверьте доступность файла и повторите измерения", 
+					"Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
 				_logger.LogException(
 					$@"Failed to write calculated values to {Constants.ResultFileName} ({_applicationSettings.OutputPath})",
 					ex);
@@ -280,12 +304,41 @@ namespace VolumeCalculatorGUI.GUI
 		    ObjVolume = ObjLength * ObjWidth * ObjHeight;
 	    }
 
-	    private bool IsResultFileAccessible()
+	    private void DisposeVolumeCalculator()
+	    {
+		    _volumeCalculator.CalculationFinished -= VolumeCalculator_CalculationFinished;
+		    _volumeCalculator.CalculationCancelled -= VolumeCalculator_CalculationCancelled;
+		    _volumeCalculator = null;
+		}
+
+	    private void WriteHeadersToCsv()
+	    {
+		    using (var resultFile = new StreamWriter(_resultFullPath, true, Encoding.Default))
+		    {
+			    var resultString = new StringBuilder();
+			    resultString.Append("#");
+			    resultString.Append($@"{Constants.CsvSeparator}name");
+			    resultString.Append($@"{Constants.CsvSeparator}date local");
+			    resultString.Append($@"{Constants.CsvSeparator}time local");
+			    resultString.Append($@"{Constants.CsvSeparator}lenth, mm");
+			    resultString.Append($@"{Constants.CsvSeparator}width, mm");
+			    resultString.Append($@"{Constants.CsvSeparator}height, mm");
+			    resultString.Append($@"{Constants.CsvSeparator}volume, mm^2");
+			    resultFile.WriteLine(resultString);
+			    resultFile.Flush();
+			    _logger.LogInfo($@"Created the csv at {_resultFullPath} and wrote the headers to it");
+		    }
+	    }
+	
+	private bool IsResultFileAccessible()
 	    {
 		    try
 		    {
 			    if (!File.Exists(_resultFullPath))
+			    {
+					WriteHeadersToCsv();
 				    return true;
+			    }
 
 				using (Stream stream = new FileStream(_resultFullPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
 				{

@@ -5,12 +5,26 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:gui="clr-namespace:VolumeCalculatorGUI.GUI"
         mc:Ignorable="d"
-        Title="VolumeCalculator 0.89 Beta" SizeToContent="WidthAndHeight"
-        WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" Closing="Window_Closing" x:ClassModifier="internal">
+        x:ClassModifier="internal"
+        Title="VolumeCalculator v0.98 beta" 
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterScreen" 
+        Closing="Window_Closing"
+        MinWidth="1000"
+        MinHeight="640">
 	<Window.DataContext>
 		<gui:MainWindowVm/>
 	</Window.DataContext>
-	<StackPanel>
+	<Window.InputBindings>
+		<KeyBinding Modifiers="Alt" 
+		            Key="Return" 
+		            Command="{Binding ToggleFullscreen}"/>
+	</Window.InputBindings>
+	<Grid Width="Auto" Height="Auto">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
 		<Menu Background="{StaticResource BackgroundKey}">
 			<MenuItem Header="Действия">
 				<MenuItem Name="MiOpenSettings" Header="Открыть настройки" Command="{Binding OpenSettingsCommand}"/>
@@ -22,10 +36,15 @@
 						  IsChecked="{Binding IsTestDataGenerationControlVisible, Mode=TwoWay}"/>
 			</MenuItem>
 		</Menu>
-		<StackPanel Margin="5">
+		<Grid Grid.Row="1" Margin="5" Name="GrMain" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="Auto">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
 			<gui:StreamViewControl DataContext="{Binding StreamViewControlVm}"/>
-			<gui:CalculationDashboardControl DataContext="{Binding CalculationDashboardControlVm}"/>
-			<gui:TestDataGenerationControl DataContext="{Binding TestDataGenerationControlVm}"/>
-		</StackPanel>
-	</StackPanel>
+			<gui:CalculationDashboardControl Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" DataContext="{Binding CalculationDashboardControlVm}"/>
+			<gui:TestDataGenerationControl Grid.Row="2" DataContext="{Binding TestDataGenerationControlVm}"/>
+		</Grid>
+	</Grid>
 </Window>

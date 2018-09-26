@@ -15,7 +15,7 @@ namespace VolumeCalculationRunner
 	{
 		private const string TabChar = "\t";
 		private const string OutputFolderName = "TestOutput";
-		private const string TestFolderFullPath = "C:/3DTest/";
+		private const string TestFolderFullPath = "3DTest";
 		private readonly ILogger _logger;
 		private readonly string _logVerboseName;
 		private readonly string _logRawDataName;
