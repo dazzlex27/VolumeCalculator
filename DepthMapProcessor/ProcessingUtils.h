@@ -14,4 +14,5 @@ public:
 	static const std::vector<short> GetNonZeroContourDepthValues(const int mapWidth, const int mapHeight, const short*const mapData,
 		const cv::RotatedRect& roi, const Contour& contour);
 	static const RotRelRect RotAbsRectToRel(const int rotWidth, const int rotHeight, const cv::RotatedRect& rect);
+	static const float GetDistanceBetweenPoints(const int x1, const int y1, const int x2, const int y2);
 };

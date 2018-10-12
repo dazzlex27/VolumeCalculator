@@ -186,7 +186,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		    if (!IsResultFileAccessible())
 		    {
-			    MessageBox.Show("Пожалуйста убедитесь, что файл с результатами закрыт, прежде чем выполнять вычисление",
+			    MessageBox.Show("Пожалуйста убедитесь, что файл с результатами доступен для записи и закрыт, прежде чем выполнять вычисление",
 				    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 			    _logger.LogInfo("Failed to access the result file");
 
@@ -313,6 +313,7 @@ namespace VolumeCalculatorGUI.GUI
 
 	    private void WriteHeadersToCsv()
 	    {
+		    Directory.CreateDirectory(_applicationSettings.OutputPath);
 		    using (var resultFile = new StreamWriter(_resultFullPath, true, Encoding.Default))
 		    {
 			    var resultString = new StringBuilder();
@@ -320,7 +321,7 @@ namespace VolumeCalculatorGUI.GUI
 			    resultString.Append($@"{Constants.CsvSeparator}name");
 			    resultString.Append($@"{Constants.CsvSeparator}date local");
 			    resultString.Append($@"{Constants.CsvSeparator}time local");
-			    resultString.Append($@"{Constants.CsvSeparator}lenth, mm");
+			    resultString.Append($@"{Constants.CsvSeparator}length, mm");
 			    resultString.Append($@"{Constants.CsvSeparator}width, mm");
 			    resultString.Append($@"{Constants.CsvSeparator}height, mm");
 			    resultString.Append($@"{Constants.CsvSeparator}volume, mm^2");

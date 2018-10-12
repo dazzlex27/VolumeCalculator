@@ -19,6 +19,10 @@ namespace FrameProviders
 		public abstract void SuspendDepthStream();
 		public abstract void ResumeDepthStream();
 
+		protected bool IsColorStreamSubsribedTo => ColorFrameReady?.GetInvocationList().Length > 0;
+
+		protected bool IsDepthStreamSubsribedTo => DepthFrameReady?.GetInvocationList().Length > 0;
+
 		protected void RaiseColorFrameReadyEvent(ImageData image)
 		{
 			ColorFrameReady?.Invoke(image);

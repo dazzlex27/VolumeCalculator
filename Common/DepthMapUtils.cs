@@ -42,7 +42,7 @@ namespace Common
 
 		public static void SaveDepthMapImageToFile(DepthMap map, string filepath, short minDepth, short maxDepth, short cutOffDepth)
 		{
-			var bitmap = new Bitmap(map.Width, map.Height, PixelFormat.Format24bppRgb);
+			var bitmap = new Bitmap(map.Width, map.Height, PixelFormat.Format8bppIndexed);
 
 			var fullRect = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
 			var bmpData = bitmap.LockBits(fullRect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
@@ -57,7 +57,7 @@ namespace Common
 
 		public static byte[] GetColorizedDepthMapData(DepthMap map, short minDepth, short maxDepth, short cutOffDepth)
 		{
-			var resultBytes = new byte[map.Data.Length * 3];
+			var resultBytes = new byte[map.Data.Length];
 
 			var byteIndex = 0;
 			foreach (var depthValue in map.Data)
@@ -66,8 +66,6 @@ namespace Common
 					? (byte)0
 					: GetIntensityFromDepth(depthValue, minDepth, maxDepth);
 
-				resultBytes[byteIndex++] = intensity;
-				resultBytes[byteIndex++] = intensity;
 				resultBytes[byteIndex++] = intensity;
 			}
 

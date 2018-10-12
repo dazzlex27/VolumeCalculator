@@ -28,7 +28,7 @@ namespace FrameProviders.D435
 		public override void Start()
 		{
 			_logger.LogInfo("Starting Realsense D435 frame receiver...");
-			DllWrapper.CreateFrameFeeder();
+			DllWrapper.CreateFrameProvider();
 			DllWrapper.SubscribeToColorFrames(_colorFrameCallback);
 			DllWrapper.SubscribeToDepthFrames(_depthFramesCallback);
 		}
@@ -38,7 +38,7 @@ namespace FrameProviders.D435
 			_logger.LogInfo("Disposing Realsense D435 frame receiver...");
 			DllWrapper.UnsubscribeFromColorFrames(_colorFrameCallback);
 			DllWrapper.UnsubscribeFromDepthFrames(_depthFramesCallback);
-			DllWrapper.DestroyFrameFeeder();
+			DllWrapper.DestroyFrameProvider();
 		}
 
 		public override DeviceParams GetDeviceParams()

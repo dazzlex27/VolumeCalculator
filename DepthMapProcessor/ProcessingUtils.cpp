@@ -76,7 +76,6 @@ const std::vector<short> DmUtils::GetNonZeroContourDepthValues(const int mapWidt
 
 	cv::Rect boundingRect = roi.boundingRect();
 
-
 	nonZeroValues.reserve(boundingRect.width * boundingRect.height);
 
 	for (int j = boundingRect.y; j < boundingRect.y + boundingRect.height; j++)
@@ -111,4 +110,9 @@ const RotRelRect DmUtils::RotAbsRectToRel(const int rotWidth, const int rotHeigh
 	result.AngleDeg = rect.angle;
 
 	return result;
+}
+
+const float DmUtils::GetDistanceBetweenPoints(const int x1, const int y1, const int x2, const int y2)
+{
+	return (float)sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
 }

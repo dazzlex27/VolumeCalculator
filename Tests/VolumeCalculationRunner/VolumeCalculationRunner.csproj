@@ -50,14 +50,17 @@
     <ProjectReference Include="..\..\..\VolumeCalculator\Common\Common.csproj">
       <Project>{90c0cc4f-e7d1-4a68-801b-fa4bdfc4a55b}</Project>
       <Name>Common</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\FrameProviders\FrameProviders.csproj">
       <Project>{f9973dc5-0d7c-4805-a622-e99492cd3714}</Project>
       <Name>FrameProviders</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\..\VolumeCalculator\VolumeCalculatorGUI\VolumeCalculatorGUI.csproj">
       <Project>{08b98c3a-c054-464c-9594-f4eb7f7b2333}</Project>
       <Name>VolumeCalculatorGUI</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

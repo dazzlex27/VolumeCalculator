@@ -1,7 +1,7 @@
 import os
 import traceback
 
-dir_list = ("DepthMapProcessor", "VolumeCalculatorGUI", "FrameFeeder", "Common", "FrameProviders", "Tests/VolumeCalculatorTest", "Tests/DepthMapProcessorTest")
+dir_list = ("DepthMapProcessor", "D435FrameProvider", "VolumeCalculatorGUI", "FrameFeeder", "Common", "FrameProviders", "Tests/VolumeCalculatorTest", "Tests/DepthMapProcessorTest")
 ext_list = ("h", "cpp", "c", "cs")
 
 total_count = 0

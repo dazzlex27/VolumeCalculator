@@ -14,7 +14,7 @@ namespace FrameProviders.D435
 		public unsafe delegate void DepthFrameCallback(DepthFrame* frame);
 
 		[DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
-		public static extern int CreateFrameFeeder();
+		public static extern int CreateFrameProvider();
 
 		[DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
 		public static extern void SubscribeToColorFrames(ColorFrameCallback progressCallback);
@@ -29,6 +29,6 @@ namespace FrameProviders.D435
 		public static extern void UnsubscribeFromDepthFrames(DepthFrameCallback progressCallback);
 
 		[DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
-		public static extern int DestroyFrameFeeder();
+		public static extern int DestroyFrameProvider();
 	}
 }

@@ -45,11 +45,6 @@
     <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\!!bin\$(Platform)\$(Configuration)\Common.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -190,9 +185,15 @@
     <Resource Include="3d-icon-9795-Windows.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B}</Project>
+      <Name>Common</Name>
+      <Private>False</Private>
+    </ProjectReference>
     <ProjectReference Include="..\FrameProviders\FrameProviders.csproj">
       <Project>{f9973dc5-0d7c-4805-a622-e99492cd3714}</Project>
       <Name>FrameProviders</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

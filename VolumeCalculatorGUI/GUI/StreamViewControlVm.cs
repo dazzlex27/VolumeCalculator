@@ -221,8 +221,8 @@ namespace VolumeCalculatorGUI.GUI
 		    var imageHeight = maskedMap.Height;
 		    var fullRect = new Int32Rect(0, 0, imageWidth, imageHeight);
 
-		    var depthImageBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, PixelFormats.Rgb24, null);
-		    depthImageBitmap.WritePixels(fullRect, depthMapData, imageWidth * Constants.BytesPerPixel24, 0);
+		    var depthImageBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, PixelFormats.Gray8, null);
+		    depthImageBitmap.WritePixels(fullRect, depthMapData, imageWidth, 0);
 			depthImageBitmap.Freeze();
 
 		    DepthImageBitmap = depthImageBitmap;

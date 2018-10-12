@@ -97,7 +97,7 @@ const short DepthMapProcessor::GetContourTopPlaneDepth(const Contour& contour,
 	memcpy(sortedNonZeroMapValues, contourNonZeroValues.data(), size * sizeof(short));
 	std::sort(sortedNonZeroMapValues, sortedNonZeroMapValues + size);
 
-	const short mode = FindModeInSortedArray(sortedNonZeroMapValues, size / 10);
+	const short mode = FindModeInSortedArray(sortedNonZeroMapValues, size / 20);
 
 	delete[] sortedNonZeroMapValues;
 
@@ -144,8 +144,8 @@ const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Cont
 		pointsWorld[i] = cv::Point(x, y);
 	}
 
-	const int objectWidth = (int)(sqrt(pow(pointsWorld[0].x - pointsWorld[1].x, 2) + pow(pointsWorld[0].y - pointsWorld[1].y, 2)));
-	const int objectHeight = (int)(sqrt(pow(pointsWorld[0].x - pointsWorld[3].x, 2) + pow(pointsWorld[0].y - pointsWorld[3].y, 2)));
+	const int objectWidth = (int)DmUtils::GetDistanceBetweenPoints(pointsWorld[0].x, pointsWorld[0].y, pointsWorld[1].x, pointsWorld[1].y);
+	const int objectHeight = (int)DmUtils::GetDistanceBetweenPoints(pointsWorld[0].x, pointsWorld[0].y, pointsWorld[3].x, pointsWorld[3].y);
 
 	const int longerDim = objectWidth > objectHeight ? objectWidth : objectHeight;
 	const int shorterDim = objectWidth < objectHeight ? objectWidth : objectHeight;
@@ -169,15 +169,15 @@ const Contour DepthMapProcessor::GetContourClosestToCenter(const std::vector<Con
 	const int centerX = _mapWidth / 2;
 	const int centerY = _mapHeight / 2;
 
-	double resultDistanceToCenter = INT32_MAX;
-	Contour closestToCenterContour = contours[0];
+	float resultDistanceToCenter = (float)INT32_MAX;
+	Contour closestToCenterContour;
 
-	for (uint i = 1; i < contours.size(); i++)
+	for (uint i = 0; i < contours.size(); i++)
 	{
 		const cv::Moments& m = cv::moments(contours[i]);
 		const int cx = (int)(m.m10 / m.m00);
 		const int cy = (int)(m.m01 / m.m00);
-		const double distanceToCenter = sqrt(pow(centerX - cx, 2) + pow(centerY - cy, 2));
+		const float distanceToCenter = DmUtils::GetDistanceBetweenPoints(centerX, centerY, cx, cy);
 
 		if (distanceToCenter >= resultDistanceToCenter)
 			continue;

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Common;
 using Microsoft.Kinect;
 
@@ -100,7 +99,8 @@ namespace FrameProviders.KinectV2
 
 		private void ColorFrameReader_FrameArrived(object sender, ColorFrameArrivedEventArgs e)
 		{
-			if (_colorStreamSuspended)
+			var needToProcess = IsColorStreamSubsribedTo && _colorStreamSuspended;
+			if (!needToProcess)
 				return;
 
 			using (var colorFrame = e.FrameReference.AcquireFrame())
@@ -112,10 +112,10 @@ namespace FrameProviders.KinectV2
 				var frameLength = frameDescription.Width * frameDescription.Height;
 				var data = new byte[frameLength * 4];
 
-				using (KinectBuffer colorBuffer = colorFrame.LockRawImageBuffer())
+				using (var colorBuffer = colorFrame.LockRawImageBuffer())
 				{
-					GCHandle pinnedArray = GCHandle.Alloc(data, GCHandleType.Pinned);
-					IntPtr pointer = pinnedArray.AddrOfPinnedObject();
+					var pinnedArray = GCHandle.Alloc(data, GCHandleType.Pinned);
+					var pointer = pinnedArray.AddrOfPinnedObject();
 
 					colorFrame.CopyConvertedFrameDataToIntPtr(pointer, (uint)(frameLength * 4),
 						ColorImageFormat.Bgra);
@@ -130,7 +130,8 @@ namespace FrameProviders.KinectV2
 
 		private void DepthFrameReader_FrameArrived(object sender, DepthFrameArrivedEventArgs e)
 		{
-			if (_depthStreamSuspended)
+			var needToProcess = IsDepthStreamSubsribedTo && !_depthStreamSuspended;
+			if (!needToProcess)
 				return;
 
 			using (var depthFrame = e.FrameReference.AcquireFrame())
@@ -142,7 +143,7 @@ namespace FrameProviders.KinectV2
 				var frameLength = frameDescription.Width * frameDescription.Height;
 				var data = new short[frameLength];
 
-				using (KinectBuffer depthBuffer = depthFrame.LockImageBuffer())
+				using (var depthBuffer = depthFrame.LockImageBuffer())
 				{
 					Marshal.Copy(depthBuffer.UnderlyingBuffer, data, 0, frameLength);
 				}

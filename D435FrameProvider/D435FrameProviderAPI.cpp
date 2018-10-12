@@ -5,10 +5,10 @@
 
 SensorWrapper* Wrapper;
 
-DLL_EXPORT int CreateFrameFeeder()
+DLL_EXPORT int CreateFrameProvider()
 {
 	if (Wrapper != nullptr)
-		DestroyFrameFeeder();
+		DestroyFrameProvider();
 
 	Wrapper = new SensorWrapper();
 
@@ -40,7 +40,7 @@ DLL_EXPORT bool IsDeviceAvailable()
 	return Wrapper->IsSensorAvailable();
 }
 
-DLL_EXPORT int DestroyFrameFeeder()
+DLL_EXPORT int DestroyFrameProvider()
 {
 	if (Wrapper == nullptr)
 		return 1;

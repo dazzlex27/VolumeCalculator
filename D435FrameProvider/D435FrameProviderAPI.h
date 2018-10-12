@@ -4,7 +4,7 @@
 
 #define DLL_EXPORT extern "C" _declspec(dllexport)
 
-DLL_EXPORT int CreateFrameFeeder();
+DLL_EXPORT int CreateFrameProvider();
 
 DLL_EXPORT void SubscribeToColorFrames(ColorFrameCallback progressCallback);
 DLL_EXPORT void UnsubscribeFromColorFrames(ColorFrameCallback progressCallback);
@@ -14,8 +14,4 @@ DLL_EXPORT void UnsubscribeFromDepthFrames(DepthFrameCallback progressCallback);
 
 DLL_EXPORT bool IsDeviceAvailable();
 
-DLL_EXPORT ColorFrame* GetNextRgbFrame();
-
-DLL_EXPORT DepthFrame* GetNextDepthFrame();
-
-DLL_EXPORT int DestroyFrameFeeder();
+DLL_EXPORT int DestroyFrameProvider();
