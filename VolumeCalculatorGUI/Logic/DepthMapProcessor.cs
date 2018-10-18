@@ -10,6 +10,7 @@ namespace VolumeCalculatorGUI.Logic
 	{
 		private readonly ILogger _logger;
 		private readonly IntPtr _nativeHandle;
+		private ApplicationSettings _settings;
 
 		public bool IsActive { get; private set; }
 
@@ -46,13 +47,34 @@ namespace VolumeCalculatorGUI.Logic
 
 		public ObjectVolumeData CalculateObjectVolumeAlt(ImageData colorFrame, DepthMap depthFrame)
 		{
+			float x1;
+			float y1;
+			float x2;
+			float y2;
+
+			if (_settings != null && _settings.UseAreaMask)
+			{
+				var rectanglePoints = GeometryUtils.GetRectangleFromZonePolygon(_settings.WorkingAreaContour);
+				x1 = (float) rectanglePoints[0].X;
+				y1 = (float) rectanglePoints[0].Y;
+				x2 = (float) rectanglePoints[2].X;
+				y2 = (float) rectanglePoints[2].Y;
+			}
+			else
+			{
+				x1 = 0;
+				y1 = 0;
+				x2 = 1;
+				y2 = 1;
+			}
+
 			unsafe
 			{
 				fixed (byte* colorData = colorFrame.Data)
 				fixed (short* depthData = depthFrame.Data)
 				{
 					var res = DepthMapProcessorDll.CalculateObjectVolumeAlt(_nativeHandle.ToPointer(), colorFrame.Width,
-						colorFrame.Height, colorData, colorFrame.BytesPerPixel, depthFrame.Width, depthFrame.Height, depthData);
+						colorFrame.Height, colorData, colorFrame.BytesPerPixel, x1, y1, x2, y2, depthFrame.Width, depthFrame.Height, depthData);
 					return res == null ? null : new ObjectVolumeData(res->Length, res->Width, res->Height);
 				}
 			}
@@ -69,11 +91,14 @@ namespace VolumeCalculatorGUI.Logic
 			}
 		}
 
-		public void SetCalculatorSettings(short floorDepth, short cutOffDepth)
+		public void SetCalculatorSettings(ApplicationSettings settings)
 		{
+			_settings = settings;
+
 			unsafe
 			{
-				DepthMapProcessorDll.SetCalculatorSettings(_nativeHandle.ToPointer(), floorDepth, cutOffDepth);
+				var cutOffDepth = (short) (_settings.DistanceToFloor - _settings.MinObjHeight);
+				DepthMapProcessorDll.SetCalculatorSettings(_nativeHandle.ToPointer(), _settings.DistanceToFloor, cutOffDepth);
 			}
 		}
 

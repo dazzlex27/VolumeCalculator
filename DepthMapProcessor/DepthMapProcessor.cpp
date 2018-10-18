@@ -50,11 +50,9 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const int mapWidth, 
 }
 
 ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const int imageWidth, const int imageHeight, const byte*const imageData,
-	const int bytesPerPixel, const int mapWidth, const int mapHeight, const short*const mapData)
+	const int bytesPerPixel, const float x1, const float y1, const float x2, const float y2, const int mapWidth, const int mapHeight,
+	const short*const mapData)
 {
-	if (_colorImageWidth != imageWidth || _colorImageHeight != imageHeight)
-		ResizeColorBuffer(imageWidth, imageHeight, bytesPerPixel);
-
 	if (_mapWidth != mapWidth || _mapHeight != mapHeight)
 		ResizeDepthBuffers(mapWidth, mapHeight);
 
@@ -67,11 +65,24 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const int imageWi
 	const cv::RotatedRect& rotBoundingRect = cv::minAreaRect(cv::Mat(depthObjectContour));
 	const short contourTopPlaneDepth = GetContourTopPlaneDepth(depthObjectContour, rotBoundingRect);
 
+	if (_colorImageWidth != imageWidth || _colorImageHeight != imageHeight)
+		ResizeColorBuffer(imageWidth, imageHeight, bytesPerPixel);
+
 	memcpy(_colorImageBuffer, imageData, _colorImageLengthBytes);
 	cv::Mat input(imageHeight, imageWidth, CV_8UC4, _colorImageBuffer);
 	cv::imwrite("out/input.png", input);
+
+	const int x1Abs = x1 * input.cols;
+	const int y1Abs = y1 * input.rows;
+	const int x2Abs = x2 * input.cols;
+	const int y2Abs = y2 * input.rows;
+
+	cv::Rect roiRect(x1Abs, y1Abs, abs(x2Abs - x1Abs), abs(y2Abs - y1Abs));
+	cv::Mat inputRoi = input(roiRect);
+	cv::imwrite("out/inputRoi.png", inputRoi);
+
 	cv::Mat cannied;
-	cv::Canny(input, cannied, 50, 200);
+	cv::Canny(inputRoi, cannied, 50, 200);
 	cv::imwrite("out/cannied.png", cannied);
 
 	std::vector<Contour> contours;

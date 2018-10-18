@@ -39,6 +39,35 @@ namespace VolumeCalculatorGUI.Utils
 			}
 		}
 
+		public static List<Point> GetRectangleFromZonePolygon(IReadOnlyList<Point> polygonPoints)
+		{
+			var smallestX = double.MaxValue;
+			var smallestY = double.MaxValue;
+			var largestX = double.MinValue;
+			var largestY = double.MinValue;
+
+			var rectanglePoints = new List<Point>();
+
+			foreach (var point in polygonPoints)
+			{
+				if (point.X < smallestX)
+					smallestX = point.X;
+				if (point.X > largestX)
+					largestX = point.X;
+				if (point.Y < smallestY)
+					smallestY = point.Y;
+				if (point.Y > largestY)
+					largestY = point.Y;
+			}
+
+			rectanglePoints.Add(new Point(smallestX, smallestY));
+			rectanglePoints.Add(new Point(largestX, smallestY));
+			rectanglePoints.Add(new Point(largestX, largestY));
+			rectanglePoints.Add(new Point(smallestX, largestY));
+
+			return rectanglePoints;
+		}
+
 		/// <summary>
 		///   Source:  https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html
 		/// </summary>

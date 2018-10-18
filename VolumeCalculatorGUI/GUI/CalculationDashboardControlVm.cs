@@ -130,8 +130,7 @@ namespace VolumeCalculatorGUI.GUI
 		    _depthCameraParams = depthCameraParams;
 
 		    _processor = new DepthMapProcessor(_logger, _colorCameraParams, _depthCameraParams);
-		    var cutOffDepth = (short)(_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
-		    _processor.SetCalculatorSettings(_applicationSettings.DistanceToFloor, cutOffDepth);
+		    _processor.SetCalculatorSettings(_applicationSettings);
 
 		    _resultFullPath = Path.Combine(_applicationSettings.OutputPath, Constants.ResultFileName);
 
@@ -148,8 +147,7 @@ namespace VolumeCalculatorGUI.GUI
 	    public void ApplicationSettingsUpdated(ApplicationSettings applicationSettings)
 	    {
 		    _applicationSettings = applicationSettings;
-		    var cutOffDepth = (short)(_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
-		    _processor.SetCalculatorSettings(_applicationSettings.DistanceToFloor, cutOffDepth);
+		    _processor.SetCalculatorSettings(_applicationSettings);
 		    _resultFullPath = Path.Combine(_applicationSettings.OutputPath, Constants.ResultFileName);
 		}
 
@@ -160,8 +158,7 @@ namespace VolumeCalculatorGUI.GUI
 		    Dispose();
 
 		    _processor = new DepthMapProcessor(_logger, _colorCameraParams, _depthCameraParams);
-		    var cutOffDepth = (short)(_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
-		    _processor.SetCalculatorSettings(_applicationSettings.DistanceToFloor, cutOffDepth);
+		    _processor.SetCalculatorSettings(_applicationSettings);
 		}
 
 	    public void ColorFrameArrived(ImageData image)

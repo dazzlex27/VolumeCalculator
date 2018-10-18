@@ -12,8 +12,8 @@ namespace VolumeCalculatorGUI.Logic
 		public static extern unsafe ObjDimDescription* CalculateObjectVolume(void* handle, int mapWidth, int mapHeight, short* mapData);
 
 	    [DllImport("libDepthMapProcessor.dll", CallingConvention = CallingConvention.Cdecl)]
-	    public static extern unsafe ObjDimDescription* CalculateObjectVolumeAlt(void* handle, int imageWidth, int imageHeight, byte* imageData, int bytesPerPixel, 
-		    int mapWidth, int mapHeight, short* depthData);
+	    public static extern unsafe ObjDimDescription* CalculateObjectVolumeAlt(void* handle, int imageWidth, int imageHeight, byte* imageData, 
+		    int bytesPerPixel, float x1, float y1, float x2, float y2, int mapWidth, int mapHeight, short* depthData);
 
 		[DllImport("libDepthMapProcessor.dll", CallingConvention = CallingConvention.Cdecl)]
 	    public static extern unsafe short CalculateFloorDepth(void* handle, int mapWidth, int mapHeight, short* mapData);

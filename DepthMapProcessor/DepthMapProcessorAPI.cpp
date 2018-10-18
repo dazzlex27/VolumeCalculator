@@ -29,7 +29,7 @@ DLL_EXPORT ObjDimDescription* CalculateObjectVolume(void* handle, int mapWidth, 
 }
 
 DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, int imageWidth, int imageHeight, byte* imageData, int bytesPerPixel,
-	int mapWidth, int mapHeight, short* mapData)
+	float x1, float y1, float x2, float y2, int mapWidth, int mapHeight, short* mapData)
 {
 	auto processor = (DepthMapProcessor*)handle;
 
@@ -42,7 +42,7 @@ DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, int imageWi
 	if (mapData == nullptr)
 		return nullptr;
 
-	return processor->CalculateObjectVolumeAlt(imageWidth, imageHeight, imageData, bytesPerPixel, mapWidth, mapHeight, mapData);
+	return processor->CalculateObjectVolumeAlt(imageWidth, imageHeight, imageData, bytesPerPixel, x1, y1, x2, y2, mapWidth, mapHeight, mapData);
 }
 
 DLL_EXPORT short CalculateFloorDepth(void* handle, int mapWidth, int mapHeight, short* mapData)

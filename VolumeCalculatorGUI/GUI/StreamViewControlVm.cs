@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -30,6 +31,7 @@ namespace VolumeCalculatorGUI.GUI
 	    private bool _useAreaMask;
 	    private bool _polygonPointsChaged;
 	    private WorkingAreaMask _workingAreaMask;
+	    private MaskPolygonControlVm _maskRectangleControlVm;
 	    private MaskPolygonControlVm _maskPolygonControlVm;
 
 		public event Action<ImageData> ColorFrameReady
@@ -112,6 +114,19 @@ namespace VolumeCalculatorGUI.GUI
 		    }
 	    }
 
+	    public MaskPolygonControlVm MaskRectangleControlVm
+	    {
+		    get => _maskRectangleControlVm;
+		    set
+		    {
+			    if (ReferenceEquals(_maskRectangleControlVm, value))
+				    return;
+
+			    _maskRectangleControlVm = value;
+			    OnPropertyChanged();
+		    }
+		}
+
 	    public MaskPolygonControlVm MaskPolygonControlVm
 	    {
 		    get => _maskPolygonControlVm;
@@ -159,7 +174,10 @@ namespace VolumeCalculatorGUI.GUI
 		    UseDepthStreamChanged += ToggleUseDepthStream;
 
 			_useAreaMask = settings.UseAreaMask;
-		    _maskPolygonControlVm = new MaskPolygonControlVm(settings.WorkingAreaContour);
+
+		    var rectanglePoints = GeometryUtils.GetRectangleFromZonePolygon(settings.WorkingAreaContour);
+		    MaskRectangleControlVm = new MaskPolygonControlVm(rectanglePoints);
+		    MaskPolygonControlVm = new MaskPolygonControlVm(settings.WorkingAreaContour);
 	    }
 		
 		public void Dispose()
@@ -181,7 +199,9 @@ namespace VolumeCalculatorGUI.GUI
 	    {
 		    _applicationSettings = settings;
 		    UseAreaMask = _applicationSettings.UseAreaMask;
-		    MaskPolygonControlVm.SetPolygonPoints(settings.WorkingAreaContour);
+		    var rectanglePoints = GeometryUtils.GetRectangleFromZonePolygon(settings.WorkingAreaContour);
+		    MaskRectangleControlVm = new MaskPolygonControlVm(rectanglePoints);
+			MaskPolygonControlVm.SetPolygonPoints(settings.WorkingAreaContour);
 		    _polygonPointsChaged = true;
 	    }
 
@@ -292,5 +312,5 @@ namespace VolumeCalculatorGUI.GUI
 			    DepthImageUpdated(emptyMap);
 		    }
 	    }
-	}
+    }
 }

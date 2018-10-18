@@ -14,7 +14,7 @@ namespace VolumeCalculatorGUI.GUI
 {
 	internal class SettingsWindowVm : BaseViewModel
 	{
-		private readonly DepthMapProcessor _volumeCalculator;
+		private readonly DepthMapProcessor _depthMapProcessor;
 		private DepthMap _latestDepthMap;
 		private readonly ILogger _logger;
 
@@ -167,7 +167,7 @@ namespace VolumeCalculatorGUI.GUI
 			DepthMapProcessor volumeCalculator)
 		{
 			_logger = logger;
-			_volumeCalculator = volumeCalculator;
+			_depthMapProcessor = volumeCalculator;
 
 			CalculateFloorDepthCommand = new CommandHandler(CalculateFloorDepth, true);
 			ResetSettingsCommand = new CommandHandler(ResetSettings, true);
@@ -218,7 +218,7 @@ namespace VolumeCalculatorGUI.GUI
 					return;
 				}
 
-				var floorDepth = _volumeCalculator.CalculateFloorDepth(_latestDepthMap);
+				var floorDepth = _depthMapProcessor.CalculateFloorDepth(_latestDepthMap);
 				if (floorDepth <= 0)
 					throw new ArgumentException("Floor depth calculation: return a value less than zero");
 

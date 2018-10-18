@@ -18,18 +18,37 @@
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
 			<CheckBox Grid.Row="0" Margin="0,5" Content="Поток камеры" IsChecked="{Binding UseColorStream, Mode=TwoWay}" />
-			<Canvas Grid.Row="1"
-			        Name="CvColor"
-			        Background="Black"
-			        HorizontalAlignment="Stretch"
-			        VerticalAlignment="Stretch">
-				<Image Name="ImColor"
-				       Source="{Binding ColorImageBitmap}"
-				       Width="{Binding Path=ActualWidth, ElementName=CvColor}"
-				       Height="{Binding Path=ActualHeight, ElementName=CvColor}"
-				       HorizontalAlignment="Stretch"
-				       VerticalAlignment="Stretch" />
-			</Canvas>
+			<Grid Grid.Row="1">
+				<Canvas 
+					Name="CvColor"
+					Background="Black"
+					HorizontalAlignment="Stretch"
+					VerticalAlignment="Stretch">
+					<Image Name="ImColor"
+					       Source="{Binding ColorImageBitmap}"
+					       Width="{Binding Path=ActualWidth, ElementName=CvColor}"
+					       Height="{Binding Path=ActualHeight, ElementName=CvColor}"
+					       HorizontalAlignment="Stretch"
+					       VerticalAlignment="Stretch" 
+					       Visibility="{Binding UseColorStream, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+				</Canvas>
+				<Grid HorizontalAlignment="Center"
+				      VerticalAlignment="Center">
+					<Grid.Visibility>
+						<MultiBinding Converter="{StaticResource ConjunctionToVisibilityMultiConverter}">
+							<Binding Path="UseAreaMask" />
+							<Binding Path="UseColorStream"/>
+						</MultiBinding>
+					</Grid.Visibility>
+					<gui:MaskPolygonControl
+						DataContext="{Binding MaskRectangleControlVm}"
+						Width="{Binding Path=ActualWidth, ElementName=ImColor}"
+						Height="{Binding Path=ActualHeight, ElementName=ImColor}"
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						IsReadOnly="True"/>
+				</Grid>
+			</Grid>
 		</Grid>
 		<Grid Grid.Column="1" Margin="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="Auto">
 			<Grid.RowDefinitions>
@@ -49,7 +68,7 @@
 				       Height="{Binding Path=ActualHeight, ElementName=CvDepth}"
 				       HorizontalAlignment="Stretch"
 				       VerticalAlignment="Stretch" 
-					       Visibility="{Binding UseDepthStream, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+					   Visibility="{Binding UseDepthStream, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 				</Canvas>
 				<Grid HorizontalAlignment="Center"
 				      VerticalAlignment="Center">

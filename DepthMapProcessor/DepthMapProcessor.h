@@ -31,7 +31,8 @@ public:
 
 	ObjDimDescription* CalculateObjectVolume(const int mapWidth, const int mapHeight, const short*const mapData);
 	ObjDimDescription* CalculateObjectVolumeAlt(const int imageWidth, const int imageHeight, const byte*const imageData, 
-		const int bytesPerPixel, const int mapWidth, const int mapHeight, const short*const mapData);
+		const int bytesPerPixel, const float x1, const float y1, const float x2, const float y2, const int mapWidth, const int mapHeight, 
+		const short*const mapData);
 	const short CalculateFloorDepth(const int mapWidth, const int mapHeight, const short*const mapData);
 	void SetSettings(const short floorDepth, const short cutOffDepth);
 

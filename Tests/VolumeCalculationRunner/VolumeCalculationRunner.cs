@@ -86,9 +86,9 @@ namespace VolumeCalculationRunner
 			}
 			LogVerbose($@"Found {testCaseData.DepthMaps.Length} maps");
 
-			var cutOffDepth = (short) (testCaseData.FloorDepth - testCaseData.MinObjHeight);
 			LogVerbose("Calculating volume...");
-			processor.SetCalculatorSettings(testCaseData.FloorDepth, cutOffDepth);
+			var settings = new ApplicationSettings(testCaseData.FloorDepth, testCaseData.MinObjHeight, 30, "", false, null);
+			processor.SetCalculatorSettings(settings);
 
 			var results = new List<ObjectVolumeData>();
 
