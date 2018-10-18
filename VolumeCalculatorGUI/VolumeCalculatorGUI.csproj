@@ -66,6 +66,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Entities\ApplicationSettings.cs" />
+    <Compile Include="Entities\ColorCameraIntrinsics.cs" />
+    <Compile Include="Entities\DepthCameraIntrinsics.cs" />
     <Compile Include="Entities\TestCaseBasicInfo.cs" />
     <Compile Include="Entities\TestCaseData.cs" />
     <Compile Include="GUI\MaskPolygonControl.xaml.cs">
@@ -105,6 +107,7 @@
     <Compile Include="Entities\ObjectVolumeData.cs" />
     <Compile Include="Utils\Logger.cs" />
     <Compile Include="Entities\WorkingAreaMask.cs" />
+    <Compile Include="Utils\TypeConverter.cs" />
     <Page Include="GUI\CalculationDashboardControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -18,12 +18,17 @@ namespace VolumeCalculatorGUI.GUI
 	    private string _resultFullPath;
 
 	    private ApplicationSettings _applicationSettings;
-	    private DeviceParams _deviceParams;
+	    private ColorCameraParams _colorCameraParams;
+	    private DepthCameraParams _depthCameraParams;
 
+	    private ImageData _latestColorFrame;
 	    private DepthMap _latestDepthMap;
 
 	    private DepthMapProcessor _processor;
 	    private VolumeCalculator _volumeCalculator;
+
+	    private bool _colorFrameReady;
+	    private bool _depthFrameReady;
 
 	    private int _measurementCount;
 
@@ -35,6 +40,8 @@ namespace VolumeCalculatorGUI.GUI
 	    private bool _calculationInProgress;
 
 		public ICommand CalculateVolumeCommand { get; }
+
+		public ICommand CalculateVolumeAltCommand { get; }
 
 	    public string ObjName
 	    {
@@ -114,19 +121,22 @@ namespace VolumeCalculatorGUI.GUI
 		    }
 	    }
 
-		public CalculationDashboardControlVm(ILogger logger, ApplicationSettings settings, DeviceParams deviceParams)
+		public CalculationDashboardControlVm(ILogger logger, ApplicationSettings settings, ColorCameraParams colorCameraParams,
+			DepthCameraParams depthCameraParams)
 	    {
 		    _logger = logger;
 		    _applicationSettings = settings;
-			_deviceParams = deviceParams;
+		    _colorCameraParams = colorCameraParams;
+		    _depthCameraParams = depthCameraParams;
 
-		    _processor = new DepthMapProcessor(_logger, _deviceParams);
+		    _processor = new DepthMapProcessor(_logger, _colorCameraParams, _depthCameraParams);
 		    var cutOffDepth = (short)(_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
 		    _processor.SetCalculatorSettings(_applicationSettings.DistanceToFloor, cutOffDepth);
 
 		    _resultFullPath = Path.Combine(_applicationSettings.OutputPath, Constants.ResultFileName);
 
 			CalculateVolumeCommand = new CommandHandler(CalculateObjectVolume, !CalculationInProgress);
+		    CalculateVolumeAltCommand = new CommandHandler(CalculateObjectVolumeAlt, !CalculationInProgress);
 	    }
 
 	    public void Dispose()
@@ -143,21 +153,51 @@ namespace VolumeCalculatorGUI.GUI
 		    _resultFullPath = Path.Combine(_applicationSettings.OutputPath, Constants.ResultFileName);
 		}
 
-	    public void DeviceParamsUpdated(DeviceParams deviceParams)
+	    public void DeviceParamsUpdated(ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
 	    {
-		    _deviceParams = deviceParams;
+		    _colorCameraParams = colorCameraParams;
+		    _depthCameraParams = depthCameraParams;
 		    Dispose();
 
-			_processor = new DepthMapProcessor(_logger, _deviceParams);
+		    _processor = new DepthMapProcessor(_logger, _colorCameraParams, _depthCameraParams);
 		    var cutOffDepth = (short)(_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
 		    _processor.SetCalculatorSettings(_applicationSettings.DistanceToFloor, cutOffDepth);
+		}
+
+	    public void ColorFrameArrived(ImageData image)
+	    {
+		    _latestColorFrame = image;
+
+		    var calculationIsActive = _volumeCalculator != null && _volumeCalculator.IsActive;
+		    if (!calculationIsActive)
+			    return;
+
+		    _colorFrameReady = true;
+
+		    if (!_depthFrameReady)
+			    return;
+
+		    _volumeCalculator.AdvanceCalculation(_latestColorFrame, _latestDepthMap);
+		    _colorFrameReady = false;
+		    _depthFrameReady = false;
 		}
 
 	    public void DepthFrameArrived(DepthMap depthMap)
 	    {
 		    _latestDepthMap = depthMap;
-		    if (_volumeCalculator != null && _volumeCalculator.IsActive)
-			    _volumeCalculator.AdvanceCalculation(depthMap);
+
+		    var calculationIsActive = _volumeCalculator != null && _volumeCalculator.IsActive;
+		    if (!calculationIsActive)
+			    return;
+
+		    _depthFrameReady = true;
+
+		    if (!_colorFrameReady)
+			    return;
+
+		    _volumeCalculator.AdvanceCalculation(_latestColorFrame, _latestDepthMap);
+		    _colorFrameReady = false;
+		    _depthFrameReady = false;
 	    }
 
 	    public DepthMapProcessor GetDepthMapProcessor()
@@ -165,7 +205,7 @@ namespace VolumeCalculatorGUI.GUI
 		    return _processor;
 	    }
 
-		public void CalculateObjectVolume()
+		private void CalculateObjectVolume()
 	    {
 			if (_latestDepthMap == null)
 		    {
@@ -178,8 +218,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		    if (string.IsNullOrEmpty(ObjName))
 		    {
-			    MessageBox.Show("Код объекта не может быть пустым",
-				    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			    MessageBox.Show("Код объекта не может быть пустым", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 
 			    return;
 			}
@@ -201,10 +240,10 @@ namespace VolumeCalculatorGUI.GUI
 			    Directory.CreateDirectory("out");
 
 			    var cutOffDepth = (short) (_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
-				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, "out/depth.png", _deviceParams.MinDepth,
-				    _deviceParams.MaxDepth, cutOffDepth);
+				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, "out/depth.png", _depthCameraParams.MinDepth,
+					_depthCameraParams.MaxDepth, cutOffDepth);
 
-			    _volumeCalculator = new VolumeCalculator(_processor, _applicationSettings.SampleCount);
+			    _volumeCalculator = new VolumeCalculator(_logger, _processor, false, _applicationSettings.SampleCount);
 				_volumeCalculator.CalculationFinished += VolumeCalculator_CalculationFinished;
 				_volumeCalculator.CalculationCancelled += VolumeCalculator_CalculationCancelled;
 		    }
@@ -215,7 +254,60 @@ namespace VolumeCalculatorGUI.GUI
 				    MessageBoxButton.OK, MessageBoxImage.Error);
 
 			    CalculationInProgress = false;
+		    }
+		}
 
+	    private void CalculateObjectVolumeAlt()
+	    {
+		    if (_latestDepthMap == null || _latestColorFrame == null)
+		    {
+			    MessageBox.Show("Нет кадров для обработки!", "Ошибка", MessageBoxButton.OK,
+				    MessageBoxImage.Exclamation);
+			    _logger.LogInfo("Attempted a volume check with no maps");
+
+			    return;
+		    }
+
+		    if (string.IsNullOrEmpty(ObjName))
+		    {
+			    MessageBox.Show("Введите код объекта", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+
+			    return;
+		    }
+
+		    if (!IsResultFileAccessible())
+		    {
+			    MessageBox.Show("Пожалуйста убедитесь, что файл с результатами доступен для записи и закрыт, прежде чем выполнять вычисление",
+				    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			    _logger.LogInfo("Failed to access the result file");
+
+			    return;
+		    }
+
+		    try
+		    {
+			    CalculationInProgress = true;
+
+			    _logger.LogInfo("Starting a volume check...");
+			    Directory.CreateDirectory("out");
+
+			    ImageUtils.SaveImageDataToFile(_latestColorFrame, "out/color.png");
+
+				var cutOffDepth = (short)(_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
+			    DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, "out/depth.png", _depthCameraParams.MinDepth,
+				    _depthCameraParams.MaxDepth, cutOffDepth);
+
+			    _volumeCalculator = new VolumeCalculator(_logger, _processor, true, _applicationSettings.SampleCount);
+			    _volumeCalculator.CalculationFinished += VolumeCalculator_CalculationFinished;
+			    _volumeCalculator.CalculationCancelled += VolumeCalculator_CalculationCancelled;
+		    }
+		    catch (Exception ex)
+		    {
+			    _logger.LogException("Failed to start volume calculation", ex);
+			    MessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка",
+				    MessageBoxButton.OK, MessageBoxImage.Error);
+
+			    CalculationInProgress = false;
 		    }
 		}
 

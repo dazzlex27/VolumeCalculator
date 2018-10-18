@@ -29,7 +29,7 @@ namespace VolumeCalculatorGUI.Entities
 		    List<Point> workingAreaContour)
 	    {
 		    DistanceToFloor = distanceToFloor > 0 ? distanceToFloor : (short) 1000;
-		    MinObjHeight = minObjHeight > 0 ? minObjHeight : (short) 5;
+		    MinObjHeight = minObjHeight;
 		    SampleCount = sampleCount > 0 ? sampleCount : (byte) 10;
 		    OutputPath = outputPath;
 		    UseAreaMask = useAreaMask;

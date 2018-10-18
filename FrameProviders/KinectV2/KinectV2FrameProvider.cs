@@ -78,23 +78,28 @@ namespace FrameProviders.KinectV2
 			_depthStreamSuspended = false;
 		}
 
-		public override DeviceParams GetDeviceParams()
+		public override ColorCameraParams GetColorCameraParams()
+		{
+			// TODO: use calibration
+			return new ColorCameraParams(84.1f, 53.8f, 1081.37f, 1081.37f, 959.5f, 539.5f);
+		}
+
+		public override DepthCameraParams GetDepthCameraParams()
 		{
 			if (!_kinectSensor.IsAvailable)
-				return GetOfflineParams();
+				return GetOfflineDepthCameraParams();
 
 			var frameSource = _kinectSensor.DepthFrameSource;
 			var frameDescription = frameSource.FrameDescription;
 			var intristics = _kinectSensor.CoordinateMapper.GetDepthCameraIntrinsics();
-			return new DeviceParams(frameDescription.HorizontalFieldOfView, frameDescription.VerticalFieldOfView,
-				intristics.FocalLengthX, intristics.FocalLengthY, intristics.PrincipalPointX,
-				intristics.PrincipalPointY, (short) frameSource.DepthMinReliableDistance,
-				(short) frameSource.DepthMaxReliableDistance);
+			return new DepthCameraParams(frameDescription.HorizontalFieldOfView, frameDescription.VerticalFieldOfView,
+				intristics.FocalLengthX, intristics.FocalLengthY, intristics.PrincipalPointX, intristics.PrincipalPointY, 
+				(short) frameSource.DepthMinReliableDistance, (short) frameSource.DepthMaxReliableDistance);
 		}
 
-		private static DeviceParams GetOfflineParams()
+		private static DepthCameraParams GetOfflineDepthCameraParams()
 		{
-			return new DeviceParams(70.6f, 60.0f, 367.7066f, 367.7066f, 257.8094f, 207.3965f, 600, 5000);
+			return new DepthCameraParams(70.6f, 60.0f, 367.7066f, 367.7066f, 257.8094f, 207.3965f, 600, 5000);
 		}
 
 		private void ColorFrameReader_FrameArrived(object sender, ColorFrameArrivedEventArgs e)

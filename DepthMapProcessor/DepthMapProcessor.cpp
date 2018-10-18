@@ -2,18 +2,14 @@
 #include <string>
 #include <cmath>
 #include <climits>
+#include <ctime>
 #include "ProcessingUtils.h"
 
 const float PI = 3.141592653589793238463f;
 
-DepthMapProcessor::DepthMapProcessor(const float focalLengthX, const float focalLengthY, const float principalX,
-	const float principalY, const short minDepth, const short maxDepth)
-	: _focalLengthX(focalLengthX),
-	_focalLengthY(focalLengthY),
-	_principalX(principalX),
-	_principalY(principalY),
-	_minDepth(minDepth),
-	_maxDepth(maxDepth)
+DepthMapProcessor::DepthMapProcessor(ColorCameraIntristics colorIntrinsics, DepthCameraIntristics depthIntrinsics)
+	: _colorIntrinsics(colorIntrinsics),
+	_depthIntrinsics(depthIntrinsics)
 {
 	_mapWidth = 0;
 	_mapHeight = 0;
@@ -39,7 +35,7 @@ void DepthMapProcessor::SetSettings(const short floorDepth, const short cutOffDe
 ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const int mapWidth, const int mapHeight, const short*const mapData)
 {
 	if (_mapWidth != mapWidth || _mapHeight != mapHeight)
-		ResizeBuffers(mapWidth, mapHeight);
+		ResizeDepthBuffers(mapWidth, mapHeight);
 
 	memset(&_result, 0, sizeof(ObjDimDescription));
 	memcpy(_mapBuffer, mapData, _mapLengthBytes);
@@ -53,10 +49,73 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const int mapWidth, 
 	return &_result;
 }
 
+ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const int imageWidth, const int imageHeight, const byte*const imageData,
+	const int bytesPerPixel, const int mapWidth, const int mapHeight, const short*const mapData)
+{
+	if (_colorImageWidth != imageWidth || _colorImageHeight != imageHeight)
+		ResizeColorBuffer(imageWidth, imageHeight, bytesPerPixel);
+
+	if (_mapWidth != mapWidth || _mapHeight != mapHeight)
+		ResizeDepthBuffers(mapWidth, mapHeight);
+
+	memset(&_result, 0, sizeof(ObjDimDescription));
+	memcpy(_mapBuffer, mapData, _mapLengthBytes);
+
+	DmUtils::FilterDepthMap(_mapLength, _mapBuffer, _cutOffDepth);
+
+	const Contour& depthObjectContour = GetTargetContour(_mapBuffer);
+	const cv::RotatedRect& rotBoundingRect = cv::minAreaRect(cv::Mat(depthObjectContour));
+	const short contourTopPlaneDepth = GetContourTopPlaneDepth(depthObjectContour, rotBoundingRect);
+
+	memcpy(_colorImageBuffer, imageData, _colorImageLengthBytes);
+	cv::Mat input(imageHeight, imageWidth, CV_8UC4, _colorImageBuffer);
+	cv::imwrite("out/input.png", input);
+	cv::Mat cannied;
+	cv::Canny(input, cannied, 50, 200);
+	cv::imwrite("out/cannied.png", cannied);
+
+	std::vector<Contour> contours;
+	cv::findContours(cannied, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
+
+	Contour giantContour;
+	for (int i = 0; i < contours.size(); i++)
+	{
+		for (int j = 0; j < contours[i].size(); j++)
+		{
+			giantContour.emplace_back(contours[i][j]);
+		}
+	}
+
+	const cv::RotatedRect& rectGiantContour = cv::minAreaRect(cv::Mat(giantContour));
+
+	cv::Point2f points[4];
+	rectGiantContour.points(points);
+
+	cv::Point2i pointsWorld[4];
+	for (int i = 0; i < 4; i++)
+	{
+		const int x = (int)((points[i].x + 1 - _colorIntrinsics.PrincipalPointX) * contourTopPlaneDepth / _colorIntrinsics.FocalLengthX);
+		const int y = (int)(-(points[i].y + 1 - _colorIntrinsics.PrincipalPointY) * contourTopPlaneDepth / _colorIntrinsics.FocalLengthY);
+		pointsWorld[i] = cv::Point(x, y);
+	}
+
+	const int objectWidth = (int)DmUtils::GetDistanceBetweenPoints(pointsWorld[0].x, pointsWorld[0].y, pointsWorld[1].x, pointsWorld[1].y);
+	const int objectHeight = (int)DmUtils::GetDistanceBetweenPoints(pointsWorld[0].x, pointsWorld[0].y, pointsWorld[3].x, pointsWorld[3].y);
+
+	const int longerDim = objectWidth > objectHeight ? objectWidth : objectHeight;
+	const int shorterDim = objectWidth < objectHeight ? objectWidth : objectHeight;
+
+	_result.Length = longerDim;
+	_result.Width = shorterDim;
+	_result.Height = _floorDepth - contourTopPlaneDepth;
+
+	return &_result;
+}
+
 const short DepthMapProcessor::CalculateFloorDepth(const int mapWidth, const int mapHeight, const short*const mapData)
 {
 	if (_mapWidth != mapWidth || _mapHeight != mapHeight)
-		ResizeBuffers(mapWidth, mapHeight);
+		ResizeDepthBuffers(mapWidth, mapHeight);
 
 	std::vector<short> nonZeroValues = DmUtils::GetNonZeroContourDepthValues(mapWidth, mapHeight, mapData);
 	if (nonZeroValues.size() == 0)
@@ -67,7 +126,19 @@ const short DepthMapProcessor::CalculateFloorDepth(const int mapWidth, const int
 	return FindModeInSortedArray(nonZeroValues.data(), (int)nonZeroValues.size());
 }
 
-void DepthMapProcessor::ResizeBuffers(const int mapWidth, const int mapHeight)
+void DepthMapProcessor::ResizeColorBuffer(const int imageWidth, const int imageHeight, const int bytesPerPixel)
+{
+	_colorImageWidth = imageWidth;
+	_colorImageHeight = imageHeight;
+	_colorImageLength = imageWidth * imageHeight;
+	_colorImageLengthBytes = _colorImageLength * bytesPerPixel;
+
+	if (_colorImageBuffer != nullptr)
+		delete[] _colorImageBuffer;
+	_colorImageBuffer = new byte[_colorImageLengthBytes];
+}
+
+void DepthMapProcessor::ResizeDepthBuffers(const int mapWidth, const int mapHeight)
 {
 	_mapWidth = mapWidth;
 	_mapHeight = mapHeight;
@@ -139,8 +210,8 @@ const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Cont
 	cv::Point2i pointsWorld[4];
 	for (int i = 0; i < 4; i++)
 	{
-		const int x = (int)((points[i].x + 1 - _principalX) * contourTopPlaneDepth / _focalLengthX);
-		const int y = (int)(-(points[i].y + 1 - _principalY) * contourTopPlaneDepth / _focalLengthY);
+		const int x = (int)((points[i].x + 1 - _depthIntrinsics.PrincipalPointX) * contourTopPlaneDepth / _depthIntrinsics.FocalLengthX);
+		const int y = (int)(-(points[i].y + 1 - _depthIntrinsics.PrincipalPointY) * contourTopPlaneDepth / _depthIntrinsics.FocalLengthY);
 		pointsWorld[i] = cv::Point(x, y);
 	}
 

@@ -1,13 +1,12 @@
 #include "DepthMapProcessorAPI.h"
 #include "DepthMapProcessor.h"
 
-DLL_EXPORT void* CreateDepthMapProcessor(float focalLengthX, float focalLengthY, float principalX,
-	float principalY, short minDepth, short maxDepth)
+DLL_EXPORT void* CreateDepthMapProcessor(ColorCameraIntristics colorIntrinsics, DepthCameraIntristics depthIntrinsics)
 {
-	if (focalLengthX <= 0 || focalLengthY <= 0 || principalX <= 0 || principalY <= 0 || minDepth <= 0 || maxDepth <= 0)
-		return nullptr;
+	//if (focalLengthX <= 0 || focalLengthY <= 0 || principalX <= 0 || principalY <= 0 || minDepth <= 0 || maxDepth <= 0)
+	//	return nullptr;
 
-	return new DepthMapProcessor(focalLengthX, focalLengthY, principalX, principalY, minDepth, maxDepth);
+	return new DepthMapProcessor(colorIntrinsics, depthIntrinsics);
 }
 
 DLL_EXPORT void SetCalculatorSettings(void* handle, short floorDepth, short cutOffDepth)
@@ -27,6 +26,23 @@ DLL_EXPORT ObjDimDescription* CalculateObjectVolume(void* handle, int mapWidth, 
 		return nullptr;
 
 	return processor->CalculateObjectVolume(mapWidth, mapHeight, mapData);
+}
+
+DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, int imageWidth, int imageHeight, byte* imageData, int bytesPerPixel,
+	int mapWidth, int mapHeight, short* mapData)
+{
+	auto processor = (DepthMapProcessor*)handle;
+
+	if (processor == nullptr)
+		return nullptr;
+
+	if (imageData == nullptr)
+		return nullptr;
+
+	if (mapData == nullptr)
+		return nullptr;
+
+	return processor->CalculateObjectVolumeAlt(imageWidth, imageHeight, imageData, bytesPerPixel, mapWidth, mapHeight, mapData);
 }
 
 DLL_EXPORT short CalculateFloorDepth(void* handle, int mapWidth, int mapHeight, short* mapData)

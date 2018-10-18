@@ -57,7 +57,7 @@ namespace VolumeCalculatorGUI.Logic
 	        ImageUtils.SaveImageDataToFile(_testCaseData.Image, Path.Combine(_testCaseDirectory, "rgb.png"));
 
             DepthMapUtils.SaveDepthMapImageToFile(_testCaseData.Map, Path.Combine(_testCaseDirectory, "depth.png"),
-	            _testCaseData.DeviceParams.MinDepth, _testCaseData.DeviceParams.MaxDepth, _testCaseData.DeviceParams.MaxDepth);
+	            _testCaseData.DepthCameraParams.MinDepth, _testCaseData.DepthCameraParams.MaxDepth, _testCaseData.DepthCameraParams.MaxDepth);
 
 	        var testCaseDataFilePath = Path.Combine(_testCaseDirectory, "testdata.txt");
 

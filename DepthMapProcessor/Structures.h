@@ -56,6 +56,28 @@ struct RotRelRect
 	float AngleDeg;
 };
 
+struct ColorCameraIntristics
+{
+	float FovX;
+	float FovY;
+	float FocalLengthX;
+	float FocalLengthY;
+	float PrincipalPointX;
+	float PrincipalPointY;
+};
+
+struct DepthCameraIntristics
+{
+	float FovX;
+	float FovY;
+	float FocalLengthX;
+	float FocalLengthY;
+	float PrincipalPointX;
+	float PrincipalPointY;
+	short MinDepth;
+	short MaxDepth;
+};
+
 struct DepthMap
 {
 	const int Width;

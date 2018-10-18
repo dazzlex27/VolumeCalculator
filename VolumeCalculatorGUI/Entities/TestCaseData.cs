@@ -8,16 +8,16 @@ namespace VolumeCalculatorGUI.Entities
 		public TestCaseBasicInfo BasicInfo { get; }
 		public ImageData Image { get; }
 		public DepthMap Map { get; }
-		public DeviceParams DeviceParams { get; }
+		public DepthCameraParams DepthCameraParams { get; }
 		public ApplicationSettings Settings { get; }
 
-		public TestCaseData(TestCaseBasicInfo basicInfo, ImageData image, DepthMap map, DeviceParams deviceParams,
+		public TestCaseData(TestCaseBasicInfo basicInfo, ImageData image, DepthMap map, DepthCameraParams depathCameraParams,
 			ApplicationSettings settings)
 		{
 			BasicInfo = basicInfo;
 			Image = image;
 			Map = map;
-			DeviceParams = deviceParams;
+			DepthCameraParams = depathCameraParams;
 			Settings = settings;
 		}
 	}

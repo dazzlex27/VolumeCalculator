@@ -18,7 +18,7 @@ namespace VolumeCalculatorGUI.GUI
     {
 	    private ApplicationSettings _applicationSettings;
 
-	    private DeviceParams _deviceParams;
+	    private DepthCameraParams _depthCameraParams;
 	    private readonly FrameProvider _frameProvider;
 
 		private WriteableBitmap _colorImageBitmap;
@@ -43,7 +43,7 @@ namespace VolumeCalculatorGUI.GUI
 
 	    public event Action<bool> UseColorStreamChanged;
 	    public event Action<bool> UseDepthStreamChanged;
-	    public event Action<DeviceParams> DeviceParamsChanged;
+	    public event Action<ColorCameraParams, DepthCameraParams> DeviceParamsChanged;
 
 		public WriteableBitmap ColorImageBitmap
 	    {
@@ -125,16 +125,16 @@ namespace VolumeCalculatorGUI.GUI
 		    }
 	    }
 
-		private DeviceParams DeviceParams
+		private DepthCameraParams DepthCameraParams
 	    {
-		    get => _deviceParams;
+		    get => _depthCameraParams;
 		    set
 		    {
-			    if (_deviceParams == value)
+			    if (_depthCameraParams == value)
 				    return;
 
-			    _deviceParams = value;
-			    DeviceParamsChanged?.Invoke(value);
+			    _depthCameraParams = value;
+			    DeviceParamsChanged?.Invoke(_frameProvider.GetColorCameraParams(), value);
 		    }
 	    }
 
@@ -150,7 +150,7 @@ namespace VolumeCalculatorGUI.GUI
 			else
 				_frameProvider = new KinectV2FrameProvider(logger);
 		    _frameProvider.Start();
-		    DeviceParams = _frameProvider.GetDeviceParams();
+		    DepthCameraParams = _frameProvider.GetDepthCameraParams();
 
 		    _frameProvider.ColorFrameReady += ColorImageUpdated;
 		    _frameProvider.DepthFrameReady += DepthImageUpdated;
@@ -167,9 +167,14 @@ namespace VolumeCalculatorGUI.GUI
 		    _frameProvider.Dispose();
 		}
 
-	    public DeviceParams GetDeviceParams()
+	    public ColorCameraParams GetColorCameraParams()
 	    {
-		    return _deviceParams;
+		    return _frameProvider.GetColorCameraParams();
+	    }
+
+	    public DepthCameraParams GetDepthCameraParams()
+	    {
+		    return _depthCameraParams;
 	    }
 
 	    public void ApplicationSettingsUpdated(ApplicationSettings settings)
@@ -214,8 +219,8 @@ namespace VolumeCalculatorGUI.GUI
 			var maskedMap = GetMaskedDepthMap(depthMap);
 
 			var cutOffDepth = (short)(_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
-		    var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, _deviceParams.MinDepth, _applicationSettings.DistanceToFloor,
-			    cutOffDepth);
+		    var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, _depthCameraParams.MinDepth,
+			    _applicationSettings.DistanceToFloor, cutOffDepth);
 
 		    var imageWidth = maskedMap.Width;
 		    var imageHeight = maskedMap.Height;

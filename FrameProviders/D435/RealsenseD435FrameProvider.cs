@@ -41,9 +41,14 @@ namespace FrameProviders.D435
 			DllWrapper.DestroyFrameProvider();
 		}
 
-		public override DeviceParams GetDeviceParams()
+		public override ColorCameraParams GetColorCameraParams()
 		{
-			return new DeviceParams(86, 57, -1, -1, -1, -1, 300, 10000);
+			throw new NotImplementedException();
+		}
+
+		public override DepthCameraParams GetDepthCameraParams()
+		{
+			return new DepthCameraParams(86, 57, -1, -1, -1, -1, 300, 10000);
 		}
 
 		public override void SuspendColorStream()

@@ -49,7 +49,7 @@ namespace VolumeCalculationRunner
 			var totalCaseCount = testCaseFolders.Count;
 			LogVerbose($@"{totalCaseCount} test cases were found");
 
-			using (var processor = new DepthMapProcessor(_logger, GetDefaultKinectV2Params()))
+			using (var processor = new DepthMapProcessor(_logger, GetDefaultKinectV2ColorCameraParams(), GetDefaultKinectV2DepthCameraParams()))
 			{
 				var testIndex = 1;
 				foreach (var testCaseDirectory in testCaseFolders)
@@ -199,9 +199,14 @@ namespace VolumeCalculationRunner
 			}
 		}
 
-		private static DeviceParams GetDefaultKinectV2Params()
+		private static ColorCameraParams GetDefaultKinectV2ColorCameraParams()
 		{
-			return new DeviceParams(70.6f, 60.0f, 367.7066f, 367.7066f, 257.8094f, 207.3965f, 600, 5000);
+			return new ColorCameraParams(84.1f, 53.8f, 1081.37f, 1081.37f, 959.5f, 539.5f);
+		}
+
+		private static DepthCameraParams GetDefaultKinectV2DepthCameraParams()
+		{
+			return new DepthCameraParams(70.6f, 60.0f, 367.7066f, 367.7066f, 257.8094f, 207.3965f, 600, 5000);
 		}
 	}
 }

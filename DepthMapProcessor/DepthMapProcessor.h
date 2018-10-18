@@ -6,13 +6,13 @@
 class DepthMapProcessor
 {
 private:
-	const float _focalLengthX;
-	const float _focalLengthY;
-	const float _principalX;
-	const float _principalY;
-	const short _minDepth;
-	const short _maxDepth;
+	const ColorCameraIntristics _colorIntrinsics; 
+	const DepthCameraIntristics _depthIntrinsics;
 
+	int _colorImageWidth;
+	int _colorImageHeight;
+	int _colorImageLength;
+	int _colorImageLengthBytes;
 	int _mapWidth;
 	int _mapHeight;
 	int _mapLength;
@@ -21,20 +21,23 @@ private:
 	short _cutOffDepth;
 
 	ObjDimDescription _result;
+	byte* _colorImageBuffer;
 	short* _mapBuffer;
 	byte* _imgBuffer;
 
 public:
-	DepthMapProcessor(const float focalLengthX, const float focalLengthY, const float principalX,
-		const float principalY, const short minDepth, const short maxDepth);
+	DepthMapProcessor(ColorCameraIntristics colorIntrinsics, DepthCameraIntristics depthIntrinsics);
 	~DepthMapProcessor();
 
 	ObjDimDescription* CalculateObjectVolume(const int mapWidth, const int mapHeight, const short*const mapData);
+	ObjDimDescription* CalculateObjectVolumeAlt(const int imageWidth, const int imageHeight, const byte*const imageData, 
+		const int bytesPerPixel, const int mapWidth, const int mapHeight, const short*const mapData);
 	const short CalculateFloorDepth(const int mapWidth, const int mapHeight, const short*const mapData);
 	void SetSettings(const short floorDepth, const short cutOffDepth);
 
 private:
-	void ResizeBuffers(const int mapWidth, const int mapHeight);
+	void ResizeColorBuffer(const int imageWidth, const int imageHeight, const int bytesPerPixel);
+	void ResizeDepthBuffers(const int mapWidth, const int mapHeight);
 	const short GetContourTopPlaneDepth(const Contour& contour, const cv::RotatedRect& rotBoundingRect) const;
 	const Contour GetTargetContour(const short*const mapBuffer, const int mapNum = 0) const;
 	const ObjDimDescription CalculateContourDimensions(const Contour& contour) const;

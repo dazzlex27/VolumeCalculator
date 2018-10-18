@@ -45,12 +45,22 @@
 				<TextBlock Style="{StaticResource TextBlockStyle}" Text="  мм²"/>
 			</StackPanel>
 		</StackPanel>
-		<Button Grid.Row="2" 
-				Grid.Column="0"
-		        Margin="2" 
-		        MinHeight="25" 
-		        Name="BtCalcVolume"
-		        Content="Выполнить измерение" 
-		        Command="{Binding CalculateVolumeCommand}"/>
+		<Grid Grid.Row="2" Grid.Column="0" Margin="2">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition/>
+				<ColumnDefinition/>
+			</Grid.ColumnDefinitions>
+			<Button Grid.Column="0"
+			        Margin="2" 
+			        MinHeight="25" 
+			        Content="Измерить по глубине" 
+			        Command="{Binding CalculateVolumeCommand}"/>
+			<Button Grid.Column="1"
+			        Margin="2" 
+			        MinHeight="25" 
+			        Content="Измерить по RGB" 
+			        Command="{Binding CalculateVolumeAltCommand}"/>
+		</Grid>
+
 	</Grid>
 </UserControl>

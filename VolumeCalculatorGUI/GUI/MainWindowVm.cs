@@ -127,15 +127,16 @@ namespace VolumeCalculatorGUI.GUI
 			_streamViewControlVm = new StreamViewControlVm(_logger, _settings);
 			ApplicationSettingsChanged += _streamViewControlVm.ApplicationSettingsUpdated;
 
-			var deviceParams = _streamViewControlVm.GetDeviceParams();
+			var colorCameraParams = _streamViewControlVm.GetColorCameraParams();
+			var depthCameraParams = _streamViewControlVm.GetDepthCameraParams();
 
-			_calculationDashboardControlVm = new CalculationDashboardControlVm(_logger, _settings, deviceParams);
-			_streamViewControlVm.DeviceParamsChanged += _calculationDashboardControlVm.DeviceParamsUpdated;
+			_calculationDashboardControlVm = new CalculationDashboardControlVm(_logger, _settings, colorCameraParams, depthCameraParams);
+			_streamViewControlVm.ColorFrameReady += _calculationDashboardControlVm.ColorFrameArrived;
 			_streamViewControlVm.DepthFrameReady += _calculationDashboardControlVm.DepthFrameArrived;
 			ApplicationSettingsChanged += _calculationDashboardControlVm.ApplicationSettingsUpdated;
 			_streamViewControlVm.DeviceParamsChanged += _calculationDashboardControlVm.DeviceParamsUpdated;
 
-			_testDataGenerationControlVm = new TestDataGenerationControlVm(_settings, deviceParams);
+			_testDataGenerationControlVm = new TestDataGenerationControlVm(_settings, depthCameraParams);
 			_streamViewControlVm.ColorFrameReady += _testDataGenerationControlVm.ColorFrameUpdated;
 			_streamViewControlVm.DepthFrameReady += _testDataGenerationControlVm.DepthFrameUpdated;
 			ApplicationSettingsChanged += _testDataGenerationControlVm.ApplicationSettingsUpdated;
@@ -168,7 +169,7 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
-				var deviceParams = _streamViewControlVm.GetDeviceParams();
+				var deviceParams = _streamViewControlVm.GetDepthCameraParams();
 				var depthMapProcessor = CalculationDashboardControlVm.GetDepthMapProcessor();
 
 				var settingsWindowVm = new SettingsWindowVm(_logger, _settings, deviceParams, depthMapProcessor);

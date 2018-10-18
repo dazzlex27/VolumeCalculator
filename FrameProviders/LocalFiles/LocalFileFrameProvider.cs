@@ -25,9 +25,16 @@ namespace FrameProviders.LocalFiles
 			_logger = logger;
 		}
 
-		public override DeviceParams GetDeviceParams()
+		public override ColorCameraParams GetColorCameraParams()
 		{
-			return new DeviceParams(70.6f, 60.0f, 367.7066f, 367.7066f, 257.8094f, 207.3965f, 600, 5000);
+			// TODO: read from file
+			return new ColorCameraParams(84.1f, 53.8f, 1081.37f, 1081.37f, 959.5f, 539.5f);
+		}
+
+		public override DepthCameraParams GetDepthCameraParams()
+		{
+			// TODO: read from file
+			return new DepthCameraParams(70.6f, 60.0f, 367.7066f, 367.7066f, 257.8094f, 207.3965f, 600, 5000);
 		}
 
 		public override void Start()

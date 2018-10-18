@@ -8,7 +8,8 @@ namespace FrameProviders
 		public event Action<ImageData> ColorFrameReady;
 		public event Action<DepthMap> DepthFrameReady;
 
-		public abstract DeviceParams GetDeviceParams();
+		public abstract ColorCameraParams GetColorCameraParams();
+		public abstract DepthCameraParams GetDepthCameraParams();
 
 		public abstract void Start();
 		public abstract void Dispose();

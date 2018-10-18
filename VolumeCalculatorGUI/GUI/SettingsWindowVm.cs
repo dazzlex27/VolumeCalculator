@@ -9,7 +9,6 @@ using FrameProviders;
 using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Logic;
-using VolumeCalculatorGUI.Utils;
 
 namespace VolumeCalculatorGUI.GUI
 {
@@ -164,7 +163,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		public ICommand ResetSettingsCommand { get; }
 
-		public SettingsWindowVm(ILogger logger, ApplicationSettings settings, DeviceParams deviceParams, 
+		public SettingsWindowVm(ILogger logger, ApplicationSettings settings, DepthCameraParams depthCameraParams, 
 			DepthMapProcessor volumeCalculator)
 		{
 			_logger = logger;
@@ -174,8 +173,8 @@ namespace VolumeCalculatorGUI.GUI
 			ResetSettingsCommand = new CommandHandler(ResetSettings, true);
 
 			var oldSettings = settings ?? ApplicationSettings.GetDefaultSettings();
-			MinDepth = deviceParams.MinDepth;
-			MaxDepth = deviceParams.MaxDepth;
+			MinDepth = depthCameraParams.MinDepth;
+			MaxDepth = depthCameraParams.MaxDepth;
 			FillValuesFromSettings(oldSettings);
 		}
 

@@ -11,7 +11,8 @@ namespace VolumeCalculatorGUI.GUI
     internal class TestDataGenerationControlVm : BaseViewModel
     {
 	    private TestDataGenerator _testDataGenerator;
-	    private DeviceParams _deviceParams;
+	    private ColorCameraParams _colorCameraParams;
+	    private DepthCameraParams _depthCameraParams;
 	    private ApplicationSettings _applicationSettings;
 
 		private string _testCaseName;
@@ -164,10 +165,10 @@ namespace VolumeCalculatorGUI.GUI
 		    }
 	    }
 
-	    public TestDataGenerationControlVm(ApplicationSettings settings, DeviceParams deviceParams)
+	    public TestDataGenerationControlVm(ApplicationSettings settings, DepthCameraParams deptCameraParams)
 	    {
 		    _applicationSettings = settings;
-		    _deviceParams = deviceParams;
+		    _depthCameraParams = deptCameraParams;
 
 			TestCaseName = "obj1";
 		    Description = "";
@@ -200,9 +201,10 @@ namespace VolumeCalculatorGUI.GUI
 		    _applicationSettings = settings;
 	    }
 
-	    public void DeviceParamsUpdated(DeviceParams deviceParams)
+	    public void DeviceParamsUpdated(ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
 	    {
-		    _deviceParams = deviceParams;
+		    _colorCameraParams = colorCameraParams;
+		    _depthCameraParams = depthCameraParams;
 	    }
 
 	    private void RunTestDataGeneration()
@@ -212,8 +214,7 @@ namespace VolumeCalculatorGUI.GUI
 			var basicTestInfo = new TestCaseBasicInfo(TestCaseName, Description, TestCaseFolderPath, ObjLength,
 			    ObjWidth, ObjHeight, TimesToSave);
 
-		    var testCaseData = new TestCaseData(basicTestInfo, _latestColorFrame, _latestDepthMap, _deviceParams,
-			    _applicationSettings);
+		    var testCaseData = new TestCaseData(basicTestInfo, _latestColorFrame, _latestDepthMap, _depthCameraParams, _applicationSettings);
 
 		    _testDataGenerator = new TestDataGenerator(testCaseData);
 	    }

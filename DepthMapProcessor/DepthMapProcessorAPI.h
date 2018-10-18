@@ -4,12 +4,14 @@
 
 #define DLL_EXPORT extern "C" _declspec(dllexport)
 
-DLL_EXPORT void* CreateDepthMapProcessor(float focalLengthX, float focalLengthY, float principalX,
-	float principalY, short minDepth, short maxDepth);
+DLL_EXPORT void* CreateDepthMapProcessor(ColorCameraIntristics colorIntrinsics, DepthCameraIntristics depthIntrinsics);
 
 DLL_EXPORT void SetCalculatorSettings(void* handle, short floorDepth, short cutOffDepth);
 
 DLL_EXPORT ObjDimDescription* CalculateObjectVolume(void* handle, int mapWidth, int mapHeight, short* mapData);
+
+DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, int imageWidth, int imageHeight, byte* imageData, int bytesPerPixel,
+	int mapWidth, int mapHeight, short* mapData);
 
 DLL_EXPORT short CalculateFloorDepth(void* handle, int mapWidth, int mapHeight, short* mapData);
 

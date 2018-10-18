@@ -23,7 +23,7 @@ namespace VolumeCalculatorTest
 			var mapData = new short[mapWidth * mapHeight];
 			var emptyMap = new DepthMap(mapWidth, mapHeight, mapData);
 
-			using (var processor = new DepthMapProcessor(_logger, GetDummyDeviceParams()))
+			using (var processor = new DepthMapProcessor(_logger, GetDummyColorCameraParams(), GetDummyDepthCameraParams()))
 			{
 				var floorDepth = processor.CalculateFloorDepth(emptyMap);
 				Assert.IsTrue(floorDepth == 0);
@@ -40,7 +40,7 @@ namespace VolumeCalculatorTest
 			mapData[0] = validDepthValue;
 			var map = new DepthMap(mapWidth, mapHeight, mapData);
 
-			using (var processor = new DepthMapProcessor(_logger, GetDummyDeviceParams()))
+			using (var processor = new DepthMapProcessor(_logger, GetDummyColorCameraParams(), GetDummyDepthCameraParams()))
 			{
 				var floorDepth = processor.CalculateFloorDepth(map);
 				Assert.IsTrue(floorDepth == validDepthValue);
@@ -59,16 +59,21 @@ namespace VolumeCalculatorTest
 			mapData[2] = 2;
 			var map = new DepthMap(mapWidth, mapHeight, mapData);
 
-			using (var processor = new DepthMapProcessor(_logger, GetDummyDeviceParams()))
+			using (var processor = new DepthMapProcessor(_logger, GetDummyColorCameraParams(), GetDummyDepthCameraParams()))
 			{
 				var floorDepth = processor.CalculateFloorDepth(map);
 				Assert.IsTrue(floorDepth == modeDepthValue);
 			}
 		}
 
-		private static DeviceParams GetDummyDeviceParams()
+		private static ColorCameraParams GetDummyColorCameraParams()
 		{
-			return new DeviceParams(1, 1, 1, 1, 1, 1, 1, 1);
+			return new ColorCameraParams(1, 1, 1, 1, 1, 1);
+		}
+
+		private static DepthCameraParams GetDummyDepthCameraParams()
+		{
+			return new DepthCameraParams(1, 1, 1, 1, 1, 1, 1, 1);
 		}
 	}
 }

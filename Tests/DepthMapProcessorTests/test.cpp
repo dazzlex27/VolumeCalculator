@@ -43,7 +43,7 @@ void FindFilteringDepth(const char* path)
 void CalculateVolume(const float focalX, const float focalY, const float principalX, const float principalY, const short minDepth, const short maxDepth,
 	const short floorDepth, const short cutOffDepth, const char* path)
 {
-	const DepthMap* depthMap = Utils::ReadDepthMapFromFile(path);
+	/*const DepthMap* depthMap = Utils::ReadDepthMapFromFile(path);
 
 	const int mapWidth = depthMap->Width;
 	const int mapHeight = depthMap->Height;
@@ -57,21 +57,21 @@ void CalculateVolume(const float focalX, const float focalY, const float princip
 	std::cout << "debug info saved in out/ if the directory was present" << std::endl;
 	DestroyDepthMapProcessor(handle);
 
-	delete depthMap;
+	delete depthMap;*/
 }
 
 void TestFloorDepth()
 {
-	const int mapWidth = 4;
+	/*const int mapWidth = 4;
 	const int mapHeight = 3;
 	short* mapData = new short[4 * 3];
 	memset(mapData, 0, mapWidth * mapHeight * sizeof(short));
 
-	auto handle = CreateDepthMapProcessor(1, 1, 1, 1, 1, 1);
+	auto handle = CreateDepthMapProcessor();
 	const short depth = CalculateFloorDepth(handle, mapWidth, mapHeight, mapData);
 
 	DestroyDepthMapProcessor(handle);
-	delete[] mapData;
+	delete[] mapData;*/
 }
 
 int main(int argc, char* argv[])
