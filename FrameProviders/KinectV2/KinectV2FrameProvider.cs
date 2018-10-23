@@ -104,7 +104,7 @@ namespace FrameProviders.KinectV2
 
 		private void ColorFrameReader_FrameArrived(object sender, ColorFrameArrivedEventArgs e)
 		{
-			var needToProcess = IsColorStreamSubsribedTo && _colorStreamSuspended;
+			var needToProcess = IsColorStreamSubsribedTo && !_colorStreamSuspended;
 			if (!needToProcess)
 				return;
 
