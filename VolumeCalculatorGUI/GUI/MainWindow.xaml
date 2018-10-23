@@ -6,7 +6,7 @@
         xmlns:gui="clr-namespace:VolumeCalculatorGUI.GUI"
         mc:Ignorable="d"
         x:ClassModifier="internal"
-        Title="VolumeCalculator v0.105 beta" 
+        Title="VolumeCalculator v0.106 beta" 
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterScreen" 
         Closing="Window_Closing"

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using FrameProviders;
 using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
@@ -21,7 +22,6 @@ namespace VolumeCalculatorGUI.GUI
 		private StreamViewControlVm _streamViewControlVm;
 		private CalculationDashboardControlVm _calculationDashboardControlVm;
 		private TestDataGenerationControlVm _testDataGenerationControlVm;
-		private bool _isFullScreen;
 
 		public StreamViewControlVm StreamViewControlVm
 		{
@@ -75,22 +75,7 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public bool IsFullSreen
-		{
-			get => _isFullScreen;
-			set
-			{
-				if (_isFullScreen == value)
-					return;
-
-				_isFullScreen = value;
-				OnPropertyChanged();
-			}
-		}
-
 		public ICommand OpenSettingsCommand { get; }
-
-		public ICommand ToggleFullscreen { get; }
 
 		public MainWindowVm()
 		{
@@ -101,7 +86,6 @@ namespace VolumeCalculatorGUI.GUI
 				AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
 				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
-				ToggleFullscreen = new CommandHandler(SetFullScreenState, true);
 
 				InitializeSettings();
 				InitializeSubViewModels();
@@ -115,32 +99,6 @@ namespace VolumeCalculatorGUI.GUI
 					MessageBoxButton.OK, MessageBoxImage.Error);
 				Process.GetCurrentProcess().Kill();
 			}
-		}
-
-		private void SetFullScreenState()
-		{
-			IsFullSreen = !IsFullSreen;
-		}
-
-		private void InitializeSubViewModels()
-		{
-			_streamViewControlVm = new StreamViewControlVm(_logger, _settings);
-			ApplicationSettingsChanged += _streamViewControlVm.ApplicationSettingsUpdated;
-
-			var colorCameraParams = _streamViewControlVm.GetColorCameraParams();
-			var depthCameraParams = _streamViewControlVm.GetDepthCameraParams();
-
-			_calculationDashboardControlVm = new CalculationDashboardControlVm(_logger, _settings, colorCameraParams, depthCameraParams);
-			_streamViewControlVm.ColorFrameReady += _calculationDashboardControlVm.ColorFrameArrived;
-			_streamViewControlVm.DepthFrameReady += _calculationDashboardControlVm.DepthFrameArrived;
-			ApplicationSettingsChanged += _calculationDashboardControlVm.ApplicationSettingsUpdated;
-			_streamViewControlVm.DeviceParamsChanged += _calculationDashboardControlVm.DeviceParamsUpdated;
-
-			_testDataGenerationControlVm = new TestDataGenerationControlVm(_settings, depthCameraParams);
-			_streamViewControlVm.ColorFrameReady += _testDataGenerationControlVm.ColorFrameUpdated;
-			_streamViewControlVm.DepthFrameReady += _testDataGenerationControlVm.DepthFrameUpdated;
-			ApplicationSettingsChanged += _testDataGenerationControlVm.ApplicationSettingsUpdated;
-			_streamViewControlVm.DeviceParamsChanged += _testDataGenerationControlVm.DeviceParamsUpdated;
 		}
 
 		public void ExitApplication()
@@ -164,7 +122,7 @@ namespace VolumeCalculatorGUI.GUI
 				_logger.LogException("Failed to complete application clean up", ex);
 			}
 		}
-		
+
 		public void OpenSettings()
 		{
 			try
@@ -189,7 +147,7 @@ namespace VolumeCalculatorGUI.GUI
 				Settings = settingsWindowVm.GetSettings();
 				IoUtils.SerializeSettings(Settings);
 				_logger.LogInfo("New settings have been applied: " +
-				                $"floorDepth={_settings.DistanceToFloor} useAreaMask={_settings.UseAreaMask} minObjHeight={_settings.MinObjHeight} sampleCount={_settings.SampleCount} outputPath={_settings.OutputPath}");
+								$"floorDepth={_settings.DistanceToFloor} useAreaMask={_settings.UseAreaMask} minObjHeight={_settings.MinObjHeight} sampleCount={_settings.SampleCount} outputPath={_settings.OutputPath}");
 			}
 			catch (Exception ex)
 			{
@@ -213,6 +171,47 @@ namespace VolumeCalculatorGUI.GUI
 				_testDataGenerationControlVm.ShowControl = value;
 				OnPropertyChanged();
 			}
+		}
+
+		private void InitializeSubViewModels()
+		{
+			_streamViewControlVm = new StreamViewControlVm(_logger, _settings);
+
+			var colorCameraParams = _streamViewControlVm.GetColorCameraParams();
+			var depthCameraParams = _streamViewControlVm.GetDepthCameraParams();
+
+			_calculationDashboardControlVm = new CalculationDashboardControlVm(_logger, _settings, colorCameraParams, depthCameraParams);
+			_testDataGenerationControlVm = new TestDataGenerationControlVm(_settings, depthCameraParams);
+
+			ApplicationSettingsChanged += OnApplicationSettingsChanged;
+			_streamViewControlVm.DeviceParamsChanged += OnDeviceParametersChanged;
+			_streamViewControlVm.ColorFrameReady += OnColorFrameReady;
+			_streamViewControlVm.DepthFrameReady += OnDepthFrameReady;
+		}
+
+		private void OnDeviceParametersChanged(ColorCameraParams arg1, DepthCameraParams arg2)
+		{
+			_calculationDashboardControlVm.DeviceParamsUpdated(arg1, arg2);
+			_testDataGenerationControlVm.DeviceParamsUpdated(arg1, arg2);
+		}
+
+		private void OnApplicationSettingsChanged(ApplicationSettings settings)
+		{
+			_calculationDashboardControlVm.ApplicationSettingsUpdated(settings);
+			_streamViewControlVm.ApplicationSettingsUpdated(settings);
+			_testDataGenerationControlVm.ApplicationSettingsUpdated(settings);
+		}
+
+		private void OnColorFrameReady(ImageData image)
+		{
+			_calculationDashboardControlVm.ColorFrameArrived(image);
+			_testDataGenerationControlVm.ColorFrameUpdated(image);
+		}
+
+		private void OnDepthFrameReady(DepthMap depthMap)
+		{
+			_calculationDashboardControlVm.DepthFrameArrived(depthMap);
+			_testDataGenerationControlVm.DepthFrameUpdated(depthMap);
 		}
 
 		private void InitializeSettings()

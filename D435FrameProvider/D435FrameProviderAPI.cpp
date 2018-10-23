@@ -15,6 +15,11 @@ DLL_EXPORT int CreateFrameProvider()
 	return 0;
 }
 
+DLL_EXPORT DepthCameraIntrinsics GetDepthCameraIntrinsics()
+{
+	return Wrapper->GetDepthCameraIntrinsics();
+}
+
 DLL_EXPORT void SubscribeToColorFrames(ColorFrameCallback callback)
 {
 	Wrapper->AddColorSubscriber(callback);

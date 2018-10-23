@@ -6,6 +6,8 @@
 
 DLL_EXPORT int CreateFrameProvider();
 
+DLL_EXPORT DepthCameraIntrinsics GetDepthCameraIntrinsics();
+
 DLL_EXPORT void SubscribeToColorFrames(ColorFrameCallback progressCallback);
 DLL_EXPORT void UnsubscribeFromColorFrames(ColorFrameCallback progressCallback);
 

@@ -44,6 +44,18 @@ void SensorWrapper::RemoveDepthSubscriber(DepthFrameCallback callback)
 		_depthSubscribers.end());
 }
 
+DepthCameraIntrinsics SensorWrapper::GetDepthCameraIntrinsics() const
+{
+	rs2_intrinsics i = _pipe.get_active_profile().get_stream(RS2_STREAM_DEPTH).as<rs2::video_stream_profile>().get_intrinsics();
+	DepthCameraIntrinsics intrinsics;
+	intrinsics.FocalLengthX = i.fx;
+	intrinsics.FocalLengthY = i.fy;
+	intrinsics.PrincipalPointX = i.ppx;
+	intrinsics.PrincipalPointY = i.ppy;
+
+	return intrinsics;
+}
+
 ColorFrame* SensorWrapper::GetNextColorFrame(const rs2::video_frame& videoFrame)
 {
 	const int frameWidth = videoFrame.get_width();

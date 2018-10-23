@@ -17,6 +17,9 @@ namespace FrameProviders.D435
 		public static extern int CreateFrameProvider();
 
 		[DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
+		public static extern DepthCameraIntrinsics GetDepthCameraIntrinsics();
+
+		[DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
 		public static extern void SubscribeToColorFrames(ColorFrameCallback progressCallback);
 
 		[DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]

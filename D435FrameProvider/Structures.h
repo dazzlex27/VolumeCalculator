@@ -17,6 +17,22 @@ struct DepthFrame
 	short* Data;
 };
 
+struct ColorCameraIntrinsics
+{
+	float FocalLengthX;
+	float FocalLengthY;
+	float PrincipalPointX;
+	float PrincipalPointY;
+};
+
+struct DepthCameraIntrinsics
+{
+	float FocalLengthX;
+	float FocalLengthY;
+	float PrincipalPointX;
+	float PrincipalPointY;
+};
+
 typedef void(__stdcall * ColorFrameCallback)(ColorFrame*);
 
 typedef void(__stdcall * DepthFrameCallback)(DepthFrame*);

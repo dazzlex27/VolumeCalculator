@@ -98,6 +98,7 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const int imageWi
 	}
 
 	const cv::RotatedRect& rectGiantContour = cv::minAreaRect(cv::Mat(giantContour));
+	DrawTargetContour(giantContour, 2);
 
 	cv::Point2f points[4];
 	rectGiantContour.points(points);

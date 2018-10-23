@@ -12,300 +12,276 @@ using VolumeCalculatorGUI.Utils;
 
 namespace VolumeCalculatorGUI.GUI
 {
-    internal class CalculationDashboardControlVm : BaseViewModel, IDisposable
-    {
-	    private readonly ILogger _logger;
-	    private string _resultFullPath;
+	internal class CalculationDashboardControlVm : BaseViewModel, IDisposable
+	{
+		private const string DebugDataDirectoryName = "out";
+		private static readonly string DebugColorFrameFilename = Path.Combine(DebugDataDirectoryName, "color.png");
+		private static readonly string DebugDepthFrameFilename = Path.Combine(DebugDataDirectoryName, "depth.png");
 
-	    private ApplicationSettings _applicationSettings;
-	    private ColorCameraParams _colorCameraParams;
-	    private DepthCameraParams _depthCameraParams;
+		private readonly ILogger _logger;
+		private string _resultFullPath;
 
-	    private ImageData _latestColorFrame;
-	    private DepthMap _latestDepthMap;
+		private ApplicationSettings _applicationSettings;
+		private ColorCameraParams _colorCameraParams;
+		private DepthCameraParams _depthCameraParams;
 
-	    private DepthMapProcessor _processor;
-	    private VolumeCalculator _volumeCalculator;
+		private ImageData _latestColorFrame;
+		private DepthMap _latestDepthMap;
 
-	    private bool _colorFrameReady;
-	    private bool _depthFrameReady;
+		private DepthMapProcessor _processor;
+		private VolumeCalculator _volumeCalculator;
 
-	    private int _measurementCount;
+		private bool _colorFrameReady;
+		private bool _depthFrameReady;
 
-	    private string _objName;
+		private int _measurementCount;
+
+		private string _objName;
 		private int _objWidth;
-	    private int _objHeight;
-	    private int _objLength;
-	    private long _objVolume;
-	    private bool _calculationInProgress;
+		private int _objHeight;
+		private int _objLength;
+		private long _objVolume;
+		private bool _calculationInProgress;
 
 		public ICommand CalculateVolumeCommand { get; }
 
 		public ICommand CalculateVolumeAltCommand { get; }
 
-	    public string ObjName
-	    {
-		    get => _objName;
-		    set
-		    {
-			    if (_objName == value)
-				    return;
+		public string ObjName
+		{
+			get => _objName;
+			set
+			{
+				if (_objName == value)
+					return;
 
-			    _objName = value;
+				_objName = value;
 				OnPropertyChanged();
-		    }
-	    }
+			}
+		}
 
-	    public int ObjLength
-	    {
-		    get => _objLength;
-		    set
-		    {
-			    if (_objLength == value)
-				    return;
+		public int ObjLength
+		{
+			get => _objLength;
+			set
+			{
+				if (_objLength == value)
+					return;
 
-			    _objLength = value;
-			    OnPropertyChanged();
-		    }
-	    }
+				_objLength = value;
+				OnPropertyChanged();
+			}
+		}
 
 		public int ObjWidth
-	    {
-		    get => _objWidth;
-		    set
-		    {
-			    if (_objWidth == value)
-				    return;
+		{
+			get => _objWidth;
+			set
+			{
+				if (_objWidth == value)
+					return;
 
-			    _objWidth = value;
-			    OnPropertyChanged();
-			}
-	    }
-
-	    public int ObjHeight
-	    {
-		    get => _objHeight;
-		    set
-		    {
-			    if (_objHeight == value)
-				    return;
-
-			    _objHeight = value;
-			    OnPropertyChanged();
-			}
-	    }
-
-	    public long ObjVolume
-	    {
-		    get => _objVolume;
-		    set
-		    {
-			    if (_objVolume == value)
-				    return;
-
-			    _objVolume = value;
+				_objWidth = value;
 				OnPropertyChanged();
-		    }
-	    }
+			}
+		}
 
-	    public bool CalculationInProgress
-	    {
-		    get => _calculationInProgress;
-		    set
-		    {
-			    if (_calculationInProgress == value)
-				    return;
+		public int ObjHeight
+		{
+			get => _objHeight;
+			set
+			{
+				if (_objHeight == value)
+					return;
 
-			    _calculationInProgress = value;
+				_objHeight = value;
 				OnPropertyChanged();
-		    }
-	    }
+			}
+		}
 
-		public CalculationDashboardControlVm(ILogger logger, ApplicationSettings settings, ColorCameraParams colorCameraParams,
-			DepthCameraParams depthCameraParams)
-	    {
-		    _logger = logger;
-		    _applicationSettings = settings;
-		    _colorCameraParams = colorCameraParams;
-		    _depthCameraParams = depthCameraParams;
+		public long ObjVolume
+		{
+			get => _objVolume;
+			set
+			{
+				if (_objVolume == value)
+					return;
 
-		    _processor = new DepthMapProcessor(_logger, _colorCameraParams, _depthCameraParams);
-		    _processor.SetCalculatorSettings(_applicationSettings);
+				_objVolume = value;
+				OnPropertyChanged();
+			}
+		}
 
-		    _resultFullPath = Path.Combine(_applicationSettings.OutputPath, Constants.ResultFileName);
+		public bool CalculationInProgress
+		{
+			get => _calculationInProgress;
+			set
+			{
+				if (_calculationInProgress == value)
+					return;
+
+				_calculationInProgress = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public CalculationDashboardControlVm(ILogger logger, ApplicationSettings settings, 
+			ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
+		{
+			_logger = logger;
+			_applicationSettings = settings;
+			_colorCameraParams = colorCameraParams;
+			_depthCameraParams = depthCameraParams;
+
+			_processor = new DepthMapProcessor(_logger, _colorCameraParams, _depthCameraParams);
+			_processor.SetCalculatorSettings(_applicationSettings);
+
+			_resultFullPath = Path.Combine(_applicationSettings.OutputPath, Constants.ResultFileName);
 
 			CalculateVolumeCommand = new CommandHandler(CalculateObjectVolume, !CalculationInProgress);
-		    CalculateVolumeAltCommand = new CommandHandler(CalculateObjectVolumeAlt, !CalculationInProgress);
-	    }
+			CalculateVolumeAltCommand = new CommandHandler(CalculateObjectVolumeRgb, !CalculationInProgress);
+		}
 
-	    public void Dispose()
-	    {
+		public void Dispose()
+		{
 			if (_volumeCalculator != null && _volumeCalculator.IsActive)
 				_processor.Dispose();
 		}
 
-	    public void ApplicationSettingsUpdated(ApplicationSettings applicationSettings)
-	    {
-		    _applicationSettings = applicationSettings;
-		    _processor.SetCalculatorSettings(_applicationSettings);
-		    _resultFullPath = Path.Combine(_applicationSettings.OutputPath, Constants.ResultFileName);
+		public void ApplicationSettingsUpdated(ApplicationSettings applicationSettings)
+		{
+			_applicationSettings = applicationSettings;
+			_processor.SetCalculatorSettings(_applicationSettings);
+			_resultFullPath = Path.Combine(_applicationSettings.OutputPath, Constants.ResultFileName);
 		}
 
-	    public void DeviceParamsUpdated(ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
-	    {
-		    _colorCameraParams = colorCameraParams;
-		    _depthCameraParams = depthCameraParams;
-		    Dispose();
+		public void DeviceParamsUpdated(ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
+		{
+			_colorCameraParams = colorCameraParams;
+			_depthCameraParams = depthCameraParams;
+			Dispose();
 
-		    _processor = new DepthMapProcessor(_logger, _colorCameraParams, _depthCameraParams);
-		    _processor.SetCalculatorSettings(_applicationSettings);
+			_processor = new DepthMapProcessor(_logger, _colorCameraParams, _depthCameraParams);
+			_processor.SetCalculatorSettings(_applicationSettings);
 		}
 
-	    public void ColorFrameArrived(ImageData image)
-	    {
-		    _latestColorFrame = image;
+		public void ColorFrameArrived(ImageData image)
+		{
+			_latestColorFrame = image;
 
-		    var calculationIsActive = _volumeCalculator != null && _volumeCalculator.IsActive;
-		    if (!calculationIsActive)
-			    return;
+			var calculationIsActive = _volumeCalculator != null && _volumeCalculator.IsActive;
+			if (!calculationIsActive)
+				return;
 
-		    _colorFrameReady = true;
+			_colorFrameReady = true;
 
-		    if (!_depthFrameReady)
-			    return;
+			if (!_depthFrameReady)
+				return;
 
-		    _volumeCalculator.AdvanceCalculation(_latestColorFrame, _latestDepthMap);
-		    _colorFrameReady = false;
-		    _depthFrameReady = false;
+			_volumeCalculator.AdvanceCalculation(_latestColorFrame, _latestDepthMap);
+			_colorFrameReady = false;
+			_depthFrameReady = false;
 		}
 
-	    public void DepthFrameArrived(DepthMap depthMap)
-	    {
-		    _latestDepthMap = depthMap;
+		public void DepthFrameArrived(DepthMap depthMap)
+		{
+			_latestDepthMap = depthMap;
 
-		    var calculationIsActive = _volumeCalculator != null && _volumeCalculator.IsActive;
-		    if (!calculationIsActive)
-			    return;
+			var calculationIsActive = _volumeCalculator != null && _volumeCalculator.IsActive;
+			if (!calculationIsActive)
+				return;
 
-		    _depthFrameReady = true;
+			_depthFrameReady = true;
 
-		    if (!_colorFrameReady)
-			    return;
+			if (!_colorFrameReady)
+				return;
 
-		    _volumeCalculator.AdvanceCalculation(_latestColorFrame, _latestDepthMap);
-		    _colorFrameReady = false;
-		    _depthFrameReady = false;
-	    }
+			_volumeCalculator.AdvanceCalculation(_latestColorFrame, _latestDepthMap);
+			_colorFrameReady = false;
+			_depthFrameReady = false;
+		}
 
-	    public DepthMapProcessor GetDepthMapProcessor()
-	    {
-		    return _processor;
-	    }
+		public DepthMapProcessor GetDepthMapProcessor()
+		{
+			return _processor;
+		}
 
 		private void CalculateObjectVolume()
-	    {
-			if (_latestDepthMap == null)
-		    {
-			    MessageBox.Show("Нет кадров для обработки!", "Ошибка", MessageBoxButton.OK,
-				    MessageBoxImage.Exclamation);
-			    _logger.LogInfo("Attempted a volume check with no maps");
-
-			    return;
-		    }
-
-		    if (string.IsNullOrEmpty(ObjName))
-		    {
-			    MessageBox.Show("Код объекта не может быть пустым", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-
-			    return;
-			}
-
-		    if (!IsResultFileAccessible())
-		    {
-			    MessageBox.Show("Пожалуйста убедитесь, что файл с результатами доступен для записи и закрыт, прежде чем выполнять вычисление",
-				    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-			    _logger.LogInfo("Failed to access the result file");
-
-				return;
-		    }
-
-		    try
-		    {
-			    CalculationInProgress = true;
-
-			    _logger.LogInfo("Starting a volume check...");
-			    Directory.CreateDirectory("out");
-
-			    var cutOffDepth = (short) (_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
-				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, "out/depth.png", _depthCameraParams.MinDepth,
-					_depthCameraParams.MaxDepth, cutOffDepth);
-
-			    _volumeCalculator = new VolumeCalculator(_logger, _processor, false, _applicationSettings.SampleCount);
-				_volumeCalculator.CalculationFinished += VolumeCalculator_CalculationFinished;
-				_volumeCalculator.CalculationCancelled += VolumeCalculator_CalculationCancelled;
-		    }
-		    catch (Exception ex)
-		    {
-			    _logger.LogException("Failed to start volume calculation", ex);
-			    MessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка",
-				    MessageBoxButton.OK, MessageBoxImage.Error);
-
-			    CalculationInProgress = false;
-		    }
+		{
+			CalculateObjectVolumeInternal(false);
 		}
 
-	    private void CalculateObjectVolumeAlt()
-	    {
-		    if (_latestDepthMap == null || _latestColorFrame == null)
-		    {
-			    MessageBox.Show("Нет кадров для обработки!", "Ошибка", MessageBoxButton.OK,
-				    MessageBoxImage.Exclamation);
-			    _logger.LogInfo("Attempted a volume check with no maps");
+		private void CalculateObjectVolumeRgb()
+		{
+			CalculateObjectVolumeInternal(true);
+		}
 
-			    return;
-		    }
+		private void CalculateObjectVolumeInternal(bool useRgbData)
+		{
+			try
+			{
+				var canRunCalculation = CheckIfPreConditionsAreSatisfied();
+				if (!canRunCalculation)
+					return;
 
-		    if (string.IsNullOrEmpty(ObjName))
-		    {
-			    MessageBox.Show("Введите код объекта", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+				CalculationInProgress = true;
 
-			    return;
-		    }
+				_logger.LogInfo($"Starting a volume check, using rgb={useRgbData}...");
+				if (Directory.Exists(DebugDataDirectoryName))
+					Directory.Delete(DebugDataDirectoryName, true);
+				Directory.CreateDirectory(DebugDataDirectoryName);
 
-		    if (!IsResultFileAccessible())
-		    {
-			    MessageBox.Show("Пожалуйста убедитесь, что файл с результатами доступен для записи и закрыт, прежде чем выполнять вычисление",
-				    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-			    _logger.LogInfo("Failed to access the result file");
+				ImageUtils.SaveImageDataToFile(_latestColorFrame, DebugColorFrameFilename);
 
-			    return;
-		    }
+				var cutOffDepth = (short) (_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
+				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, DebugDepthFrameFilename,
+					_depthCameraParams.MinDepth,
+					_depthCameraParams.MaxDepth, cutOffDepth);
 
-		    try
-		    {
-			    CalculationInProgress = true;
+				_volumeCalculator =
+					new VolumeCalculator(_logger, _processor, useRgbData, _applicationSettings.SampleCount);
+				_volumeCalculator.CalculationFinished += VolumeCalculator_CalculationFinished;
+				_volumeCalculator.CalculationCancelled += VolumeCalculator_CalculationCancelled;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to start volume calculation", ex);
+				MessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка",
+					MessageBoxButton.OK, MessageBoxImage.Error);
 
-			    _logger.LogInfo("Starting a volume check...");
-			    Directory.CreateDirectory("out");
+				CalculationInProgress = false;
+			}
+		}
 
-			    ImageUtils.SaveImageDataToFile(_latestColorFrame, "out/color.png");
+		private bool CheckIfPreConditionsAreSatisfied()
+		{
+			if (_latestDepthMap == null || _latestColorFrame == null)
+			{
+				MessageBox.Show("Нет кадров для обработки!", "Ошибка", MessageBoxButton.OK,
+					MessageBoxImage.Exclamation);
+				_logger.LogInfo("Attempted a volume check with no maps");
 
-				var cutOffDepth = (short)(_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
-			    DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, "out/depth.png", _depthCameraParams.MinDepth,
-				    _depthCameraParams.MaxDepth, cutOffDepth);
+				return false;
+			}
 
-			    _volumeCalculator = new VolumeCalculator(_logger, _processor, true, _applicationSettings.SampleCount);
-			    _volumeCalculator.CalculationFinished += VolumeCalculator_CalculationFinished;
-			    _volumeCalculator.CalculationCancelled += VolumeCalculator_CalculationCancelled;
-		    }
-		    catch (Exception ex)
-		    {
-			    _logger.LogException("Failed to start volume calculation", ex);
-			    MessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка",
-				    MessageBoxButton.OK, MessageBoxImage.Error);
+			if (string.IsNullOrEmpty(ObjName))
+			{
+				MessageBox.Show("Введите код объекта", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 
-			    CalculationInProgress = false;
-		    }
+				return false;
+			}
+
+			if (!IsResultFileAccessible())
+			{
+				MessageBox.Show(
+					"Пожалуйста убедитесь, что файл с результатами доступен для записи и закрыт, прежде чем выполнять вычисление",
+					"Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+				_logger.LogInfo("Failed to access the result file");
+
+				return false;
+			}
+
+			return true;
 		}
 
 		private void VolumeCalculator_CalculationCancelled()
@@ -315,7 +291,8 @@ namespace VolumeCalculatorGUI.GUI
 			DisposeVolumeCalculator();
 
 			_logger.LogError("Calculation cancelled on timeout");
-			MessageBox.Show("Не удалось собрать указанное количество образцов для измерения, проверьте соединение с устройством", 
+			MessageBox.Show(
+				"Не удалось собрать указанное количество образцов для измерения, проверьте соединение с устройством",
 				"Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 		}
 
@@ -335,7 +312,8 @@ namespace VolumeCalculatorGUI.GUI
 			}
 			else
 			{
-				_logger.LogInfo($"Completed a volume check, L={volumeData.Length} W={volumeData.Width} H={volumeData.Height}");
+				_logger.LogInfo(
+					$"Completed a volume check, L={volumeData.Length} W={volumeData.Width} H={volumeData.Height}");
 
 				UpdateVolumeData(volumeData);
 			}
@@ -377,7 +355,8 @@ namespace VolumeCalculatorGUI.GUI
 			}
 			catch (IOException ex)
 			{
-				MessageBox.Show("Не удалось записать результат измерений в файл, проверьте доступность файла и повторите измерения", 
+				MessageBox.Show(
+					"Не удалось записать результат измерений в файл, проверьте доступность файла и повторите измерения",
 					"Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
 				_logger.LogException(
 					$@"Failed to write calculated values to {Constants.ResultFileName} ({_applicationSettings.OutputPath})",
@@ -386,61 +365,62 @@ namespace VolumeCalculatorGUI.GUI
 		}
 
 		private void UpdateVolumeData(ObjectVolumeData volumeData)
-	    {
-		    ObjLength = volumeData.Length;
-		    ObjWidth = volumeData.Width;
-		    ObjHeight = volumeData.Height;
-		    ObjVolume = ObjLength * ObjWidth * ObjHeight;
-	    }
-
-	    private void DisposeVolumeCalculator()
-	    {
-		    _volumeCalculator.CalculationFinished -= VolumeCalculator_CalculationFinished;
-		    _volumeCalculator.CalculationCancelled -= VolumeCalculator_CalculationCancelled;
-		    _volumeCalculator = null;
+		{
+			ObjLength = volumeData.Length;
+			ObjWidth = volumeData.Width;
+			ObjHeight = volumeData.Height;
+			ObjVolume = ObjLength * ObjWidth * ObjHeight;
 		}
 
-	    private void WriteHeadersToCsv()
-	    {
-		    Directory.CreateDirectory(_applicationSettings.OutputPath);
-		    using (var resultFile = new StreamWriter(_resultFullPath, true, Encoding.Default))
-		    {
-			    var resultString = new StringBuilder();
-			    resultString.Append("#");
-			    resultString.Append($@"{Constants.CsvSeparator}name");
-			    resultString.Append($@"{Constants.CsvSeparator}date local");
-			    resultString.Append($@"{Constants.CsvSeparator}time local");
-			    resultString.Append($@"{Constants.CsvSeparator}length, mm");
-			    resultString.Append($@"{Constants.CsvSeparator}width, mm");
-			    resultString.Append($@"{Constants.CsvSeparator}height, mm");
-			    resultString.Append($@"{Constants.CsvSeparator}volume, mm^2");
-			    resultFile.WriteLine(resultString);
-			    resultFile.Flush();
-			    _logger.LogInfo($@"Created the csv at {_resultFullPath} and wrote the headers to it");
-		    }
-	    }
-	
-	private bool IsResultFileAccessible()
-	    {
-		    try
-		    {
-			    if (!File.Exists(_resultFullPath))
-			    {
-					WriteHeadersToCsv();
-				    return true;
-			    }
+		private void DisposeVolumeCalculator()
+		{
+			_volumeCalculator.CalculationFinished -= VolumeCalculator_CalculationFinished;
+			_volumeCalculator.CalculationCancelled -= VolumeCalculator_CalculationCancelled;
+			_volumeCalculator = null;
+		}
 
-				using (Stream stream = new FileStream(_resultFullPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+		private void WriteHeadersToCsv()
+		{
+			Directory.CreateDirectory(_applicationSettings.OutputPath);
+			using (var resultFile = new StreamWriter(_resultFullPath, true, Encoding.Default))
+			{
+				var resultString = new StringBuilder();
+				resultString.Append("#");
+				resultString.Append($@"{Constants.CsvSeparator}name");
+				resultString.Append($@"{Constants.CsvSeparator}date local");
+				resultString.Append($@"{Constants.CsvSeparator}time local");
+				resultString.Append($@"{Constants.CsvSeparator}length, mm");
+				resultString.Append($@"{Constants.CsvSeparator}width, mm");
+				resultString.Append($@"{Constants.CsvSeparator}height, mm");
+				resultString.Append($@"{Constants.CsvSeparator}volume, mm^2");
+				resultFile.WriteLine(resultString);
+				resultFile.Flush();
+				_logger.LogInfo($@"Created the csv at {_resultFullPath} and wrote the headers to it");
+			}
+		}
+
+		private bool IsResultFileAccessible()
+		{
+			try
+			{
+				if (!File.Exists(_resultFullPath))
+				{
+					WriteHeadersToCsv();
+					return true;
+				}
+
+				using (Stream stream =
+					new FileStream(_resultFullPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
 				{
 					stream.ReadByte();
 				}
 
-			    return true;
-		    }
-		    catch (IOException)
-		    {
-			    return false;
-		    }
+				return true;
+			}
+			catch (IOException)
+			{
+				return false;
+			}
 		}
-    }
+	}
 }

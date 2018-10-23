@@ -43,12 +43,18 @@ namespace FrameProviders.D435
 
 		public override ColorCameraParams GetColorCameraParams()
 		{
-			throw new NotImplementedException();
+			return null;
+			//throw new NotImplementedException();
 		}
 
 		public override DepthCameraParams GetDepthCameraParams()
 		{
-			return new DepthCameraParams(86, 57, -1, -1, -1, -1, 300, 10000);
+			var intristics = DllWrapper.GetDepthCameraIntrinsics();
+			if (intristics == null)
+				return new DepthCameraParams(86, 57, -1, -1, -1, -1, 300, 10000);
+
+			return new DepthCameraParams(86, 57, intristics.FocalLengthX, intristics.FocalLengthY,
+				intristics.PrincipalPointX, intristics.PrincipalPointY, 300, 10000);
 		}
 
 		public override void SuspendColorStream()

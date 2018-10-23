@@ -32,6 +32,8 @@ public:
 	void AddDepthSubscriber(DepthFrameCallback callback);
 	void RemoveDepthSubscriber(DepthFrameCallback callback);
 
+	DepthCameraIntrinsics GetDepthCameraIntrinsics() const;
+
 	ColorFrame* GetNextColorFrame(const rs2::video_frame& videoFrame);
 	DepthFrame* GetNextDepthFrame(const rs2::depth_frame& depthFrame);
 
