@@ -36,7 +36,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		private int _measurementCount;
 
-		private string _objName;
+		private string _objCode;
 		private int _objWidth;
 		private int _objHeight;
 		private int _objLength;
@@ -47,15 +47,15 @@ namespace VolumeCalculatorGUI.GUI
 
 		public ICommand CalculateVolumeAltCommand { get; }
 
-		public string ObjName
+		public string ObjCode
 		{
-			get => _objName;
+			get => _objCode;
 			set
 			{
-				if (_objName == value)
+				if (_objCode == value)
 					return;
 
-				_objName = value;
+				_objCode = value;
 				OnPropertyChanged();
 			}
 		}
@@ -165,6 +165,11 @@ namespace VolumeCalculatorGUI.GUI
 			_processor.SetCalculatorSettings(_applicationSettings);
 		}
 
+		public void UpdateCodeText(string text)
+		{
+			ObjCode = text;
+		}
+
 		public void ColorFrameArrived(ImageData image)
 		{
 			_latestColorFrame = image;
@@ -235,11 +240,9 @@ namespace VolumeCalculatorGUI.GUI
 
 				var cutOffDepth = (short) (_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
 				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, DebugDepthFrameFilename,
-					_depthCameraParams.MinDepth,
-					_depthCameraParams.MaxDepth, cutOffDepth);
+					_depthCameraParams.MinDepth, _depthCameraParams.MaxDepth, cutOffDepth);
 
-				_volumeCalculator =
-					new VolumeCalculator(_logger, _processor, useRgbData, _applicationSettings.SampleCount);
+				_volumeCalculator = new VolumeCalculator(_logger, _processor, useRgbData, _applicationSettings.SampleCount);
 				_volumeCalculator.CalculationFinished += VolumeCalculator_CalculationFinished;
 				_volumeCalculator.CalculationCancelled += VolumeCalculator_CalculationCancelled;
 			}
@@ -264,7 +267,7 @@ namespace VolumeCalculatorGUI.GUI
 				return false;
 			}
 
-			if (string.IsNullOrEmpty(ObjName))
+			if (string.IsNullOrEmpty(ObjCode))
 			{
 				MessageBox.Show("Введите код объекта", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 
@@ -328,10 +331,10 @@ namespace VolumeCalculatorGUI.GUI
 
 			try
 			{
-				var safeName = ObjName;
+				var safeName = ObjCode;
 				if (!string.IsNullOrEmpty(safeName))
 				{
-					var nameWithoutReturns = ObjName.Replace(Environment.NewLine, " ");
+					var nameWithoutReturns = ObjCode.Replace(Environment.NewLine, " ");
 					safeName = nameWithoutReturns.Replace(Constants.CsvSeparator, " ");
 				}
 
@@ -352,6 +355,8 @@ namespace VolumeCalculatorGUI.GUI
 					resultFile.Flush();
 					_logger.LogInfo("Wrote the calculated values to csv");
 				}
+
+				ObjCode = string.Empty;
 			}
 			catch (IOException ex)
 			{

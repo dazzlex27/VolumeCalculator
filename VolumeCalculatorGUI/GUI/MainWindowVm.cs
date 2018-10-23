@@ -23,6 +23,10 @@ namespace VolumeCalculatorGUI.GUI
 		private CalculationDashboardControlVm _calculationDashboardControlVm;
 		private TestDataGenerationControlVm _testDataGenerationControlVm;
 
+		private readonly KeyboardListener _keyboardListener;
+
+		public string WindowTitle => Constants.AppHeaderString;
+
 		public StreamViewControlVm StreamViewControlVm
 		{
 			get => _streamViewControlVm;
@@ -83,12 +87,16 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				_logger = new Logger();
 				_logger.LogInfo("Starting up...");
+				_logger.LogInfo($"App: {Constants.AppHeaderString}");
 				AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
 				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
 
 				InitializeSettings();
 				InitializeSubViewModels();
+
+				_keyboardListener = new KeyboardListener();
+				_keyboardListener.CharSequenceFormed += KeyboardListener_CharSequenceFormed;
 
 				_logger.LogInfo("Application is initalized");
 			}
@@ -101,11 +109,18 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
+		private void KeyboardListener_CharSequenceFormed(string charSequence)
+		{
+			_calculationDashboardControlVm?.UpdateCodeText(charSequence);
+		}
+
 		public void ExitApplication()
 		{
 			try
 			{
 				_logger.LogInfo("Shutting down...");
+
+				_keyboardListener.CharSequenceFormed -= KeyboardListener_CharSequenceFormed;
 
 				_logger.LogInfo("Saving settings...");
 				IoUtils.SerializeSettings(_settings);

@@ -21,7 +21,7 @@
 			<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Код объекта"/>
 			<TextBox Style="{StaticResource TextBoxStyle}" 
 			         Margin="2,2,2,0" 
-			         Text="{Binding Path=ObjName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+			         Text="{Binding Path=ObjCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 		</StackPanel>
 		<StackPanel Grid.Row="1" Grid.Column="0" Name="SpCounters" Margin="5">
 			<StackPanel Orientation="Horizontal">

@@ -105,6 +105,8 @@
     </Compile>
     <Compile Include="Entities\ObjDimDescription.cs" />
     <Compile Include="Entities\ObjectVolumeData.cs" />
+    <Compile Include="Utils\KeyboardListener.cs" />
+    <Compile Include="Utils\KeyToCharMapper.cs" />
     <Compile Include="Utils\Logger.cs" />
     <Compile Include="Entities\WorkingAreaMask.cs" />
     <Compile Include="Utils\TypeConverter.cs" />
