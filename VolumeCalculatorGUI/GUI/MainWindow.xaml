@@ -15,11 +15,6 @@
 	<Window.DataContext>
 		<gui:MainWindowVm/>
 	</Window.DataContext>
-	<Window.InputBindings>
-		<KeyBinding Modifiers="Alt" 
-		            Key="Return" 
-		            Command="{Binding ToggleFullscreen}"/>
-	</Window.InputBindings>
 	<Grid Width="Auto" Height="Auto">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>

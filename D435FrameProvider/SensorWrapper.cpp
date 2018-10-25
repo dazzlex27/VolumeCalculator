@@ -40,13 +40,12 @@ void SensorWrapper::AddDepthSubscriber(DepthFrameCallback callback)
 
 void SensorWrapper::RemoveDepthSubscriber(DepthFrameCallback callback)
 {
-	_depthSubscribers.erase(std::remove(_depthSubscribers.begin(), _depthSubscribers.end(), callback), 
-		_depthSubscribers.end());
+	_depthSubscribers.erase(std::remove(_depthSubscribers.begin(), _depthSubscribers.end(), callback), _depthSubscribers.end());
 }
 
 DepthCameraIntrinsics SensorWrapper::GetDepthCameraIntrinsics() const
 {
-	rs2_intrinsics i = _pipe.get_active_profile().get_stream(RS2_STREAM_DEPTH).as<rs2::video_stream_profile>().get_intrinsics();
+	const rs2_intrinsics& i = _pipe.get_active_profile().get_stream(RS2_STREAM_DEPTH).as<rs2::video_stream_profile>().get_intrinsics();
 	DepthCameraIntrinsics intrinsics;
 	intrinsics.FocalLengthX = i.fx;
 	intrinsics.FocalLengthY = i.fy;

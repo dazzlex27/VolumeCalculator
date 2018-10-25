@@ -7,7 +7,7 @@ namespace VolumeCalculatorGUI.Utils
 	{
 		public const string AppTitle = "VolumeCalculator";
 
-		public const string AppVersion = "v0.107 Beta";
+		public const string AppVersion = "v0.108 Beta";
 
 		public static string AppHeaderString = $@"{AppTitle} {AppVersion}";
 
@@ -20,5 +20,7 @@ namespace VolumeCalculatorGUI.Utils
 		public static string CsvSeparator = CultureInfo.CurrentCulture.TextInfo.ListSeparator;
 
 		public static string LocalFrameProviderFolderName = "localFrameProvider";
+
+		public static string RealsenseFrameProviderFileName = "D435";
 	}
 }

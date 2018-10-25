@@ -7,6 +7,9 @@ namespace VolumeCalculatorGUI.Utils
 	{
 		public static ColorCameraIntrinsics ColorParamsToIntrinsics(ColorCameraParams colorCameraParams)
 		{
+			if (colorCameraParams == null)
+				return new ColorCameraIntrinsics();
+
 			return new ColorCameraIntrinsics
 			{
 				FovX = colorCameraParams.FovX,
@@ -20,6 +23,9 @@ namespace VolumeCalculatorGUI.Utils
 
 		public static DepthCameraIntrinsics DepthParamsToIntrinsics(DepthCameraParams depthCameraParams)
 		{
+			if (depthCameraParams == null)
+				return new DepthCameraIntrinsics();
+
 			return new DepthCameraIntrinsics
 			{
 				FovX = depthCameraParams.FovX,

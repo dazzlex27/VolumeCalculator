@@ -97,6 +97,7 @@
     <Compile Include="Logic\VolumeCalculator.cs" />
     <Compile Include="Utils\Constants.cs" />
     <Compile Include="Logic\DepthMapProcessorDll.cs" />
+    <Compile Include="Utils\FrameProviderUtils.cs" />
     <Compile Include="Utils\GeometryUtils.cs" />
     <Compile Include="Utils\IoUtils.cs" />
     <Compile Include="Logic\DepthMapProcessor.cs" />
