@@ -99,6 +99,7 @@
     <Compile Include="Logic\DepthMapProcessorDll.cs" />
     <Compile Include="Utils\FrameProviderUtils.cs" />
     <Compile Include="Utils\GeometryUtils.cs" />
+    <Compile Include="Utils\GraphicsUtils.cs" />
     <Compile Include="Utils\IoUtils.cs" />
     <Compile Include="Logic\DepthMapProcessor.cs" />
     <Compile Include="GUI\SettingsWindow.xaml.cs">

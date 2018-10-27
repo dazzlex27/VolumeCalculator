@@ -35,14 +35,15 @@ namespace VolumeCalculatorGUI.GUI
 		private WriteableBitmap _colorImageBitmap;
 		private WriteableBitmap _depthImageBitmap;
 
-		private MaskPolygonControlVm _maskPolygonControlVm;
-		private MaskPolygonControlVm _maskRectangleControlVm;
+		private MaskPolygonControlVm _colorMaskPolygonControlVm;
+		private MaskPolygonControlVm _depthMaskPolygonControlVm;
 
 		private bool _useColorStream;
 		private bool _useDepthStream;
 
-		private bool _useAreaMask;
-		private WorkingAreaMask _workingAreaMask;
+		private bool _useColorMask;
+		private bool _useDepthMask;
+		private WorkingAreaMask _depthAreaMask;
 		private bool _polygonPointsChaged;
 
 		public WriteableBitmap ColorImageBitmap
@@ -99,41 +100,54 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public bool UseAreaMask
+		public bool UseColorMask
 		{
-			get => _useAreaMask;
+			get => _useColorMask;
 			set
 			{
-				if (_useAreaMask == value)
+				if (_useColorMask == value)
 					return;
 
-				_useAreaMask = value;
+				_useColorMask = value;
 				OnPropertyChanged();
 			}
 		}
 
-		public MaskPolygonControlVm MaskRectangleControlVm
+		public bool UseDepthMask
 		{
-			get => _maskRectangleControlVm;
+			get => _useDepthMask;
 			set
 			{
-				if (ReferenceEquals(_maskRectangleControlVm, value))
+				if (_useDepthMask == value)
 					return;
 
-				_maskRectangleControlVm = value;
+				_useDepthMask = value;
 				OnPropertyChanged();
 			}
 		}
 
-		public MaskPolygonControlVm MaskPolygonControlVm
+		public MaskPolygonControlVm ColorMaskPolygonControlVm
 		{
-			get => _maskPolygonControlVm;
+			get => _colorMaskPolygonControlVm;
 			set
 			{
-				if (ReferenceEquals(_maskPolygonControlVm, value))
+				if (ReferenceEquals(_colorMaskPolygonControlVm, value))
 					return;
 
-				_maskPolygonControlVm = value;
+				_colorMaskPolygonControlVm = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public MaskPolygonControlVm DepthMaskPolygonControlVm
+		{
+			get => _depthMaskPolygonControlVm;
+			set
+			{
+				if (ReferenceEquals(_depthMaskPolygonControlVm, value))
+					return;
+
+				_depthMaskPolygonControlVm = value;
 				OnPropertyChanged();
 			}
 		}
@@ -170,11 +184,11 @@ namespace VolumeCalculatorGUI.GUI
 			UseColorStreamChanged += ToggleUseColorStream;
 			UseDepthStreamChanged += ToggleUseDepthStream;
 
-			_useAreaMask = settings.UseAreaMask;
+			UseColorMask = settings.UseColorMask;
+			UseDepthMask = settings.UseDepthMask;
 
-			var rectanglePoints = GeometryUtils.GetRectangleFromZonePolygon(settings.WorkingAreaContour);
-			MaskRectangleControlVm = new MaskPolygonControlVm(rectanglePoints);
-			MaskPolygonControlVm = new MaskPolygonControlVm(settings.WorkingAreaContour);
+			ColorMaskPolygonControlVm = new MaskPolygonControlVm(settings.ColorAreaContour);
+			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.DepthAreaContour);
 		}
 
 		public void Dispose()
@@ -195,10 +209,10 @@ namespace VolumeCalculatorGUI.GUI
 		public void ApplicationSettingsUpdated(ApplicationSettings settings)
 		{
 			_applicationSettings = settings;
-			UseAreaMask = _applicationSettings.UseAreaMask;
-			var rectanglePoints = GeometryUtils.GetRectangleFromZonePolygon(settings.WorkingAreaContour);
-			MaskRectangleControlVm = new MaskPolygonControlVm(rectanglePoints);
-			MaskPolygonControlVm.SetPolygonPoints(settings.WorkingAreaContour);
+			UseColorMask = _applicationSettings.UseColorMask;
+			UseDepthMask = _applicationSettings.UseDepthMask;
+			ColorMaskPolygonControlVm.SetPolygonPoints(settings.ColorAreaContour);
+			DepthMaskPolygonControlVm.SetPolygonPoints(settings.DepthAreaContour);
 			_polygonPointsChaged = true;
 		}
 
@@ -208,22 +222,10 @@ namespace VolumeCalculatorGUI.GUI
 			var imageHeight = image.Height;
 			var fullRect = new Int32Rect(0, 0, imageWidth, imageHeight);
 
-			var format = PixelFormats.BlackWhite;
-			var bytesPerPixel = 0;
-			switch (image.BytesPerPixel)
-			{
-				case 3:
-					format = PixelFormats.Rgb24;
-					bytesPerPixel = Constants.BytesPerPixel24;
-					break;
-				case 4:
-					format = PixelFormats.Bgra32;
-					bytesPerPixel = Constants.BytesPerPixel32;
-					break;
-			}
+			var format = GraphicsUtils.GetFormatFromBytesPerPixel(image.BytesPerPixel);
 
 			var colorImageBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, format, null);
-			colorImageBitmap.WritePixels(fullRect, image.Data, imageWidth * bytesPerPixel, 0);
+			colorImageBitmap.WritePixels(fullRect, image.Data, image.Stride, 0);
 			colorImageBitmap.Freeze();
 
 			ColorImageBitmap = colorImageBitmap;
@@ -236,10 +238,12 @@ namespace VolumeCalculatorGUI.GUI
 				RawDepthFrameReady?.Invoke(depthMap);
 
 				var maskedMap = GetMaskedDepthMap(depthMap);
-
 				var cutOffDepth = (short) (_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
-				var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, _depthCameraParams.MinDepth,
-					_applicationSettings.DistanceToFloor, cutOffDepth);
+				DepthMapUtils.FilterDepthMapByDepthtLimit(maskedMap, cutOffDepth);
+
+				var minDepth = _depthCameraParams.MinDepth;
+				var maxDepth = _applicationSettings.DistanceToFloor;
+				var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, minDepth, maxDepth);
 
 				var imageWidth = maskedMap.Width;
 				var imageHeight = maskedMap.Height;
@@ -261,32 +265,32 @@ namespace VolumeCalculatorGUI.GUI
 
 		private DepthMap GetMaskedDepthMap(DepthMap depthMap)
 		{
-			if (!_useAreaMask)
+			if (!_useDepthMask)
 				return depthMap;
 
 			var maskedMap = new DepthMap(depthMap);
 
-			var maskIsValid = _workingAreaMask?.Width == depthMap.Width &&
-			                  _workingAreaMask?.Height == depthMap.Height && !_polygonPointsChaged;
+			var maskIsValid = _depthAreaMask?.Width == depthMap.Width &&
+			                  _depthAreaMask?.Height == depthMap.Height && !_polygonPointsChaged;
 			if (!maskIsValid)
 				Dispatcher.Invoke(() =>
 				{
-					if (UseAreaMask)
+					if (UseDepthMask)
 					{
-						var points = _applicationSettings.WorkingAreaContour.ToArray();
+						var points = _applicationSettings.DepthAreaContour.ToArray();
 						var maskData = GeometryUtils.CreateWorkingAreaMask(points, depthMap.Width, depthMap.Height);
-						_workingAreaMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
+						_depthAreaMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
 					}
 					else
 					{
 						var maskData = Enumerable.Repeat(true, depthMap.Width * depthMap.Height).ToArray();
-						_workingAreaMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
+						_depthAreaMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
 					}
 
 					_polygonPointsChaged = false;
 				});
 
-			GeometryUtils.ApplyWorkingAreaMask(maskedMap, _workingAreaMask.Data);
+			GeometryUtils.ApplyWorkingAreaMask(maskedMap, _depthAreaMask.Data);
 
 			return maskedMap;
 		}

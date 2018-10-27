@@ -11,23 +11,44 @@
         SizeChanged="SettingsWindow_OnSizeChanged"
         d:DataContext="{d:DesignInstance gui:SettingsWindowVm}">
 	<StackPanel Margin="10">
-		<StackPanel>
-			<Canvas Name="CvDepth" Width="400" Height="300" Background="Black">
-				<Image Source="{Binding DepthImageBitmap}"
+		<StackPanel Orientation="Horizontal">
+			<StackPanel Margin="2">
+				<Canvas Name="CvColor" Width="400" Height="300" Background="Black">
+					<Image Source="{Binding ColorImageBitmap}"
+					       Width="{Binding Path=ActualWidth, ElementName=CvColor}"
+					       Height="{Binding Path=ActualHeight, ElementName=CvColor}"
+					       Stretch="Fill" />
+					<StackPanel Visibility="{Binding UseColorMask, Converter={StaticResource BooleanToVisibilityConverter}}">
+						<gui:MaskPolygonControl Width="{Binding Path=ActualWidth, ElementName=CvColor}"
+						                        Height="{Binding Path=ActualHeight, ElementName=CvColor}"
+						                        DataContext="{Binding ColorMaskRectangleControlVm}"
+						                        HorizontalAlignment="Stretch"
+						                        VerticalAlignment="Stretch"
+						                        IsReadOnly="False" 
+						                        RectangleOnly="True"/>
+					</StackPanel>
+				</Canvas>
+				<CheckBox Margin="3" IsEnabled="{Binding HasReceivedAColorImage}" Content="Ограничение зоны измерения"
+				          IsChecked="{Binding UseColorMask, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+			</StackPanel>
+			<StackPanel Margin="2">
+				<Canvas Name="CvDepth" Width="400" Height="300" Background="Black">
+					<Image Source="{Binding DepthImageBitmap}"
 				       Width="{Binding Path=ActualWidth, ElementName=CvDepth}"
 				       Height="{Binding Path=ActualHeight, ElementName=CvDepth}"
 				       Stretch="Fill" />
-				<StackPanel Visibility="{Binding UseAreaMask, Converter={StaticResource BooleanToVisibilityConverter}}">
-					<gui:MaskPolygonControl Width="{Binding Path=ActualWidth, ElementName=CvDepth}"
+					<StackPanel Visibility="{Binding UseDepthMask, Converter={StaticResource BooleanToVisibilityConverter}}">
+						<gui:MaskPolygonControl Width="{Binding Path=ActualWidth, ElementName=CvDepth}"
 					                        Height="{Binding Path=ActualHeight, ElementName=CvDepth}"
-					                        DataContext="{Binding MaskPolygonControlVm}"
+					                        DataContext="{Binding DepthMaskPolygonControlVm}"
 					                        HorizontalAlignment="Stretch"
 					                        VerticalAlignment="Stretch"
 					                        IsReadOnly="False" />
-				</StackPanel>
-			</Canvas>
-			<CheckBox Margin="3" IsEnabled="{Binding HasReceivedADepthMap}" Content="Ограничение зоны измерения"
-			          IsChecked="{Binding UseAreaMask, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+					</StackPanel>
+				</Canvas>
+				<CheckBox Margin="3" IsEnabled="{Binding HasReceivedADepthMap}" Content="Ограничение зоны измерения"
+			          IsChecked="{Binding UseDepthMask, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+			</StackPanel>
 		</StackPanel>
 		<StackPanel Name="SpParent" Margin="5">
 			<StackPanel Width="{Binding Path=ActualWidth, ElementName=SpParent}">

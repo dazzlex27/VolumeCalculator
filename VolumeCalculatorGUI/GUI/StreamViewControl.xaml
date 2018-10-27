@@ -36,12 +36,12 @@
 				      VerticalAlignment="Center">
 					<Grid.Visibility>
 						<MultiBinding Converter="{StaticResource ConjunctionToVisibilityMultiConverter}">
-							<Binding Path="UseAreaMask" />
+							<Binding Path="UseColorMask" />
 							<Binding Path="UseColorStream"/>
 						</MultiBinding>
 					</Grid.Visibility>
 					<gui:MaskPolygonControl
-						DataContext="{Binding MaskRectangleControlVm}"
+						DataContext="{Binding ColorMaskPolygonControlVm}"
 						Width="{Binding Path=ActualWidth, ElementName=ImColor}"
 						Height="{Binding Path=ActualHeight, ElementName=ImColor}"
 						HorizontalAlignment="Stretch"
@@ -74,12 +74,12 @@
 				      VerticalAlignment="Center">
 					<Grid.Visibility>
 						<MultiBinding Converter="{StaticResource ConjunctionToVisibilityMultiConverter}">
-							<Binding Path="UseAreaMask" />
+							<Binding Path="UseDepthMask" />
 							<Binding Path="UseDepthStream"/>
 						</MultiBinding> 
 					</Grid.Visibility>
 					<gui:MaskPolygonControl
-						DataContext="{Binding MaskPolygonControlVm}"
+						DataContext="{Binding DepthMaskPolygonControlVm}"
 						Width="{Binding Path=ActualWidth, ElementName=ImDepth}"
 						Height="{Binding Path=ActualHeight, ElementName=ImDepth}"
 						HorizontalAlignment="Stretch"

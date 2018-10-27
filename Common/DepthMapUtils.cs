@@ -47,7 +47,10 @@ namespace Common
 			var fullRect = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
 			var bmpData = bitmap.LockBits(fullRect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
 
-			var data = GetColorizedDepthMapData(map, minDepth, maxDepth, cutOffDepth);
+			var copyMap = new DepthMap(map);
+			FilterDepthMapByDepthtLimit(copyMap, cutOffDepth);
+
+			var data = GetColorizedDepthMapData(copyMap, minDepth, maxDepth);
 			Marshal.Copy(data, 0, bmpData.Scan0, data.Length);
 
 			bitmap.UnlockBits(bmpData);
@@ -55,21 +58,24 @@ namespace Common
 			bitmap.Save(filepath);
 		}
 
-		public static byte[] GetColorizedDepthMapData(DepthMap map, short minDepth, short maxDepth, short cutOffDepth)
+		public static byte[] GetColorizedDepthMapData(DepthMap map, short minDepth, short maxDepth)
 		{
 			var resultBytes = new byte[map.Data.Length];
 
 			var byteIndex = 0;
 			foreach (var depthValue in map.Data)
-			{
-				var intensity = depthValue > cutOffDepth
-					? (byte)0
-					: GetIntensityFromDepth(depthValue, minDepth, maxDepth);
-
-				resultBytes[byteIndex++] = intensity;
-			}
+				resultBytes[byteIndex++] = GetIntensityFromDepth(depthValue, minDepth, maxDepth);
 
 			return resultBytes;
+		}
+
+		public static void FilterDepthMapByDepthtLimit(DepthMap depthMap, short maxDepth)
+		{
+			for (var i = 0; i < depthMap.Data.Length; i++)
+			{
+				if (depthMap.Data[i] > maxDepth)
+					depthMap.Data[i] = 0;
+			}
 		}
 
 		private static byte GetIntensityFromDepth(short depth, short minValue, short maxValue)

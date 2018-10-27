@@ -52,9 +52,9 @@ namespace VolumeCalculatorGUI.Logic
 			float x2;
 			float y2;
 
-			if (_settings != null && _settings.UseAreaMask)
+			if (_settings != null && _settings.UseDepthMask)
 			{
-				var rectanglePoints = GeometryUtils.GetRectangleFromZonePolygon(_settings.WorkingAreaContour);
+				var rectanglePoints = _settings.ColorAreaContour;
 				x1 = (float) rectanglePoints[0].X;
 				y1 = (float) rectanglePoints[0].Y;
 				x2 = (float) rectanglePoints[2].X;

@@ -14,7 +14,7 @@ namespace VolumeCalculatorGUI.GUI
 		private static readonly int NodeSize = 14;
 		private static readonly int HalfNodeSize = NodeSize / 2;
 
-		private static Color PolygonColor = Colors.Blue;
+		private static Color _polygonColor = Colors.Blue;
 
 		private readonly List<Ellipse> _polygonNodes;
 
@@ -33,6 +33,19 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				SetValue(IsReadOnlyProperty, value);
 				SetPoints(value ? new List<Point>() : _vm.PolygonPoints.ToList());
+			}
+		}
+
+		public static readonly DependencyProperty RectangleOnlyProperty =
+			DependencyProperty.Register(nameof(RectangleOnly), typeof(bool), typeof(MaskPolygonControl));
+
+		public bool RectangleOnly
+		{
+			get => (bool)GetValue(RectangleOnlyProperty);
+			set
+			{
+				SetValue(RectangleOnlyProperty, value);
+				//SetPoints(value ? new List<Point>() : _vm.PolygonPoints.ToList());
 			}
 		}
 
@@ -55,14 +68,14 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void AssignEllipseColor()
 		{
-			if (PolygonColor != Colors.Blue)
+			if (_polygonColor != Colors.Blue)
 				return;
 
 			try
 			{
 				var mainBrushColor = Application.Current.Resources["Brush01"];
 				// ReSharper disable once PossibleNullReferenceException
-				PolygonColor = (Color)ColorConverter.ConvertFromString(mainBrushColor.ToString());
+				_polygonColor = (Color)ColorConverter.ConvertFromString(mainBrushColor.ToString());
 			}
 			catch (Exception)
 			{
@@ -103,8 +116,8 @@ namespace VolumeCalculatorGUI.GUI
 				{
 					Width = NodeSize,
 					Height = NodeSize,
-					Stroke = new SolidColorBrush(PolygonColor),
-					Fill = new SolidColorBrush(PolygonColor)
+					Stroke = new SolidColorBrush(_polygonColor),
+					Fill = new SolidColorBrush(_polygonColor)
 				};
 
 				_polygonNodes.Add(ellipse);
@@ -140,15 +153,11 @@ namespace VolumeCalculatorGUI.GUI
 			if (_selectedShape == null)
 				return;
 
-			var newPoint = e.GetPosition(CvMain);
-			if (newPoint.X < HalfNodeSize)
-				newPoint.X = HalfNodeSize;
-			if (newPoint.Y < HalfNodeSize)
-				newPoint.Y = HalfNodeSize;
-			if (newPoint.X > CvMain.ActualWidth - HalfNodeSize)
-				newPoint.X = CvMain.ActualWidth - HalfNodeSize;
-			if (newPoint.Y > CvMain.ActualHeight - HalfNodeSize)
-				newPoint.Y = CvMain.ActualHeight - HalfNodeSize;
+			var point = e.GetPosition(CvMain);
+			var newPoint = SnapPointToBoundsIfNecessary(point);
+
+			if (RectangleOnly)
+				SnapPointsToRectangle(newPoint);
 
 			Canvas.SetLeft(_selectedShape, newPoint.X - _clickPoint.X);
 			Canvas.SetTop(_selectedShape, newPoint.Y - _clickPoint.Y);
@@ -169,6 +178,58 @@ namespace VolumeCalculatorGUI.GUI
 			_vm = (MaskPolygonControlVm)DataContext;
 			_vm.PolygonPointsChanged += Vm_PolygonPointsChanged;
 			_vm.SetCanvasSize(CvMain.ActualWidth, CvMain.ActualHeight);
+		}
+
+		private Point SnapPointToBoundsIfNecessary(Point point)
+		{
+			var newPoint = new Point(point.X, point.Y);
+
+			if (point.X < HalfNodeSize)
+				newPoint.X = HalfNodeSize;
+			if (point.Y < HalfNodeSize)
+				newPoint.Y = HalfNodeSize;
+			if (point.X > CvMain.ActualWidth - HalfNodeSize)
+				newPoint.X = CvMain.ActualWidth - HalfNodeSize;
+			if (point.Y > CvMain.ActualHeight - HalfNodeSize)
+				newPoint.Y = CvMain.ActualHeight - HalfNodeSize;
+
+			return newPoint;
+		}
+
+		private void SnapPointsToRectangle(Point newPoint)
+		{
+			if (_polygonNodes.Count != 4)
+				throw new NotImplementedException("RectangleOnly mode does is not available when nodeCount <> 4");
+
+			var index = 0;
+			for (var i = 0; i < _polygonNodes.Count; i++)
+			{
+				if (!ReferenceEquals(_polygonNodes[i], _selectedShape))
+					continue;
+
+				index = i;
+				break;
+			}
+
+			switch (index)
+			{
+				case 0:
+					Canvas.SetLeft(_polygonNodes[1], newPoint.X - _clickPoint.X);
+					Canvas.SetTop(_polygonNodes[3], newPoint.Y - _clickPoint.Y);
+					break;
+				case 1:
+					Canvas.SetLeft(_polygonNodes[0], newPoint.X - _clickPoint.X);
+					Canvas.SetTop(_polygonNodes[2], newPoint.Y - _clickPoint.Y);
+					break;
+				case 2:
+					Canvas.SetLeft(_polygonNodes[3], newPoint.X - _clickPoint.X);
+					Canvas.SetTop(_polygonNodes[1], newPoint.Y - _clickPoint.Y);
+					break;
+				case 3:
+					Canvas.SetLeft(_polygonNodes[2], newPoint.X - _clickPoint.X);
+					Canvas.SetTop(_polygonNodes[0], newPoint.Y - _clickPoint.Y);
+					break;
+			}
 		}
 
 		private void Vm_PolygonPointsChanged(IReadOnlyList<Point> obj)

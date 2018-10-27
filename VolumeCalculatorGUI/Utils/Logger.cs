@@ -42,7 +42,7 @@ namespace VolumeCalculatorGUI.Utils
             var time = DateTime.Now;
             using (var sw = File.AppendText(_filepath))
             {
-                sw.WriteLine($"{time.ToShortDateString()} {time:HH:mm:ss.fff} EXCEPTION: {info} {ex.Message} : {ex}");
+                sw.WriteLine($"{time.ToShortDateString()} {time:HH:mm:ss.fff} EXCEPTION: {info} {ex}");
             }
         }
     }

@@ -10,6 +10,8 @@
 
 		public byte BytesPerPixel { get; }
 
+		public int Stride => Width * BytesPerPixel;
+
 		public ImageData(int width, int height, byte[] data, byte bytesPerPixel)
 		{
 			Width = width;
