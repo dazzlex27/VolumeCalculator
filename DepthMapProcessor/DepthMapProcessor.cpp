@@ -42,7 +42,7 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const int mapWidth, 
 
 	DmUtils::FilterDepthMap(_mapLength, _mapBuffer, _cutOffDepth);
 
-	const Contour& objectContour = GetTargetContour(_mapBuffer);
+	const Contour& objectContour = GetTargetContourFromDepthMap();
 
 	_result = CalculateContourDimensions(objectContour);
 
@@ -50,8 +50,7 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const int mapWidth, 
 }
 
 ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const int imageWidth, const int imageHeight, const byte*const imageData,
-	const int bytesPerPixel, const float x1, const float y1, const float x2, const float y2, const int mapWidth, const int mapHeight,
-	const short*const mapData)
+	const int bytesPerPixel, const RelRect& roiRect, const int mapWidth, const int mapHeight, const short*const mapData)
 {
 	if (_mapWidth != mapWidth || _mapHeight != mapHeight)
 		ResizeDepthBuffers(mapWidth, mapHeight);
@@ -59,67 +58,17 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const int imageWi
 	memset(&_result, 0, sizeof(ObjDimDescription));
 	memcpy(_mapBuffer, mapData, _mapLengthBytes);
 
-	DmUtils::FilterDepthMap(_mapLength, _mapBuffer, _cutOffDepth);
-
-	const Contour& depthObjectContour = GetTargetContour(_mapBuffer);
-	const cv::RotatedRect& rotBoundingRect = cv::minAreaRect(cv::Mat(depthObjectContour));
-	const short contourTopPlaneDepth = GetContourTopPlaneDepth(depthObjectContour, rotBoundingRect);
-
 	if (_colorImageWidth != imageWidth || _colorImageHeight != imageHeight)
 		ResizeColorBuffer(imageWidth, imageHeight, bytesPerPixel);
 
 	memcpy(_colorImageBuffer, imageData, _colorImageLengthBytes);
-	cv::Mat input(imageHeight, imageWidth, CV_8UC4, _colorImageBuffer);
-	cv::imwrite("out/input.png", input);
 
-	const int x1Abs = x1 * input.cols;
-	const int y1Abs = y1 * input.rows;
-	const int x2Abs = x2 * input.cols;
-	const int y2Abs = y2 * input.rows;
+	DmUtils::FilterDepthMap(_mapLength, _mapBuffer, _cutOffDepth);
 
-	cv::Rect roiRect(x1Abs, y1Abs, abs(x2Abs - x1Abs), abs(y2Abs - y1Abs));
-	cv::Mat inputRoi = input(roiRect);
-	cv::imwrite("out/inputRoi.png", inputRoi);
+	const Contour& depthObjectContour = GetTargetContourFromDepthMap();
+	const Contour& colorObjectContour = GetTargetContourFromColorFrame(bytesPerPixel, roiRect);
 
-	cv::Mat cannied;
-	cv::Canny(inputRoi, cannied, 50, 200);
-	cv::imwrite("out/cannied.png", cannied);
-
-	std::vector<Contour> contours;
-	cv::findContours(cannied, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
-
-	Contour giantContour;
-	for (int i = 0; i < contours.size(); i++)
-	{
-		for (int j = 0; j < contours[i].size(); j++)
-		{
-			giantContour.emplace_back(contours[i][j]);
-		}
-	}
-
-	const cv::RotatedRect& rectGiantContour = cv::minAreaRect(cv::Mat(giantContour));
-	DrawTargetContour(giantContour, 2);
-
-	cv::Point2f points[4];
-	rectGiantContour.points(points);
-
-	cv::Point2i pointsWorld[4];
-	for (int i = 0; i < 4; i++)
-	{
-		const int x = (int)((points[i].x + 1 - _colorIntrinsics.PrincipalPointX) * contourTopPlaneDepth / _colorIntrinsics.FocalLengthX);
-		const int y = (int)(-(points[i].y + 1 - _colorIntrinsics.PrincipalPointY) * contourTopPlaneDepth / _colorIntrinsics.FocalLengthY);
-		pointsWorld[i] = cv::Point(x, y);
-	}
-
-	const int objectWidth = (int)DmUtils::GetDistanceBetweenPoints(pointsWorld[0].x, pointsWorld[0].y, pointsWorld[1].x, pointsWorld[1].y);
-	const int objectHeight = (int)DmUtils::GetDistanceBetweenPoints(pointsWorld[0].x, pointsWorld[0].y, pointsWorld[3].x, pointsWorld[3].y);
-
-	const int longerDim = objectWidth > objectHeight ? objectWidth : objectHeight;
-	const int shorterDim = objectWidth < objectHeight ? objectWidth : objectHeight;
-
-	_result.Length = longerDim;
-	_result.Width = shorterDim;
-	_result.Height = _floorDepth - contourTopPlaneDepth;
+	_result = CalculateContourDimensionsAlt(depthObjectContour, colorObjectContour);
 
 	return &_result;
 }
@@ -135,7 +84,7 @@ const short DepthMapProcessor::CalculateFloorDepth(const int mapWidth, const int
 
 	std::sort(nonZeroValues.begin(), nonZeroValues.end());
 
-	return FindModeInSortedArray(nonZeroValues.data(), (int)nonZeroValues.size());
+	return DmUtils::FindModeInSortedArray(nonZeroValues.data(), (int)nonZeroValues.size());
 }
 
 void DepthMapProcessor::ResizeColorBuffer(const int imageWidth, const int imageHeight, const int bytesPerPixel)
@@ -166,30 +115,9 @@ void DepthMapProcessor::ResizeDepthBuffers(const int mapWidth, const int mapHeig
 	_imgBuffer = new byte[_mapLength];
 }
 
-const short DepthMapProcessor::GetContourTopPlaneDepth(const Contour& contour, 
-	const cv::RotatedRect& rotBoundingRect) const
+const Contour DepthMapProcessor::GetTargetContourFromDepthMap() const
 {
-	const std::vector<short>& contourNonZeroValues = DmUtils::GetNonZeroContourDepthValues(_mapWidth, _mapHeight, 
-		_mapBuffer, rotBoundingRect, contour);
-
-	if (contourNonZeroValues.size() == 0)
-		return 0;
-
-	const int size = (int)contourNonZeroValues.size();
-	short* sortedNonZeroMapValues = new short[size];
-	memcpy(sortedNonZeroMapValues, contourNonZeroValues.data(), size * sizeof(short));
-	std::sort(sortedNonZeroMapValues, sortedNonZeroMapValues + size);
-
-	const short mode = FindModeInSortedArray(sortedNonZeroMapValues, size / 20);
-
-	delete[] sortedNonZeroMapValues;
-
-	return mode;
-}
-
-const Contour DepthMapProcessor::GetTargetContour(const short*const mapBuffer, const int mapNum) const
-{
-	DmUtils::ConvertDepthMapDataToBinaryMask(_mapLength, mapBuffer, _imgBuffer);
+	DmUtils::ConvertDepthMapDataToBinaryMask(_mapLength, _mapBuffer, _imgBuffer);
 	cv::Mat imageForContourSearch(_mapHeight, _mapWidth, CV_8UC1, _imgBuffer);
 
 	std::vector<Contour> contours;
@@ -202,40 +130,77 @@ const Contour DepthMapProcessor::GetTargetContour(const short*const mapBuffer, c
 
 	const Contour& contourClosestToCenter = GetContourClosestToCenter(validContours);
 	
-	DrawTargetContour(contourClosestToCenter, mapNum);
+	DmUtils::DrawTargetContour(contourClosestToCenter, _mapWidth, _mapHeight, 0);
 
 	return contourClosestToCenter;
 }
 
-const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Contour& objectContour) const
+const Contour DepthMapProcessor::GetTargetContourFromColorFrame(const int bytesPerPixel, const RelRect& roiRect) const
 {
-	if (objectContour.size() == 0)
-		return ObjDimDescription();
+	const int cvChannelsCode = DmUtils::GetCvChannelsCodeFromBytesPerPixel(bytesPerPixel);
+	cv::Mat input(_colorImageHeight, _colorImageWidth, cvChannelsCode, _colorImageBuffer);
 
-	const cv::RotatedRect& rotBoundingRect = cv::minAreaRect(cv::Mat(objectContour));
+	const cv::Rect& roi = DmUtils::GetAbsRoiFromRoiRect(roiRect, cv::Size(input.cols, input.rows));
+	cv::Mat inputRoi = input(roi);
+	cv::imwrite("out/inputRoi.png", inputRoi);
 
-	const short contourTopPlaneDepth = GetContourTopPlaneDepth(objectContour, rotBoundingRect);
+	cv::Mat cannied;
+	cv::Canny(inputRoi, cannied, _cannyThreshold1, _cannyThreshold2);
+	cv::imwrite("out/cannied.png", cannied);
 
-	cv::Point2f points[4];
-	rotBoundingRect.points(points);
+	std::vector<Contour> contours;
+	cv::findContours(cannied, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
 
-	cv::Point2i pointsWorld[4];
-	for (int i = 0; i < 4; i++)
+	Contour mergedContour;
+	for (int i = 0; i < contours.size(); i++)
 	{
-		const int x = (int)((points[i].x + 1 - _depthIntrinsics.PrincipalPointX) * contourTopPlaneDepth / _depthIntrinsics.FocalLengthX);
-		const int y = (int)(-(points[i].y + 1 - _depthIntrinsics.PrincipalPointY) * contourTopPlaneDepth / _depthIntrinsics.FocalLengthY);
-		pointsWorld[i] = cv::Point(x, y);
+		for (int j = 0; j < contours[i].size(); j++)
+			mergedContour.emplace_back(contours[i][j]);
 	}
 
-	const int objectWidth = (int)DmUtils::GetDistanceBetweenPoints(pointsWorld[0].x, pointsWorld[0].y, pointsWorld[1].x, pointsWorld[1].y);
-	const int objectHeight = (int)DmUtils::GetDistanceBetweenPoints(pointsWorld[0].x, pointsWorld[0].y, pointsWorld[3].x, pointsWorld[3].y);
+	DmUtils::DrawTargetContour(mergedContour, _colorImageWidth, _colorImageHeight, 1);
 
-	const int longerDim = objectWidth > objectHeight ? objectWidth : objectHeight;
-	const int shorterDim = objectWidth < objectHeight ? objectWidth : objectHeight;
+	return mergedContour;
+}
+
+const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Contour& depthObjectContour) const
+{
+	if (depthObjectContour.size() == 0)
+		return ObjDimDescription();
+
+	const cv::RotatedRect& depthObjectBoundingRect = cv::minAreaRect(cv::Mat(depthObjectContour));
+	const short contourTopPlaneDepth = GetContourTopPlaneDepth(depthObjectContour, depthObjectBoundingRect);
+
+	const TwoDimDescription& twoDimDescription = GetTwoDimDescription(depthObjectBoundingRect, contourTopPlaneDepth,
+		_depthIntrinsics.FocalLengthX, _depthIntrinsics.FocalLengthY,
+		_depthIntrinsics.PrincipalPointX, _depthIntrinsics.PrincipalPointY);
 
 	ObjDimDescription result;
-	result.Length = longerDim;
-	result.Width = shorterDim;
+	result.Length = twoDimDescription.Length;
+	result.Width = twoDimDescription.Width;
+	result.Height = _floorDepth - contourTopPlaneDepth;
+
+	return result;
+}
+
+const ObjDimDescription DepthMapProcessor::CalculateContourDimensionsAlt(const Contour& depthObjectContour,
+	const Contour& colorObjectContour) const
+{
+	if (depthObjectContour.size() == 0 || colorObjectContour.size() == 0)
+		return ObjDimDescription();
+
+	const cv::RotatedRect& depthObjectBoundingRect = cv::minAreaRect(cv::Mat(depthObjectContour));
+	const short contourTopPlaneDepth = GetContourTopPlaneDepth(depthObjectContour, depthObjectBoundingRect);
+
+	const cv::RotatedRect& colorObjectBoundingRect = cv::minAreaRect(cv::Mat(colorObjectContour));
+
+	const TwoDimDescription& twoDimDescription = GetTwoDimDescription(colorObjectBoundingRect, contourTopPlaneDepth,
+		_colorIntrinsics.FocalLengthX, _colorIntrinsics.FocalLengthY, 
+		_colorIntrinsics.PrincipalPointX, _colorIntrinsics.PrincipalPointY);
+
+	ObjDimDescription result;
+	result.Length = twoDimDescription.Length;
+	result.Width = twoDimDescription.Width;
 	result.Height = _floorDepth - contourTopPlaneDepth;
 
 	return result;
@@ -272,55 +237,46 @@ const Contour DepthMapProcessor::GetContourClosestToCenter(const std::vector<Con
 	return closestToCenterContour;
 }
 
-const short DepthMapProcessor::FindModeInSortedArray(const short*const array, const int count) const
+const short DepthMapProcessor::GetContourTopPlaneDepth(const Contour& contour, const cv::RotatedRect& rotBoundingRect) const
 {
-	if (count == 0)
+	const std::vector<short>& contourNonZeroValues = DmUtils::GetNonZeroContourDepthValues(_mapWidth, _mapHeight,
+		_mapBuffer, rotBoundingRect, contour);
+
+	if (contourNonZeroValues.size() == 0)
 		return 0;
 
-	int mode = array[0];
-	int currentCount = 1;
-	int currentMax = 1;
-	for (int i = 1; i < count; i++)
-	{
-		if (array[i] == array[i - 1])
-		{
-			currentCount++;
-			if (currentCount <= currentMax)
-				continue;
+	const int size = (int)contourNonZeroValues.size();
+	short* sortedNonZeroMapValues = new short[size];
+	memcpy(sortedNonZeroMapValues, contourNonZeroValues.data(), size * sizeof(short));
+	std::sort(sortedNonZeroMapValues, sortedNonZeroMapValues + size);
 
-			currentMax = currentCount;
-			mode = array[i];
-		}
-		else
-			currentCount = 1;
-	}
+	const short mode = DmUtils::FindModeInSortedArray(sortedNonZeroMapValues, size / 20);
+
+	delete[] sortedNonZeroMapValues;
 
 	return mode;
 }
 
-void DepthMapProcessor::DrawTargetContour(const Contour& contour, const int contourNum) const
+const TwoDimDescription DepthMapProcessor::GetTwoDimDescription(const cv::RotatedRect& contourBoundingRect, 
+	const short contourTopPlaneDepth, const float fx, const float fy, const float ppx, const float ppy) const
 {
-	cv::RotatedRect rect = cv::minAreaRect(cv::Mat(contour));
 	cv::Point2f points[4];
-	rect.points(points);
+	contourBoundingRect.points(points);
 
-	Contour rectContour;
-	rectContour.emplace_back(points[0]);
-	rectContour.emplace_back(points[1]);
-	rectContour.emplace_back(points[2]);
-	rectContour.emplace_back(points[3]);
+	cv::Point2i pointsWorld[4];
+	for (int i = 0; i < 4; i++)
+	{
+		const int xWorld = (int)((points[i].x + 1 - ppx) * contourTopPlaneDepth / fx);
+		const int yWorld = (int)(-(points[i].y + 1 - ppy) * contourTopPlaneDepth / fy);
+		pointsWorld[i] = cv::Point(xWorld, yWorld);
+	}
 
-	std::vector<Contour> contoursToDraw;
-	contoursToDraw.emplace_back(contour);
-	contoursToDraw.emplace_back(rectContour);
+	const int objectWidth = (int)DmUtils::GetDistanceBetweenPoints(pointsWorld[0].x, pointsWorld[0].y, pointsWorld[1].x, pointsWorld[1].y);
+	const int objectHeight = (int)DmUtils::GetDistanceBetweenPoints(pointsWorld[0].x, pointsWorld[0].y, pointsWorld[3].x, pointsWorld[3].y);
 
-	cv::Mat img2 = cv::Mat::zeros(_mapHeight, _mapWidth, CV_8UC3);
+	TwoDimDescription twoDimDescription;
+	twoDimDescription.Length = objectWidth > objectHeight ? objectWidth : objectHeight;
+	twoDimDescription.Width = objectWidth < objectHeight ? objectWidth : objectHeight;
 
-	cv::Scalar colors[3];
-	colors[0] = cv::Scalar(255, 0, 0);
-	colors[1] = cv::Scalar(0, 255, 0);
-	for (auto i = 0; i < contoursToDraw.size(); i++)
-		cv::drawContours(img2, contoursToDraw, i, colors[i]);
-
-	cv::imwrite("out/target" + std::to_string(contourNum) + ".png", img2);
+	return twoDimDescription;
 }

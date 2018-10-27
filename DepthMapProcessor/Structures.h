@@ -12,6 +12,12 @@ struct ObjDimDescription
 	int Height;
 };
 
+struct TwoDimDescription
+{
+	int Length;
+	int Width;
+};
+
 struct RelPoint
 {
 	float X;

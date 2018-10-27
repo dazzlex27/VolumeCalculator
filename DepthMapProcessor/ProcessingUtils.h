@@ -15,4 +15,8 @@ public:
 		const cv::RotatedRect& roi, const Contour& contour);
 	static const RotRelRect RotAbsRectToRel(const int rotWidth, const int rotHeight, const cv::RotatedRect& rect);
 	static const float GetDistanceBetweenPoints(const int x1, const int y1, const int x2, const int y2);
+	static const cv::Rect GetAbsRoiFromRoiRect(const RelRect& roiRect, const cv::Size& frameSize);
+	static const int GetCvChannelsCodeFromBytesPerPixel(const int bytesPerPixel);
+	static const short FindModeInSortedArray(const short*const array, const int count);
+	static void DrawTargetContour(const Contour& contour, const int width, const int height, const int contourNum);
 };

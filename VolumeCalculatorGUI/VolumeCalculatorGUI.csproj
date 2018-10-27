@@ -68,6 +68,7 @@
     <Compile Include="Entities\ApplicationSettings.cs" />
     <Compile Include="Entities\ColorCameraIntrinsics.cs" />
     <Compile Include="Entities\DepthCameraIntrinsics.cs" />
+    <Compile Include="Entities\RelRect.cs" />
     <Compile Include="Entities\TestCaseBasicInfo.cs" />
     <Compile Include="Entities\TestCaseData.cs" />
     <Compile Include="GUI\MaskPolygonControl.xaml.cs">

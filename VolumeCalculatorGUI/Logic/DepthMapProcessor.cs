@@ -73,8 +73,17 @@ namespace VolumeCalculatorGUI.Logic
 				fixed (byte* colorData = colorFrame.Data)
 				fixed (short* depthData = depthFrame.Data)
 				{
+					var relRect = new RelRect
+					{
+						X = x1,
+						Y = y1,
+						Width = x2 - x1,
+						Height = y2 - y1
+					};
+
 					var res = DepthMapProcessorDll.CalculateObjectVolumeAlt(_nativeHandle.ToPointer(), colorFrame.Width,
-						colorFrame.Height, colorData, colorFrame.BytesPerPixel, x1, y1, x2, y2, depthFrame.Width, depthFrame.Height, depthData);
+						colorFrame.Height, colorData, colorFrame.BytesPerPixel, relRect, depthFrame.Width,
+						depthFrame.Height, depthData);
 					return res == null ? null : new ObjectVolumeData(res->Length, res->Width, res->Height);
 				}
 			}

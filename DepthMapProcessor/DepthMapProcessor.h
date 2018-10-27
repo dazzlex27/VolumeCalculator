@@ -6,6 +6,9 @@
 class DepthMapProcessor
 {
 private:
+	const int _cannyThreshold1 = 50;
+	const int _cannyThreshold2 = 200;
+
 	const ColorCameraIntristics _colorIntrinsics; 
 	const DepthCameraIntristics _depthIntrinsics;
 
@@ -31,18 +34,19 @@ public:
 
 	ObjDimDescription* CalculateObjectVolume(const int mapWidth, const int mapHeight, const short*const mapData);
 	ObjDimDescription* CalculateObjectVolumeAlt(const int imageWidth, const int imageHeight, const byte*const imageData, 
-		const int bytesPerPixel, const float x1, const float y1, const float x2, const float y2, const int mapWidth, const int mapHeight, 
-		const short*const mapData);
+		const int bytesPerPixel, const RelRect& roiRect, const int mapWidth, const int mapHeight, const short*const mapData);
 	const short CalculateFloorDepth(const int mapWidth, const int mapHeight, const short*const mapData);
 	void SetSettings(const short floorDepth, const short cutOffDepth);
 
 private:
 	void ResizeColorBuffer(const int imageWidth, const int imageHeight, const int bytesPerPixel);
 	void ResizeDepthBuffers(const int mapWidth, const int mapHeight);
-	const short GetContourTopPlaneDepth(const Contour& contour, const cv::RotatedRect& rotBoundingRect) const;
-	const Contour GetTargetContour(const short*const mapBuffer, const int mapNum = 0) const;
+	const Contour GetTargetContourFromDepthMap() const;
+	const Contour GetTargetContourFromColorFrame(const int bytesPerPixel, const RelRect& roiRect) const;
 	const ObjDimDescription CalculateContourDimensions(const Contour& contour) const;
+	const ObjDimDescription CalculateContourDimensionsAlt(const Contour& objectContour, const Contour& colorObjectContour) const;
 	const Contour GetContourClosestToCenter(const std::vector<Contour>& contours) const;
-	const short FindModeInSortedArray(const short*const array, const int count) const;
-	void DrawTargetContour(const Contour& contour, const int contourNum) const;
+	const short GetContourTopPlaneDepth(const Contour& contour, const cv::RotatedRect& rotBoundingRect) const;
+	const TwoDimDescription GetTwoDimDescription(const cv::RotatedRect& contourBoundingRect, 
+		const short contourTopPlaneDepth, const float fx, const float fy, const float ppx, const float ppy) const;
 };
