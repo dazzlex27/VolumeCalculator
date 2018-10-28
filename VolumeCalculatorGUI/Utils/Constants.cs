@@ -1,5 +1,6 @@
 ﻿using System.Windows.Media;
 using System.Globalization;
+using System.IO;
 
 namespace VolumeCalculatorGUI.Utils
 {
@@ -7,7 +8,7 @@ namespace VolumeCalculatorGUI.Utils
 	{
 		public const string AppTitle = "VolumeCalculator";
 
-		public const string AppVersion = "v0.111 Beta";
+		public const string AppVersion = "v0.112 Beta";
 
 		public static string AppHeaderString = $@"{AppTitle} {AppVersion}";
 
@@ -26,5 +27,9 @@ namespace VolumeCalculatorGUI.Utils
 		public static string LocalFrameProviderFolderName = "localFrameProvider";
 
 		public static string RealsenseFrameProviderFileName = "D435";
+
+		public const string DebugDataDirectoryName = "out";
+		public static readonly string DebugColorFrameFilename = Path.Combine(DebugDataDirectoryName, "color.png");
+		public static readonly string DebugDepthFrameFilename = Path.Combine(DebugDataDirectoryName, "depth.png");
 	}
 }

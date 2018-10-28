@@ -14,10 +14,6 @@ namespace VolumeCalculatorGUI.GUI
 {
 	internal class CalculationDashboardControlVm : BaseViewModel, IDisposable
 	{
-		private const string DebugDataDirectoryName = "out";
-		private static readonly string DebugColorFrameFilename = Path.Combine(DebugDataDirectoryName, "color.png");
-		private static readonly string DebugDepthFrameFilename = Path.Combine(DebugDataDirectoryName, "depth.png");
-
 		private readonly ILogger _logger;
 		private string _resultFullPath;
 
@@ -42,6 +38,7 @@ namespace VolumeCalculatorGUI.GUI
 		private int _objLength;
 		private long _objVolume;
 		private bool _calculationInProgress;
+		private bool _useManualCodeInput;
 
 		public ICommand CalculateVolumeCommand { get; }
 
@@ -125,6 +122,19 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
+		public bool UseManualCodeInput
+		{
+			get => _useManualCodeInput;
+			set
+			{
+				if (_useManualCodeInput == value)
+					return;
+
+				_useManualCodeInput = value;
+				OnPropertyChanged();
+			}
+		}
+
 		public CalculationDashboardControlVm(ILogger logger, ApplicationSettings settings, 
 			ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
 		{
@@ -167,6 +177,9 @@ namespace VolumeCalculatorGUI.GUI
 
 		public void UpdateCodeText(string text)
 		{
+			if (UseManualCodeInput)
+				return;
+
 			ObjCode = text;
 		}
 
@@ -232,14 +245,14 @@ namespace VolumeCalculatorGUI.GUI
 				CalculationInProgress = true;
 
 				_logger.LogInfo($"Starting a volume check, using rgb={useRgbData}...");
-				if (Directory.Exists(DebugDataDirectoryName))
-					Directory.Delete(DebugDataDirectoryName, true);
-				Directory.CreateDirectory(DebugDataDirectoryName);
+				if (Directory.Exists(Constants.DebugDataDirectoryName))
+					Directory.Delete(Constants.DebugDataDirectoryName, true);
+				Directory.CreateDirectory(Constants.DebugDataDirectoryName);
 
-				ImageUtils.SaveImageDataToFile(_latestColorFrame, DebugColorFrameFilename);
+				ImageUtils.SaveImageDataToFile(_latestColorFrame, Constants.DebugColorFrameFilename);
 
 				var cutOffDepth = (short) (_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
-				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, DebugDepthFrameFilename,
+				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, Constants.DebugDepthFrameFilename,
 					_depthCameraParams.MinDepth, _depthCameraParams.MaxDepth, cutOffDepth);
 
 				_volumeCalculator = new VolumeCalculator(_logger, _processor, useRgbData, _applicationSettings.SampleCount);

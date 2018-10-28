@@ -1,11 +1,13 @@
 ﻿using Common;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using FrameProviders;
 using VolumeCalculatorGUI.Entities;
+using VolumeCalculatorGUI.Entities.IoDevices;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
 
@@ -23,8 +25,7 @@ namespace VolumeCalculatorGUI.GUI
 		private CalculationDashboardControlVm _calculationDashboardControlVm;
 		private TestDataGenerationControlVm _testDataGenerationControlVm;
 
-		private KeyboardListener _keyboardListener;
-		private SerialPortListener _serialListener;
+		private List<IInputListener> _inputListeners;
 
 		public string WindowTitle => Constants.AppHeaderString;
 
@@ -205,15 +206,19 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
-				_keyboardListener = new KeyboardListener(_logger);
-				_keyboardListener.CharSequenceFormed += ScannerListener_CharSequenceFormed;
+				_inputListeners = new List<IInputListener>();
+
+				var keyboardListener = new KeyboardListener(_logger);
+				keyboardListener.CharSequenceFormed += ScannerListener_CharSequenceFormed;
+				_inputListeners.Add(keyboardListener);
 
 				var scannerComPort = IoUtils.ReadScannerPort();
 				if (scannerComPort == string.Empty)
 					return;
 
-				_serialListener = new SerialPortListener(_logger, scannerComPort);
-				_serialListener.CharSequenceFormed += ScannerListener_CharSequenceFormed;
+				var serialListener = new SerialPortListener(_logger, scannerComPort);
+				serialListener.CharSequenceFormed += ScannerListener_CharSequenceFormed;
+				_inputListeners.Add(serialListener);
 			}
 			catch (Exception ex)
 			{
@@ -238,14 +243,11 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			_logger.LogInfo("Disposing io devices...");
 
-			if (_keyboardListener != null)
-				_keyboardListener.CharSequenceFormed -= ScannerListener_CharSequenceFormed;
-
-			if (_serialListener == null)
-				return;
-
-			_serialListener.CharSequenceFormed -= ScannerListener_CharSequenceFormed;
-			_serialListener.Dispose();
+			foreach (var listener in _inputListeners.Where(l => l != null))
+			{
+				listener.CharSequenceFormed -= ScannerListener_CharSequenceFormed;
+				listener.Dispose();
+			}
 		}
 
 		private void OnDeviceParametersChanged(ColorCameraParams arg1, DepthCameraParams arg2)

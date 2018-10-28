@@ -4,13 +4,14 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Input;
 using Common;
+using VolumeCalculatorGUI.Utils;
 
-namespace VolumeCalculatorGUI.Utils
+namespace VolumeCalculatorGUI.Entities.IoDevices
 {
-	internal class KeyboardListener
+	internal class KeyboardListener : IInputListener
 	{
-		private const int TimerIntervalMs = 100;
-		private const int TimeOutTimerIntervalMs = 500;
+		private const int TimerIntervalMs = 200;
+		private const int TimeOutTimerIntervalMs = 300;
 
 		public event Action<string> CharSequenceFormed;
 
@@ -39,6 +40,10 @@ namespace VolumeCalculatorGUI.Utils
 
 			EventManager.RegisterClassHandler(typeof(Window),
 				Keyboard.KeyUpEvent, new KeyEventHandler(AddKey), true);
+		}
+
+		public void Dispose()
+		{
 		}
 
 		private void AddKey(object sender, KeyEventArgs e)

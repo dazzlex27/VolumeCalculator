@@ -2,9 +2,9 @@
 using System.IO.Ports;
 using Common;
 
-namespace VolumeCalculatorGUI.Utils
+namespace VolumeCalculatorGUI.Entities.IoDevices
 {
-	internal class SerialPortListener : IDisposable
+	internal class SerialPortListener : IInputListener
 	{
 		public event Action<string> CharSequenceFormed;
 

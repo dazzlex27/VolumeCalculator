@@ -69,6 +69,7 @@
     <Compile Include="Entities\ApplicationSettings.cs" />
     <Compile Include="Entities\ColorCameraIntrinsics.cs" />
     <Compile Include="Entities\DepthCameraIntrinsics.cs" />
+    <Compile Include="Entities\IoDevices\IInputListener.cs" />
     <Compile Include="Entities\RelRect.cs" />
     <Compile Include="Entities\TestCaseBasicInfo.cs" />
     <Compile Include="Entities\TestCaseData.cs" />
@@ -109,11 +110,11 @@
     </Compile>
     <Compile Include="Entities\ObjDimDescription.cs" />
     <Compile Include="Entities\ObjectVolumeData.cs" />
-    <Compile Include="Utils\KeyboardListener.cs" />
+    <Compile Include="Entities\IoDevices\KeyboardListener.cs" />
     <Compile Include="Utils\KeyToCharMapper.cs" />
     <Compile Include="Utils\Logger.cs" />
     <Compile Include="Entities\WorkingAreaMask.cs" />
-    <Compile Include="Utils\SerialPortListener.cs" />
+    <Compile Include="Entities\IoDevices\SerialPortListener.cs" />
     <Compile Include="Utils\TypeConverter.cs" />
     <Page Include="GUI\CalculationDashboardControl.xaml">
       <SubType>Designer</SubType>
