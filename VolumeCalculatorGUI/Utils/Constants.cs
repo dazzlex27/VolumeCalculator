@@ -15,7 +15,11 @@ namespace VolumeCalculatorGUI.Utils
 
 		public static readonly int BytesPerPixel32 = (PixelFormats.Bgra32.BitsPerPixel + 7) / 8;
 
-		public static readonly string ResultFileName = "results.csv";
+		public const string ConfigFileName = "settings.cfg";
+
+		public const string ResultFileName = "results.csv";
+
+		public const string PortsFileName = "ports";
 
 		public static string CsvSeparator = CultureInfo.CurrentCulture.TextInfo.ListSeparator;
 

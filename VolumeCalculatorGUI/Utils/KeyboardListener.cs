@@ -3,12 +3,14 @@ using System.Text;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
+using Common;
 
 namespace VolumeCalculatorGUI.Utils
 {
 	internal class KeyboardListener
 	{
-		private const int TimerIntervalMs = 1000;
+		private const int TimerIntervalMs = 100;
+		private const int TimeOutTimerIntervalMs = 500;
 
 		public event Action<string> CharSequenceFormed;
 
@@ -21,14 +23,16 @@ namespace VolumeCalculatorGUI.Utils
 
 		private StringBuilder _keyCollectionBuilder;
 
-		public KeyboardListener()
+		public KeyboardListener(ILogger logger)
 		{
+			logger.LogInfo("Creating a keyboard listener...");
+
 			_keyToCharMapper = new KeyToCharMapper();
 
 			_keyCollectionTimer = new Timer(TimerIntervalMs) {AutoReset = false};
 			_keyCollectionTimer.Elapsed += KeyCollectionTimer_Elapsed;
 
-			_timeOutTimer = new Timer(TimerIntervalMs) {AutoReset = false};
+			_timeOutTimer = new Timer(TimeOutTimerIntervalMs) {AutoReset = false};
 			_timeOutTimer.Elapsed += TimeOutTimer_Elapsed;
 
 			_onTimeOut = false;

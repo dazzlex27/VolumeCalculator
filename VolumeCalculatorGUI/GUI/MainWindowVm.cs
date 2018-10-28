@@ -23,7 +23,8 @@ namespace VolumeCalculatorGUI.GUI
 		private CalculationDashboardControlVm _calculationDashboardControlVm;
 		private TestDataGenerationControlVm _testDataGenerationControlVm;
 
-		private readonly KeyboardListener _keyboardListener;
+		private KeyboardListener _keyboardListener;
+		private SerialPortListener _serialListener;
 
 		public string WindowTitle => Constants.AppHeaderString;
 
@@ -79,6 +80,22 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
+		public bool IsTestDataGenerationControlVisible
+		{
+			get => _testDataGenerationControlVm?.ShowControl ?? false;
+			set
+			{
+				if (_testDataGenerationControlVm == null)
+					return;
+
+				if (_testDataGenerationControlVm.ShowControl == value)
+					return;
+
+				_testDataGenerationControlVm.ShowControl = value;
+				OnPropertyChanged();
+			}
+		}
+
 		public ICommand OpenSettingsCommand { get; }
 
 		public MainWindowVm()
@@ -90,13 +107,11 @@ namespace VolumeCalculatorGUI.GUI
 				_logger.LogInfo($"App: {Constants.AppHeaderString}");
 				AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
-
 				InitializeSettings();
 				InitializeSubViewModels();
+				InitializeIoDevices();
 
-				_keyboardListener = new KeyboardListener();
-				_keyboardListener.CharSequenceFormed += KeyboardListener_CharSequenceFormed;
+				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
 
 				_logger.LogInfo("Application is initalized");
 			}
@@ -109,7 +124,7 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		private void KeyboardListener_CharSequenceFormed(string charSequence)
+		private void ScannerListener_CharSequenceFormed(string charSequence)
 		{
 			_calculationDashboardControlVm?.UpdateCodeText(charSequence);
 		}
@@ -120,16 +135,11 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				_logger.LogInfo("Shutting down...");
 
-				_keyboardListener.CharSequenceFormed -= KeyboardListener_CharSequenceFormed;
+				SaveSettings();
+				DisposeSubViewModels();
+				DisposeIoDevices();
 
-				_logger.LogInfo("Saving settings...");
-				IoUtils.SerializeSettings(_settings);
-
-				_logger.LogInfo("Disposing libs...");
-				_streamViewControlVm.Dispose();
-				_calculationDashboardControlVm.Dispose();
-
-				_logger.LogInfo("App terminated");
+				_logger.LogInfo("Application stopped");
 				Application.Current.Shutdown();
 			}
 			catch (Exception ex)
@@ -162,7 +172,7 @@ namespace VolumeCalculatorGUI.GUI
 					return;
 
 				Settings = settingsWindowVm.GetSettings();
-				IoUtils.SerializeSettings(Settings);
+				SaveSettings();
 				_logger.LogInfo($"New settings have been applied: {Settings}");
 			}
 			catch (Exception ex)
@@ -173,24 +183,10 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public bool IsTestDataGenerationControlVisible
-		{
-			get => _testDataGenerationControlVm?.ShowControl ?? false;
-			set
-			{
-				if (_testDataGenerationControlVm == null)
-					return;
-
-				if (_testDataGenerationControlVm.ShowControl == value)
-					return;
-
-				_testDataGenerationControlVm.ShowControl = value;
-				OnPropertyChanged();
-			}
-		}
-
 		private void InitializeSubViewModels()
 		{
+			_logger.LogInfo("Initializing sub view models...");
+
 			_streamViewControlVm = new StreamViewControlVm(_logger, _settings);
 
 			var colorCameraParams = _streamViewControlVm.GetColorCameraParams();
@@ -203,6 +199,53 @@ namespace VolumeCalculatorGUI.GUI
 			_streamViewControlVm.DeviceParamsChanged += OnDeviceParametersChanged;
 			_streamViewControlVm.ColorFrameReady += OnColorFrameReady;
 			_streamViewControlVm.DepthFrameReady += OnDepthFrameReady;
+		}
+
+		private void InitializeIoDevices()
+		{
+			try
+			{
+				_keyboardListener = new KeyboardListener(_logger);
+				_keyboardListener.CharSequenceFormed += ScannerListener_CharSequenceFormed;
+
+				var scannerComPort = IoUtils.ReadScannerPort();
+				if (scannerComPort == string.Empty)
+					return;
+
+				_serialListener = new SerialPortListener(_logger, scannerComPort);
+				_serialListener.CharSequenceFormed += ScannerListener_CharSequenceFormed;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to initialize Io devices", ex);
+			}
+		}
+
+		private void SaveSettings()
+		{
+			_logger.LogInfo("Saving settings...");
+			IoUtils.SerializeSettings(Settings);
+		}
+
+		private void DisposeSubViewModels()
+		{
+			_logger.LogInfo("Disposing sub view models...");
+			_streamViewControlVm.Dispose();
+			_calculationDashboardControlVm.Dispose();
+		}
+
+		private void DisposeIoDevices()
+		{
+			_logger.LogInfo("Disposing io devices...");
+
+			if (_keyboardListener != null)
+				_keyboardListener.CharSequenceFormed -= ScannerListener_CharSequenceFormed;
+
+			if (_serialListener == null)
+				return;
+
+			_serialListener.CharSequenceFormed -= ScannerListener_CharSequenceFormed;
+			_serialListener.Dispose();
 		}
 
 		private void OnDeviceParametersChanged(ColorCameraParams arg1, DepthCameraParams arg2)

@@ -46,8 +46,9 @@ namespace VolumeCalculatorGUI.Utils
 			{
 				var serialPort = (SerialPort)sender;
 				var indata = serialPort.ReadExisting();
+				var trimmedData = indata.Replace(Environment.NewLine, "").Replace(" ", "").Replace("\t", "");
 
-				CharSequenceFormed?.Invoke(indata);
+				CharSequenceFormed?.Invoke(trimmedData);
 			}
 			catch (Exception ex)
 			{
