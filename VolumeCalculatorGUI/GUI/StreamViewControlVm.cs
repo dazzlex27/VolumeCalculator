@@ -187,8 +187,8 @@ namespace VolumeCalculatorGUI.GUI
 			UseColorMask = settings.UseColorMask;
 			UseDepthMask = settings.UseDepthMask;
 
-			ColorMaskPolygonControlVm = new MaskPolygonControlVm(settings.ColorAreaContour);
-			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.DepthAreaContour);
+			ColorMaskPolygonControlVm = new MaskPolygonControlVm(settings.ColorMaskContour);
+			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.DepthMaskContour);
 		}
 
 		public void Dispose()
@@ -211,8 +211,8 @@ namespace VolumeCalculatorGUI.GUI
 			_applicationSettings = settings;
 			UseColorMask = _applicationSettings.UseColorMask;
 			UseDepthMask = _applicationSettings.UseDepthMask;
-			ColorMaskPolygonControlVm.SetPolygonPoints(settings.ColorAreaContour);
-			DepthMaskPolygonControlVm.SetPolygonPoints(settings.DepthAreaContour);
+			ColorMaskPolygonControlVm.SetPolygonPoints(settings.ColorMaskContour);
+			DepthMaskPolygonControlVm.SetPolygonPoints(settings.DepthMaskContour);
 			_polygonPointsChaged = true;
 		}
 
@@ -238,11 +238,11 @@ namespace VolumeCalculatorGUI.GUI
 				RawDepthFrameReady?.Invoke(depthMap);
 
 				var maskedMap = GetMaskedDepthMap(depthMap);
-				var cutOffDepth = (short) (_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
+				var cutOffDepth = (short) (_applicationSettings.FloorDepth - _applicationSettings.MinObjectHeight);
 				DepthMapUtils.FilterDepthMapByDepthtLimit(maskedMap, cutOffDepth);
 
 				var minDepth = _depthCameraParams.MinDepth;
-				var maxDepth = _applicationSettings.DistanceToFloor;
+				var maxDepth = _applicationSettings.FloorDepth;
 				var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, minDepth, maxDepth);
 
 				var imageWidth = maskedMap.Width;
@@ -277,7 +277,7 @@ namespace VolumeCalculatorGUI.GUI
 				{
 					if (UseDepthMask)
 					{
-						var points = _applicationSettings.DepthAreaContour.ToArray();
+						var points = _applicationSettings.DepthMaskContour.ToArray();
 						var maskData = GeometryUtils.CreateWorkingAreaMask(points, depthMap.Width, depthMap.Height);
 						_depthAreaMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
 					}

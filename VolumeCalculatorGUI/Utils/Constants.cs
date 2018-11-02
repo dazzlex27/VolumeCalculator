@@ -8,13 +8,9 @@ namespace VolumeCalculatorGUI.Utils
 	{
 		public const string AppTitle = "VolumeCalculator";
 
-		public const string AppVersion = "v0.112 Beta";
+		public const string AppVersion = "v0.113 Beta";
 
 		public static string AppHeaderString = $@"{AppTitle} {AppVersion}";
-
-		public static readonly int BytesPerPixel24 = (PixelFormats.Bgr24.BitsPerPixel + 7) / 8;
-
-		public static readonly int BytesPerPixel32 = (PixelFormats.Bgra32.BitsPerPixel + 7) / 8;
 
 		public const string ConfigFileName = "settings.cfg";
 
@@ -31,5 +27,7 @@ namespace VolumeCalculatorGUI.Utils
 		public const string DebugDataDirectoryName = "out";
 		public static readonly string DebugColorFrameFilename = Path.Combine(DebugDataDirectoryName, "color.png");
 		public static readonly string DebugDepthFrameFilename = Path.Combine(DebugDataDirectoryName, "depth.png");
+
+		public const string AnalyzerLibName = "libDepthMapProcessor.dll";
 	}
 }

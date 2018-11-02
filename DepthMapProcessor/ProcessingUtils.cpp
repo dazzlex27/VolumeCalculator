@@ -49,10 +49,10 @@ void DmUtils::FilterDepthMap(const int mapDataLength, short*const mapData,  cons
 	}
 }
 
-const std::vector<short> DmUtils::GetNonZeroContourDepthValues(const int mapWidth, const int mapHeight, const short*const mapData)
+const std::vector<short> DmUtils::GetNonZeroContourDepthValues(const DepthMap& depthMap)
 {
 	std::vector<short> nonZeroValues;
-	const int mapLength = mapWidth * mapHeight;
+	const int mapLength = depthMap.Width * depthMap.Height;
 	if (mapLength <= 0)
 		return nonZeroValues;
 
@@ -60,7 +60,7 @@ const std::vector<short> DmUtils::GetNonZeroContourDepthValues(const int mapWidt
 
 	for (int i = 0; i < mapLength; i++)
 	{
-		const short value = mapData[i];
+		const short value = depthMap.Data[i];
 		if (value > 0)
 			nonZeroValues.emplace_back(value);
 	}

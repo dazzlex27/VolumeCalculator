@@ -39,12 +39,12 @@ namespace VolumeCalculatorGUI.Logic
 
 		public bool IsActive { get; private set; }
 
-		public void AdvanceCalculation(ImageData image, DepthMap depthMap)
+		public void AdvanceCalculation(DepthMap depthMap, ImageData image)
 		{
 			_timer.Stop();
 
 			var currentResult = _useColorVersion
-				? _processor.CalculateObjectVolumeAlt(image, depthMap)
+				? _processor.CalculateObjectVolumeAlt(depthMap, image)
 				: _processor.CalculateVolume(depthMap);
 			_results.Add(currentResult);
 			_samplesLeft--;

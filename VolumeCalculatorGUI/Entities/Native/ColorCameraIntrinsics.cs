@@ -1,9 +1,9 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace VolumeCalculatorGUI.Entities
+namespace VolumeCalculatorGUI.Entities.Native
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct DepthCameraIntrinsics
+	public struct ColorCameraIntrinsics
 	{
 		public float FovX;
 		public float FovY;
@@ -11,7 +11,5 @@ namespace VolumeCalculatorGUI.Entities
 		public float FocalLengthY;
 		public float PrincipalPointX;
 		public float PrincipalPointY;
-		public short MinDepth;
-		public short MaxDepth;
 	}
 }

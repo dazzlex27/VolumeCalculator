@@ -24,27 +24,17 @@ namespace VolumeCalculatorGUI.Utils
 			return colorImageBitmap;
 		}
 
-		//public static WriteableBitmap GetWriteableBitmapFromDepthMap(DepthMap depthMap)
-		//{
-
-		//}
-
 		public static PixelFormat GetFormatFromBytesPerPixel(int bytesPerPixel)
 		{
-			var format = PixelFormats.BlackWhite;
 			switch (bytesPerPixel)
 			{
 				case 3:
-					format = PixelFormats.Rgb24;
-					bytesPerPixel = Constants.BytesPerPixel24;
-					break;
+					return PixelFormats.Rgb24;
 				case 4:
-					format = PixelFormats.Bgra32;
-					bytesPerPixel = Constants.BytesPerPixel32;
-					break;
+					return PixelFormats.Bgra32;
+				default:
+					return PixelFormats.BlackWhite;
 			}
-
-			return format;
 		}
 	}
 }

@@ -11,7 +11,9 @@ const DepthMap*const Utils::ReadDepthMapFromFile(const char* filepath)
 	stream >> width;
 	int height = 0;
 	stream >> height;
-	DepthMap* dm = new DepthMap(width, height);
+	DepthMap* dm = new DepthMap();
+	dm->Width = width;
+	dm->Height = height;
 
 	short value;
 	int index = 0;

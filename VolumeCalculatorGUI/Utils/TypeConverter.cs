@@ -1,5 +1,6 @@
 ﻿using FrameProviders;
 using VolumeCalculatorGUI.Entities;
+using VolumeCalculatorGUI.Entities.Native;
 
 namespace VolumeCalculatorGUI.Utils
 {

@@ -84,29 +84,17 @@ struct DepthCameraIntristics
 	short MaxDepth;
 };
 
+struct ColorImage
+{
+	int Width;
+	int Height;
+	byte* Data;
+	byte BytesPerPixel;
+};
+
 struct DepthMap
 {
-	const int Width;
-	const int Height;
-	const int Length;
-	short*const Data;
-
-	DepthMap(const int width, const int height)
-		:Width(width),
-		Height(height),
-		Length(width * height),
-		Data (new short[width*height])
-	{
-	}
-
-	~DepthMap()
-	{
-		if (Data)
-			delete[] Data;
-	}
-
-	inline const short GetMaxValue()
-	{
-		return *(std::max_element(Data, Data + Length));
-	}
+	int Width;
+	int Height;
+	short* Data;
 };

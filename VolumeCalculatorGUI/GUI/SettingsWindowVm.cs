@@ -314,14 +314,14 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void FillValuesFromSettings(ApplicationSettings settings)
 		{
-			FloorDepth = settings.DistanceToFloor;
-			MinObjHeight = settings.MinObjHeight;
+			FloorDepth = settings.FloorDepth;
+			MinObjHeight = settings.MinObjectHeight;
 			OutputPath = settings.OutputPath;
-			SampleCount = settings.SampleCount;
+			SampleCount = settings.SampleDepthMapCount;
 			UseColorMask = settings.UseColorMask;
-			ColorMaskRectangleControlVm = new MaskPolygonControlVm(settings.ColorAreaContour);
+			ColorMaskRectangleControlVm = new MaskPolygonControlVm(settings.ColorMaskContour);
 			UseDepthMask = settings.UseDepthMask;
-			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.DepthAreaContour);
+			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.DepthMaskContour);
 		}
 	}
 }

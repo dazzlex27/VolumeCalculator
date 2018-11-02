@@ -74,8 +74,8 @@ namespace VolumeCalculatorGUI.Logic
 				file.WriteLine(largerDimension);
 				file.WriteLine(smallerDimension);
 		        file.WriteLine(_basicCaseInfo.ObjHeight);
-		        file.WriteLine(_testCaseData.Settings.DistanceToFloor);
-		        file.Write(_testCaseData.Settings.MinObjHeight);
+		        file.WriteLine(_testCaseData.Settings.FloorDepth);
+		        file.Write(_testCaseData.Settings.MinObjectHeight);
 	        }
 
 			File.WriteAllText(Path.Combine(_testCaseDirectory, "description.txt"), _basicCaseInfo.Description);

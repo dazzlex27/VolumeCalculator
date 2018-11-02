@@ -144,7 +144,7 @@ namespace VolumeCalculatorGUI.GUI
 			_depthCameraParams = depthCameraParams;
 
 			_processor = new DepthMapProcessor(_logger, _colorCameraParams, _depthCameraParams);
-			_processor.SetCalculatorSettings(_applicationSettings);
+			_processor.SetDeviceSettings(_applicationSettings);
 
 			_resultFullPath = Path.Combine(_applicationSettings.OutputPath, Constants.ResultFileName);
 
@@ -161,7 +161,7 @@ namespace VolumeCalculatorGUI.GUI
 		public void ApplicationSettingsUpdated(ApplicationSettings applicationSettings)
 		{
 			_applicationSettings = applicationSettings;
-			_processor.SetCalculatorSettings(_applicationSettings);
+			_processor.SetDeviceSettings(_applicationSettings);
 			_resultFullPath = Path.Combine(_applicationSettings.OutputPath, Constants.ResultFileName);
 		}
 
@@ -172,7 +172,7 @@ namespace VolumeCalculatorGUI.GUI
 			Dispose();
 
 			_processor = new DepthMapProcessor(_logger, _colorCameraParams, _depthCameraParams);
-			_processor.SetCalculatorSettings(_applicationSettings);
+			_processor.SetDeviceSettings(_applicationSettings);
 		}
 
 		public void UpdateCodeText(string text)
@@ -196,7 +196,7 @@ namespace VolumeCalculatorGUI.GUI
 			if (!_depthFrameReady)
 				return;
 
-			_volumeCalculator.AdvanceCalculation(_latestColorFrame, _latestDepthMap);
+			_volumeCalculator.AdvanceCalculation(_latestDepthMap, _latestColorFrame);
 			_colorFrameReady = false;
 			_depthFrameReady = false;
 		}
@@ -214,7 +214,7 @@ namespace VolumeCalculatorGUI.GUI
 			if (!_colorFrameReady)
 				return;
 
-			_volumeCalculator.AdvanceCalculation(_latestColorFrame, _latestDepthMap);
+			_volumeCalculator.AdvanceCalculation(_latestDepthMap, _latestColorFrame);
 			_colorFrameReady = false;
 			_depthFrameReady = false;
 		}
@@ -251,11 +251,11 @@ namespace VolumeCalculatorGUI.GUI
 
 				ImageUtils.SaveImageDataToFile(_latestColorFrame, Constants.DebugColorFrameFilename);
 
-				var cutOffDepth = (short) (_applicationSettings.DistanceToFloor - _applicationSettings.MinObjHeight);
+				var cutOffDepth = (short) (_applicationSettings.FloorDepth - _applicationSettings.MinObjectHeight);
 				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, Constants.DebugDepthFrameFilename,
 					_depthCameraParams.MinDepth, _depthCameraParams.MaxDepth, cutOffDepth);
 
-				_volumeCalculator = new VolumeCalculator(_logger, _processor, useRgbData, _applicationSettings.SampleCount);
+				_volumeCalculator = new VolumeCalculator(_logger, _processor, useRgbData, _applicationSettings.SampleDepthMapCount);
 				_volumeCalculator.CalculationFinished += VolumeCalculator_CalculationFinished;
 				_volumeCalculator.CalculationCancelled += VolumeCalculator_CalculationCancelled;
 			}

@@ -2,7 +2,9 @@
 using Common;
 using FrameProviders;
 using VolumeCalculatorGUI.Entities;
+using VolumeCalculatorGUI.Entities.Native;
 using VolumeCalculatorGUI.Utils;
+using DepthMap = Common.DepthMap;
 
 namespace VolumeCalculatorGUI.Logic
 {
@@ -10,7 +12,6 @@ namespace VolumeCalculatorGUI.Logic
 	{
 		private readonly ILogger _logger;
 		private readonly IntPtr _nativeHandle;
-		private ApplicationSettings _settings;
 
 		public bool IsActive { get; private set; }
 
@@ -36,54 +37,34 @@ namespace VolumeCalculatorGUI.Logic
 		{
 			unsafe
 			{
-				fixed (short* data = depthMap.Data)
+				fixed (short* depthData = depthMap.Data)
 				{
-					var res = DepthMapProcessorDll.CalculateObjectVolume(_nativeHandle.ToPointer(), depthMap.Width, 
-						depthMap.Height, data);
+					var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
+
+					var res = DepthMapProcessorDll.CalculateObjectVolume(_nativeHandle.ToPointer(), nativeDepthMap);
 					return res == null ? null : new ObjectVolumeData(res->Length, res->Width, res->Height);
 				}
 			}
 		}
 
-		public ObjectVolumeData CalculateObjectVolumeAlt(ImageData colorFrame, DepthMap depthFrame)
+		public ObjectVolumeData CalculateObjectVolumeAlt(DepthMap depthMap, ImageData colorFrame)
 		{
-			float x1;
-			float y1;
-			float x2;
-			float y2;
-
-			if (_settings != null && _settings.UseDepthMask)
-			{
-				var rectanglePoints = _settings.ColorAreaContour;
-				x1 = (float) rectanglePoints[0].X;
-				y1 = (float) rectanglePoints[0].Y;
-				x2 = (float) rectanglePoints[2].X;
-				y2 = (float) rectanglePoints[2].Y;
-			}
-			else
-			{
-				x1 = 0;
-				y1 = 0;
-				x2 = 1;
-				y2 = 1;
-			}
-
 			unsafe
 			{
+				fixed (short* depthData = depthMap.Data)
 				fixed (byte* colorData = colorFrame.Data)
-				fixed (short* depthData = depthFrame.Data)
 				{
-					var relRect = new RelRect
+					var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
+
+					var nativeColorImage = new ColorImage
 					{
-						X = x1,
-						Y = y1,
-						Width = x2 - x1,
-						Height = y2 - y1
+						Width = colorFrame.Width,
+						Height = colorFrame.Height,
+						Data = colorData,
+						BytesPerPixel = colorFrame.BytesPerPixel
 					};
 
-					var res = DepthMapProcessorDll.CalculateObjectVolumeAlt(_nativeHandle.ToPointer(), colorFrame.Width,
-						colorFrame.Height, colorData, colorFrame.BytesPerPixel, relRect, depthFrame.Width,
-						depthFrame.Height, depthData);
+					var res = DepthMapProcessorDll.CalculateObjectVolumeAlt(_nativeHandle.ToPointer(), nativeDepthMap, nativeColorImage);
 					return res == null ? null : new ObjectVolumeData(res->Length, res->Width, res->Height);
 				}
 			}
@@ -93,21 +74,23 @@ namespace VolumeCalculatorGUI.Logic
 		{
 			unsafe
 			{
-				fixed (short* data = depthMap.Data)
+				fixed (short* depthData = depthMap.Data)
 				{
-					return DepthMapProcessorDll.CalculateFloorDepth(_nativeHandle.ToPointer(), depthMap.Width, depthMap.Height, data);
+					var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
+
+					return DepthMapProcessorDll.CalculateFloorDepth(_nativeHandle.ToPointer(), nativeDepthMap);
 				}
 			}
 		}
 
-		public void SetCalculatorSettings(ApplicationSettings settings)
+		public void SetDeviceSettings(ApplicationSettings settings)
 		{
-			_settings = settings;
+			var cutOffDepth = (short)(settings.FloorDepth - settings.MinObjectHeight);
+			var colorRoiRect = CreateColorRoiRectFromSettings(settings);
 
 			unsafe
 			{
-				var cutOffDepth = (short) (_settings.DistanceToFloor - _settings.MinObjHeight);
-				DepthMapProcessorDll.SetCalculatorSettings(_nativeHandle.ToPointer(), _settings.DistanceToFloor, cutOffDepth);
+				DepthMapProcessorDll.SetAlgorithmSettings(_nativeHandle.ToPointer(), settings.FloorDepth, cutOffDepth, colorRoiRect);
 			}
 		}
 
@@ -120,6 +103,48 @@ namespace VolumeCalculatorGUI.Logic
 			{
 				DepthMapProcessorDll.DestroyDepthMapProcessor(_nativeHandle.ToPointer());
 			}
+		}
+
+		private unsafe Entities.Native.DepthMap GetNativeDepthMapFromDepthMap(DepthMap depthMap, short* depthData)
+		{
+			return new Entities.Native.DepthMap
+			{
+				Width = depthMap.Width,
+				Height = depthMap.Height,
+				Data = depthData
+			};
+		}
+
+		private RelRect CreateColorRoiRectFromSettings(ApplicationSettings settings)
+		{
+			float x1;
+			float y1;
+			float x2;
+			float y2;
+
+			if (settings != null && settings.UseDepthMask)
+			{
+				var rectanglePoints = settings.ColorMaskContour;
+				x1 = (float)rectanglePoints[0].X;
+				y1 = (float)rectanglePoints[0].Y;
+				x2 = (float)rectanglePoints[2].X;
+				y2 = (float)rectanglePoints[2].Y;
+			}
+			else
+			{
+				x1 = 0;
+				y1 = 0;
+				x2 = 1;
+				y2 = 1;
+			}
+
+			return new RelRect
+			{
+				X = x1,
+				Y = y1,
+				Width = x2 - x1,
+				Height = y2 - y1
+			};
 		}
 	}
 }

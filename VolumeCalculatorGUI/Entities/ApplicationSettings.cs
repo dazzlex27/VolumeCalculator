@@ -8,13 +8,13 @@ namespace VolumeCalculatorGUI.Entities
 	internal class ApplicationSettings
     {
 	    [Obfuscation]
-		public short DistanceToFloor { get; }
+		public short FloorDepth { get; }
 
 	    [Obfuscation]
-		public short MinObjHeight { get; }
+		public short MinObjectHeight { get; }
 
 	    [Obfuscation]
-		public byte SampleCount { get; }
+		public byte SampleDepthMapCount { get; }
 
 	    [Obfuscation]
 		public string OutputPath { get; }
@@ -23,26 +23,26 @@ namespace VolumeCalculatorGUI.Entities
 	    public bool UseColorMask { get; }
 
 	    [Obfuscation]
-	    public List<Point> ColorAreaContour { get; }
+	    public List<Point> ColorMaskContour { get; }
 
 		[Obfuscation]
 		public bool UseDepthMask { get; }
 
 	    [Obfuscation]
-		public List<Point> DepthAreaContour { get; }
+		public List<Point> DepthMaskContour { get; }
 
-	    public ApplicationSettings(short distanceToFloor, short minObjHeight, byte sampleCount, string outputPath, 
-		    bool useColorMask, IReadOnlyCollection<Point> colorAreaContour, 
-		    bool useDepthMask, IReadOnlyCollection<Point> depthAreaContour)
+	    public ApplicationSettings(short floorDepth, short minObjectHeight, byte sampleCount, string outputPath, 
+		    bool useColorMask, IReadOnlyCollection<Point> colorMaskContour, 
+		    bool useDepthMask, IReadOnlyCollection<Point> depthMaskContour)
 	    {
-		    DistanceToFloor = distanceToFloor > 0 ? distanceToFloor : (short) 1000;
-		    MinObjHeight = minObjHeight;
-		    SampleCount = sampleCount > 0 ? sampleCount : (byte) 10;
+		    FloorDepth = floorDepth > 0 ? floorDepth : (short) 1000;
+		    MinObjectHeight = minObjectHeight;
+		    SampleDepthMapCount = sampleCount > 0 ? sampleCount : (byte) 10;
 		    OutputPath = outputPath;
 		    UseColorMask = useColorMask;
-		    ColorAreaContour = colorAreaContour != null ? new List<Point>(colorAreaContour) : GetDefaultAreaContour();
+		    ColorMaskContour = colorMaskContour != null ? new List<Point>(colorMaskContour) : GetDefaultAreaContour();
 			UseDepthMask = useDepthMask;
-		    DepthAreaContour = depthAreaContour != null ? new List<Point>(depthAreaContour) : GetDefaultAreaContour();
+		    DepthMaskContour = depthMaskContour != null ? new List<Point>(depthMaskContour) : GetDefaultAreaContour();
 		}
 
 	    [Obfuscation(Exclude = true)]
@@ -55,7 +55,7 @@ namespace VolumeCalculatorGUI.Entities
 	    public override string ToString()
 	    {
 		    return
-			    $"floorDepth={DistanceToFloor} useColorMask= {UseColorMask} useDepthMask={UseDepthMask} minObjHeight={MinObjHeight} sampleCount={SampleCount} outputPath={OutputPath}";
+			    $"floorDepth={FloorDepth} useColorMask= {UseColorMask} useDepthMask={UseDepthMask} minObjHeight={MinObjectHeight} sampleCount={SampleDepthMapCount} outputPath={OutputPath}";
 
 	    }
 

@@ -5,43 +5,56 @@
 #include <ctime>
 #include "ProcessingUtils.h"
 
-const float PI = 3.141592653589793238463f;
-
 DepthMapProcessor::DepthMapProcessor(ColorCameraIntristics colorIntrinsics, DepthCameraIntristics depthIntrinsics)
-	: _colorIntrinsics(colorIntrinsics),
-	_depthIntrinsics(depthIntrinsics)
+	: _colorIntrinsics(colorIntrinsics), _depthIntrinsics(depthIntrinsics)
 {
 	_mapWidth = 0;
 	_mapHeight = 0;
 	_mapLength = 0;
 	_mapLengthBytes = 0;
+
+	_depthMapBuffer = nullptr;
+	_depthMaskBuffer = nullptr;
+	_colorImageBuffer = nullptr;
 }
 
 DepthMapProcessor::~DepthMapProcessor()
 {
-	delete[] _mapBuffer;
-	_mapBuffer = 0;
+	if (_depthMapBuffer != nullptr)
+	{
+		delete[] _depthMapBuffer;
+		_depthMapBuffer = nullptr;
+	}
 
-	delete[] _imgBuffer;
-	_imgBuffer = 0;
+	if (_depthMaskBuffer != nullptr)
+	{
+		delete[] _depthMaskBuffer;
+		_depthMaskBuffer = nullptr;
+	}
+
+	if (_colorImageBuffer != nullptr)
+	{
+		delete[] _colorImageBuffer;
+		_colorImageBuffer = nullptr;
+	}
 }
 
-void DepthMapProcessor::SetSettings(const short floorDepth, const short cutOffDepth)
+void DepthMapProcessor::SetAlgorithmSettings(const short floorDepth, const short cutOffDepth, const RelRect& roiRect)
 {
 	_floorDepth = floorDepth;
 	_cutOffDepth = cutOffDepth;
+	_colorRoiRect.X = roiRect.X;
+	_colorRoiRect.Y = roiRect.Y;
+	_colorRoiRect.Width = roiRect.Width;
+	_colorRoiRect.Height = roiRect.Height;
+	_correctPerspective = true;
 }
 
-ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const int mapWidth, const int mapHeight, const short*const mapData)
+ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& depthMap)
 {
-	if (_mapWidth != mapWidth || _mapHeight != mapHeight)
-		ResizeDepthBuffers(mapWidth, mapHeight);
-
-	memset(&_result, 0, sizeof(ObjDimDescription));
-	memcpy(_mapBuffer, mapData, _mapLengthBytes);
-
-	DmUtils::FilterDepthMap(_mapLength, _mapBuffer, _cutOffDepth);
-
+	FillDepthBuffer(depthMap);
+	DmUtils::FilterDepthMap(_mapLength, _depthMapBuffer, _cutOffDepth);
+	 
 	const Contour& objectContour = GetTargetContourFromDepthMap();
 
 	_result = CalculateContourDimensions(objectContour);
@@ -49,36 +62,23 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const int mapWidth, 
 	return &_result;
 }
 
-ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const int imageWidth, const int imageHeight, const byte*const imageData,
-	const int bytesPerPixel, const RelRect& roiRect, const int mapWidth, const int mapHeight, const short*const mapData)
+ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image)
 {
-	if (_mapWidth != mapWidth || _mapHeight != mapHeight)
-		ResizeDepthBuffers(mapWidth, mapHeight);
-
-	memset(&_result, 0, sizeof(ObjDimDescription));
-	memcpy(_mapBuffer, mapData, _mapLengthBytes);
-
-	if (_colorImageWidth != imageWidth || _colorImageHeight != imageHeight)
-		ResizeColorBuffer(imageWidth, imageHeight, bytesPerPixel);
-
-	memcpy(_colorImageBuffer, imageData, _colorImageLengthBytes);
-
-	DmUtils::FilterDepthMap(_mapLength, _mapBuffer, _cutOffDepth);
+	FillDepthBuffer(depthMap);
+	DmUtils::FilterDepthMap(_mapLength, _depthMapBuffer, _cutOffDepth);
+	FillColorBuffer(image);
 
 	const Contour& depthObjectContour = GetTargetContourFromDepthMap();
-	const Contour& colorObjectContour = GetTargetContourFromColorFrame(bytesPerPixel, roiRect);
+	const Contour& colorObjectContour = GetTargetContourFromColorFrame();
 
 	_result = CalculateContourDimensionsAlt(depthObjectContour, colorObjectContour);
 
 	return &_result;
 }
 
-const short DepthMapProcessor::CalculateFloorDepth(const int mapWidth, const int mapHeight, const short*const mapData)
+const short DepthMapProcessor::CalculateFloorDepth(const DepthMap& depthMap)
 {
-	if (_mapWidth != mapWidth || _mapHeight != mapHeight)
-		ResizeDepthBuffers(mapWidth, mapHeight);
-
-	std::vector<short> nonZeroValues = DmUtils::GetNonZeroContourDepthValues(mapWidth, mapHeight, mapData);
+	std::vector<short> nonZeroValues = DmUtils::GetNonZeroContourDepthValues(depthMap);
 	if (nonZeroValues.size() == 0)
 		return 0;
 
@@ -87,38 +87,53 @@ const short DepthMapProcessor::CalculateFloorDepth(const int mapWidth, const int
 	return DmUtils::FindModeInSortedArray(nonZeroValues.data(), (int)nonZeroValues.size());
 }
 
-void DepthMapProcessor::ResizeColorBuffer(const int imageWidth, const int imageHeight, const int bytesPerPixel)
+void DepthMapProcessor::FillColorBuffer(const ColorImage& image)
 {
-	_colorImageWidth = imageWidth;
-	_colorImageHeight = imageHeight;
-	_colorImageLength = imageWidth * imageHeight;
-	_colorImageLengthBytes = _colorImageLength * bytesPerPixel;
+	const bool dimsAreTheSame = _colorImageWidth == image.Width && _colorImageHeight == image.Height && 
+		_colorImageLengthBytes == image.BytesPerPixel;
+	if (!dimsAreTheSame)
+	{
+		_colorImageWidth = image.Width;
+		_colorImageHeight = image.Height;
+		_colorImageLength = image.Width * image.Height;
+		_colorImageLengthBytes = _colorImageLength * image.BytesPerPixel;
+		_colorImageBytesPerPixel = image.BytesPerPixel;
 
-	if (_colorImageBuffer != nullptr)
-		delete[] _colorImageBuffer;
-	_colorImageBuffer = new byte[_colorImageLengthBytes];
+		if (_colorImageBuffer != nullptr)
+			delete[] _colorImageBuffer;
+		_colorImageBuffer = new byte[_colorImageLengthBytes];
+	}
+
+	memcpy(_colorImageBuffer, image.Data, _colorImageLengthBytes);
 }
 
-void DepthMapProcessor::ResizeDepthBuffers(const int mapWidth, const int mapHeight)
+void DepthMapProcessor::FillDepthBuffer(const DepthMap& depthMap)
 {
-	_mapWidth = mapWidth;
-	_mapHeight = mapHeight;
-	_mapLength = mapWidth * mapHeight;
-	_mapLengthBytes = _mapLength * sizeof(short);
+	const bool dimsAreTheSame = _mapWidth == depthMap.Width && _mapHeight == depthMap.Height;
+	if (!dimsAreTheSame)
+	{
+		_mapWidth = depthMap.Width;
+		_mapHeight = depthMap.Height;
+		_mapLength = _mapWidth * _mapHeight;
+		_mapLengthBytes = _mapLength * sizeof(short);
 
-	if (_mapBuffer != nullptr)
-		delete[] _mapBuffer;
-	_mapBuffer = new short[_mapLength];
+		if (_depthMapBuffer != nullptr)
+			delete[] _depthMapBuffer;
+		_depthMapBuffer = new short[_mapLength];
 
-	if (_imgBuffer != nullptr)
-		delete[] _imgBuffer;
-	_imgBuffer = new byte[_mapLength];
+		if (_depthMaskBuffer != nullptr)
+			delete[] _depthMaskBuffer;
+		_depthMaskBuffer = new byte[_mapLength];
+	}
+
+	memset(&_result, 0, sizeof(ObjDimDescription));
+	memcpy(_depthMapBuffer, depthMap.Data, _mapLengthBytes);
 }
 
 const Contour DepthMapProcessor::GetTargetContourFromDepthMap() const
 {
-	DmUtils::ConvertDepthMapDataToBinaryMask(_mapLength, _mapBuffer, _imgBuffer);
-	cv::Mat imageForContourSearch(_mapHeight, _mapWidth, CV_8UC1, _imgBuffer);
+	DmUtils::ConvertDepthMapDataToBinaryMask(_mapLength, _depthMapBuffer, _depthMaskBuffer);
+	cv::Mat imageForContourSearch(_mapHeight, _mapWidth, CV_8UC1, _depthMaskBuffer);
 
 	std::vector<Contour> contours;
 	cv::findContours(imageForContourSearch, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
@@ -135,12 +150,12 @@ const Contour DepthMapProcessor::GetTargetContourFromDepthMap() const
 	return contourClosestToCenter;
 }
 
-const Contour DepthMapProcessor::GetTargetContourFromColorFrame(const int bytesPerPixel, const RelRect& roiRect) const
+const Contour DepthMapProcessor::GetTargetContourFromColorFrame() const
 {
-	const int cvChannelsCode = DmUtils::GetCvChannelsCodeFromBytesPerPixel(bytesPerPixel);
+	const int cvChannelsCode = DmUtils::GetCvChannelsCodeFromBytesPerPixel(_colorImageBytesPerPixel);
 	cv::Mat input(_colorImageHeight, _colorImageWidth, cvChannelsCode, _colorImageBuffer);
 
-	const cv::Rect& roi = DmUtils::GetAbsRoiFromRoiRect(roiRect, cv::Size(input.cols, input.rows));
+	const cv::Rect& roi = DmUtils::GetAbsRoiFromRoiRect(_colorRoiRect, cv::Size(input.cols, input.rows));
 	cv::Mat inputRoi = input(roi);
 	cv::imwrite("out/inputRoi.png", inputRoi);
 
@@ -240,7 +255,7 @@ const Contour DepthMapProcessor::GetContourClosestToCenter(const std::vector<Con
 const short DepthMapProcessor::GetContourTopPlaneDepth(const Contour& contour, const cv::RotatedRect& rotBoundingRect) const
 {
 	const std::vector<short>& contourNonZeroValues = DmUtils::GetNonZeroContourDepthValues(_mapWidth, _mapHeight,
-		_mapBuffer, rotBoundingRect, contour);
+		_depthMapBuffer, rotBoundingRect, contour);
 
 	if (contourNonZeroValues.size() == 0)
 		return 0;

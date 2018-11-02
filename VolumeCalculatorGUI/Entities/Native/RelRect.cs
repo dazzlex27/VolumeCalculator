@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace VolumeCalculatorGUI.Entities
+namespace VolumeCalculatorGUI.Entities.Native
 {
 	[StructLayout(LayoutKind.Sequential)]
 	internal struct RelRect

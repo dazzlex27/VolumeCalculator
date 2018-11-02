@@ -67,10 +67,12 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Entities\ApplicationSettings.cs" />
-    <Compile Include="Entities\ColorCameraIntrinsics.cs" />
-    <Compile Include="Entities\DepthCameraIntrinsics.cs" />
+    <Compile Include="Entities\Native\ColorCameraIntrinsics.cs" />
+    <Compile Include="Entities\Native\ColorImage.cs" />
+    <Compile Include="Entities\Native\DepthCameraIntrinsics.cs" />
+    <Compile Include="Entities\Native\DepthMap.cs" />
     <Compile Include="Entities\IoDevices\IInputListener.cs" />
-    <Compile Include="Entities\RelRect.cs" />
+    <Compile Include="Entities\Native\RelRect.cs" />
     <Compile Include="Entities\TestCaseBasicInfo.cs" />
     <Compile Include="Entities\TestCaseData.cs" />
     <Compile Include="GUI\MaskPolygonControl.xaml.cs">
@@ -99,7 +101,7 @@
     <Compile Include="Logic\TestDataGenerator.cs" />
     <Compile Include="Logic\VolumeCalculator.cs" />
     <Compile Include="Utils\Constants.cs" />
-    <Compile Include="Logic\DepthMapProcessorDll.cs" />
+    <Compile Include="Utils\DepthMapProcessorDll.cs" />
     <Compile Include="Utils\FrameProviderUtils.cs" />
     <Compile Include="Utils\GeometryUtils.cs" />
     <Compile Include="Utils\GraphicsUtils.cs" />
@@ -108,7 +110,7 @@
     <Compile Include="GUI\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Entities\ObjDimDescription.cs" />
+    <Compile Include="Entities\Native\ObjDimDescription.cs" />
     <Compile Include="Entities\ObjectVolumeData.cs" />
     <Compile Include="Entities\IoDevices\KeyboardListener.cs" />
     <Compile Include="Utils\KeyToCharMapper.cs" />

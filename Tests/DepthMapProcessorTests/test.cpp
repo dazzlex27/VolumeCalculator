@@ -10,7 +10,7 @@ void FindFilteringDepth(const char* path)
 	const DepthMap*const depthMap = Utils::ReadDepthMapFromFile(path);
 	const int mapWidth = depthMap->Width;
 	const int mapHeight = depthMap->Height;
-	const int mapLength = depthMap->Length;
+	const int mapLength = mapWidth * mapHeight;
 
 	short* dataCopy = new short[mapLength];
 	memcpy(dataCopy, depthMap->Data, mapLength * sizeof(short));
