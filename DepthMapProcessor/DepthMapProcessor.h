@@ -2,15 +2,15 @@
 
 #include "Structures.h"
 #include "OpenCVInclude.h"
+#include "ContourExtractor.h"
 
 class DepthMapProcessor
 {
 private:
-	const int _cannyThreshold1 = 50;
-	const int _cannyThreshold2 = 200;
-
 	const ColorCameraIntristics _colorIntrinsics; 
 	const DepthCameraIntristics _depthIntrinsics;
+	
+	ContourExtractor _contourExtractor;
 
 	int _colorImageWidth;
 	int _colorImageHeight;
@@ -43,10 +43,9 @@ private:
 	void FillColorBuffer(const ColorImage& image);
 	void FillDepthBuffer(const DepthMap& depthMap);
 	const Contour GetTargetContourFromDepthMap() const;
-	const Contour GetTargetContourFromColorFrame() const;
+	const Contour GetTargetContourFromColorImage() const;
 	const ObjDimDescription CalculateContourDimensions(const Contour& contour) const;
 	const ObjDimDescription CalculateContourDimensionsAlt(const Contour& objectContour, const Contour& colorObjectContour) const;
-	const Contour GetContourClosestToCenter(const std::vector<Contour>& contours) const;
 	const short GetContourTopPlaneDepth(const Contour& contour) const;
 	const TwoDimDescription GetTwoDimDescription(const cv::RotatedRect& contourBoundingRect, 
 		const short contourTopPlaneDepth, const float fx, const float fy, const float ppx, const float ppy) const;

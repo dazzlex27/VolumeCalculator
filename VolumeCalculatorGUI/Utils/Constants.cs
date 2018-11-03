@@ -7,7 +7,7 @@ namespace VolumeCalculatorGUI.Utils
 	{
 		public const string AppTitle = "VolumeCalculator";
 
-		public const string AppVersion = "v0.115 Beta";
+		public const string AppVersion = "v0.116 Beta";
 
 		public static string AppHeaderString = $@"{AppTitle} {AppVersion}";
 

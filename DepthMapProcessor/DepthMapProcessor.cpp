@@ -69,7 +69,7 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const DepthMap& d
 	FillColorBuffer(image);
 
 	const Contour& depthObjectContour = GetTargetContourFromDepthMap();
-	const Contour& colorObjectContour = GetTargetContourFromColorFrame();
+	const Contour& colorObjectContour = GetTargetContourFromColorImage();
 
 	_result = CalculateContourDimensionsAlt(depthObjectContour, colorObjectContour);
 
@@ -135,22 +135,10 @@ const Contour DepthMapProcessor::GetTargetContourFromDepthMap() const
 	DmUtils::ConvertDepthMapDataToBinaryMask(_mapLength, _depthMapBuffer, _depthMaskBuffer);
 	cv::Mat imageForContourSearch(_mapHeight, _mapWidth, CV_8UC1, _depthMaskBuffer);
 
-	std::vector<Contour> contours;
-	cv::findContours(imageForContourSearch, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-
-	const std::vector<Contour>& validContours = DmUtils::GetValidContours(contours, 0.0001f, _mapLength);
-
-	if (validContours.size() == 0)
-		return Contour();
-
-	const Contour& contourClosestToCenter = GetContourClosestToCenter(validContours);
-	
-	DmUtils::DrawTargetContour(contourClosestToCenter, _mapWidth, _mapHeight, 0);
-
-	return contourClosestToCenter;
+	return _contourExtractor.ExtractContourFromBinaryImage(imageForContourSearch);
 }
 
-const Contour DepthMapProcessor::GetTargetContourFromColorFrame() const
+const Contour DepthMapProcessor::GetTargetContourFromColorImage() const
 {
 	const int cvChannelsCode = DmUtils::GetCvChannelsCodeFromBytesPerPixel(_colorImageBytesPerPixel);
 	cv::Mat input(_colorImageHeight, _colorImageWidth, cvChannelsCode, _colorImageBuffer);
@@ -159,23 +147,7 @@ const Contour DepthMapProcessor::GetTargetContourFromColorFrame() const
 	cv::Mat inputRoi = input(roi);
 	cv::imwrite("out/inputRoi.png", inputRoi);
 
-	cv::Mat cannied;
-	cv::Canny(inputRoi, cannied, _cannyThreshold1, _cannyThreshold2);
-	cv::imwrite("out/cannied.png", cannied);
-
-	std::vector<Contour> contours;
-	cv::findContours(cannied, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-
-	Contour mergedContour;
-	for (int i = 0; i < contours.size(); i++)
-	{
-		for (int j = 0; j < contours[i].size(); j++)
-			mergedContour.emplace_back(contours[i][j]);
-	}
-
-	DmUtils::DrawTargetContour(mergedContour, _colorImageWidth, _colorImageHeight, 1);
-
-	return mergedContour;
+	return _contourExtractor.ExtractContourFromColorImage(inputRoi);
 }
 
 const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Contour& depthObjectContour) const
@@ -222,37 +194,6 @@ const ObjDimDescription DepthMapProcessor::CalculateContourDimensionsAlt(const C
 	result.Height = _floorDepth - contourTopPlaneDepth;
 
 	return result;
-}
-
-const Contour DepthMapProcessor::GetContourClosestToCenter(const std::vector<Contour>& contours) const
-{
-	if (contours.size() == 0)
-		return Contour();
-
-	if (contours.size() == 1)
-		return contours[0];
-
-	const int centerX = _mapWidth / 2;
-	const int centerY = _mapHeight / 2;
-
-	float resultDistanceToCenter = (float)INT32_MAX;
-	Contour closestToCenterContour;
-
-	for (uint i = 0; i < contours.size(); i++)
-	{
-		const cv::Moments& m = cv::moments(contours[i]);
-		const int cx = (int)(m.m10 / m.m00);
-		const int cy = (int)(m.m01 / m.m00);
-		const float distanceToCenter = DmUtils::GetDistanceBetweenPoints(centerX, centerY, cx, cy);
-
-		if (distanceToCenter >= resultDistanceToCenter)
-			continue;
-		
-		resultDistanceToCenter = distanceToCenter;
-		closestToCenterContour = contours[i];
-	}
-
-	return closestToCenterContour;
 }
 
 const short DepthMapProcessor::GetContourTopPlaneDepth(const Contour& objectContour) const
