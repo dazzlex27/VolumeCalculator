@@ -234,7 +234,7 @@ namespace VolumeCalculatorGUI.GUI
 			CalculateObjectVolumeInternal(true);
 		}
 
-		private void CalculateObjectVolumeInternal(bool useRgbData)
+		private void CalculateObjectVolumeInternal(bool usingRgbData)
 		{
 			try
 			{
@@ -243,19 +243,11 @@ namespace VolumeCalculatorGUI.GUI
 					return;
 
 				CalculationInProgress = true;
+				_logger.LogInfo($"Starting a volume check, using rgb={usingRgbData}...");
 
-				_logger.LogInfo($"Starting a volume check, using rgb={useRgbData}...");
-				if (Directory.Exists(Constants.DebugDataDirectoryName))
-					Directory.Delete(Constants.DebugDataDirectoryName, true);
-				Directory.CreateDirectory(Constants.DebugDataDirectoryName);
+				SaveDebugData();
 
-				ImageUtils.SaveImageDataToFile(_latestColorFrame, Constants.DebugColorFrameFilename);
-
-				var cutOffDepth = (short) (_applicationSettings.FloorDepth - _applicationSettings.MinObjectHeight);
-				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, Constants.DebugDepthFrameFilename,
-					_depthCameraParams.MinDepth, _depthCameraParams.MaxDepth, cutOffDepth);
-
-				_volumeCalculator = new VolumeCalculator(_logger, _processor, useRgbData, _applicationSettings.SampleDepthMapCount);
+				_volumeCalculator = new VolumeCalculator(_logger, _processor, usingRgbData, _applicationSettings.SampleDepthMapCount);
 				_volumeCalculator.CalculationFinished += VolumeCalculator_CalculationFinished;
 				_volumeCalculator.CalculationCancelled += VolumeCalculator_CalculationCancelled;
 			}
@@ -298,6 +290,27 @@ namespace VolumeCalculatorGUI.GUI
 			}
 
 			return true;
+		}
+
+		private void SaveDebugData()
+		{
+			try
+			{
+				Directory.CreateDirectory(Constants.DebugDataDirectoryName);
+				var debugDirectoryInfo = new DirectoryInfo(Constants.DebugDataDirectoryName);
+				foreach (var file in debugDirectoryInfo.EnumerateFiles())
+					file.Delete();
+
+				ImageUtils.SaveImageDataToFile(_latestColorFrame, Constants.DebugColorFrameFilename);
+
+				var cutOffDepth = (short)(_applicationSettings.FloorDepth - _applicationSettings.MinObjectHeight);
+				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, Constants.DebugDepthFrameFilename,
+					_depthCameraParams.MinDepth, _depthCameraParams.MaxDepth, cutOffDepth);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to save debug data", ex);
+			}
 		}
 
 		private void VolumeCalculator_CalculationCancelled()

@@ -14,7 +14,6 @@ private:
 
 	int _colorImageWidth;
 	int _colorImageHeight;
-	int _colorImageLength;
 	int _colorImageBytesPerPixel;
 	int _colorImageLengthBytes;
 	int _mapWidth;
@@ -48,7 +47,9 @@ private:
 	const ObjDimDescription CalculateContourDimensions(const Contour& contour) const;
 	const ObjDimDescription CalculateContourDimensionsAlt(const Contour& objectContour, const Contour& colorObjectContour) const;
 	const Contour GetContourClosestToCenter(const std::vector<Contour>& contours) const;
-	const short GetContourTopPlaneDepth(const Contour& contour, const cv::RotatedRect& rotBoundingRect) const;
+	const short GetContourTopPlaneDepth(const Contour& contour) const;
 	const TwoDimDescription GetTwoDimDescription(const cv::RotatedRect& contourBoundingRect, 
 		const short contourTopPlaneDepth, const float fx, const float fy, const float ppx, const float ppy) const;
+	const std::vector<DepthValue> GetWorldDepthValues(const Contour& objectContour) const;
+	const std::vector<cv::Point> GetCameraPoints(const std::vector<DepthValue>& depthValues, const short targetDepth) const;
 };

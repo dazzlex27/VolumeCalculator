@@ -1,5 +1,4 @@
-﻿using System.Windows.Media;
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
 
 namespace VolumeCalculatorGUI.Utils
@@ -8,7 +7,7 @@ namespace VolumeCalculatorGUI.Utils
 	{
 		public const string AppTitle = "VolumeCalculator";
 
-		public const string AppVersion = "v0.113 Beta";
+		public const string AppVersion = "v0.115 Beta";
 
 		public static string AppHeaderString = $@"{AppTitle} {AppVersion}";
 

@@ -98,3 +98,10 @@ struct DepthMap
 	int Height;
 	short* Data;
 };
+
+struct DepthValue
+{
+	int XWorld;
+	int YWorld;
+	short Value;
+};
