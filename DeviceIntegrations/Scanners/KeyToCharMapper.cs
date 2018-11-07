@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Windows.Input;
 
-namespace VolumeCalculatorGUI.Utils
+namespace DeviceIntegrations.Scanners
 {
 	internal class KeyToCharMapper
 	{

@@ -7,8 +7,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{4EBE3F89-1320-4565-8F28-C9B6AB9C0797}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>VolumeCalculatorTest</RootNamespace>
-    <AssemblyName>VolumeCalculatorTest</AssemblyName>
+    <RootNamespace>VolumeCalculatorTests</RootNamespace>
+    <AssemblyName>VolumeCalculatorTests</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -53,9 +53,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Common\Common.csproj">
+    <ProjectReference Include="..\..\Primitives\Primitives.csproj">
       <Project>{90c0cc4f-e7d1-4a68-801b-fa4bdfc4a55b}</Project>
-      <Name>Common</Name>
+      <Name>Primitives</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\FrameProviders\FrameProviders.csproj">
       <Project>{f9973dc5-0d7c-4805-a622-e99492cd3714}</Project>

@@ -1,9 +1,9 @@
-﻿using Common;
-using FrameProviders;
+﻿using FrameProviders;
 using NUnit.Framework;
+using Primitives;
 using VolumeCalculatorGUI.Logic;
 
-namespace VolumeCalculatorTest
+namespace VolumeCalculatorTests
 {
 	[TestFixture]
 	internal class FloorDepthCalculationTest

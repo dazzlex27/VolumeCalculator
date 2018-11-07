@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
-using Common;
+using DeviceIntegrations.Scales;
 using FrameProviders;
+using Primitives;
 using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Logic;
@@ -30,81 +32,94 @@ namespace VolumeCalculatorGUI.GUI
 		private bool _colorFrameReady;
 		private bool _depthFrameReady;
 
-		private int _measurementCount;
-
-		private string _objCode;
-		private int _objWidth;
-		private int _objHeight;
-		private int _objLength;
-		private long _objVolume;
+		private string _objectCode;
+		private double _objectWeight;
+		private int _objectWidth;
+		private int _objectHeight;
+		private int _objectLength;
+		private long _objectVolume;
 		private bool _calculationInProgress;
 		private bool _useManualCodeInput;
+		private bool _useManualWeightInput;
 
 		public ICommand CalculateVolumeCommand { get; }
 
 		public ICommand CalculateVolumeAltCommand { get; }
 
-		public string ObjCode
+		public string ObjectCode
 		{
-			get => _objCode;
+			get => _objectCode;
 			set
 			{
-				if (_objCode == value)
+				if (_objectCode == value)
 					return;
 
-				_objCode = value;
+				_objectCode = value;
 				OnPropertyChanged();
 			}
 		}
 
-		public int ObjLength
+		public double ObjectWeight
 		{
-			get => _objLength;
+			get => _objectWeight;
 			set
 			{
-				if (_objLength == value)
+				if (Math.Abs(_objectWeight - value) < 0.001)
 					return;
+				_objectWeight = value;
 
-				_objLength = value;
 				OnPropertyChanged();
 			}
 		}
 
-		public int ObjWidth
+		public int ObjectLength
 		{
-			get => _objWidth;
+			get => _objectLength;
 			set
 			{
-				if (_objWidth == value)
+				if (_objectLength == value)
 					return;
 
-				_objWidth = value;
+				_objectLength = value;
 				OnPropertyChanged();
 			}
 		}
 
-		public int ObjHeight
+		public int ObjectWidth
 		{
-			get => _objHeight;
+			get => _objectWidth;
 			set
 			{
-				if (_objHeight == value)
+				if (_objectWidth == value)
 					return;
 
-				_objHeight = value;
+				_objectWidth = value;
 				OnPropertyChanged();
 			}
 		}
 
-		public long ObjVolume
+		public int ObjectHeight
 		{
-			get => _objVolume;
+			get => _objectHeight;
 			set
 			{
-				if (_objVolume == value)
+				if (_objectHeight == value)
 					return;
 
-				_objVolume = value;
+				_objectHeight = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public long ObjectVolume
+		{
+			get => _objectVolume;
+			set
+			{
+				if (_objectVolume == value)
+					return;
+
+				_objectVolume = value;
 				OnPropertyChanged();
 			}
 		}
@@ -131,6 +146,19 @@ namespace VolumeCalculatorGUI.GUI
 					return;
 
 				_useManualCodeInput = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public bool UseManualWeightInput
+		{
+			get => _useManualWeightInput;
+			set
+			{
+				if (_useManualWeightInput == value)
+					return;
+
+				_useManualWeightInput = value;
 				OnPropertyChanged();
 			}
 		}
@@ -180,7 +208,15 @@ namespace VolumeCalculatorGUI.GUI
 			if (UseManualCodeInput)
 				return;
 
-			ObjCode = text;
+			Dispatcher.Invoke(() => { ObjectCode = text; });
+		}
+
+		public void UpdateScalesMeasurementData(ScaleMeasurementData data)
+		{
+			if (UseManualWeightInput)
+				return;
+
+			Dispatcher.Invoke(() => { ObjectWeight = data.WeightKg; });
 		}
 
 		public void ColorFrameArrived(ImageData image)
@@ -272,7 +308,7 @@ namespace VolumeCalculatorGUI.GUI
 				return false;
 			}
 
-			if (string.IsNullOrEmpty(ObjCode))
+			if (string.IsNullOrEmpty(ObjectCode))
 			{
 				MessageBox.Show("Введите код объекта", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 
@@ -357,32 +393,35 @@ namespace VolumeCalculatorGUI.GUI
 
 			try
 			{
-				var safeName = ObjCode;
+				var safeName = ObjectCode;
 				if (!string.IsNullOrEmpty(safeName))
 				{
-					var nameWithoutReturns = ObjCode.Replace(Environment.NewLine, " ");
+					var nameWithoutReturns = ObjectCode.Replace(Environment.NewLine, " ");
 					safeName = nameWithoutReturns.Replace(Constants.CsvSeparator, " ");
 				}
+
+				var safeWeight = ObjectWeight.ToString(CultureInfo.InvariantCulture);
 
 				Directory.CreateDirectory(_applicationSettings.OutputPath);
 				using (var resultFile = new StreamWriter(_resultFullPath, true, Encoding.Default))
 				{
 					var dateTime = DateTime.Now;
 					var resultString = new StringBuilder();
-					resultString.Append(++_measurementCount);
-					resultString.Append($@"{Constants.CsvSeparator}{safeName}");
+					resultString.Append(IoUtils.GetNextUniversalObjectCounter());
 					resultString.Append($@"{Constants.CsvSeparator}{dateTime.ToShortDateString()}");
 					resultString.Append($@"{Constants.CsvSeparator}{dateTime.ToShortTimeString()}");
-					resultString.Append($@"{Constants.CsvSeparator}{ObjLength}");
-					resultString.Append($@"{Constants.CsvSeparator}{ObjWidth}");
-					resultString.Append($@"{Constants.CsvSeparator}{ObjHeight}");
-					resultString.Append($@"{Constants.CsvSeparator}{ObjVolume}");
+					resultString.Append($@"{Constants.CsvSeparator}{safeName}");
+					resultString.Append($@"{Constants.CsvSeparator}{safeWeight}");
+					resultString.Append($@"{Constants.CsvSeparator}{ObjectLength}");
+					resultString.Append($@"{Constants.CsvSeparator}{ObjectWidth}");
+					resultString.Append($@"{Constants.CsvSeparator}{ObjectHeight}");
+					resultString.Append($@"{Constants.CsvSeparator}{ObjectVolume}");
 					resultFile.WriteLine(resultString);
 					resultFile.Flush();
 					_logger.LogInfo("Wrote the calculated values to csv");
 				}
 
-				ObjCode = string.Empty;
+				ObjectCode = string.Empty;
 			}
 			catch (IOException ex)
 			{
@@ -397,10 +436,10 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void UpdateVolumeData(ObjectVolumeData volumeData)
 		{
-			ObjLength = volumeData.Length;
-			ObjWidth = volumeData.Width;
-			ObjHeight = volumeData.Height;
-			ObjVolume = ObjLength * ObjWidth * ObjHeight;
+			ObjectLength = volumeData.Length;
+			ObjectWidth = volumeData.Width;
+			ObjectHeight = volumeData.Height;
+			ObjectVolume = ObjectLength * ObjectWidth * ObjectHeight;
 		}
 
 		private void DisposeVolumeCalculator()
@@ -417,13 +456,14 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				var resultString = new StringBuilder();
 				resultString.Append("#");
-				resultString.Append($@"{Constants.CsvSeparator}name");
 				resultString.Append($@"{Constants.CsvSeparator}date local");
 				resultString.Append($@"{Constants.CsvSeparator}time local");
-				resultString.Append($@"{Constants.CsvSeparator}length, mm");
-				resultString.Append($@"{Constants.CsvSeparator}width, mm");
-				resultString.Append($@"{Constants.CsvSeparator}height, mm");
-				resultString.Append($@"{Constants.CsvSeparator}volume, mm^2");
+				resultString.Append($@"{Constants.CsvSeparator}code");
+				resultString.Append($@"{Constants.CsvSeparator}weight (kg)");
+				resultString.Append($@"{Constants.CsvSeparator}length (mm)");
+				resultString.Append($@"{Constants.CsvSeparator}width (mm)");
+				resultString.Append($@"{Constants.CsvSeparator}height (mm)");
+				resultString.Append($@"{Constants.CsvSeparator}volume (mm^2)");
 				resultFile.WriteLine(resultString);
 				resultFile.Flush();
 				_logger.LogInfo($@"Created the csv at {_resultFullPath} and wrote the headers to it");

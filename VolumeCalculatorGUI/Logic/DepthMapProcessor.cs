@@ -1,10 +1,10 @@
 ﻿using System;
-using Common;
 using FrameProviders;
+using Primitives;
 using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.Entities.Native;
 using VolumeCalculatorGUI.Utils;
-using DepthMap = Common.DepthMap;
+using DepthMap = Primitives.DepthMap;
 
 namespace VolumeCalculatorGUI.Logic
 {

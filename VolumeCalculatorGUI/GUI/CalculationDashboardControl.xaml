@@ -15,48 +15,105 @@
 		<Grid.RowDefinitions>
 			<RowDefinition/>
 			<RowDefinition/>
-			<RowDefinition/>
 		</Grid.RowDefinitions>
 		<StackPanel Margin="3" Background="{StaticResource BackgroundKey}">
-			<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Код объекта"/>
 			<Grid Margin="2,2,2,0">
 				<Grid.ColumnDefinitions>
+					<ColumnDefinition MinWidth="100" Width="Auto"/>
 					<ColumnDefinition Width="*"/>
 					<ColumnDefinition/>
 				</Grid.ColumnDefinitions>
+				<TextBlock Style="{StaticResource TextBlockStyle}"
+				           HorizontalAlignment="Center"
+				           VerticalAlignment="Center"
+				            Margin="2,0" Text="Код"/>
 				<TextBox Style="{StaticResource TextBoxStyle}" 
+				         Grid.Column="1"
 						 IsEnabled="{Binding UseManualCodeInput}"
-						Margin="2" 
-						Text="{Binding Path=ObjCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+						 Margin="2" 
+						 Text="{Binding Path=ObjectCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 				<CheckBox Style="{StaticResource CheckBoxStyle}" 
-						  Grid.Column="1"
-				          Content="Ввести вручную" 
+						  Grid.Column="2"
+				          Content="Вручную" 
 				          IsChecked="{Binding UseManualCodeInput, Mode=TwoWay}"/>
 			</Grid>
+			<Grid Margin="2,2,2,0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition MinWidth="100" Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+				<TextBlock HorizontalAlignment="Center"
+				           VerticalAlignment="Center"
+				           Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Вес"/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" 
+				           Grid.Column="1"
+				           Margin="2" 
+				           Text="{Binding Path=ObjectWeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+				<TextBlock Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="кг"/>
+			</Grid>
+			<Grid Margin="2,2,2,0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition MinWidth="100" Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+				<TextBlock HorizontalAlignment="Center"
+				           VerticalAlignment="Center"
+				           Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Длина"/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" 
+				         Grid.Column="1"
+				         Margin="2" 
+				         Text="{Binding Path=ObjectLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+				<TextBlock Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="мм"/>
+			</Grid>
+			<Grid Margin="2,2,2,0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition MinWidth="100" Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+				<TextBlock HorizontalAlignment="Center"
+				           VerticalAlignment="Center"
+				           Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Ширина"/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" 
+				           Grid.Column="1"
+				           Margin="2" 
+				           Text="{Binding Path=ObjectWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+				<TextBlock Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="мм"/>
+			</Grid>
+			<Grid Margin="2,2,2,0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition MinWidth="100" Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+				<TextBlock HorizontalAlignment="Center"
+				           VerticalAlignment="Center"
+				           Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Высота"/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" 
+				           Grid.Column="1"
+				           Margin="2" 
+				           Text="{Binding Path=ObjectHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+				<TextBlock Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="мм"/>
+			</Grid>
+			<Grid Margin="2,2,2,0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition MinWidth="100" Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+				<TextBlock HorizontalAlignment="Center"
+				           VerticalAlignment="Center"
+				           Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Объем"/>
+				<TextBlock Style="{StaticResource TextBlockStyle}" 
+				           Grid.Column="1"
+				           Margin="2" 
+				           Text="{Binding Path=ObjectVolume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+				<TextBlock Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="мм²"/>
+			</Grid>
 		</StackPanel>
-		<StackPanel Grid.Row="1" Grid.Column="0" Name="SpCounters" Margin="5">
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Style="{StaticResource TextBlockStyle}" Text="Длина: "/>
-				<TextBlock Style="{StaticResource TextBlockStyle}" Text="{Binding Path=ObjLength}"/>
-				<TextBlock Style="{StaticResource TextBlockStyle}" Text="  мм"/>
-			</StackPanel>
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Style="{StaticResource TextBlockStyle}" Text="Ширина = "/>
-				<TextBlock Style="{StaticResource TextBlockStyle}" Text="{Binding Path=ObjWidth}"/>
-				<TextBlock Style="{StaticResource TextBlockStyle}" Text="  мм"/>
-			</StackPanel>
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Style="{StaticResource TextBlockStyle}" Text="Высота: "/>
-				<TextBlock Style="{StaticResource TextBlockStyle}" Text="{Binding Path=ObjHeight}"/>
-				<TextBlock Style="{StaticResource TextBlockStyle}" Text="  мм"/>
-			</StackPanel>
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Style="{StaticResource TextBlockStyle}" Text="Объем: "/>
-				<TextBlock Style="{StaticResource TextBlockStyle}" Text="{Binding Path=ObjVolume}"/>
-				<TextBlock Style="{StaticResource TextBlockStyle}" Text="  мм²"/>
-			</StackPanel>
-		</StackPanel>
-		<Grid Grid.Row="2" Grid.Column="0" Margin="2">
+		<Grid Grid.Row="1" Grid.Column="0" Margin="2">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition/>
 				<ColumnDefinition/>
@@ -72,6 +129,5 @@
 			        Content="Измерить по видео и глубине" 
 			        Command="{Binding CalculateVolumeAltCommand}"/>
 		</Grid>
-
 	</Grid>
 </UserControl>

@@ -1,4 +1,4 @@
-﻿namespace Common
+﻿namespace Primitives
 {
 	public class ImageData
 	{

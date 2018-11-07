@@ -7,7 +7,7 @@
     <ProjectGuid>{08B98C3A-C054-464C-9594-F4EB7F7B2333}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>VolumeCalculatorGUI</RootNamespace>
-    <AssemblyName>VolumeCalculatorGUI</AssemblyName>
+    <AssemblyName>VolumeCalculator</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -39,7 +39,7 @@
     <NoWarn>CS0067</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>3d-icon-9795-Windows.ico</ApplicationIcon>
+    <ApplicationIcon>ISlogo.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <NoWin32Manifest>true</NoWin32Manifest>
@@ -52,7 +52,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Management" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
@@ -71,7 +70,6 @@
     <Compile Include="Entities\Native\ColorImage.cs" />
     <Compile Include="Entities\Native\DepthCameraIntrinsics.cs" />
     <Compile Include="Entities\Native\DepthMap.cs" />
-    <Compile Include="Entities\IoDevices\IInputListener.cs" />
     <Compile Include="Entities\Native\RelRect.cs" />
     <Compile Include="Entities\TestCaseBasicInfo.cs" />
     <Compile Include="Entities\TestCaseData.cs" />
@@ -112,11 +110,8 @@
     </Compile>
     <Compile Include="Entities\Native\ObjDimDescription.cs" />
     <Compile Include="Entities\ObjectVolumeData.cs" />
-    <Compile Include="Entities\IoDevices\KeyboardListener.cs" />
-    <Compile Include="Utils\KeyToCharMapper.cs" />
     <Compile Include="Utils\Logger.cs" />
     <Compile Include="Entities\WorkingAreaMask.cs" />
-    <Compile Include="Entities\IoDevices\SerialPortListener.cs" />
     <Compile Include="Utils\TypeConverter.cs" />
     <Page Include="GUI\CalculationDashboardControl.xaml">
       <SubType>Designer</SubType>
@@ -195,12 +190,14 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="3d-icon-9795-Windows.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj">
+    <ProjectReference Include="..\Primitives\Primitives.csproj">
       <Project>{90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B}</Project>
-      <Name>Common</Name>
+      <Name>Primitives</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\DeviceIntegrations\DeviceIntegrations.csproj">
+      <Project>{508afe7e-b27b-4245-8fe3-a04944678115}</Project>
+      <Name>DeviceIntegrations</Name>
       <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\FrameProviders\FrameProviders.csproj">
@@ -208,6 +205,9 @@
       <Name>FrameProviders</Name>
       <Private>False</Private>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="ISlogo.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

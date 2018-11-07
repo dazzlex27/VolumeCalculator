@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Text;
 using System.Timers;
-using System.Windows;
 using System.Windows.Input;
-using Common;
-using VolumeCalculatorGUI.Utils;
+using Primitives;
 
-namespace VolumeCalculatorGUI.Entities.IoDevices
+namespace DeviceIntegrations.Scanners
 {
-	internal class KeyboardListener : IInputListener
+	public class GenericKeyboardBarcodeScanner : IBarcodeScanner
 	{
 		private const int TimerIntervalMs = 200;
 		private const int TimeOutTimerIntervalMs = 300;
 
 		public event Action<string> CharSequenceFormed;
+
+		private readonly ILogger _logger;
 
 		private readonly KeyToCharMapper _keyToCharMapper;
 
@@ -24,9 +24,11 @@ namespace VolumeCalculatorGUI.Entities.IoDevices
 
 		private StringBuilder _keyCollectionBuilder;
 
-		public KeyboardListener(ILogger logger)
+		public GenericKeyboardBarcodeScanner(ILogger logger)
 		{
-			logger.LogInfo("Creating a keyboard listener...");
+			_logger = logger;
+
+			_logger.LogInfo("Starting a generic keyboard scanner...");
 
 			_keyToCharMapper = new KeyToCharMapper();
 
@@ -37,16 +39,14 @@ namespace VolumeCalculatorGUI.Entities.IoDevices
 			_timeOutTimer.Elapsed += TimeOutTimer_Elapsed;
 
 			_onTimeOut = false;
-
-			EventManager.RegisterClassHandler(typeof(Window),
-				Keyboard.KeyUpEvent, new KeyEventHandler(AddKey), true);
 		}
 
 		public void Dispose()
 		{
+			_logger.LogInfo("Disposing a generic keyboard scanner...");
 		}
 
-		private void AddKey(object sender, KeyEventArgs e)
+		public void AddKey(object sender, KeyEventArgs e)
 		{
 			if (_onTimeOut)
 				return;

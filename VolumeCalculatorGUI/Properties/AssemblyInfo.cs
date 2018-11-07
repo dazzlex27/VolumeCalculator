@@ -12,7 +12,7 @@ using VolumeCalculatorGUI.Utils;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct(Constants.AppTitle)]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyCopyright("IS ©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -53,5 +53,5 @@ using VolumeCalculatorGUI.Utils;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: InternalsVisibleTo("VolumeCalculatorTest")]
+[assembly: InternalsVisibleTo("VolumeCalculatorTests")]
 [assembly: InternalsVisibleTo("VolumeCalculationRunner")]

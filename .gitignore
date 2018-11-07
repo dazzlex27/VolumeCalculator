@@ -1,13 +1,14 @@
 /!!bin
 /ext
 /.vs
-/Common/obj
-/DepthMapProcessor/obj
+/Primitives/obj
+/libDepthMapProcessor/obj
 Tests/DepthMapProcessorTests/obj
 Tests/DepthMapProcessorTests/samples
 Tests/VolumeCalculatorTests/obj
 Tests/VolumeCalculationRunner/obj
 /VolumeCalculatorGUI/obj
+/DeviceIntegrations/obj
 /FrameProviders/obj
 /D435FrameProvider/obj
 /D435FrameProvider/D435FrameProvider.vcxproj.user

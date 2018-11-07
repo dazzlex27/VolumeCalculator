@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Common;
+using Primitives;
 using Point = System.Windows.Point;
 
 namespace VolumeCalculatorGUI.Utils

@@ -1,5 +1,5 @@
-﻿using Common;
-using FrameProviders;
+﻿using FrameProviders;
+using Primitives;
 
 namespace VolumeCalculatorGUI.Entities
 {

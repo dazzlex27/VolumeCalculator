@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
-using Common;
+using Primitives;
 using VolumeCalculatorGUI.Entities;
 
 namespace VolumeCalculatorGUI.Logic

@@ -1,13 +1,14 @@
-﻿using Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using DeviceIntegrations.Scales;
+using DeviceIntegrations.Scanners;
 using FrameProviders;
+using Primitives;
 using VolumeCalculatorGUI.Entities;
-using VolumeCalculatorGUI.Entities.IoDevices;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
 
@@ -25,7 +26,8 @@ namespace VolumeCalculatorGUI.GUI
 		private CalculationDashboardControlVm _calculationDashboardControlVm;
 		private TestDataGenerationControlVm _testDataGenerationControlVm;
 
-		private List<IInputListener> _inputListeners;
+		private List<IBarcodeScanner> _barcodeScanners;
+		private IScales _scales;
 
 		public string WindowTitle => Constants.AppHeaderString;
 
@@ -106,7 +108,7 @@ namespace VolumeCalculatorGUI.GUI
 				_logger = new Logger();
 				_logger.LogInfo("Starting up...");
 				_logger.LogInfo($"App: {Constants.AppHeaderString}");
-				AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+				AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
 				InitializeSettings();
 				InitializeSubViewModels();
@@ -123,11 +125,6 @@ namespace VolumeCalculatorGUI.GUI
 					MessageBoxButton.OK, MessageBoxImage.Error);
 				Process.GetCurrentProcess().Kill();
 			}
-		}
-
-		private void ScannerListener_CharSequenceFormed(string charSequence)
-		{
-			_calculationDashboardControlVm?.UpdateCodeText(charSequence);
 		}
 
 		public void ExitApplication()
@@ -184,6 +181,19 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
+		private void InitializeSettings()
+		{
+			_logger.LogInfo("Trying to read settings from file...");
+			var settingsFromFile = IoUtils.DeserializeSettings();
+			if (settingsFromFile == null)
+			{
+				_logger.LogInfo("Failed to read settings from file, will use default settings");
+				Settings = ApplicationSettings.GetDefaultSettings();
+			}
+			else
+				Settings = settingsFromFile;
+		}
+
 		private void InitializeSubViewModels()
 		{
 			_logger.LogInfo("Initializing sub view models...");
@@ -206,19 +216,28 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
-				_inputListeners = new List<IInputListener>();
+				_barcodeScanners = new List<IBarcodeScanner>();
 
-				var keyboardListener = new KeyboardListener(_logger);
-				keyboardListener.CharSequenceFormed += ScannerListener_CharSequenceFormed;
-				_inputListeners.Add(keyboardListener);
+				var keyboardListener = new GenericKeyboardBarcodeScanner(_logger);
+				keyboardListener.CharSequenceFormed += OnScannerDataReceived;
+				_barcodeScanners.Add(keyboardListener);
+				var keyEventHandler = new KeyEventHandler(keyboardListener.AddKey);
+				EventManager.RegisterClassHandler(typeof(Window), Keyboard.KeyUpEvent, keyEventHandler, true);
 
 				var scannerComPort = IoUtils.ReadScannerPort();
-				if (scannerComPort == string.Empty)
-					return;
+				if (scannerComPort != string.Empty)
+				{
+					var serialListener = new GenericSerialPortBarcodeScanner(_logger, scannerComPort);
+					serialListener.CharSequenceFormed += OnScannerDataReceived;
+					_barcodeScanners.Add(serialListener);
+				}
 
-				var serialListener = new SerialPortListener(_logger, scannerComPort);
-				serialListener.CharSequenceFormed += ScannerListener_CharSequenceFormed;
-				_inputListeners.Add(serialListener);
+				var scalesComPort = IoUtils.ReadScalesPort();
+				if (scalesComPort != string.Empty)
+				{
+					_scales = new MassaKScales(_logger, scalesComPort, Constants.ScalesPollingRateMs);
+					_scales.MeasurementReady += OnScalesMeasurementDataReceived;
+				}
 			}
 			catch (Exception ex)
 			{
@@ -243,17 +262,33 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			_logger.LogInfo("Disposing io devices...");
 
-			foreach (var listener in _inputListeners.Where(l => l != null))
+			foreach (var listener in _barcodeScanners.Where(l => l != null))
 			{
-				listener.CharSequenceFormed -= ScannerListener_CharSequenceFormed;
+				listener.CharSequenceFormed -= OnScannerDataReceived;
 				listener.Dispose();
+			}
+
+			if (_scales != null)
+			{
+				_scales.MeasurementReady -= OnScalesMeasurementDataReceived;
+				_scales.Dispose();
 			}
 		}
 
-		private void OnDeviceParametersChanged(ColorCameraParams arg1, DepthCameraParams arg2)
+		private void OnScannerDataReceived(string data)
 		{
-			_calculationDashboardControlVm.DeviceParamsUpdated(arg1, arg2);
-			_testDataGenerationControlVm.DeviceParamsUpdated(arg1, arg2);
+			_calculationDashboardControlVm?.UpdateCodeText(data);
+		}
+
+		private void OnScalesMeasurementDataReceived(ScaleMeasurementData data)
+		{
+			_calculationDashboardControlVm?.UpdateScalesMeasurementData(data);
+		}
+
+		private void OnDeviceParametersChanged(ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
+		{
+			_calculationDashboardControlVm.DeviceParamsUpdated(colorCameraParams, depthCameraParams);
+			_testDataGenerationControlVm.DeviceParamsUpdated(colorCameraParams, depthCameraParams);
 		}
 
 		private void OnApplicationSettingsChanged(ApplicationSettings settings)
@@ -275,20 +310,7 @@ namespace VolumeCalculatorGUI.GUI
 			_testDataGenerationControlVm.DepthFrameUpdated(depthMap);
 		}
 
-		private void InitializeSettings()
-		{
-			_logger.LogInfo("Trying to read settings from file...");
-			var settingsFromFile = IoUtils.DeserializeSettings();
-			if (settingsFromFile == null)
-			{
-				_logger.LogInfo("Failed to read settings from file, will use default settings");
-				Settings = ApplicationSettings.GetDefaultSettings();
-			}
-			else
-				Settings = settingsFromFile;
-		}
-
-		private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+		private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
 		{
 			_logger.LogException("Unhandled exception in application domain occured, app terminates...",
 				(Exception)e.ExceptionObject);

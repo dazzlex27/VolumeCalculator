@@ -1,12 +1,12 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Common
+namespace Primitives
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public unsafe struct DepthFrame
+	public unsafe struct ColorFrame
 	{
 		public int Width;
 		public int Height;
-		public short* Data;
+		public byte* Data;
 	}
 }

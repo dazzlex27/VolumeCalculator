@@ -33,5 +33,30 @@ namespace VolumeCalculatorGUI.Utils
 			var fileLines = File.ReadAllLines(Constants.PortsFileName);
 			return fileLines.Length == 0 ? string.Empty : fileLines[0];
 		}
+
+		public static string ReadScalesPort()
+		{
+			if (!File.Exists(Constants.PortsFileName))
+				return string.Empty;
+
+			var fileLines = File.ReadAllLines(Constants.PortsFileName);
+			return fileLines.Length < 2 ? string.Empty : fileLines[1];
+		}
+
+		public static int GetNextUniversalObjectCounter()
+		{
+			if (!File.Exists(Constants.CountersFileName))
+			{
+				File.WriteAllText(Constants.CountersFileName, 0.ToString());
+				return 0;
+			}
+
+			var fileContents = File.ReadAllText(Constants.CountersFileName);
+			var previousCounter = int.Parse(fileContents);
+			var nextCounter = previousCounter + 1;
+			File.WriteAllText(Constants.CountersFileName, nextCounter.ToString());
+
+			return nextCounter;
+		}
 	}
 }

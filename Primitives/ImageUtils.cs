@@ -2,7 +2,7 @@
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
-namespace Common
+namespace Primitives
 {
 	public static class ImageUtils
 	{

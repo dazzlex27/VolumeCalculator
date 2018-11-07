@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
-using Common;
 using Microsoft.Kinect;
+using Primitives;
 
 namespace FrameProviders.KinectV2
 {

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using System.Windows;
+using VolumeCalculatorGUI.Utils;
 
 namespace VolumeCalculatorGUI.Entities
 {
@@ -8,28 +9,28 @@ namespace VolumeCalculatorGUI.Entities
 	internal class ApplicationSettings
     {
 	    [Obfuscation]
-		public short FloorDepth { get; }
+		public short FloorDepth { get; set; }
 
 	    [Obfuscation]
-		public short MinObjectHeight { get; }
+		public short MinObjectHeight { get; set; }
 
 	    [Obfuscation]
-		public byte SampleDepthMapCount { get; }
+		public byte SampleDepthMapCount { get; set; }
 
 	    [Obfuscation]
-		public string OutputPath { get; }
+		public string OutputPath { get; set; }
 
 	    [Obfuscation]
-	    public bool UseColorMask { get; }
+	    public bool UseColorMask { get; set; }
 
 	    [Obfuscation]
-	    public List<Point> ColorMaskContour { get; }
+	    public List<Point> ColorMaskContour { get; set; }
 
 		[Obfuscation]
-		public bool UseDepthMask { get; }
+		public bool UseDepthMask { get; set; }
 
 	    [Obfuscation]
-		public List<Point> DepthMaskContour { get; }
+		public List<Point> DepthMaskContour { get; set; }
 
 	    public ApplicationSettings(short floorDepth, short minObjectHeight, byte sampleCount, string outputPath, 
 		    bool useColorMask, IReadOnlyCollection<Point> colorMaskContour, 
@@ -46,11 +47,11 @@ namespace VolumeCalculatorGUI.Entities
 		}
 
 	    [Obfuscation(Exclude = true)]
-		public static ApplicationSettings GetDefaultSettings()
-		{
-			return new ApplicationSettings(1000, 5, 10, "C:/VolumeCalculator/", false, GetDefaultAreaContour(), 
-				false, GetDefaultAreaContour());
-		}
+	    public static ApplicationSettings GetDefaultSettings()
+	    {
+		    return new ApplicationSettings(1000, 5, 10, Constants.ResultolderName, false, GetDefaultAreaContour(), false,
+			    GetDefaultAreaContour());
+	    }
 
 	    public override string ToString()
 	    {

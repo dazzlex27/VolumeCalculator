@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO.Ports;
-using Common;
+using Primitives;
 
-namespace VolumeCalculatorGUI.Entities.IoDevices
+namespace DeviceIntegrations.Scanners
 {
-	internal class SerialPortListener : IInputListener
+	public class GenericSerialPortBarcodeScanner : IBarcodeScanner
 	{
 		public event Action<string> CharSequenceFormed;
 
@@ -12,12 +12,12 @@ namespace VolumeCalculatorGUI.Entities.IoDevices
 		private readonly SerialPort _serialPort;
 		private readonly string _port;
 
-		public SerialPortListener(ILogger logger, string port)
+		public GenericSerialPortBarcodeScanner(ILogger logger, string port)
 		{
 			_logger = logger;
 			_port = port;
 
-			_logger.LogInfo($"Starting serial port listener on port {_port}");
+			_logger.LogInfo($"Starting a generic serial port scanner on port {_port}...");
 
 			_serialPort = new SerialPort(port)
 			{
@@ -35,7 +35,7 @@ namespace VolumeCalculatorGUI.Entities.IoDevices
 
 		public void Dispose()
 		{
-			_logger.LogInfo($"Closing serial listener on port {_port}");
+			_logger.LogInfo($"Disposing a generic serial port scanner on port {_port}...");
 			_serialPort.Close();
 			_serialPort.Dispose();
 		}
