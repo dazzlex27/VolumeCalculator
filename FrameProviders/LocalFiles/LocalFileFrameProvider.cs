@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Primitives;
+using Primitives.Logging;
 
 namespace FrameProviders.LocalFiles
 {

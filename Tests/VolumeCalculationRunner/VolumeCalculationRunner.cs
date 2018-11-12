@@ -7,6 +7,7 @@ using System.Text;
 using FrameProcessor;
 using FrameProviders;
 using Primitives;
+using Primitives.Logging;
 
 namespace VolumeCalculationRunner
 {

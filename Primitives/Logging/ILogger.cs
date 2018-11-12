@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Primitives
+namespace Primitives.Logging
 {
 	public interface ILogger
 	{

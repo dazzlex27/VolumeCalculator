@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
 using Primitives;
+using Primitives.Logging;
 
 namespace FrameProcessor
 {

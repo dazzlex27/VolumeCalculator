@@ -2,6 +2,7 @@
 using FrameProcessor.Native;
 using FrameProviders;
 using Primitives;
+using Primitives.Logging;
 using DepthMap = Primitives.DepthMap;
 
 namespace FrameProcessor

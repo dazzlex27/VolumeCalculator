@@ -6,7 +6,7 @@ using System.Windows.Media.Imaging;
 using FrameProcessor;
 using FrameProviders;
 using Primitives;
-using VolumeCalculatorGUI.Entities;
+using Primitives.Logging;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
 

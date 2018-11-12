@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Primitives;
+using Primitives.Logging;
 
 namespace FrameProviders.D435
 {

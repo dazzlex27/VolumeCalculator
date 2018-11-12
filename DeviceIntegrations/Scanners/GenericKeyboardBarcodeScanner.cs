@@ -2,7 +2,7 @@
 using System.Text;
 using System.Timers;
 using System.Windows.Input;
-using Primitives;
+using Primitives.Logging;
 
 namespace DeviceIntegrations.Scanners
 {

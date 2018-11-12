@@ -50,11 +50,12 @@
     <Compile Include="DepthFrame.cs" />
     <Compile Include="DepthMap.cs" />
     <Compile Include="DepthMapUtils.cs" />
-    <Compile Include="DummyLogger.cs" />
-    <Compile Include="ILogger.cs" />
+    <Compile Include="Logging\DummyLogger.cs" />
+    <Compile Include="Logging\ILogger.cs" />
     <Compile Include="ImageData.cs" />
     <Compile Include="ImageUtils.cs" />
     <Compile Include="IoUtils.cs" />
+    <Compile Include="Logging\Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

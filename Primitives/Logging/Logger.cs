@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using Primitives;
 
-namespace VolumeCalculatorGUI.Utils
+namespace Primitives.Logging
 {
-    internal class Logger : ILogger
+    public class Logger : ILogger
     {
         private readonly string _filepath;
 

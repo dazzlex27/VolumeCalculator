@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO.Ports;
-using Primitives;
+using Primitives.Logging;
 
 namespace DeviceIntegrations.Scanners
 {

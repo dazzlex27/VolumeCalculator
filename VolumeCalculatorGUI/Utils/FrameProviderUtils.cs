@@ -3,7 +3,7 @@ using FrameProviders;
 using FrameProviders.D435;
 using FrameProviders.KinectV2;
 using FrameProviders.LocalFiles;
-using Primitives;
+using Primitives.Logging;
 
 namespace VolumeCalculatorGUI.Utils
 {

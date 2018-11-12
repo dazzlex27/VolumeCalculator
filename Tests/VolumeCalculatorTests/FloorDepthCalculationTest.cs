@@ -2,6 +2,7 @@
 using FrameProviders;
 using NUnit.Framework;
 using Primitives;
+using Primitives.Logging;
 
 namespace VolumeCalculatorTests
 {

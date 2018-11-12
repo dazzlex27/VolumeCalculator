@@ -4,7 +4,7 @@ using System.IO;
 using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
-using Primitives;
+using Primitives.Logging;
 
 namespace DeviceIntegrations.Scales
 {

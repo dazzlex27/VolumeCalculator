@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Microsoft.Kinect;
 using Primitives;
+using Primitives.Logging;
 
 namespace FrameProviders.KinectV2
 {

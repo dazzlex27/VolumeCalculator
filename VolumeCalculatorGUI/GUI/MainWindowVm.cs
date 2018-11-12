@@ -8,7 +8,7 @@ using DeviceIntegrations.Scales;
 using DeviceIntegrations.Scanners;
 using FrameProviders;
 using Primitives;
-using VolumeCalculatorGUI.Entities;
+using Primitives.Logging;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
 
