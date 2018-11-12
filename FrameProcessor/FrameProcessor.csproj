@@ -40,7 +40,7 @@
   <ItemGroup>
     <Compile Include="Native\ColorCameraIntrinsics.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="DepthCameraIntrinsics.cs" />
+    <Compile Include="Native\DepthCameraIntrinsics.cs" />
     <Compile Include="DepthMapProcessor.cs" />
     <Compile Include="Native\ColorImage.cs" />
     <Compile Include="Native\DepthMap.cs" />

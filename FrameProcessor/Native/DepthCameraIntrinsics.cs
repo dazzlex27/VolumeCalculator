@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace FrameProcessor
+namespace FrameProcessor.Native
 {
 	[StructLayout(LayoutKind.Sequential)]
 	public struct DepthCameraIntrinsics
