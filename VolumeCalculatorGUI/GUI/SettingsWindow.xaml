@@ -99,10 +99,17 @@
 				         PreviewTextInput="CheckNumericTextPreview" />
 			</StackPanel>
 			<StackPanel Margin="3">
-				<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Путь для сохранения результатов" />
+				<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Путь для сохранения результатов (будут записаны в 'results.csv)" />
 				<TextBox Style="{StaticResource TextBoxStyle}" Margin="2,2,2,0" Name="TbOutputPath"
 				         Text="{Binding Path=OutputPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-				<TextBlock Text="Результаты будут записаны в 'results.csv'" HorizontalAlignment="Center" FontSize="10" />
+			</StackPanel>
+			<StackPanel Margin="3">
+				<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Значение таймера до начала измерения, мс" />
+				<TextBox Style="{StaticResource TextBoxStyle}" Margin="2,2,2,0" 
+				         Text="{Binding Path=TimeToStartMeasurementMs, Mode=TwoWay}"/>
+			</StackPanel>
+			<StackPanel Margin="3">
+				<CheckBox Content="Использовать алгоритм RGB по умолчанию" IsChecked="{Binding UseRgbAlgorithmByDefault, Mode=TwoWay}"/>
 			</StackPanel>
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 				<Button Margin="5" MinWidth="100" Content="OK" Click="BtOk_Click" IsDefault="True" />

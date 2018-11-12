@@ -1,8 +1,7 @@
-﻿using FrameProviders;
-using VolumeCalculatorGUI.Entities;
-using VolumeCalculatorGUI.Entities.Native;
+﻿using FrameProcessor.Native;
+using FrameProviders;
 
-namespace VolumeCalculatorGUI.Utils
+namespace FrameProcessor
 {
 	internal static class TypeConverter
 	{

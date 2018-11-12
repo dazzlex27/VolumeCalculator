@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using System.Windows;
-using VolumeCalculatorGUI.Utils;
 
-namespace VolumeCalculatorGUI.Entities
+namespace Primitives
 {
 	[Obfuscation(ApplyToMembers = false)]
-	internal class ApplicationSettings
+	public class ApplicationSettings
     {
 	    [Obfuscation]
 		public short FloorDepth { get; set; }
@@ -32,9 +31,16 @@ namespace VolumeCalculatorGUI.Entities
 	    [Obfuscation]
 		public List<Point> DepthMaskContour { get; set; }
 
+		[Obfuscation]
+		public long TimeToStartMeasurementMs { get; set; }
+
+		[Obfuscation]
+		public bool UseRgbAlgorithmByDefault { get; set; }
+
 	    public ApplicationSettings(short floorDepth, short minObjectHeight, byte sampleCount, string outputPath, 
 		    bool useColorMask, IReadOnlyCollection<Point> colorMaskContour, 
-		    bool useDepthMask, IReadOnlyCollection<Point> depthMaskContour)
+		    bool useDepthMask, IReadOnlyCollection<Point> depthMaskContour,
+		    long timeToStartMeasurementMs, bool useRgbAlgorithmByDefault)
 	    {
 		    FloorDepth = floorDepth > 0 ? floorDepth : (short) 1000;
 		    MinObjectHeight = minObjectHeight;
@@ -44,19 +50,20 @@ namespace VolumeCalculatorGUI.Entities
 		    ColorMaskContour = colorMaskContour != null ? new List<Point>(colorMaskContour) : GetDefaultAreaContour();
 			UseDepthMask = useDepthMask;
 		    DepthMaskContour = depthMaskContour != null ? new List<Point>(depthMaskContour) : GetDefaultAreaContour();
-		}
+		    TimeToStartMeasurementMs = timeToStartMeasurementMs;
+		    UseRgbAlgorithmByDefault = useRgbAlgorithmByDefault;
+	    }
 
 	    [Obfuscation(Exclude = true)]
 	    public static ApplicationSettings GetDefaultSettings()
 	    {
-		    return new ApplicationSettings(1000, 5, 10, Constants.ResultolderName, false, GetDefaultAreaContour(), false,
-			    GetDefaultAreaContour());
+		    return new ApplicationSettings(1000, 5, 10, "MeasurementResults", false, GetDefaultAreaContour(),
+			    false, GetDefaultAreaContour(), 5000, false);
 	    }
 
 	    public override string ToString()
 	    {
-		    return
-			    $"floorDepth={FloorDepth} useColorMask= {UseColorMask} useDepthMask={UseDepthMask} minObjHeight={MinObjectHeight} sampleCount={SampleDepthMapCount} outputPath={OutputPath}";
+		    return $"floorDepth={FloorDepth} useColorMask={UseColorMask} useDepthMask={UseDepthMask} minObjHeight={MinObjectHeight} sampleCount={SampleDepthMapCount} outputPath={OutputPath}";
 
 	    }
 

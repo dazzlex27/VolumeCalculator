@@ -1,14 +1,12 @@
 ﻿using System;
+using FrameProcessor.Native;
 using FrameProviders;
 using Primitives;
-using VolumeCalculatorGUI.Entities;
-using VolumeCalculatorGUI.Entities.Native;
-using VolumeCalculatorGUI.Utils;
 using DepthMap = Primitives.DepthMap;
 
-namespace VolumeCalculatorGUI.Logic
+namespace FrameProcessor
 {
-	internal class DepthMapProcessor : IDisposable
+	public class DepthMapProcessor : IDisposable
 	{
 		private readonly ILogger _logger;
 		private readonly IntPtr _nativeHandle;
@@ -105,9 +103,9 @@ namespace VolumeCalculatorGUI.Logic
 			}
 		}
 
-		private unsafe Entities.Native.DepthMap GetNativeDepthMapFromDepthMap(DepthMap depthMap, short* depthData)
+		private unsafe Native.DepthMap GetNativeDepthMapFromDepthMap(DepthMap depthMap, short* depthData)
 		{
-			return new Entities.Native.DepthMap
+			return new Native.DepthMap
 			{
 				Width = depthMap.Width,
 				Height = depthMap.Height,

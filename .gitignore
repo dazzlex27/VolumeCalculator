@@ -11,5 +11,8 @@ Tests/VolumeCalculationRunner/obj
 /DeviceIntegrations/obj
 /FrameProviders/obj
 /D435FrameProvider/obj
+/FrameProcessor/obj
 /D435FrameProvider/D435FrameProvider.vcxproj.user
 /Tests/DepthMapProcessorTests/DepthMapProcessorTests.vcxproj.user
+/VolumeCalculator.sln.DotSettings.user
+/libDepthMapProcessor/libDepthMapProcessor.vcxproj.user

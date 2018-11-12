@@ -1,9 +1,9 @@
 ﻿using FrameProviders;
 using Primitives;
 
-namespace VolumeCalculatorGUI.Entities
+namespace FrameProcessor
 {
-	internal class TestCaseData
+	public class TestCaseData
 	{
 		public TestCaseBasicInfo BasicInfo { get; }
 		public ImageData Image { get; }

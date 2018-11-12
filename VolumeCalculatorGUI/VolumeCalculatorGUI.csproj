@@ -45,10 +45,6 @@
     <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -65,14 +61,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Entities\ApplicationSettings.cs" />
-    <Compile Include="Entities\Native\ColorCameraIntrinsics.cs" />
-    <Compile Include="Entities\Native\ColorImage.cs" />
-    <Compile Include="Entities\Native\DepthCameraIntrinsics.cs" />
-    <Compile Include="Entities\Native\DepthMap.cs" />
-    <Compile Include="Entities\Native\RelRect.cs" />
-    <Compile Include="Entities\TestCaseBasicInfo.cs" />
-    <Compile Include="Entities\TestCaseData.cs" />
     <Compile Include="GUI\MaskPolygonControl.xaml.cs">
       <DependentUpon>MaskPolygonControl.xaml</DependentUpon>
     </Compile>
@@ -96,23 +84,15 @@
     </Compile>
     <Compile Include="GUI\TestDataGenerationControlVm.cs" />
     <Compile Include="GUI\Utils\PathValidationRule.cs" />
-    <Compile Include="Logic\TestDataGenerator.cs" />
-    <Compile Include="Logic\VolumeCalculator.cs" />
     <Compile Include="Utils\Constants.cs" />
-    <Compile Include="Utils\DepthMapProcessorDll.cs" />
     <Compile Include="Utils\FrameProviderUtils.cs" />
     <Compile Include="Utils\GeometryUtils.cs" />
     <Compile Include="Utils\GraphicsUtils.cs" />
-    <Compile Include="Utils\IoUtils.cs" />
-    <Compile Include="Logic\DepthMapProcessor.cs" />
     <Compile Include="GUI\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Entities\Native\ObjDimDescription.cs" />
-    <Compile Include="Entities\ObjectVolumeData.cs" />
     <Compile Include="Utils\Logger.cs" />
     <Compile Include="Entities\WorkingAreaMask.cs" />
-    <Compile Include="Utils\TypeConverter.cs" />
     <Page Include="GUI\CalculationDashboardControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -180,7 +160,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -190,6 +169,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FrameProcessor\FrameProcessor.csproj">
+      <Project>{b824300e-8ff0-4dd7-bd9d-1483e86025d4}</Project>
+      <Name>FrameProcessor</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Primitives\Primitives.csproj">
       <Project>{90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B}</Project>
       <Name>Primitives</Name>

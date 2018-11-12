@@ -1,12 +1,12 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace VolumeCalculatorGUI.Entities.Native
+namespace FrameProcessor.Native
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct ObjDimDescription
+	internal unsafe struct DepthMap
 	{
-		public int Length;
 		public int Width;
 		public int Height;
+		public short* Data;
 	}
 }

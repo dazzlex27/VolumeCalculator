@@ -1,6 +1,6 @@
-﻿namespace VolumeCalculatorGUI.Entities
+﻿namespace FrameProcessor
 {
-	internal class ObjectVolumeData
+	public class ObjectVolumeData
 	{
 		public int Length { get; }
 

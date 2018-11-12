@@ -1,11 +1,15 @@
 ﻿using System.IO;
 using Newtonsoft.Json;
-using VolumeCalculatorGUI.Entities;
 
-namespace VolumeCalculatorGUI.Utils
+namespace Primitives
 {
-	internal static class IoUtils
+	public static class IoUtils
 	{
+		public static string GetFullResultFilePath(string outputFolderPath)
+		{
+			return Path.Combine(outputFolderPath, Constants.ResultFileName);
+		}
+
 		public static void SerializeSettings(ApplicationSettings settings)
 		{
 			if (settings == null)

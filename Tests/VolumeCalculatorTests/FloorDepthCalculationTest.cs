@@ -1,7 +1,7 @@
-﻿using FrameProviders;
+﻿using FrameProcessor;
+using FrameProviders;
 using NUnit.Framework;
 using Primitives;
-using VolumeCalculatorGUI.Logic;
 
 namespace VolumeCalculatorTests
 {

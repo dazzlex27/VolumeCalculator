@@ -3,11 +3,11 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using FrameProcessor;
 using FrameProviders;
 using Primitives;
 using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.GUI.Utils;
-using VolumeCalculatorGUI.Logic;
 using VolumeCalculatorGUI.Utils;
 
 namespace VolumeCalculatorGUI.GUI
@@ -30,6 +30,8 @@ namespace VolumeCalculatorGUI.GUI
 		private short _minObjHeight;
 		private byte _sampleCount;
 		private string _outputPath;
+		private bool _useRgbAlgorithmByDefault;
+		private long _timeToStartMeasurementMs;
 		private bool _hasReceivedAColorImage;
 		private bool _hasReceivedDepthMap;
 
@@ -189,6 +191,32 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
+		public long TimeToStartMeasurementMs
+		{
+			get => _timeToStartMeasurementMs;
+			set
+			{
+				if (_timeToStartMeasurementMs == value)
+					return;
+
+				_timeToStartMeasurementMs = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public bool UseRgbAlgorithmByDefault
+		{
+			get => _useRgbAlgorithmByDefault;
+			set
+			{
+				if (_useRgbAlgorithmByDefault == value)
+					return;
+
+				_useRgbAlgorithmByDefault = value;
+				OnPropertyChanged();
+			}
+		}
+
 		public bool HasReceivedAColorImage
 		{
 			get => _hasReceivedAColorImage;
@@ -240,7 +268,7 @@ namespace VolumeCalculatorGUI.GUI
 			var depthMaskPoints = DepthMaskPolygonControlVm.GetPolygonPoints();
 
 			return new ApplicationSettings(FloorDepth, MinObjHeight, SampleCount, OutputPath, 
-				UseColorMask, colorMaskPoints, UseDepthMask, depthMaskPoints);
+				UseColorMask, colorMaskPoints, UseDepthMask, depthMaskPoints, TimeToStartMeasurementMs, UseRgbAlgorithmByDefault);
 		}
 
 		public void ColorFrameUpdated(ImageData image)
@@ -322,6 +350,8 @@ namespace VolumeCalculatorGUI.GUI
 			ColorMaskRectangleControlVm = new MaskPolygonControlVm(settings.ColorMaskContour);
 			UseDepthMask = settings.UseDepthMask;
 			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.DepthMaskContour);
+			TimeToStartMeasurementMs = settings.TimeToStartMeasurementMs;
+			UseRgbAlgorithmByDefault = settings.UseRgbAlgorithmByDefault;
 		}
 	}
 }

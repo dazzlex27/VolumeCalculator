@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Windows.Input;
+using FrameProcessor;
 using FrameProviders;
 using Primitives;
-using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.GUI.Utils;
-using VolumeCalculatorGUI.Logic;
 
 namespace VolumeCalculatorGUI.GUI
 {

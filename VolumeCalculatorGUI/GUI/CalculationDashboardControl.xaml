@@ -13,8 +13,9 @@
 			<ColumnDefinition/>
 		</Grid.ColumnDefinitions>
 		<Grid.RowDefinitions>
-			<RowDefinition/>
-			<RowDefinition/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
 		<StackPanel Margin="3" Background="{StaticResource BackgroundKey}">
 			<Grid Margin="2,2,2,0">
@@ -129,5 +130,8 @@
 			        Content="Измерить по видео и глубине" 
 			        Command="{Binding CalculateVolumeAltCommand}"/>
 		</Grid>
+		<StackPanel Margin="3" Grid.Row="2" Grid.Column="0" Background="{Binding StatusBrush}">
+			<TextBlock Padding="3" Text="{Binding StatusText}" Foreground="White" FontSize="16"/>
+		</StackPanel>
 	</Grid>
 </UserControl>

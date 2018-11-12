@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace VolumeCalculatorGUI.Entities.Native
+namespace FrameProcessor
 {
 	[StructLayout(LayoutKind.Sequential)]
 	public struct DepthCameraIntrinsics

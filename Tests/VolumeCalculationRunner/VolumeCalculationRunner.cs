@@ -4,10 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using FrameProcessor;
 using FrameProviders;
 using Primitives;
-using VolumeCalculatorGUI.Entities;
-using VolumeCalculatorGUI.Logic;
 
 namespace VolumeCalculationRunner
 {
@@ -87,7 +86,8 @@ namespace VolumeCalculationRunner
 			LogVerbose($@"Found {testCaseData.DepthMaps.Length} maps");
 
 			LogVerbose("Calculating volume...");
-			var settings = new ApplicationSettings(testCaseData.FloorDepth, testCaseData.MinObjHeight, 30, "", false, null, false, null);
+			var settings = new ApplicationSettings(testCaseData.FloorDepth, testCaseData.MinObjHeight, 30, "", false,
+				null, false, null, 10000, false);
 			processor.SetDeviceSettings(settings);
 
 			var results = new List<ObjectVolumeData>();

@@ -1,13 +1,12 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace VolumeCalculatorGUI.Entities.Native
+namespace FrameProcessor.Native
 {
 	[StructLayout(LayoutKind.Sequential)]
-	internal unsafe struct ColorImage
+	public struct ObjDimDescription
 	{
+		public int Length;
 		public int Width;
 		public int Height;
-		public byte* Data;
-		public byte BytesPerPixel;
 	}
 }

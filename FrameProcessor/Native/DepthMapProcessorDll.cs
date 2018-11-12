@@ -1,7 +1,6 @@
 ﻿using System.Runtime.InteropServices;
-using VolumeCalculatorGUI.Entities.Native;
 
-namespace VolumeCalculatorGUI.Utils
+namespace FrameProcessor.Native
 {
     internal static class DepthMapProcessorDll
     {

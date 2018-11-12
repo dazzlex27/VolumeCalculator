@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
 using Primitives;
-using VolumeCalculatorGUI.Entities;
 
-namespace VolumeCalculatorGUI.Logic
+namespace FrameProcessor
 {
-	internal class VolumeCalculator
+	public class VolumeCalculator
 	{
 		public event Action CalculationCancelled;
 		public event Action<ObjectVolumeData> CalculationFinished;

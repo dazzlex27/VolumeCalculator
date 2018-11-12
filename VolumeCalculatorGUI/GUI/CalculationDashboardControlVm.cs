@@ -2,14 +2,16 @@
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Timers;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using DeviceIntegrations.Scales;
+using FrameProcessor;
 using FrameProviders;
 using Primitives;
 using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.GUI.Utils;
-using VolumeCalculatorGUI.Logic;
 using VolumeCalculatorGUI.Utils;
 
 namespace VolumeCalculatorGUI.GUI
@@ -41,6 +43,12 @@ namespace VolumeCalculatorGUI.GUI
 		private bool _calculationInProgress;
 		private bool _useManualCodeInput;
 		private bool _useManualWeightInput;
+		private SolidColorBrush _statusBrush;
+		private string _statusText;
+
+		private Timer _measurementTimer;
+		private bool _codeReady;
+		private bool _weightReady;
 
 		public ICommand CalculateVolumeCommand { get; }
 
@@ -163,6 +171,32 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
+		public SolidColorBrush StatusBrush
+		{
+			get => _statusBrush;
+			set
+			{
+				if (Equals(_statusBrush, value))
+					return;
+
+				_statusBrush = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public string StatusText
+		{
+			get => _statusText;
+			set
+			{
+				if (_statusText == value)
+					return;
+
+				_statusText = value;
+				OnPropertyChanged();
+			}
+		}
+
 		public CalculationDashboardControlVm(ILogger logger, ApplicationSettings settings, 
 			ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
 		{
@@ -174,10 +208,16 @@ namespace VolumeCalculatorGUI.GUI
 			_processor = new DepthMapProcessor(_logger, _colorCameraParams, _depthCameraParams);
 			_processor.SetDeviceSettings(_applicationSettings);
 
-			_resultFullPath = Path.Combine(_applicationSettings.OutputPath, Constants.ResultFileName);
+			_resultFullPath = IoUtils.GetFullResultFilePath(_applicationSettings.OutputPath);
 
 			CalculateVolumeCommand = new CommandHandler(CalculateObjectVolume, !CalculationInProgress);
 			CalculateVolumeAltCommand = new CommandHandler(CalculateObjectVolumeRgb, !CalculationInProgress);
+
+			CreateMeasurementTimer(settings.TimeToStartMeasurementMs);
+			_codeReady = false;
+			_weightReady = false;
+
+			SetStatusReady();
 		}
 
 		public void Dispose()
@@ -186,11 +226,13 @@ namespace VolumeCalculatorGUI.GUI
 				_processor.Dispose();
 		}
 
-		public void ApplicationSettingsUpdated(ApplicationSettings applicationSettings)
+		public void ApplicationSettingsUpdated(ApplicationSettings settings)
 		{
-			_applicationSettings = applicationSettings;
-			_processor.SetDeviceSettings(_applicationSettings);
-			_resultFullPath = Path.Combine(_applicationSettings.OutputPath, Constants.ResultFileName);
+			_applicationSettings = settings;
+			_processor.SetDeviceSettings(settings);
+			_resultFullPath = IoUtils.GetFullResultFilePath(_applicationSettings.OutputPath);
+
+			CreateMeasurementTimer(settings.TimeToStartMeasurementMs);
 		}
 
 		public void DeviceParamsUpdated(ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
@@ -205,18 +247,36 @@ namespace VolumeCalculatorGUI.GUI
 
 		public void UpdateCodeText(string text)
 		{
-			if (UseManualCodeInput)
+			if (UseManualCodeInput || CalculationInProgress)
 				return;
 
 			Dispatcher.Invoke(() => { ObjectCode = text; });
+			_codeReady = text != "";
+			ToggleTimer();
 		}
 
 		public void UpdateScalesMeasurementData(ScaleMeasurementData data)
 		{
-			if (UseManualWeightInput)
+			if (UseManualWeightInput || CalculationInProgress)
 				return;
 
 			Dispatcher.Invoke(() => { ObjectWeight = data.WeightKg; });
+			if (data.Status == MeasurementStatus.Ready || data.Status == MeasurementStatus.Measuring)
+			{
+				Dispatcher.Invoke(() => 
+				{
+					ObjectLength = 0;
+					ObjectWidth = 0;
+					ObjectHeight = 0;
+					ObjectVolume = 0;
+				});
+			}
+
+			_weightReady = data.Status == MeasurementStatus.Measured;
+			if (data.Status == MeasurementStatus.Ready)
+				SetStatusReady();
+
+			ToggleTimer();
 		}
 
 		public void ColorFrameArrived(ImageData image)
@@ -260,6 +320,33 @@ namespace VolumeCalculatorGUI.GUI
 			return _processor;
 		}
 
+		private void ToggleTimer()
+		{
+			if (_codeReady && _weightReady)
+				_measurementTimer.Start();
+			else
+			{
+				_measurementTimer.Stop();
+				_logger.LogInfo("Stopped measurement timer because one or both params have changed");
+			}
+		}
+
+		private void CreateMeasurementTimer(long intervalMs)
+		{
+			if (_measurementTimer != null)
+				_measurementTimer.Elapsed -= OnMeasurementTimerElapsed;
+
+			_measurementTimer = new Timer(intervalMs);
+			_measurementTimer.Elapsed += OnMeasurementTimerElapsed;
+		}
+
+		private void OnMeasurementTimerElapsed(object sender, ElapsedEventArgs e)
+		{
+			CalculateObjectVolumeInternal(_applicationSettings.UseRgbAlgorithmByDefault);
+			_codeReady = false;
+			_weightReady = false;
+		}
+
 		private void CalculateObjectVolume()
 		{
 			CalculateObjectVolumeInternal(false);
@@ -278,7 +365,10 @@ namespace VolumeCalculatorGUI.GUI
 				if (!canRunCalculation)
 					return;
 
+
 				CalculationInProgress = true;
+				SetStatusInProgress();
+
 				_logger.LogInfo($"Starting a volume check, using rgb={usingRgbData}...");
 
 				SaveDebugData();
@@ -293,6 +383,7 @@ namespace VolumeCalculatorGUI.GUI
 				MessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка",
 					MessageBoxButton.OK, MessageBoxImage.Error);
 
+				SetStatusError();
 				CalculationInProgress = false;
 			}
 		}
@@ -356,6 +447,9 @@ namespace VolumeCalculatorGUI.GUI
 			DisposeVolumeCalculator();
 
 			_logger.LogError("Calculation cancelled on timeout");
+
+			SetStatusError();
+
 			MessageBox.Show(
 				"Не удалось собрать указанное количество образцов для измерения, проверьте соединение с устройством",
 				"Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
@@ -371,6 +465,7 @@ namespace VolumeCalculatorGUI.GUI
 				volumeData = new ObjectVolumeData(0, 0, 0);
 				UpdateVolumeData(volumeData);
 
+				SetStatusError();
 				MessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка",
 					MessageBoxButton.OK, MessageBoxImage.Error);
 				_logger.LogError("Volume check returned null");
@@ -380,11 +475,13 @@ namespace VolumeCalculatorGUI.GUI
 				_logger.LogInfo(
 					$"Completed a volume check, L={volumeData.Length} W={volumeData.Width} H={volumeData.Height}");
 
+				SetStatusFinished();
 				UpdateVolumeData(volumeData);
 			}
 
 			if (volumeData.Length == 0 || volumeData.Width == 0 || volumeData.Height == 0)
 			{
+				SetStatusError();
 				MessageBox.Show("Объект не найден", "Результат вычисления",
 					MessageBoxButton.OK, MessageBoxImage.Information);
 
@@ -429,17 +526,20 @@ namespace VolumeCalculatorGUI.GUI
 					"Не удалось записать результат измерений в файл, проверьте доступность файла и повторите измерения",
 					"Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
 				_logger.LogException(
-					$@"Failed to write calculated values to {Constants.ResultFileName} ({_applicationSettings.OutputPath})",
+					$@"Failed to write calculated values to {_resultFullPath})",
 					ex);
 			}
 		}
 
 		private void UpdateVolumeData(ObjectVolumeData volumeData)
 		{
-			ObjectLength = volumeData.Length;
-			ObjectWidth = volumeData.Width;
-			ObjectHeight = volumeData.Height;
-			ObjectVolume = ObjectLength * ObjectWidth * ObjectHeight;
+			Dispatcher.Invoke(() => 
+			{
+				ObjectLength = volumeData.Length;
+				ObjectWidth = volumeData.Width;
+				ObjectHeight = volumeData.Height;
+				ObjectVolume = ObjectLength * ObjectWidth * ObjectHeight;
+			});
 		}
 
 		private void DisposeVolumeCalculator()
@@ -480,8 +580,7 @@ namespace VolumeCalculatorGUI.GUI
 					return true;
 				}
 
-				using (Stream stream =
-					new FileStream(_resultFullPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+				using (Stream stream = new FileStream(_resultFullPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
 				{
 					stream.ReadByte();
 				}
@@ -492,6 +591,42 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				return false;
 			}
+		}
+
+		private void SetStatusReady()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				StatusBrush = new SolidColorBrush(Colors.Green);
+				StatusText = "Готов к измерению";
+			});
+		}
+
+		private void SetStatusError()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				StatusBrush = new SolidColorBrush(Colors.Red);
+				StatusText = "Произошла ошибка";
+			});
+		}
+
+		private void SetStatusInProgress()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				StatusBrush = new SolidColorBrush(Colors.DarkOrange);
+				StatusText = "Выполнется измерение";
+			});
+		}
+
+		private void SetStatusFinished()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				StatusBrush = new SolidColorBrush(Colors.DarkGreen);
+				StatusText = "Измерение завершено";
+			});
 		}
 	}
 }

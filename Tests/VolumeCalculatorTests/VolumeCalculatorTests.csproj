@@ -53,6 +53,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\FrameProcessor\FrameProcessor.csproj">
+      <Project>{B824300E-8FF0-4DD7-BD9D-1483E86025D4}</Project>
+      <Name>FrameProcessor</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Primitives\Primitives.csproj">
       <Project>{90c0cc4f-e7d1-4a68-801b-fa4bdfc4a55b}</Project>
       <Name>Primitives</Name>
