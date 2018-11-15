@@ -2,6 +2,8 @@
 using Microsoft.Kinect;
 using Primitives;
 using Primitives.Logging;
+using ColorFrame = Microsoft.Kinect.ColorFrame;
+using DepthFrame = Microsoft.Kinect.DepthFrame;
 
 namespace FrameProviders.KinectV2
 {
@@ -12,11 +14,15 @@ namespace FrameProviders.KinectV2
 		private readonly ColorFrameReader _colorFrameReader;
 		private readonly DepthFrameReader _depthFrameReader;
 
-		private bool _colorStreamSuspended;
-		private bool _depthStreamSuspended;
+		private readonly object _colorFrameProcessingLock;
+		private readonly object _depthFrameProcessingLock;
 
 		public KinectV2FrameProvider(ILogger logger)
+			: base(logger)
 		{
+			_colorFrameProcessingLock = new object();
+			_depthFrameProcessingLock = new object();
+
 			_logger = logger;
 			_logger.LogInfo("Creating KinectV2 frame receiver...");
 
@@ -28,8 +34,12 @@ namespace FrameProviders.KinectV2
 			_colorFrameReader.FrameArrived += ColorFrameReader_FrameArrived;
 			_depthFrameReader.FrameArrived += DepthFrameReader_FrameArrived;
 
-			_colorStreamSuspended = false;
-			_depthStreamSuspended = false;
+			IsColorStreamSuspended = false;
+			IsColorStreamSuspended = false;
+
+			ColorCameraFps = -1;
+			DepthCameraFps = -1;
+
 		}
 
 		public override void Start()
@@ -49,34 +59,34 @@ namespace FrameProviders.KinectV2
 
 		public override void SuspendColorStream()
 		{
-			if (_colorStreamSuspended)
+			if (IsColorStreamSuspended)
 				return;
 
-			_colorStreamSuspended = true;
+			IsColorStreamSuspended = true;
 		}
 
 		public override void ResumeColorStream()
 		{
-			if (!_colorStreamSuspended)
+			if (!IsColorStreamSuspended)
 				return;
 
-			_colorStreamSuspended = false;
+			IsColorStreamSuspended = false;
 		}
 
 		public override void SuspendDepthStream()
 		{
-			if (_depthStreamSuspended)
+			if (IsColorStreamSuspended)
 				return;
 
-			_depthStreamSuspended = true;
+			IsColorStreamSuspended = true;
 		}
 
 		public override void ResumeDepthStream()
 		{
-			if (!_depthStreamSuspended)
+			if (!IsColorStreamSuspended)
 				return;
 
-			_depthStreamSuspended = false;
+			IsColorStreamSuspended = false;
 		}
 
 		public override ColorCameraParams GetColorCameraParams()
@@ -105,58 +115,92 @@ namespace FrameProviders.KinectV2
 
 		private void ColorFrameReader_FrameArrived(object sender, ColorFrameArrivedEventArgs e)
 		{
-			var needToProcess = IsColorStreamSubsribedTo && !_colorStreamSuspended;
-			if (!needToProcess)
-				return;
-
-			using (var colorFrame = e.FrameReference.AcquireFrame())
+			lock (_colorFrameProcessingLock)
 			{
-				if (colorFrame == null)
+				var needToProcess = NeedUnrestrictedColorFrame || NeedColorFrame;
+				if (!needToProcess)
 					return;
 
-				var frameDescription = colorFrame.FrameDescription;
-				var frameLength = frameDescription.Width * frameDescription.Height;
-				var data = new byte[frameLength * 4];
+				ImageData image;
 
-				using (var colorBuffer = colorFrame.LockRawImageBuffer())
+				using (var colorFrame = e.FrameReference.AcquireFrame())
 				{
-					var pinnedArray = GCHandle.Alloc(data, GCHandleType.Pinned);
-					var pointer = pinnedArray.AddrOfPinnedObject();
-
-					colorFrame.CopyConvertedFrameDataToIntPtr(pointer, (uint)(frameLength * 4),
-						ColorImageFormat.Bgra);
-
-					pinnedArray.Free();
+					image = CreateColorFrameFromKinectFrame(colorFrame);
+					if (image == null)
+						return;
 				}
 
-				var image = new ImageData(frameDescription.Width, frameDescription.Height, data, 4);
-				RaiseColorFrameReadyEvent(image);
+				if (NeedUnrestrictedColorFrame)
+					RaiseUnrestrictedColorFrameReadyEvent(image);
+
+				if (NeedColorFrame)
+					RaiseColorFrameReadyEvent(image);
 			}
 		}
 
 		private void DepthFrameReader_FrameArrived(object sender, DepthFrameArrivedEventArgs e)
 		{
-			var needToProcess = IsDepthStreamSubsribedTo && !_depthStreamSuspended;
-			if (!needToProcess)
-				return;
-
-			using (var depthFrame = e.FrameReference.AcquireFrame())
+			lock (_depthFrameProcessingLock)
 			{
-				if (depthFrame == null)
+				var needToProcess = NeedUnrestrictedDepthFrame || NeedDepthFrame;
+				if (!needToProcess)
 					return;
 
-				var frameDescription = depthFrame.FrameDescription;
-				var frameLength = frameDescription.Width * frameDescription.Height;
-				var data = new short[frameLength];
+				DepthMap map;
 
-				using (var depthBuffer = depthFrame.LockImageBuffer())
+				using (var depthFrame = e.FrameReference.AcquireFrame())
 				{
-					Marshal.Copy(depthBuffer.UnderlyingBuffer, data, 0, frameLength);
+					map = CreateDepthMapFromKinectFrame(depthFrame);
+					if (map == null)
+						return;
 				}
 
-				var map = new DepthMap(frameDescription.Width, frameDescription.Height, data);
-				RaiseDepthFrameReadyEvent(map);
+				if (NeedUnrestrictedDepthFrame)
+					RaiseUnrestrictedDepthFrameReadyEvent(map);
+
+				if (NeedDepthFrame)
+					RaiseDepthFrameReadyEvent(map);
 			}
+		}
+
+		private static ImageData CreateColorFrameFromKinectFrame(ColorFrame colorFrame)
+		{
+			if (colorFrame == null)
+				return null;
+
+			var frameDescription = colorFrame.FrameDescription;
+			var frameLength = frameDescription.Width * frameDescription.Height;
+			var data = new byte[frameLength * 4];
+
+			using (var colorBuffer = colorFrame.LockRawImageBuffer())
+			{
+				var pinnedArray = GCHandle.Alloc(data, GCHandleType.Pinned);
+				var pointer = pinnedArray.AddrOfPinnedObject();
+
+				colorFrame.CopyConvertedFrameDataToIntPtr(pointer, (uint)(frameLength * 4),
+					ColorImageFormat.Bgra);
+
+				pinnedArray.Free();
+			}
+
+			return new ImageData(frameDescription.Width, frameDescription.Height, data, 4);
+		}
+
+		private static DepthMap CreateDepthMapFromKinectFrame(DepthFrame depthFrame)
+		{
+			if (depthFrame == null)
+				return null;
+
+			var frameDescription = depthFrame.FrameDescription;
+			var frameLength = frameDescription.Width * frameDescription.Height;
+			var data = new short[frameLength];
+
+			using (var depthBuffer = depthFrame.LockImageBuffer())
+			{
+				Marshal.Copy(depthBuffer.UnderlyingBuffer, data, 0, frameLength);
+			}
+
+			return new DepthMap(frameDescription.Width, frameDescription.Height, data);
 		}
 	}
 }

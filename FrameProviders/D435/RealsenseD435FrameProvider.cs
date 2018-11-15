@@ -11,11 +11,15 @@ namespace FrameProviders.D435
 		private readonly DllWrapper.ColorFrameCallback _colorFrameCallback;
 		private readonly DllWrapper.DepthFrameCallback _depthFramesCallback;
 
-		private bool _colorStreamSuspended;
-		private bool _depthStreamSuspended;
+		private readonly object _colorFrameProcessingLock;
+		private readonly object _depthFrameProcessingLock;
 
 		public RealsenseD435FrameProvider(ILogger logger)
+			: base(logger)
 		{
+			_colorFrameProcessingLock = new object();
+			_depthFrameProcessingLock = new object();
+
 			_logger = logger;
 			_logger.LogInfo("Creating Realsense D435 frame receiver...");
 
@@ -59,42 +63,42 @@ namespace FrameProviders.D435
 
 		public override void SuspendColorStream()
 		{
-			if (_colorStreamSuspended)
+			if (IsColorStreamSuspended)
 				return;
 
 			DllWrapper.UnsubscribeFromColorFrames(_colorFrameCallback);
 
-			_colorStreamSuspended = true;
+			IsColorStreamSuspended = true;
 		}
 
 		public override void ResumeColorStream()
 		{
-			if (!_colorStreamSuspended)
+			if (!IsColorStreamSuspended)
 				return;
 
 			DllWrapper.SubscribeToColorFrames(_colorFrameCallback);
 
-			_colorStreamSuspended = false;
+			IsColorStreamSuspended = false;
 		}
 
 		public override void SuspendDepthStream()
 		{
-			if (_colorStreamSuspended)
+			if (IsColorStreamSuspended)
 				return;
 
 			DllWrapper.UnsubscribeFromDepthFrames(_depthFramesCallback);
 
-			_colorStreamSuspended = true;
+			IsColorStreamSuspended = true;
 		}
 
 		public override void ResumeDepthStream()
 		{
-			if (!_depthStreamSuspended)
+			if (!IsColorStreamSuspended)
 				return;
 
 			DllWrapper.SubscribeToDepthFrames(_depthFramesCallback);
 
-			_depthStreamSuspended = false;
+			IsColorStreamSuspended = false;
 		}
 
 		private unsafe void ColorFrameCallback(ColorFrame* frame)
@@ -102,20 +106,31 @@ namespace FrameProviders.D435
 			if (frame == null)
 				return;
 
-			try
+			lock (_colorFrameProcessingLock)
 			{
-				var dataLength = frame->Width * frame->Height * 3;
+				var needToProcess = NeedUnrestrictedColorFrame || NeedColorFrame;
+				if (!needToProcess)
+					return;
 
-				var data = new byte[dataLength];
-				Marshal.Copy(new IntPtr(frame->Data), data, 0, data.Length);
+				try
+				{
+					var dataLength = frame->Width * frame->Height * 3;
 
-				var image = new ImageData(frame->Width, frame->Height, data, 3);
+					var data = new byte[dataLength];
+					Marshal.Copy(new IntPtr(frame->Data), data, 0, data.Length);
 
-				RaiseColorFrameReadyEvent(image);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogException("Failed to receive a color frame", ex);
+					var image = new ImageData(frame->Width, frame->Height, data, 3);
+
+					if (NeedUnrestrictedColorFrame)
+						RaiseUnrestrictedColorFrameReadyEvent(image);
+
+					if (NeedColorFrame)
+						RaiseColorFrameReadyEvent(image);
+				}
+				catch (Exception ex)
+				{
+					_logger.LogException("Failed to receive a color frame", ex);
+				}
 			}
 		}
 
@@ -124,18 +139,29 @@ namespace FrameProviders.D435
 			if (frame == null)
 				return;
 
-			try
+			lock (_depthFrameProcessingLock)
 			{
-				var mapLength = frame->Width * frame->Height;
-				var data = new short[mapLength];
-				Marshal.Copy(new IntPtr(frame->Data), data, 0, data.Length);
-				var depthMap = new DepthMap(frame->Width, frame->Height, data);
+				var needToProcess = NeedUnrestrictedDepthFrame || NeedDepthFrame;
+				if (!needToProcess)
+					return;
 
-				RaiseDepthFrameReadyEvent(depthMap);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogException("Failed to receive a depth frame", ex);
+				try
+				{
+					var mapLength = frame->Width * frame->Height;
+					var data = new short[mapLength];
+					Marshal.Copy(new IntPtr(frame->Data), data, 0, data.Length);
+					var depthMap = new DepthMap(frame->Width, frame->Height, data);
+
+					if (NeedUnrestrictedDepthFrame)
+						RaiseUnrestrictedDepthFrameReadyEvent(depthMap);
+
+					if (NeedDepthFrame)
+						RaiseDepthFrameReadyEvent(depthMap);
+				}
+				catch (Exception ex)
+				{
+					_logger.LogException("Failed to receive a depth frame", ex);
+				}
 			}
 		}
 	}

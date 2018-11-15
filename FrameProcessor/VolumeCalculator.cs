@@ -1,49 +1,87 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Timers;
+using FrameProviders;
 using Primitives;
 using Primitives.Logging;
 
 namespace FrameProcessor
 {
-	public class VolumeCalculator
+	public class VolumeCalculator : IDisposable
 	{
-		public event Action CalculationCancelled;
-		public event Action<ObjectVolumeData> CalculationFinished;
+		public event Action<ObjectVolumeData, CalculationStatus> CalculationFinished;
 
 		private readonly ILogger _logger;
+		private readonly FrameProvider _frameProvider;
 		private readonly DepthMapProcessor _processor;
-		private readonly bool _useColorVersion;
-		private readonly List<ObjectVolumeData> _results;
-
-		private int _samplesLeft;
+		private readonly ApplicationSettings _settings;
+		private readonly bool _usingColorData;
 
 		private readonly Timer _timer;
+		private readonly List<ObjectVolumeData> _results;
 
-		public VolumeCalculator(ILogger logger, DepthMapProcessor processor, bool useColorVersion, int sampleSize)
+		private bool _colorFrameReady;
+		private bool _depthFrameReady;
+
+		private ImageData _latestColorFrame;
+		private DepthMap _latestDepthMap;
+
+		private int _samplesLeft;
+		private bool _hasSavedDebugData;
+
+		public bool IsRunning { get; private set; }
+
+		public VolumeCalculator(ILogger logger, FrameProvider frameProvider, DepthMapProcessor processor, ApplicationSettings settings, 
+			bool usingColorData)
 		{
 			_logger = logger;
+			_frameProvider = frameProvider;
 			_processor = processor;
-			_samplesLeft = sampleSize;
-			_useColorVersion = useColorVersion;
+			_settings = settings;
+			_samplesLeft = settings.SampleDepthMapCount;
+			_usingColorData = usingColorData;
+
+			if (_frameProvider == null)
+				throw new ArgumentNullException(nameof(_frameProvider));
 
 			_results = new List<ObjectVolumeData>();
 
-			IsActive = true;
+			_frameProvider.UnrestrictedDepthFrameReady += OnDepthFrameReady;
+			if (usingColorData)
+				_frameProvider.UnrestrictedColorFrameReady += OnColorFrameReady;
 
 			_timer = new Timer(3000);
 			_timer.Elapsed += Timer_Elapsed;
 			_timer.Start();
+
+			IsRunning = true;
 		}
 
-		public bool IsActive { get; private set; }
+		public void Dispose()
+		{
+			IsRunning = false;
+			_frameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
+			_frameProvider.UnrestrictedDepthFrameReady -= OnDepthFrameReady;
+		}
 
-		public void AdvanceCalculation(DepthMap depthMap, ImageData image)
+		public void Abort()
+		{
+			CalculationFinished?.Invoke(null, CalculationStatus.Aborted);
+		}
+
+		private void AdvanceCalculation(DepthMap depthMap, ImageData image)
 		{
 			_timer.Stop();
 
-			var currentResult = _useColorVersion
+			if (!_hasSavedDebugData)
+			{
+				SaveDebugData();
+				_hasSavedDebugData = true;
+			}
+
+			var currentResult = _usingColorData
 				? _processor.CalculateObjectVolumeAlt(depthMap, image)
 				: _processor.CalculateVolume(depthMap);
 			_results.Add(currentResult);
@@ -55,9 +93,41 @@ namespace FrameProcessor
 				return;
 			}
 
-			IsActive = false;
+			IsRunning = false;
 			var totalResult = AggregateCalculationsData();
-			CalculationFinished?.Invoke(totalResult);
+
+			if (totalResult != null)
+				CalculationFinished?.Invoke(totalResult, CalculationStatus.Sucessful);
+			else
+				CalculationFinished?.Invoke(null, CalculationStatus.Error);
+		}
+
+		private void OnColorFrameReady(ImageData image)
+		{
+			_latestColorFrame = image;
+
+			_colorFrameReady = true;
+
+			if (!_depthFrameReady)
+				return;
+
+			AdvanceCalculation(_latestDepthMap, _latestColorFrame);
+			_colorFrameReady = false;
+			_depthFrameReady = false;
+		}
+
+		private void OnDepthFrameReady(DepthMap depthMap)
+		{
+			_latestDepthMap = depthMap;
+
+			_depthFrameReady = true;
+
+			if (_usingColorData && !_colorFrameReady)
+				return;
+
+			AdvanceCalculation(_latestDepthMap, _latestColorFrame);
+			_colorFrameReady = false;
+			_depthFrameReady = false;
 		}
 
 		private ObjectVolumeData AggregateCalculationsData()
@@ -77,13 +147,40 @@ namespace FrameProcessor
 			catch (Exception ex)
 			{
 				_logger.LogException("Failed to aggregate calculation results", ex);
-				return new ObjectVolumeData(0, 0, 0);
+				return null;
 			}
 		}
 
 		private void Timer_Elapsed(object sender, ElapsedEventArgs e)
 		{
-			CalculationCancelled?.Invoke();
+			CalculationFinished?.Invoke(null, CalculationStatus.TimedOut);
+		}
+
+		private void SaveDebugData()
+		{
+			try
+			{
+				Directory.CreateDirectory(Constants.DebugDataDirectoryName);
+				var debugDirectoryInfo = new DirectoryInfo(Constants.DebugDataDirectoryName);
+				foreach (var file in debugDirectoryInfo.EnumerateFiles())
+					file.Delete();
+
+				if (_latestColorFrame != null)
+					ImageUtils.SaveImageDataToFile(_latestColorFrame, Constants.DebugColorFrameFilename);
+
+				if (_latestDepthMap == null)
+					return;
+
+				var depthCameraParams = _frameProvider.GetDepthCameraParams();
+
+				var cutOffDepth = (short) (_settings.FloorDepth - _settings.MinObjectHeight);
+				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, Constants.DebugDepthFrameFilename,
+					depthCameraParams.MinDepth, depthCameraParams.MaxDepth, cutOffDepth);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to save debug data", ex);
+			}
 		}
 	}
 }

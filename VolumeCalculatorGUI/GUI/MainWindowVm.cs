@@ -203,7 +203,10 @@ namespace VolumeCalculatorGUI.GUI
 			var colorCameraParams = _streamViewControlVm.GetColorCameraParams();
 			var depthCameraParams = _streamViewControlVm.GetDepthCameraParams();
 
-			_calculationDashboardControlVm = new CalculationDashboardControlVm(_logger, _settings, colorCameraParams, depthCameraParams);
+			var frameProvider = _streamViewControlVm.GetFrameProvider();
+
+			_calculationDashboardControlVm = new CalculationDashboardControlVm(_logger, frameProvider, _settings,
+				colorCameraParams, depthCameraParams);
 			_testDataGenerationControlVm = new TestDataGenerationControlVm(_settings, depthCameraParams);
 
 			ApplicationSettingsChanged += OnApplicationSettingsChanged;
@@ -300,13 +303,11 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void OnColorFrameReady(ImageData image)
 		{
-			_calculationDashboardControlVm.ColorFrameArrived(image);
 			_testDataGenerationControlVm.ColorFrameUpdated(image);
 		}
 
 		private void OnDepthFrameReady(DepthMap depthMap)
 		{
-			_calculationDashboardControlVm.DepthFrameArrived(depthMap);
 			_testDataGenerationControlVm.DepthFrameUpdated(depthMap);
 		}
 

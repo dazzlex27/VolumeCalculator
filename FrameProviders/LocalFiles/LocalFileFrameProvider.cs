@@ -22,6 +22,7 @@ namespace FrameProviders.LocalFiles
 		private bool _sendDepthFrames;
 
 		public LocalFileFrameProvider(ILogger logger)
+			: base(logger)
 		{
 			_logger = logger;
 		}
@@ -106,9 +107,17 @@ namespace FrameProviders.LocalFiles
 						if (colorFrameIndex == colorFrames.Length)
 							colorFrameIndex = 0;
 
-						var nextColorFrameInfo = colorFrames[colorFrameIndex++];
-						var image = ImageUtils.ReadImageDataFromFile(nextColorFrameInfo.FullName);
-						RaiseColorFrameReadyEvent(image);
+						if (NeedUnrestrictedColorFrame || NeedColorFrame)
+						{
+							var nextColorFrameInfo = colorFrames[colorFrameIndex++];
+							var image = ImageUtils.ReadImageDataFromFile(nextColorFrameInfo.FullName);
+
+							if (NeedUnrestrictedColorFrame)
+								RaiseUnrestrictedColorFrameReadyEvent(image);
+
+							if (NeedColorFrame)
+								RaiseColorFrameReadyEvent(image);
+						}
 					}
 
 					if (_sendDepthFrames && depthFrames.Length > 0)
@@ -116,9 +125,17 @@ namespace FrameProviders.LocalFiles
 						if (depthFrameIndex == depthFrames.Length)
 							depthFrameIndex = 0;
 
-						var nextDepthFrameInfo = depthFrames[depthFrameIndex++];
-						var depthMap = DepthMapUtils.ReadDepthMapFromRawFile(nextDepthFrameInfo.FullName);
-						RaiseDepthFrameReadyEvent(depthMap);
+						if (NeedUnrestrictedDepthFrame || NeedDepthFrame)
+						{
+							var nextDepthFrameInfo = depthFrames[depthFrameIndex++];
+							var depthMap = DepthMapUtils.ReadDepthMapFromRawFile(nextDepthFrameInfo.FullName);
+
+							if (NeedUnrestrictedDepthFrame)
+								RaiseUnrestrictedDepthFrameReadyEvent(depthMap);
+
+							if (NeedDepthFrame)
+								RaiseDepthFrameReadyEvent(depthMap);
+						}
 					}
 
 					await Task.Delay(100);

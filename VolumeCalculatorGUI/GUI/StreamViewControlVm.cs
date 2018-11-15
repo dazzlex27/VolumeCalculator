@@ -175,6 +175,8 @@ namespace VolumeCalculatorGUI.GUI
 			_useDepthStream = true;
 
 			_frameProvider = FrameProviderUtils.CreateRequestedFrameProvider(logger);
+			_frameProvider.ColorCameraFps = 1;
+			_frameProvider.DepthCameraFps = 1;
 			_frameProvider.Start();
 
 			DepthCameraParams = _frameProvider.GetDepthCameraParams();
@@ -195,6 +197,11 @@ namespace VolumeCalculatorGUI.GUI
 		public void Dispose()
 		{
 			_frameProvider.Dispose();
+		}
+
+		public FrameProvider GetFrameProvider()
+		{
+			return _frameProvider;
 		}
 
 		public ColorCameraParams GetColorCameraParams()
