@@ -5,11 +5,6 @@ namespace Primitives
 {
 	public static class IoUtils
 	{
-		public static string GetFullResultFilePath(string outputFolderPath)
-		{
-			return Path.Combine(outputFolderPath, Constants.ResultFileName);
-		}
-
 		public static void SerializeSettings(ApplicationSettings settings)
 		{
 			if (settings == null)

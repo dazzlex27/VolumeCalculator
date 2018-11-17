@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Primitives;
 using Point = System.Windows.Point;
 
-namespace VolumeCalculatorGUI.Utils
+namespace Primitives
 {
-	internal class GeometryUtils
+	public class GeometryUtils
 	{
 		public static bool[] CreateWorkingAreaMask(IReadOnlyList<Point> polygon, int width, int height)
 		{

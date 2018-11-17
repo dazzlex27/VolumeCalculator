@@ -85,13 +85,12 @@
     <Compile Include="GUI\TestDataGenerationControlVm.cs" />
     <Compile Include="GUI\Utils\PathValidationRule.cs" />
     <Compile Include="Utils\Constants.cs" />
-    <Compile Include="Utils\FrameProviderUtils.cs" />
-    <Compile Include="Utils\GeometryUtils.cs" />
-    <Compile Include="Utils\GraphicsUtils.cs" />
+    <Compile Include="Utils\DeviceInitializationUtils.cs" />
     <Compile Include="GUI\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Entities\WorkingAreaMask.cs" />
+    <Compile Include="GUI\WorkingAreaMask.cs" />
+    <Compile Include="Utils\GraphicsUtils.cs" />
     <Page Include="GUI\CalculationDashboardControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

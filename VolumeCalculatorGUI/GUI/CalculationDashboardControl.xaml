@@ -30,13 +30,13 @@
 				            Margin="2,0" Text="Код"/>
 				<TextBox Style="{StaticResource TextBoxStyle}" 
 				         Grid.Column="1"
-						 IsEnabled="{Binding UseManualCodeInput}"
+						 IsEnabled="{Binding UsingManualCodeInput}"
 						 Margin="2" 
 						 Text="{Binding Path=ObjectCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 				<CheckBox Style="{StaticResource CheckBoxStyle}" 
 						  Grid.Column="2"
 				          Content="Вручную" 
-				          IsChecked="{Binding UseManualCodeInput, Mode=TwoWay}"/>
+				          IsChecked="{Binding UsingManualCodeInput, Mode=TwoWay}"/>
 			</Grid>
 			<Grid Margin="2,2,2,0">
 				<Grid.ColumnDefinitions>

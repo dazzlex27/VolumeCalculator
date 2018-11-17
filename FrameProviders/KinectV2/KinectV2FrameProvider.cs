@@ -24,7 +24,7 @@ namespace FrameProviders.KinectV2
 			_depthFrameProcessingLock = new object();
 
 			_logger = logger;
-			_logger.LogInfo("Creating KinectV2 frame receiver...");
+			_logger.LogInfo("Creating KinectV2 frame provider...");
 
 			_kinectSensor = KinectSensor.GetDefault();
 
@@ -36,21 +36,17 @@ namespace FrameProviders.KinectV2
 
 			IsColorStreamSuspended = false;
 			IsColorStreamSuspended = false;
-
-			ColorCameraFps = -1;
-			DepthCameraFps = -1;
-
 		}
 
 		public override void Start()
 		{
-			_logger.LogInfo("Starting KinectV2 frame receiver...");
+			_logger.LogInfo("Starting KinectV2 frame provider...");
 			_kinectSensor.Open();
 		}
 
 		public override void Dispose()
 		{
-			_logger.LogInfo("Disposing KinectV2 frame receiver...");
+			_logger.LogInfo("Disposing KinectV2 frame provider...");
 
 			_colorFrameReader.Dispose();
 			_depthFrameReader.Dispose();

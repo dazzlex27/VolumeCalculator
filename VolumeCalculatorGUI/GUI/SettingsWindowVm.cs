@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using FrameProcessor;
 using FrameProviders;
@@ -290,16 +289,9 @@ namespace VolumeCalculatorGUI.GUI
 			DepthMapUtils.FilterDepthMapByDepthtLimit(mapCopy, cutOffDepth);
 
 			var depthMapData = DepthMapUtils.GetColorizedDepthMapData(mapCopy, MinDepth, FloorDepth);
+			var depthMapImage = new ImageData(depthMap.Width, depthMap.Height, depthMapData, 1);
 
-			var imageWidth = depthMap.Width;
-			var imageHeight = depthMap.Height;
-			var fullRect = new Int32Rect(0, 0, imageWidth, imageHeight);
-
-			var depthImageBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, PixelFormats.Gray8, null);
-			depthImageBitmap.WritePixels(fullRect, depthMapData, imageWidth, 0);
-			depthImageBitmap.Freeze();
-
-			DepthImageBitmap = depthImageBitmap;
+			DepthImageBitmap = GraphicsUtils.GetWriteableBitmapFromImageData(depthMapImage);
 		}
 
 		private void CalculateFloorDepth()

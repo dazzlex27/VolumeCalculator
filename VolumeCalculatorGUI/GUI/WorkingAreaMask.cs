@@ -1,4 +1,4 @@
-﻿namespace VolumeCalculatorGUI.Entities
+﻿namespace VolumeCalculatorGUI.GUI
 {
 	internal class WorkingAreaMask
 	{

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Windows;
 
 namespace Primitives
@@ -64,7 +65,6 @@ namespace Primitives
 	    public override string ToString()
 	    {
 		    return $"floorDepth={FloorDepth} useColorMask={UseColorMask} useDepthMask={UseDepthMask} minObjHeight={MinObjectHeight} sampleCount={SampleDepthMapCount} outputPath={OutputPath}";
-
 	    }
 
 	    [Obfuscation(Exclude = true)]
@@ -78,5 +78,24 @@ namespace Primitives
 			    new Point(0.8, 0.2)
 		    };
 		}
+
+		[OnDeserializing]
+	    private void OnDeserialize(StreamingContext context)
+		{
+			if (FloorDepth <= 0)
+				FloorDepth = 1000;
+
+			if (SampleDepthMapCount <= 0)
+				SampleDepthMapCount = 10;
+
+			if (ColorMaskContour == null)
+				ColorMaskContour = GetDefaultAreaContour();
+
+			if (DepthMaskContour == null)
+				DepthMaskContour = GetDefaultAreaContour();
+
+		    if (TimeToStartMeasurementMs <= 0)
+			    TimeToStartMeasurementMs = 5000;
+	    }
     }
 }

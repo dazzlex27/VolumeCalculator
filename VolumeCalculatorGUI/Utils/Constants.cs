@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace VolumeCalculatorGUI.Utils
+﻿namespace VolumeCalculatorGUI.Utils
 {
 	internal static class Constants
 	{
@@ -8,16 +6,18 @@ namespace VolumeCalculatorGUI.Utils
 
 		public const string AppTitle = "VolumeCalculator";
 
-		public const string AppVersion = "v0.125 Beta";
+		public const string AppVersion = "v0.127 Beta";
 
 		public static string AppHeaderString = $@"{ManufacturerName} {AppTitle} {AppVersion}";
-
-		public static string CsvSeparator = CultureInfo.CurrentCulture.TextInfo.ListSeparator;
 
 		public static string LocalFrameProviderFolderName = "localFrameProvider";
 
 		public static string RealsenseFrameProviderFileName = "D435";
 
+		public static string FakeScalesFileName = "fakescales";
+
 		public const int ScalesPollingRateMs = 1000;
+
+		public const int DefaultDpi = 96;
 	}
 }

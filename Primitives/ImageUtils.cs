@@ -36,16 +36,7 @@ namespace Primitives
 
 		public static void SaveImageDataToFile(ImageData image, string filepath)
 		{
-			var format = PixelFormat.Canonical;
-			switch (image.BytesPerPixel)
-			{
-				case 3:
-					format = PixelFormat.Format24bppRgb;
-					break;
-				case 4:
-					format = PixelFormat.Format32bppArgb;
-					break;
-			}
+			var format = GetPixelFormatFromBpp(image.BytesPerPixel);
 
 			var bitmap = new Bitmap(image.Width, image.Height, format);
 
@@ -57,6 +48,21 @@ namespace Primitives
 			bitmap.UnlockBits(bmpData);
 
 			bitmap.Save(filepath);
+		}
+
+		private static PixelFormat GetPixelFormatFromBpp(int bytesPerPixel)
+		{
+			switch (bytesPerPixel)
+			{
+				case 1:
+					return PixelFormat.Format8bppIndexed;
+				case 3:
+					return PixelFormat.Format24bppRgb;
+				case 4:
+					return PixelFormat.Format32bppArgb;
+				default:
+					return PixelFormat.Canonical;
+			}
 		}
 	}
 }

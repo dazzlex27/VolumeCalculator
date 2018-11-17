@@ -45,11 +45,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationSettings.cs" />
+    <Compile Include="CalculationResult.cs" />
+    <Compile Include="CalculationResultFileProcessor.cs" />
     <Compile Include="ColorFrame.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="DepthFrame.cs" />
     <Compile Include="DepthMap.cs" />
     <Compile Include="DepthMapUtils.cs" />
+    <Compile Include="GeometryUtils.cs" />
     <Compile Include="Logging\DummyLogger.cs" />
     <Compile Include="Logging\ILogger.cs" />
     <Compile Include="ImageData.cs" />

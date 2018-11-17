@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using DeviceIntegrations.Scales;
 using FrameProviders;
 using FrameProviders.D435;
 using FrameProviders.KinectV2;
@@ -7,7 +8,7 @@ using Primitives.Logging;
 
 namespace VolumeCalculatorGUI.Utils
 {
-	internal class FrameProviderUtils
+	internal class DeviceInitializationUtils
 	{
 		public static FrameProvider CreateRequestedFrameProvider(ILogger logger)
 		{
@@ -18,6 +19,14 @@ namespace VolumeCalculatorGUI.Utils
 				return new RealsenseD435FrameProvider(logger);
 
 			return new KinectV2FrameProvider(logger);
+		}
+
+		public static IScales CreateRequestedScales(ILogger logger, string scalesComPort)
+		{
+			if (File.Exists(Constants.FakeScalesFileName))
+				return new FakeScales(logger);
+
+			return new MassaKScales(logger, scalesComPort, Constants.ScalesPollingRateMs);
 		}
 	}
 }

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Globalization;
-using System.IO;
-using System.Text;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
@@ -12,14 +9,12 @@ using FrameProviders;
 using Primitives;
 using Primitives.Logging;
 using VolumeCalculatorGUI.GUI.Utils;
-using VolumeCalculatorGUI.Utils;
 
 namespace VolumeCalculatorGUI.GUI
 {
 	internal class CalculationDashboardControlVm : BaseViewModel, IDisposable
 	{
 		private readonly ILogger _logger;
-		private string _resultFullPath;
 
 		private ApplicationSettings _applicationSettings;
 		private ColorCameraParams _colorCameraParams;
@@ -28,6 +23,7 @@ namespace VolumeCalculatorGUI.GUI
 		private DepthMapProcessor _processor;
 		private VolumeCalculator _volumeCalculator;
 		private readonly FrameProvider _frameProvider;
+		private CalculationResultFileProcessor _calculationResultFileProcessor;
 
 		private string _objectCode;
 		private double _objectWeight;
@@ -36,19 +32,19 @@ namespace VolumeCalculatorGUI.GUI
 		private int _objectLength;
 		private long _objectVolume;
 		private bool _calculationInProgress;
-		private bool _useManualCodeInput;
-		private bool _useManualWeightInput;
+		private bool _usingManualCodeInput;
 		private SolidColorBrush _statusBrush;
 		private string _statusText;
 
 		private Timer _measurementTimer;
-		private bool _codeReady;
 		private bool _weightReady;
 		private bool _waitingForReset;
 
 		public ICommand CalculateVolumeCommand { get; }
 
 		public ICommand CalculateVolumeAltCommand { get; }
+
+		public bool CodeReady => !string.IsNullOrEmpty(ObjectCode);
 
 		public string ObjectCode
 		{
@@ -141,28 +137,15 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public bool UseManualCodeInput
+		public bool UsingManualCodeInput
 		{
-			get => _useManualCodeInput;
+			get => _usingManualCodeInput;
 			set
 			{
-				if (_useManualCodeInput == value)
+				if (_usingManualCodeInput == value)
 					return;
 
-				_useManualCodeInput = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public bool UseManualWeightInput
-		{
-			get => _useManualWeightInput;
-			set
-			{
-				if (_useManualWeightInput == value)
-					return;
-
-				_useManualWeightInput = value;
+				_usingManualCodeInput = value;
 				OnPropertyChanged();
 			}
 		}
@@ -202,18 +185,15 @@ namespace VolumeCalculatorGUI.GUI
 			_colorCameraParams = colorCameraParams;
 			_depthCameraParams = depthCameraParams;
 
+			_calculationResultFileProcessor = new CalculationResultFileProcessor(settings.OutputPath);
+
 			_processor = new DepthMapProcessor(_logger, _colorCameraParams, _depthCameraParams);
 			_processor.SetDeviceSettings(_applicationSettings);
-
-			_resultFullPath = IoUtils.GetFullResultFilePath(_applicationSettings.OutputPath);
 
 			CalculateVolumeCommand = new CommandHandler(CalculateObjectVolume, !CalculationInProgress);
 			CalculateVolumeAltCommand = new CommandHandler(CalculateObjectVolumeRgb, !CalculationInProgress);
 
-			CreateMeasurementTimer(settings.TimeToStartMeasurementMs);
-			_codeReady = false;
-			_weightReady = false;
-			_waitingForReset = false;
+			CreateAutoStartTimer(settings.TimeToStartMeasurementMs);
 
 			SetStatusReady();
 		}
@@ -228,9 +208,9 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			_applicationSettings = settings;
 			_processor.SetDeviceSettings(settings);
-			_resultFullPath = IoUtils.GetFullResultFilePath(_applicationSettings.OutputPath);
+			_calculationResultFileProcessor = new CalculationResultFileProcessor(settings.OutputPath);
 
-			CreateMeasurementTimer(settings.TimeToStartMeasurementMs);
+			CreateAutoStartTimer(settings.TimeToStartMeasurementMs);
 		}
 
 		public void DeviceParamsUpdated(ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
@@ -245,17 +225,16 @@ namespace VolumeCalculatorGUI.GUI
 
 		public void UpdateCodeText(string text)
 		{
-			if (UseManualCodeInput || CalculationInProgress)
+			if (UsingManualCodeInput || CalculationInProgress)
 				return;
 
 			Dispatcher.Invoke(() => { ObjectCode = text; });
-			_codeReady = text != "";
-			ToggleTimer();
+			UpdateAutoStartTimer();
 		}
 
 		public void UpdateScalesMeasurementData(ScaleMeasurementData data)
 		{
-			if (UseManualWeightInput || CalculationInProgress)
+			if (CalculationInProgress)
 				return;
 
 			Dispatcher.Invoke(() => { ObjectWeight = data.WeightKg; });
@@ -271,10 +250,10 @@ namespace VolumeCalculatorGUI.GUI
 			}
 
 			_weightReady = data.Status == MeasurementStatus.Measured;
-			if (data.Status == MeasurementStatus.Ready)
+			if (data.Status == MeasurementStatus.Ready && _waitingForReset)
 				SetStatusReady();
 
-			ToggleTimer();
+			UpdateAutoStartTimer();
 		}
 
 		public DepthMapProcessor GetDepthMapProcessor()
@@ -282,34 +261,32 @@ namespace VolumeCalculatorGUI.GUI
 			return _processor;
 		}
 
-		private void ToggleTimer()
+		private void UpdateAutoStartTimer()
 		{
 			if (_waitingForReset)
 				return;
 
-			if (_codeReady && _weightReady)
-				_measurementTimer.Start();
-			else
+			if (CodeReady && _weightReady)
 			{
-				_measurementTimer.Stop();
-				_logger.LogInfo("Stopped measurement timer because one or both params have changed");
+				_measurementTimer.Start();
+				SetStatusAutoStarting();
 			}
+			else
+				_measurementTimer.Stop();
 		}
 
-		private void CreateMeasurementTimer(long intervalMs)
+		private void CreateAutoStartTimer(long intervalMs)
 		{
 			if (_measurementTimer != null)
 				_measurementTimer.Elapsed -= OnMeasurementTimerElapsed;
 
-			_measurementTimer = new Timer(intervalMs);
+			_measurementTimer = new Timer(intervalMs) {AutoReset = false};
 			_measurementTimer.Elapsed += OnMeasurementTimerElapsed;
 		}
 
 		private void OnMeasurementTimerElapsed(object sender, ElapsedEventArgs e)
 		{
 			CalculateObjectVolumeInternal(_applicationSettings.UseRgbAlgorithmByDefault);
-			_codeReady = false;
-			_weightReady = false;
 		}
 
 		private void CalculateObjectVolume()
@@ -356,7 +333,7 @@ namespace VolumeCalculatorGUI.GUI
 				return false;
 			}
 
-			if (!IsResultFileAccessible())
+			if (!_calculationResultFileProcessor.IsResultFileAccessible())
 			{
 				MessageBox.Show(
 					"Пожалуйста убедитесь, что файл с результатами доступен для записи и закрыт, прежде чем выполнять вычисление",
@@ -367,19 +344,6 @@ namespace VolumeCalculatorGUI.GUI
 			}
 
 			return true;
-		}
-
-		private void VolumeCalculator_CalculationCancelled()
-		{
-			DisposeVolumeCalculator();
-
-			_logger.LogError("Calculation cancelled on timeout");
-
-			SetStatusError();
-
-			MessageBox.Show(
-				"Не удалось собрать указанное количество образцов для измерения, проверьте соединение с устройством",
-				"Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 		}
 
 		private void OnCalculationFinished(ObjectVolumeData result, CalculationStatus status)
@@ -403,53 +367,12 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void DisposeVolumeCalculator()
 		{
+			if (_volumeCalculator == null)
+				return;
+
 			_volumeCalculator.CalculationFinished -= OnCalculationFinished;
 			_volumeCalculator.Dispose();
 			_volumeCalculator = null;
-		}
-
-		private void WriteHeadersToCsv()
-		{
-			Directory.CreateDirectory(_applicationSettings.OutputPath);
-			using (var resultFile = new StreamWriter(_resultFullPath, true, Encoding.Default))
-			{
-				var resultString = new StringBuilder();
-				resultString.Append("#");
-				resultString.Append($@"{Constants.CsvSeparator}date local");
-				resultString.Append($@"{Constants.CsvSeparator}time local");
-				resultString.Append($@"{Constants.CsvSeparator}code");
-				resultString.Append($@"{Constants.CsvSeparator}weight (kg)");
-				resultString.Append($@"{Constants.CsvSeparator}length (mm)");
-				resultString.Append($@"{Constants.CsvSeparator}width (mm)");
-				resultString.Append($@"{Constants.CsvSeparator}height (mm)");
-				resultString.Append($@"{Constants.CsvSeparator}volume (mm^2)");
-				resultFile.WriteLine(resultString);
-				resultFile.Flush();
-				_logger.LogInfo($@"Created the csv at {_resultFullPath} and wrote the headers to it");
-			}
-		}
-
-		private bool IsResultFileAccessible()
-		{
-			try
-			{
-				if (!File.Exists(_resultFullPath))
-				{
-					WriteHeadersToCsv();
-					return true;
-				}
-
-				using (Stream stream = new FileStream(_resultFullPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
-				{
-					stream.ReadByte();
-				}
-
-				return true;
-			}
-			catch (IOException)
-			{
-				return false;
-			}
 		}
 
 		private void ProcessCalculationResult(ObjectVolumeData result, CalculationStatus status)
@@ -525,43 +448,19 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
-				var safeName = ObjectCode;
-				if (!string.IsNullOrEmpty(safeName))
-				{
-					var nameWithoutReturns = ObjectCode.Replace(Environment.NewLine, " ");
-					safeName = nameWithoutReturns.Replace(Constants.CsvSeparator, " ");
-				}
-
-				var safeWeight = ObjectWeight.ToString(CultureInfo.InvariantCulture);
-
-				Directory.CreateDirectory(_applicationSettings.OutputPath);
-				using (var resultFile = new StreamWriter(_resultFullPath, true, Encoding.Default))
-				{
-					var dateTime = DateTime.Now;
-					var resultString = new StringBuilder();
-					resultString.Append(IoUtils.GetNextUniversalObjectCounter());
-					resultString.Append($@"{Constants.CsvSeparator}{dateTime.ToShortDateString()}");
-					resultString.Append($@"{Constants.CsvSeparator}{dateTime.ToShortTimeString()}");
-					resultString.Append($@"{Constants.CsvSeparator}{safeName}");
-					resultString.Append($@"{Constants.CsvSeparator}{safeWeight}");
-					resultString.Append($@"{Constants.CsvSeparator}{ObjectLength}");
-					resultString.Append($@"{Constants.CsvSeparator}{ObjectWidth}");
-					resultString.Append($@"{Constants.CsvSeparator}{ObjectHeight}");
-					resultString.Append($@"{Constants.CsvSeparator}{ObjectVolume}");
-					resultFile.WriteLine(resultString);
-					resultFile.Flush();
-					_logger.LogInfo("Wrote the calculated values to csv");
-				}
+				var calculationResult = new CalculationResult(DateTime.Now, ObjectCode, ObjectWeight, ObjectLength,
+					ObjectWidth, ObjectHeight, ObjectVolume);
+				_calculationResultFileProcessor.WriteCalculationResult(calculationResult);
 
 				ObjectCode = string.Empty;
 			}
-			catch (IOException ex)
+			catch (Exception ex)
 			{
 				MessageBox.Show(
 					"Не удалось записать результат измерений в файл, проверьте доступность файла и повторите измерения",
 					"Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
 				_logger.LogException(
-					$@"Failed to write calculated values to {_resultFullPath})",
+					$@"Failed to write calculated values to {_calculationResultFileProcessor.FullOutputPath})",
 					ex);
 			}
 		}
@@ -569,6 +468,7 @@ namespace VolumeCalculatorGUI.GUI
 		private void SetStatusReady()
 		{
 			_waitingForReset = false;
+			_weightReady = false;
 
 			Dispatcher.Invoke(() =>
 			{
@@ -587,18 +487,29 @@ namespace VolumeCalculatorGUI.GUI
 			});
 		}
 
+		private void SetStatusAutoStarting()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				StatusBrush = new SolidColorBrush(Colors.Blue);
+				StatusText = "Запущен автотаймер...";
+			});
+		}
+
 		private void SetStatusInProgress()
 		{
 			Dispatcher.Invoke(() =>
 			{
 				CalculationInProgress = true;
 				StatusBrush = new SolidColorBrush(Colors.DarkOrange);
-				StatusText = "Выполнется измерение";
+				StatusText = "Выполнется измерение...";
 			});
 		}
 
 		private void SetStatusFinished()
 		{
+			_waitingForReset = true;
+
 			Dispatcher.Invoke(() =>
 			{
 				CalculationInProgress = false;

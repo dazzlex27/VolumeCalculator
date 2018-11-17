@@ -1,4 +1,6 @@
-﻿namespace Primitives
+﻿using System.Globalization;
+
+namespace Primitives
 {
 	internal static class Constants
 	{
@@ -8,5 +10,7 @@
 
 		public const string PortsFileName = "ports";
 		public const string CountersFileName = "counters";
+
+		public static string CsvSeparator = CultureInfo.CurrentCulture.TextInfo.ListSeparator;
 	}
 }

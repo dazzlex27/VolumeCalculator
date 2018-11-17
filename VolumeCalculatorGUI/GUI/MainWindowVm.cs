@@ -238,7 +238,7 @@ namespace VolumeCalculatorGUI.GUI
 				var scalesComPort = IoUtils.ReadScalesPort();
 				if (scalesComPort != string.Empty)
 				{
-					_scales = new MassaKScales(_logger, scalesComPort, Constants.ScalesPollingRateMs);
+					_scales = DeviceInitializationUtils.CreateRequestedScales(_logger, scalesComPort);
 					_scales.MeasurementReady += OnScalesMeasurementDataReceived;
 				}
 			}

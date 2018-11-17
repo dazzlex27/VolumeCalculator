@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Linq;
-using System.Windows;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using FrameProviders;
 using Primitives;
 using Primitives.Logging;
-using VolumeCalculatorGUI.Entities;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
 
@@ -174,9 +171,9 @@ namespace VolumeCalculatorGUI.GUI
 			_useColorStream = true;
 			_useDepthStream = true;
 
-			_frameProvider = FrameProviderUtils.CreateRequestedFrameProvider(logger);
-			_frameProvider.ColorCameraFps = 1;
-			_frameProvider.DepthCameraFps = 1;
+			_frameProvider = DeviceInitializationUtils.CreateRequestedFrameProvider(logger);
+			_frameProvider.ColorCameraFps = 5;
+			_frameProvider.DepthCameraFps = 5;
 			_frameProvider.Start();
 
 			DepthCameraParams = _frameProvider.GetDepthCameraParams();
@@ -224,22 +221,12 @@ namespace VolumeCalculatorGUI.GUI
 			_polygonPointsChaged = true;
 		}
 
-		public void ColorImageUpdated(ImageData image)
+		private void ColorImageUpdated(ImageData image)
 		{
-			var imageWidth = image.Width;
-			var imageHeight = image.Height;
-			var fullRect = new Int32Rect(0, 0, imageWidth, imageHeight);
-
-			var format = GraphicsUtils.GetFormatFromBytesPerPixel(image.BytesPerPixel);
-
-			var colorImageBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, format, null);
-			colorImageBitmap.WritePixels(fullRect, image.Data, image.Stride, 0);
-			colorImageBitmap.Freeze();
-
-			ColorImageBitmap = colorImageBitmap;
+			ColorImageBitmap = GraphicsUtils.GetWriteableBitmapFromImageData(image);
 		}
 
-		public void DepthImageUpdated(DepthMap depthMap)
+		private void DepthImageUpdated(DepthMap depthMap)
 		{
 			try
 			{
@@ -248,22 +235,14 @@ namespace VolumeCalculatorGUI.GUI
 				var maskedMap = GetMaskedDepthMap(depthMap);
 				var cutOffDepth = (short) (_applicationSettings.FloorDepth - _applicationSettings.MinObjectHeight);
 				DepthMapUtils.FilterDepthMapByDepthtLimit(maskedMap, cutOffDepth);
+				DepthFrameReady?.Invoke(maskedMap);
 
 				var minDepth = _depthCameraParams.MinDepth;
 				var maxDepth = _applicationSettings.FloorDepth;
 				var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, minDepth, maxDepth);
+				var depthMapImage = new ImageData(maskedMap.Width, maskedMap.Height, depthMapData, 1);
 
-				var imageWidth = maskedMap.Width;
-				var imageHeight = maskedMap.Height;
-				var fullRect = new Int32Rect(0, 0, imageWidth, imageHeight);
-
-				var depthImageBitmap = new WriteableBitmap(imageWidth, imageHeight, 96, 96, PixelFormats.Gray8, null);
-				depthImageBitmap.WritePixels(fullRect, depthMapData, imageWidth, 0);
-				depthImageBitmap.Freeze();
-
-				DepthImageBitmap = depthImageBitmap;
-
-				DepthFrameReady?.Invoke(maskedMap);
+				DepthImageBitmap = GraphicsUtils.GetWriteableBitmapFromImageData(depthMapImage);
 			}
 			catch (Exception ex)
 			{
