@@ -89,7 +89,6 @@
     <Compile Include="GUI\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="GUI\WorkingAreaMask.cs" />
     <Compile Include="Utils\GraphicsUtils.cs" />
     <Page Include="GUI\CalculationDashboardControl.xaml">
       <SubType>Designer</SubType>

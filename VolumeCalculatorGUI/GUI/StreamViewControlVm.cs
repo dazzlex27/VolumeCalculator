@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Windows.Media.Imaging;
 using FrameProviders;
 using Primitives;
@@ -17,7 +16,6 @@ namespace VolumeCalculatorGUI.GUI
 			remove => _frameProvider.ColorFrameReady -= value;
 		}
 
-		public event Action<DepthMap> RawDepthFrameReady;
 		public event Action<DepthMap> DepthFrameReady;
 
 		public event Action<bool> UseColorStreamChanged;
@@ -41,8 +39,6 @@ namespace VolumeCalculatorGUI.GUI
 
 		private bool _useColorMask;
 		private bool _useDepthMask;
-		private WorkingAreaMask _depthAreaMask;
-		private bool _polygonPointsChaged;
 
 		public WriteableBitmap ColorImageBitmap
 		{
@@ -218,7 +214,6 @@ namespace VolumeCalculatorGUI.GUI
 			UseDepthMask = _applicationSettings.UseDepthMask;
 			ColorMaskPolygonControlVm.SetPolygonPoints(settings.ColorMaskContour);
 			DepthMaskPolygonControlVm.SetPolygonPoints(settings.DepthMaskContour);
-			_polygonPointsChaged = true;
 		}
 
 		private void ColorImageUpdated(ImageData image)
@@ -230,15 +225,12 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
-				RawDepthFrameReady?.Invoke(depthMap);
-
-				var maskedMap = GetMaskedDepthMap(depthMap);
-				var cutOffDepth = (short) (_applicationSettings.FloorDepth - _applicationSettings.MinObjectHeight);
-				DepthMapUtils.FilterDepthMapByDepthtLimit(maskedMap, cutOffDepth);
-				DepthFrameReady?.Invoke(maskedMap);
+				DepthFrameReady?.Invoke(depthMap);
 
 				var minDepth = _depthCameraParams.MinDepth;
 				var maxDepth = _applicationSettings.FloorDepth;
+				var maskedMap = new DepthMap(depthMap);
+				DepthMapUtils.FilterDepthMapByDepthtLimit(maskedMap, maxDepth);
 				var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, minDepth, maxDepth);
 				var depthMapImage = new ImageData(maskedMap.Width, maskedMap.Height, depthMapData, 1);
 
@@ -248,38 +240,6 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				_logger.LogException("failed to receive a depth frame", ex);
 			}
-		}
-
-		private DepthMap GetMaskedDepthMap(DepthMap depthMap)
-		{
-			if (!_useDepthMask)
-				return depthMap;
-
-			var maskedMap = new DepthMap(depthMap);
-
-			var maskIsValid = _depthAreaMask?.Width == depthMap.Width &&
-			                  _depthAreaMask?.Height == depthMap.Height && !_polygonPointsChaged;
-			if (!maskIsValid)
-				Dispatcher.Invoke(() =>
-				{
-					if (UseDepthMask)
-					{
-						var points = _applicationSettings.DepthMaskContour.ToArray();
-						var maskData = GeometryUtils.CreateWorkingAreaMask(points, depthMap.Width, depthMap.Height);
-						_depthAreaMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
-					}
-					else
-					{
-						var maskData = Enumerable.Repeat(true, depthMap.Width * depthMap.Height).ToArray();
-						_depthAreaMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
-					}
-
-					_polygonPointsChaged = false;
-				});
-
-			GeometryUtils.ApplyWorkingAreaMask(maskedMap, _depthAreaMask.Data);
-
-			return maskedMap;
 		}
 
 		private void ToggleUseColorStream(bool useColorStream)

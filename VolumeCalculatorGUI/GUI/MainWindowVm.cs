@@ -111,8 +111,8 @@ namespace VolumeCalculatorGUI.GUI
 				AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
 				InitializeSettings();
-				InitializeSubViewModels();
 				InitializeIoDevices();
+				InitializeSubViewModels();
 
 				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
 
@@ -155,7 +155,7 @@ namespace VolumeCalculatorGUI.GUI
 
 				var settingsWindowVm = new SettingsWindowVm(_logger, _settings, deviceParams, depthMapProcessor);
 				_streamViewControlVm.ColorFrameReady += settingsWindowVm.ColorFrameUpdated;
-				_streamViewControlVm.RawDepthFrameReady += settingsWindowVm.DepthFrameUpdated;
+				_streamViewControlVm.DepthFrameReady += settingsWindowVm.DepthFrameUpdated;
 				var settingsWindow = new SettingsWindow
 				{
 					Owner = Application.Current.Windows.OfType<Window>().SingleOrDefault(x => x.IsActive),
@@ -164,7 +164,7 @@ namespace VolumeCalculatorGUI.GUI
 
 				var settingsChanged = settingsWindow.ShowDialog() == true;
 				_streamViewControlVm.ColorFrameReady -= settingsWindowVm.ColorFrameUpdated;
-				_streamViewControlVm.RawDepthFrameReady -= settingsWindowVm.DepthFrameUpdated;
+				_streamViewControlVm.DepthFrameReady -= settingsWindowVm.DepthFrameUpdated;
 
 				if (!settingsChanged)
 					return;
@@ -205,8 +205,8 @@ namespace VolumeCalculatorGUI.GUI
 
 			var frameProvider = _streamViewControlVm.GetFrameProvider();
 
-			_calculationDashboardControlVm = new CalculationDashboardControlVm(_logger, frameProvider, _settings,
-				colorCameraParams, depthCameraParams);
+			_calculationDashboardControlVm = new CalculationDashboardControlVm(_logger, frameProvider, _barcodeScanners, _scales, 
+				_settings, colorCameraParams, depthCameraParams);
 			_testDataGenerationControlVm = new TestDataGenerationControlVm(_settings, depthCameraParams);
 
 			ApplicationSettingsChanged += OnApplicationSettingsChanged;
@@ -222,7 +222,6 @@ namespace VolumeCalculatorGUI.GUI
 				_barcodeScanners = new List<IBarcodeScanner>();
 
 				var keyboardListener = new GenericKeyboardBarcodeScanner(_logger);
-				keyboardListener.CharSequenceFormed += OnScannerDataReceived;
 				_barcodeScanners.Add(keyboardListener);
 				var keyEventHandler = new KeyEventHandler(keyboardListener.AddKey);
 				EventManager.RegisterClassHandler(typeof(Window), Keyboard.KeyUpEvent, keyEventHandler, true);
@@ -231,16 +230,12 @@ namespace VolumeCalculatorGUI.GUI
 				if (scannerComPort != string.Empty)
 				{
 					var serialListener = new GenericSerialPortBarcodeScanner(_logger, scannerComPort);
-					serialListener.CharSequenceFormed += OnScannerDataReceived;
 					_barcodeScanners.Add(serialListener);
 				}
 
 				var scalesComPort = IoUtils.ReadScalesPort();
 				if (scalesComPort != string.Empty)
-				{
 					_scales = DeviceInitializationUtils.CreateRequestedScales(_logger, scalesComPort);
-					_scales.MeasurementReady += OnScalesMeasurementDataReceived;
-				}
 			}
 			catch (Exception ex)
 			{
@@ -266,26 +261,9 @@ namespace VolumeCalculatorGUI.GUI
 			_logger.LogInfo("Disposing io devices...");
 
 			foreach (var listener in _barcodeScanners.Where(l => l != null))
-			{
-				listener.CharSequenceFormed -= OnScannerDataReceived;
 				listener.Dispose();
-			}
 
-			if (_scales != null)
-			{
-				_scales.MeasurementReady -= OnScalesMeasurementDataReceived;
-				_scales.Dispose();
-			}
-		}
-
-		private void OnScannerDataReceived(string data)
-		{
-			_calculationDashboardControlVm?.UpdateCodeText(data);
-		}
-
-		private void OnScalesMeasurementDataReceived(ScaleMeasurementData data)
-		{
-			_calculationDashboardControlVm?.UpdateScalesMeasurementData(data);
+			_scales?.Dispose();
 		}
 
 		private void OnDeviceParametersChanged(ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)

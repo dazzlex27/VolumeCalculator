@@ -29,7 +29,9 @@ namespace FrameProcessor
 		private DepthMap _latestDepthMap;
 
 		private int _samplesLeft;
-		private bool _hasSavedDebugData;
+		private bool _hasCompletedFirstRun;
+
+		private WorkingAreaMask _depthMapMask;
 
 		public bool IsRunning { get; private set; }
 
@@ -71,19 +73,49 @@ namespace FrameProcessor
 			CalculationFinished?.Invoke(null, CalculationStatus.Aborted);
 		}
 
+		private void CalculateDepthMapZoneMask(DepthMap depthMap)
+		{
+			if (_settings.UseDepthMask)
+			{
+				var points = _settings.DepthMaskContour.ToArray();
+				var maskData = GeometryUtils.CreateWorkingAreaMask(points, depthMap.Width, depthMap.Height);
+				_depthMapMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
+			}
+			else
+			{
+				var maskData = Enumerable.Repeat(true, depthMap.Width * depthMap.Height).ToArray();
+				_depthMapMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
+			}
+		}
+
+		private DepthMap GetMaskedDepthMap(DepthMap depthMap)
+		{
+			if (!_settings.UseDepthMask)
+				return depthMap;
+
+			var maskedMap = new DepthMap(depthMap);
+
+			GeometryUtils.ApplyWorkingAreaMask(maskedMap, _depthMapMask.Data);
+
+			return maskedMap;
+		}
+
 		private void AdvanceCalculation(DepthMap depthMap, ImageData image)
 		{
 			_timer.Stop();
 
-			if (!_hasSavedDebugData)
+			if (!_hasCompletedFirstRun)
 			{
+				CalculateDepthMapZoneMask(depthMap);
 				SaveDebugData();
-				_hasSavedDebugData = true;
+				_hasCompletedFirstRun = true;
 			}
 
+			var maskedMap = GetMaskedDepthMap(depthMap);
+
 			var currentResult = _usingColorData
-				? _processor.CalculateObjectVolumeAlt(depthMap, image)
-				: _processor.CalculateVolume(depthMap);
+				? _processor.CalculateObjectVolumeAlt(maskedMap, image)
+				: _processor.CalculateVolume(maskedMap);
 			_results.Add(currentResult);
 			_samplesLeft--;
 

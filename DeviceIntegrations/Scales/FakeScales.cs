@@ -11,7 +11,7 @@ namespace DeviceIntegrations.Scales
 
 		public event Action<ScaleMeasurementData> MeasurementReady;
 
-		private bool _applyPayload;
+		private volatile bool _applyPayload;
 
 		public FakeScales(ILogger logger)
 		{
@@ -40,14 +40,19 @@ namespace DeviceIntegrations.Scales
 				}}, _tokenSource.Token);
 		}
 
-		private void OnstatusSwitchTimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
-		{
-			_applyPayload = !_applyPayload;
-		}
-
 		public void Dispose()
 		{
 			_tokenSource.Cancel();
+		}
+
+		public void ResetWeight()
+		{
+			_applyPayload = false;
+		}
+
+		private void OnstatusSwitchTimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
+		{
+			_applyPayload = !_applyPayload;
 		}
 	}
 }

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using DeviceIntegrations.Scales;
+using DeviceIntegrations.Scanners;
 using FrameProcessor;
 using FrameProviders;
 using Primitives;
@@ -15,6 +17,9 @@ namespace VolumeCalculatorGUI.GUI
 	internal class CalculationDashboardControlVm : BaseViewModel, IDisposable
 	{
 		private readonly ILogger _logger;
+		private readonly FrameProvider _frameProvider;
+		private readonly IReadOnlyList<IBarcodeScanner> _scanners;
+		private readonly IScales _scales;
 
 		private ApplicationSettings _applicationSettings;
 		private ColorCameraParams _colorCameraParams;
@@ -22,19 +27,24 @@ namespace VolumeCalculatorGUI.GUI
 
 		private DepthMapProcessor _processor;
 		private VolumeCalculator _volumeCalculator;
-		private readonly FrameProvider _frameProvider;
 		private CalculationResultFileProcessor _calculationResultFileProcessor;
 
 		private string _objectCode;
 		private double _objectWeight;
+		private uint _unitCount;
 		private int _objectWidth;
 		private int _objectHeight;
 		private int _objectLength;
 		private long _objectVolume;
+		private string _comment;
 		private bool _calculationInProgress;
 		private bool _usingManualCodeInput;
 		private SolidColorBrush _statusBrush;
 		private string _statusText;
+
+		private bool _codeBoxFocused;
+		private bool _unitCountBoxFocused;
+		private bool _commentBoxFocused;
 
 		private Timer _measurementTimer;
 		private bool _weightReady;
@@ -43,6 +53,8 @@ namespace VolumeCalculatorGUI.GUI
 		public ICommand CalculateVolumeCommand { get; }
 
 		public ICommand CalculateVolumeAltCommand { get; }
+
+		public ICommand ResetWeightCommand { get; }
 
 		public bool CodeReady => !string.IsNullOrEmpty(ObjectCode);
 
@@ -68,6 +80,19 @@ namespace VolumeCalculatorGUI.GUI
 					return;
 				_objectWeight = value;
 
+				OnPropertyChanged();
+			}
+		}
+
+		public uint UnitCount
+		{
+			get => _unitCount;
+			set
+			{
+				if (_unitCount == value)
+					return;
+
+				_unitCount = value;
 				OnPropertyChanged();
 			}
 		}
@@ -124,6 +149,19 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
+		public string Comment
+		{
+			get => _comment;
+			set
+			{
+				if (_comment == value)
+					return;
+
+				_comment = value;
+				OnPropertyChanged();
+			}
+		}
+
 		public bool CalculationInProgress
 		{
 			get => _calculationInProgress;
@@ -176,11 +214,58 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public CalculationDashboardControlVm(ILogger logger, FrameProvider frameProvider, ApplicationSettings settings, 
-			ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
+		public bool CodeBoxFocused
+		{
+			get => _codeBoxFocused;
+			set
+			{
+				if (_codeBoxFocused == value)
+					return;
+
+				_codeBoxFocused = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public bool UnitCountBoxFocused
+		{
+			get => _unitCountBoxFocused;
+			set
+			{
+				if (_unitCountBoxFocused == value)
+					return;
+
+				_unitCountBoxFocused = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public bool CommentBoxFocused
+		{
+			get => _commentBoxFocused;
+			set
+			{
+				if (_commentBoxFocused == value)
+					return;
+
+				_commentBoxFocused = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public CalculationDashboardControlVm(ILogger logger, FrameProvider frameProvider, IReadOnlyList<IBarcodeScanner> scanners, 
+			IScales scales, ApplicationSettings settings, ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
 		{
 			_logger = logger;
 			_frameProvider = frameProvider;
+			_scanners = scanners;
+
+			foreach (var scanner in scanners)
+				scanner.CharSequenceFormed += OnBarcodeReady;
+
+			_scales = scales;
+			_scales.MeasurementReady += OnWeightMeasurementReady;
+
 			_applicationSettings = settings;
 			_colorCameraParams = colorCameraParams;
 			_depthCameraParams = depthCameraParams;
@@ -192,6 +277,7 @@ namespace VolumeCalculatorGUI.GUI
 
 			CalculateVolumeCommand = new CommandHandler(CalculateObjectVolume, !CalculationInProgress);
 			CalculateVolumeAltCommand = new CommandHandler(CalculateObjectVolumeRgb, !CalculationInProgress);
+			ResetWeightCommand = new CommandHandler(ResetWeight, !CalculationInProgress);
 
 			CreateAutoStartTimer(settings.TimeToStartMeasurementMs);
 
@@ -202,6 +288,11 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			if (_volumeCalculator != null && _volumeCalculator.IsRunning)
 				_processor.Dispose();
+
+			foreach (var scanner in _scanners)
+				scanner.CharSequenceFormed -= OnBarcodeReady;
+
+			_scales.MeasurementReady -= OnWeightMeasurementReady;
 		}
 
 		public void ApplicationSettingsUpdated(ApplicationSettings settings)
@@ -223,16 +314,21 @@ namespace VolumeCalculatorGUI.GUI
 			_processor.SetDeviceSettings(_applicationSettings);
 		}
 
-		public void UpdateCodeText(string text)
+		public DepthMapProcessor GetDepthMapProcessor()
+		{
+			return _processor;
+		}
+
+		private void OnBarcodeReady(string code)
 		{
 			if (UsingManualCodeInput || CalculationInProgress)
 				return;
 
-			Dispatcher.Invoke(() => { ObjectCode = text; });
+			Dispatcher.Invoke(() => { ObjectCode = code; });
 			UpdateAutoStartTimer();
 		}
 
-		public void UpdateScalesMeasurementData(ScaleMeasurementData data)
+		private void OnWeightMeasurementReady(ScaleMeasurementData data)
 		{
 			if (CalculationInProgress)
 				return;
@@ -240,7 +336,7 @@ namespace VolumeCalculatorGUI.GUI
 			Dispatcher.Invoke(() => { ObjectWeight = data.WeightKg; });
 			if (data.Status == MeasurementStatus.Ready || data.Status == MeasurementStatus.Measuring)
 			{
-				Dispatcher.Invoke(() => 
+				Dispatcher.Invoke(() =>
 				{
 					ObjectLength = 0;
 					ObjectWidth = 0;
@@ -256,9 +352,9 @@ namespace VolumeCalculatorGUI.GUI
 			UpdateAutoStartTimer();
 		}
 
-		public DepthMapProcessor GetDepthMapProcessor()
+		private void ResetWeight()
 		{
-			return _processor;
+			_scales.ResetWeight();
 		}
 
 		private void UpdateAutoStartTimer()
@@ -448,8 +544,8 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
-				var calculationResult = new CalculationResult(DateTime.Now, ObjectCode, ObjectWeight, ObjectLength,
-					ObjectWidth, ObjectHeight, ObjectVolume);
+				var calculationResult = new CalculationResult(DateTime.Now, ObjectCode, ObjectWeight, UnitCount, ObjectLength,
+					ObjectWidth, ObjectHeight, ObjectVolume, Comment);
 				_calculationResultFileProcessor.WriteCalculationResult(calculationResult);
 
 				ObjectCode = string.Empty;

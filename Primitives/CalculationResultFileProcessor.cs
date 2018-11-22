@@ -51,6 +51,7 @@ namespace Primitives
 				resultString.Append($@"{Constants.CsvSeparator}time local");
 				resultString.Append($@"{Constants.CsvSeparator}code");
 				resultString.Append($@"{Constants.CsvSeparator}weight (kg)");
+				resultString.Append($@"{Constants.CsvSeparator}unitCount (p)");
 				resultString.Append($@"{Constants.CsvSeparator}length (mm)");
 				resultString.Append($@"{Constants.CsvSeparator}width (mm)");
 				resultString.Append($@"{Constants.CsvSeparator}height (mm)");
@@ -80,6 +81,7 @@ namespace Primitives
 				resultString.Append($@"{Constants.CsvSeparator}{result.CalculationTime.ToShortTimeString()}");
 				resultString.Append($@"{Constants.CsvSeparator}{safeName}");
 				resultString.Append($@"{Constants.CsvSeparator}{safeWeight}");
+				resultString.Append($@"{Constants.CsvSeparator}{result.UnitCount}");
 				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectLength}");
 				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectWidth}");
 				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectHeight}");

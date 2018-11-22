@@ -1,6 +1,6 @@
-﻿namespace VolumeCalculatorGUI.GUI
+﻿namespace Primitives
 {
-	internal class WorkingAreaMask
+	public class WorkingAreaMask
 	{
 		public int Width { get; }
 

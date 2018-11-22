@@ -51,6 +51,11 @@ namespace DeviceIntegrations.Scales
 			_serialPort.Dispose();
 		}
 
+		public void ResetWeight()
+		{
+
+		}
+
 		private async Task PollScales()
 		{
 			_serialPort = new SerialPort(_port)
