@@ -51,8 +51,7 @@ namespace FrameProcessor
 			_results = new List<ObjectVolumeData>();
 
 			_frameProvider.UnrestrictedDepthFrameReady += OnDepthFrameReady;
-			if (usingColorData)
-				_frameProvider.UnrestrictedColorFrameReady += OnColorFrameReady;
+			_frameProvider.UnrestrictedColorFrameReady += OnColorFrameReady;
 
 			_timer = new Timer(3000);
 			_timer.Elapsed += Timer_Elapsed;
@@ -70,6 +69,7 @@ namespace FrameProcessor
 
 		public void Abort()
 		{
+			Dispose();
 			CalculationFinished?.Invoke(null, CalculationStatus.Aborted);
 		}
 
@@ -146,6 +146,9 @@ namespace FrameProcessor
 			AdvanceCalculation(_latestDepthMap, _latestColorFrame);
 			_colorFrameReady = false;
 			_depthFrameReady = false;
+
+			if (!_usingColorData)
+				_frameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
 		}
 
 		private void OnDepthFrameReady(DepthMap depthMap)
@@ -154,7 +157,7 @@ namespace FrameProcessor
 
 			_depthFrameReady = true;
 
-			if (_usingColorData && !_colorFrameReady)
+			if (_usingColorData && !_colorFrameReady || !_hasCompletedFirstRun)
 				return;
 
 			AdvanceCalculation(_latestDepthMap, _latestColorFrame);
@@ -193,20 +196,23 @@ namespace FrameProcessor
 			try
 			{
 				Directory.CreateDirectory(Constants.DebugDataDirectoryName);
-				var debugDirectoryInfo = new DirectoryInfo(Constants.DebugDataDirectoryName);
-				foreach (var file in debugDirectoryInfo.EnumerateFiles())
-					file.Delete();
+				var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter();
 
 				if (_latestColorFrame != null)
-					ImageUtils.SaveImageDataToFile(_latestColorFrame, Constants.DebugColorFrameFilename);
+				{
+					var colorFrameFileName = Path.Combine(_settings.PhotosDirectoryPath, $"{calculationIndex}_color.png");
+					ImageUtils.SaveImageDataToFile(_latestColorFrame, colorFrameFileName);
+				}
 
 				if (_latestDepthMap == null)
 					return;
 
 				var depthCameraParams = _frameProvider.GetDepthCameraParams();
 
+				var depthFrameFileName = Path.Combine(_settings.PhotosDirectoryPath, $"{calculationIndex}_depth.png");
+
 				var cutOffDepth = (short) (_settings.FloorDepth - _settings.MinObjectHeight);
-				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, Constants.DebugDepthFrameFilename,
+				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, depthFrameFileName,
 					depthCameraParams.MinDepth, depthCameraParams.MaxDepth, cutOffDepth);
 			}
 			catch (Exception ex)

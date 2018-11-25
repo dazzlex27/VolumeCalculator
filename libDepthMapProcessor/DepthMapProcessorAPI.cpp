@@ -9,26 +9,36 @@ DLL_EXPORT void* CreateDepthMapProcessor(ColorCameraIntristics colorIntrinsics, 
 DLL_EXPORT void SetAlgorithmSettings(void* handle, short floorDepth, short cutOffDepth, RelRect colorRoiRect)
 {
 	auto processor = (DepthMapProcessor*)handle;
+	if (processor == nullptr)
+		return;
+
 	processor->SetAlgorithmSettings(floorDepth, cutOffDepth, colorRoiRect);
 }
 
-DLL_EXPORT ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depthMap)
+DLL_EXPORT void SetDebugPath(void* handle, const char* path)
 {
 	auto processor = (DepthMapProcessor*)handle;
+	if (processor == nullptr)
+		return;
 
+	processor->SetDebugPath(path);
+}
+
+DLL_EXPORT ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depthMap, bool saveDebugData)
+{
+	auto processor = (DepthMapProcessor*)handle;
 	if (processor == nullptr)
 		return nullptr;
 
 	if (depthMap.Data == nullptr)
 		return nullptr;
 
-	return processor->CalculateObjectVolume(depthMap);
+	return processor->CalculateObjectVolume(depthMap, saveDebugData);
 }
 
-DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, DepthMap depthMap, ColorImage image)
+DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, DepthMap depthMap, ColorImage image, bool saveDebugData)
 {
 	auto processor = (DepthMapProcessor*)handle;
-
 	if (processor == nullptr)
 		return nullptr;
 
@@ -38,13 +48,12 @@ DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, DepthMap de
 	if (depthMap.Data == nullptr)
 		return nullptr;
 
-	return processor->CalculateObjectVolumeAlt(depthMap, image);
+	return processor->CalculateObjectVolumeAlt(depthMap, image, saveDebugData);
 }
 
 DLL_EXPORT short CalculateFloorDepth(void* handle, DepthMap depthMap)
 {
 	auto processor = (DepthMapProcessor*)handle;
-
 	if (processor == nullptr)
 		return -1;
 
@@ -57,7 +66,6 @@ DLL_EXPORT short CalculateFloorDepth(void* handle, DepthMap depthMap)
 DLL_EXPORT void DestroyDepthMapProcessor(void* handle)
 {
 	auto processor = (DepthMapProcessor*)handle;
-
 	if (processor == nullptr)
 		return;
 

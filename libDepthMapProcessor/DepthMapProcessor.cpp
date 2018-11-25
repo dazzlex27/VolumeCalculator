@@ -50,28 +50,35 @@ void DepthMapProcessor::SetAlgorithmSettings(const short floorDepth, const short
 	_correctPerspective = true;
 }
 
-ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& depthMap)
+void DepthMapProcessor::SetDebugPath(const char* path)
+{
+	_debugPath = std::string(path);
+	_contourExtractor.SetDebugPath(_debugPath);
+}
+
+ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& depthMap, const bool saveDebugData)
 {
 	FillDepthBuffer(depthMap);
 	DmUtils::FilterDepthMap(_mapLength, _depthMapBuffer, _cutOffDepth);
 	 
-	const Contour& objectContour = GetTargetContourFromDepthMap();
+	const Contour& objectContour = GetTargetContourFromDepthMap(saveDebugData);
 
-	_result = CalculateContourDimensions(objectContour);
+
+	_result = CalculateContourDimensions(objectContour, saveDebugData);
 
 	return &_result;
 }
 
-ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image)
+ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image, const bool saveDebugData)
 {
 	FillDepthBuffer(depthMap);
 	DmUtils::FilterDepthMap(_mapLength, _depthMapBuffer, _cutOffDepth);
 	FillColorBuffer(image);
 
-	const Contour& depthObjectContour = GetTargetContourFromDepthMap();
-	const Contour& colorObjectContour = GetTargetContourFromColorImage();
+	const Contour& depthObjectContour = GetTargetContourFromDepthMap(saveDebugData);
+	const Contour& colorObjectContour = GetTargetContourFromColorImage(saveDebugData);
 
-	_result = CalculateContourDimensionsAlt(depthObjectContour, colorObjectContour);
+	_result = CalculateContourDimensionsAlt(depthObjectContour, colorObjectContour, saveDebugData);
 
 	return &_result;
 }
@@ -130,27 +137,26 @@ void DepthMapProcessor::FillDepthBuffer(const DepthMap& depthMap)
 	memcpy(_depthMapBuffer, depthMap.Data, _mapLengthBytes);
 }
 
-const Contour DepthMapProcessor::GetTargetContourFromDepthMap() const
+const Contour DepthMapProcessor::GetTargetContourFromDepthMap(const bool saveDebugData) const
 {
 	DmUtils::ConvertDepthMapDataToBinaryMask(_mapLength, _depthMapBuffer, _depthMaskBuffer);
 	cv::Mat imageForContourSearch(_mapHeight, _mapWidth, CV_8UC1, _depthMaskBuffer);
 
-	return _contourExtractor.ExtractContourFromBinaryImage(imageForContourSearch);
+	return _contourExtractor.ExtractContourFromBinaryImage(imageForContourSearch, saveDebugData);
 }
 
-const Contour DepthMapProcessor::GetTargetContourFromColorImage() const
+const Contour DepthMapProcessor::GetTargetContourFromColorImage(const bool saveDebugData) const
 {
 	const int cvChannelsCode = DmUtils::GetCvChannelsCodeFromBytesPerPixel(_colorImageBytesPerPixel);
 	cv::Mat input(_colorImageHeight, _colorImageWidth, cvChannelsCode, _colorImageBuffer);
 
 	const cv::Rect& roi = DmUtils::GetAbsRoiFromRoiRect(_colorRoiRect, cv::Size(input.cols, input.rows));
 	cv::Mat inputRoi = input(roi);
-	cv::imwrite("out/inputRoi.png", inputRoi);
 
-	return _contourExtractor.ExtractContourFromColorImage(inputRoi);
+	return _contourExtractor.ExtractContourFromColorImage(inputRoi, saveDebugData);
 }
 
-const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Contour& depthObjectContour) const
+const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Contour& depthObjectContour, const bool saveDebugData) const
 {
 	if (depthObjectContour.size() == 0)
 		return ObjDimDescription();
@@ -159,8 +165,9 @@ const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Cont
 
 	const std::vector<DepthValue>& worldDepthValues = GetWorldDepthValues(depthObjectContour);
 	const Contour& perspectiveCorrectedContour = GetCameraPoints(worldDepthValues, contourTopPlaneDepth);
-	DmUtils::DrawTargetContour(perspectiveCorrectedContour, _mapWidth, _mapHeight, 2);
 	const cv::RotatedRect& correctedBoundingRect = cv::minAreaRect(perspectiveCorrectedContour);
+	if (saveDebugData)
+		DmUtils::DrawTargetContour(perspectiveCorrectedContour, _mapWidth, _mapHeight, _debugPath, "ctr_depth");
 
 	const TwoDimDescription& twoDimDescription = GetTwoDimDescription(correctedBoundingRect, contourTopPlaneDepth,
 		_depthIntrinsics.FocalLengthX, _depthIntrinsics.FocalLengthY,
@@ -175,12 +182,17 @@ const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Cont
 }
 
 const ObjDimDescription DepthMapProcessor::CalculateContourDimensionsAlt(const Contour& depthObjectContour,
-	const Contour& colorObjectContour) const
+	const Contour& colorObjectContour, const bool saveDebugData) const
 {
 	if (depthObjectContour.size() == 0 || colorObjectContour.size() == 0)
 		return ObjDimDescription();
 
 	const short contourTopPlaneDepth = GetContourTopPlaneDepth(depthObjectContour);
+	if (saveDebugData)
+	{
+		DmUtils::DrawTargetContour(depthObjectContour, _mapWidth, _mapHeight, _debugPath, "ctr_depth");
+		DmUtils::DrawTargetContour(colorObjectContour, _mapWidth, _mapHeight, _debugPath, "ctr_color");
+	}
 
 	const cv::RotatedRect& colorObjectBoundingRect = cv::minAreaRect(colorObjectContour);
 

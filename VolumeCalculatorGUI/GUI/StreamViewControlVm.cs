@@ -230,7 +230,8 @@ namespace VolumeCalculatorGUI.GUI
 				var minDepth = _depthCameraParams.MinDepth;
 				var maxDepth = _applicationSettings.FloorDepth;
 				var maskedMap = new DepthMap(depthMap);
-				DepthMapUtils.FilterDepthMapByDepthtLimit(maskedMap, maxDepth);
+				var cutOffDepth = (short) (maxDepth - _applicationSettings.MinObjectHeight);
+				DepthMapUtils.FilterDepthMapByDepthtLimit(maskedMap, cutOffDepth);
 				var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, minDepth, maxDepth);
 				var depthMapImage = new ImageData(maskedMap.Width, maskedMap.Height, depthMapData, 1);
 

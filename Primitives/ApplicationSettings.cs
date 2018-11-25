@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Windows;
@@ -37,6 +39,10 @@ namespace Primitives
 
 		[Obfuscation]
 		public bool UseRgbAlgorithmByDefault { get; set; }
+
+	    public string ResultsFilePath => Path.Combine(OutputPath, "results.csv");
+
+	    public string PhotosDirectoryPath => Path.Combine(OutputPath, "photos");
 
 	    public ApplicationSettings(short floorDepth, short minObjectHeight, byte sampleCount, string outputPath, 
 		    bool useColorMask, IReadOnlyCollection<Point> colorMaskContour, 

@@ -89,7 +89,7 @@ namespace VolumeCalculationRunner
 			LogVerbose("Calculating volume...");
 			var settings = new ApplicationSettings(testCaseData.FloorDepth, testCaseData.MinObjHeight, 30, "", false,
 				null, false, null, 10000, false);
-			processor.SetDeviceSettings(settings);
+			processor.SetProcessorSettings(settings);
 
 			var results = new List<ObjectVolumeData>();
 

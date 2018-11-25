@@ -13,13 +13,14 @@ namespace DeviceIntegrations.Scales
 		public event Action<ScaleMeasurementData> MeasurementReady;
 
 		private const int ErrorTimeOutMs = 500;
-		private const string PollMessage = "J";
+		private const int PollMessage = 0x4A;
+		private const int ResetMessage = 0x0E;
 
 		private readonly ILogger _logger;
 		private readonly string _port;
 		private readonly int _pollingRateMs;
 		private readonly CancellationTokenSource _tokenSource;
-		private SerialPort _serialPort;
+		private readonly SerialPort _serialPort;
 
 		public MassaKScales(ILogger logger, string port, int pollingRateMs)
 		{
@@ -29,6 +30,16 @@ namespace DeviceIntegrations.Scales
 			_tokenSource = new CancellationTokenSource();
 
 			_logger.LogInfo($"Starting MassaKScales on port {_port}...");
+
+			_serialPort = new SerialPort(_port)
+			{
+				BaudRate = 4800,
+				Parity = Parity.Even,
+				StopBits = StopBits.One,
+				DataBits = 8,
+				Handshake = Handshake.None
+			};
+			_serialPort.DataReceived += OnDataReceived;
 
 			Task.Run(async () =>
 			{
@@ -53,28 +64,20 @@ namespace DeviceIntegrations.Scales
 
 		public void ResetWeight()
 		{
-
+			var messageBytes = BitConverter.GetBytes(ResetMessage);
+			_serialPort.Write(messageBytes, 0, 2);
 		}
 
 		private async Task PollScales()
 		{
-			_serialPort = new SerialPort(_port)
-			{
-				BaudRate = 4800,
-				Parity = Parity.Even,
-				StopBits = StopBits.One,
-				DataBits = 8,
-				Handshake = Handshake.None
-			};
-
-			_serialPort.DataReceived += OnDataReceived;
 			_serialPort.Open();
 
 			while (!_tokenSource.IsCancellationRequested)
 			{
 				try
 				{
-					_serialPort.Write(PollMessage);
+					var messageBytes = BitConverter.GetBytes(PollMessage);
+					_serialPort.Write(messageBytes, 0, 2);
 
 					await Task.Delay(_pollingRateMs);
 				}

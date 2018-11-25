@@ -18,12 +18,12 @@ namespace Primitives
 
 		public int ObjectHeight { get; }
 
-		public long ObjectVolume { get; }
+		public double ObjectVolume { get; }
 
 		public string CalculationComment { get; }
 
 		public CalculationResult(DateTime calculationTime, string objectCode, double objectWeight, uint unitCount,
-			int objectLength, int objectWidth, int objectHeight, long objectVolume, string calculationComment)
+			int objectLength, int objectWidth, int objectHeight, double objectVolume, string calculationComment)
 		{
 			CalculationTime = calculationTime;
 			ObjectCode = objectCode;

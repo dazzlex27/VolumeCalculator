@@ -18,5 +18,7 @@ public:
 	static const cv::Rect GetAbsRoiFromRoiRect(const RelRect& roiRect, const cv::Size& frameSize);
 	static const int GetCvChannelsCodeFromBytesPerPixel(const int bytesPerPixel);
 	static const short FindModeInSortedArray(const short*const array, const int count);
-	static void DrawTargetContour(const Contour& contour, const int width, const int height, const int contourNum);
+	static void DrawTargetContour(const Contour& contour, const int width, const int height, const std::string& debugPath, 
+		const std::string& contourLabel);
+	static std::string GetCurrentCalculationIndex();
 };

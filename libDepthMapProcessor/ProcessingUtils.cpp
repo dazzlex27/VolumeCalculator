@@ -169,7 +169,8 @@ const short DmUtils::FindModeInSortedArray(const short * const array, const int 
 	return mode;
 }
 
-void DmUtils::DrawTargetContour(const Contour& contour, const int width, const int height, const int contourNum)
+void DmUtils::DrawTargetContour(const Contour& contour, const int width, const int height, const std::string& debugPath, 
+	const std::string& contourLabel)
 {
 	cv::RotatedRect rect = cv::minAreaRect(cv::Mat(contour));
 	cv::Point2f points[4];
@@ -193,5 +194,25 @@ void DmUtils::DrawTargetContour(const Contour& contour, const int width, const i
 	for (auto i = 0; i < contoursToDraw.size(); i++)
 		cv::drawContours(img2, contoursToDraw, i, colors[i]);
 
-	cv::imwrite("out/target" + std::to_string(contourNum) + ".png", img2);
+	const std::string& index = GetCurrentCalculationIndex();
+
+	cv::imwrite(debugPath + "/" + index + "_" + contourLabel + ".png", img2);
+}
+
+std::string DmUtils::GetCurrentCalculationIndex()
+{
+	std::string index;
+
+	std::ifstream countersFile;
+	countersFile.open("counters");
+	if (!countersFile.good())
+		return "0";
+
+	bool isEmpty = countersFile.peek() == std::ifstream::traits_type::eof();
+	if (isEmpty)
+		return "0";
+
+	countersFile >> index;
+
+	return index;
 }

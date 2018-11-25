@@ -25,6 +25,8 @@ private:
 	bool _correctPerspective;
 	RelRect _colorRoiRect;
 
+	std::string _debugPath;
+
 	ObjDimDescription _result;
 	short* _depthMapBuffer;
 	byte* _depthMaskBuffer;
@@ -34,18 +36,20 @@ public:
 	DepthMapProcessor(ColorCameraIntristics colorIntrinsics, DepthCameraIntristics depthIntrinsics);
 	~DepthMapProcessor();
 
-	ObjDimDescription* CalculateObjectVolume(const DepthMap& depthMap);
-	ObjDimDescription* CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image);
-	const short CalculateFloorDepth(const DepthMap& depthMap);
 	void SetAlgorithmSettings(const short floorDepth, const short cutOffDepth, const RelRect& roiRect);
+	void SetDebugPath(const char* path);
+	ObjDimDescription* CalculateObjectVolume(const DepthMap& depthMap, const bool saveDebugData);
+	ObjDimDescription* CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image, const bool saveDebugData);
+	const short CalculateFloorDepth(const DepthMap& depthMap);
 
 private:
 	void FillColorBuffer(const ColorImage& image);
 	void FillDepthBuffer(const DepthMap& depthMap);
-	const Contour GetTargetContourFromDepthMap() const;
-	const Contour GetTargetContourFromColorImage() const;
-	const ObjDimDescription CalculateContourDimensions(const Contour& contour) const;
-	const ObjDimDescription CalculateContourDimensionsAlt(const Contour& objectContour, const Contour& colorObjectContour) const;
+	const Contour GetTargetContourFromDepthMap(const bool saveDebugData) const;
+	const Contour GetTargetContourFromColorImage(const bool saveDebugData) const;
+	const ObjDimDescription CalculateContourDimensions(const Contour& contour, const bool saveDebugData) const;
+	const ObjDimDescription CalculateContourDimensionsAlt(const Contour& objectContour, const Contour& colorObjectContour,
+		const bool saveDebugData) const;
 	const short GetContourTopPlaneDepth(const Contour& contour) const;
 	const TwoDimDescription GetTwoDimDescription(const cv::RotatedRect& contourBoundingRect, 
 		const short contourTopPlaneDepth, const float fx, const float fy, const float ppx, const float ppy) const;

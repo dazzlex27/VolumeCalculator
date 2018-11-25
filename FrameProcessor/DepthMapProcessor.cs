@@ -12,6 +12,8 @@ namespace FrameProcessor
 		private readonly ILogger _logger;
 		private readonly IntPtr _nativeHandle;
 
+		private bool _needToSaveDebugData;
+
 		public bool IsActive { get; private set; }
 
 		public DepthMapProcessor(ILogger logger, ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
@@ -29,6 +31,8 @@ namespace FrameProcessor
 				_nativeHandle = new IntPtr(ptr);
 			}
 
+			_needToSaveDebugData = true;
+
 			IsActive = true;
 		}
 
@@ -40,7 +44,8 @@ namespace FrameProcessor
 				{
 					var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
 
-					var res = DepthMapProcessorDll.CalculateObjectVolume(_nativeHandle.ToPointer(), nativeDepthMap);
+					var res = DepthMapProcessorDll.CalculateObjectVolume(_nativeHandle.ToPointer(), nativeDepthMap, _needToSaveDebugData);
+					_needToSaveDebugData = false;
 					return res == null ? null : new ObjectVolumeData(res->Length, res->Width, res->Height);
 				}
 			}
@@ -63,7 +68,8 @@ namespace FrameProcessor
 						BytesPerPixel = colorFrame.BytesPerPixel
 					};
 
-					var res = DepthMapProcessorDll.CalculateObjectVolumeAlt(_nativeHandle.ToPointer(), nativeDepthMap, nativeColorImage);
+					var res = DepthMapProcessorDll.CalculateObjectVolumeAlt(_nativeHandle.ToPointer(), nativeDepthMap, nativeColorImage, _needToSaveDebugData);
+					_needToSaveDebugData = false;
 					return res == null ? null : new ObjectVolumeData(res->Length, res->Width, res->Height);
 				}
 			}
@@ -82,7 +88,7 @@ namespace FrameProcessor
 			}
 		}
 
-		public void SetDeviceSettings(ApplicationSettings settings)
+		public void SetProcessorSettings(ApplicationSettings settings)
 		{
 			var cutOffDepth = (short)(settings.FloorDepth - settings.MinObjectHeight);
 			var colorRoiRect = CreateColorRoiRectFromSettings(settings);
@@ -90,6 +96,8 @@ namespace FrameProcessor
 			unsafe
 			{
 				DepthMapProcessorDll.SetAlgorithmSettings(_nativeHandle.ToPointer(), settings.FloorDepth, cutOffDepth, colorRoiRect);
+				var terminatedPath = settings.PhotosDirectoryPath + "\0";
+				DepthMapProcessorDll.SetDebugPath(_nativeHandle.ToPointer(), terminatedPath);
 			}
 		}
 

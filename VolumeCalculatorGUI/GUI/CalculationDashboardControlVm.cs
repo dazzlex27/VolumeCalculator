@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
@@ -35,7 +37,7 @@ namespace VolumeCalculatorGUI.GUI
 		private int _objectWidth;
 		private int _objectHeight;
 		private int _objectLength;
-		private long _objectVolume;
+		private double _objectVolume;
 		private string _comment;
 		private bool _calculationInProgress;
 		private bool _usingManualCodeInput;
@@ -56,7 +58,20 @@ namespace VolumeCalculatorGUI.GUI
 
 		public ICommand ResetWeightCommand { get; }
 
+		public ICommand OpenResultsFileCommand { get; }
+
+		public ICommand OpenPhotosFolderCommand { get; }
+
 		public bool CodeReady => !string.IsNullOrEmpty(ObjectCode);
+
+		public bool CanAcceptBarcodes
+		{
+			get
+			{
+				var boxedAreInactive = !UsingManualCodeInput && !CodeBoxFocused && !CommentBoxFocused && !UnitCountBoxFocused;
+				return boxedAreInactive && !CalculationInProgress;
+			}
+		}
 
 		public string ObjectCode
 		{
@@ -136,12 +151,12 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public long ObjectVolume
+		public double ObjectVolume
 		{
 			get => _objectVolume;
 			set
 			{
-				if (_objectVolume == value)
+				if (Math.Abs(_objectVolume - value) < 0.0001)
 					return;
 
 				_objectVolume = value;
@@ -258,26 +273,34 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			_logger = logger;
 			_frameProvider = frameProvider;
-			_scanners = scanners;
 
-			foreach (var scanner in scanners)
-				scanner.CharSequenceFormed += OnBarcodeReady;
+			if (scanners != null)
+			{
+				_scanners = scanners;
+				foreach (var scanner in scanners.Where(s => s != null))
+					scanner.CharSequenceFormed += OnBarcodeReady;
+			}
 
-			_scales = scales;
-			_scales.MeasurementReady += OnWeightMeasurementReady;
+			if (scales != null)
+			{
+				_scales = scales;
+				_scales.MeasurementReady += OnWeightMeasurementReady;
+			}
 
 			_applicationSettings = settings;
 			_colorCameraParams = colorCameraParams;
 			_depthCameraParams = depthCameraParams;
 
-			_calculationResultFileProcessor = new CalculationResultFileProcessor(settings.OutputPath);
+			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.OutputPath);
 
 			_processor = new DepthMapProcessor(_logger, _colorCameraParams, _depthCameraParams);
-			_processor.SetDeviceSettings(_applicationSettings);
+			_processor.SetProcessorSettings(_applicationSettings);
 
 			CalculateVolumeCommand = new CommandHandler(CalculateObjectVolume, !CalculationInProgress);
 			CalculateVolumeAltCommand = new CommandHandler(CalculateObjectVolumeRgb, !CalculationInProgress);
 			ResetWeightCommand = new CommandHandler(ResetWeight, !CalculationInProgress);
+			OpenResultsFileCommand = new CommandHandler(OpenResultsFile, !CalculationInProgress);
+			OpenPhotosFolderCommand = new CommandHandler(OpenPhotosFolder, !CalculationInProgress);
 
 			CreateAutoStartTimer(settings.TimeToStartMeasurementMs);
 
@@ -289,17 +312,21 @@ namespace VolumeCalculatorGUI.GUI
 			if (_volumeCalculator != null && _volumeCalculator.IsRunning)
 				_processor.Dispose();
 
-			foreach (var scanner in _scanners)
-				scanner.CharSequenceFormed -= OnBarcodeReady;
+			if (_scanners != null)
+			{
+				foreach (var scanner in _scanners.Where(s => s != null))
+					scanner.CharSequenceFormed -= OnBarcodeReady;
+			}
 
-			_scales.MeasurementReady -= OnWeightMeasurementReady;
+			if (_scales != null)
+				_scales.MeasurementReady -= OnWeightMeasurementReady;
 		}
 
 		public void ApplicationSettingsUpdated(ApplicationSettings settings)
 		{
 			_applicationSettings = settings;
-			_processor.SetDeviceSettings(settings);
-			_calculationResultFileProcessor = new CalculationResultFileProcessor(settings.OutputPath);
+			_processor.SetProcessorSettings(settings);
+			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.OutputPath);
 
 			CreateAutoStartTimer(settings.TimeToStartMeasurementMs);
 		}
@@ -311,7 +338,7 @@ namespace VolumeCalculatorGUI.GUI
 			Dispose();
 
 			_processor = new DepthMapProcessor(_logger, _colorCameraParams, _depthCameraParams);
-			_processor.SetDeviceSettings(_applicationSettings);
+			_processor.SetProcessorSettings(_applicationSettings);
 		}
 
 		public DepthMapProcessor GetDepthMapProcessor()
@@ -321,7 +348,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void OnBarcodeReady(string code)
 		{
-			if (UsingManualCodeInput || CalculationInProgress)
+			if (!CanAcceptBarcodes)
 				return;
 
 			Dispatcher.Invoke(() => { ObjectCode = code; });
@@ -354,12 +381,45 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void ResetWeight()
 		{
-			_scales.ResetWeight();
+			_scales?.ResetWeight();
+		}
+
+		private void OpenResultsFile()
+		{
+			try
+			{
+				var resultsFileInfo = new FileInfo(_applicationSettings.ResultsFilePath);
+				if (!resultsFileInfo.Exists)
+					return;
+
+				IoUtils.OpenFile(_applicationSettings.ResultsFilePath);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to open results file", ex);
+			}
+		}
+
+		private void OpenPhotosFolder()
+		{
+			try
+			{
+				var photosDirectoryInfo = new DirectoryInfo(_applicationSettings.PhotosDirectoryPath);
+				if (!photosDirectoryInfo.Exists)
+					return;
+
+				IoUtils.OpenFile(_applicationSettings.PhotosDirectoryPath);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to open photos folder", ex);
+			}
 		}
 
 		private void UpdateAutoStartTimer()
 		{
-			if (_waitingForReset)
+			var canProceed = !_waitingForReset && CanAcceptBarcodes;
+			if (!canProceed)
 				return;
 
 			if (CodeReady && _weightReady)
@@ -457,7 +517,7 @@ namespace VolumeCalculatorGUI.GUI
 				ObjectLength = volumeData.Length;
 				ObjectWidth = volumeData.Width;
 				ObjectHeight = volumeData.Height;
-				ObjectVolume = ObjectLength * ObjectWidth * ObjectHeight;
+				ObjectVolume = ObjectLength * ObjectWidth * ObjectHeight / 1000.0;
 			});
 		}
 

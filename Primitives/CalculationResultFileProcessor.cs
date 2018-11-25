@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Text;
+using Primitives.Logging;
 
 namespace Primitives
 {
@@ -11,10 +12,20 @@ namespace Primitives
 
 		public string FullOutputPath { get; }
 
-		public CalculationResultFileProcessor(string outputFolderPath)
+		public CalculationResultFileProcessor(ILogger logger, string outputFolderPath)
 		{
 			_outputFolderPath = outputFolderPath;
 			FullOutputPath = Path.Combine(outputFolderPath, Constants.ResultFileName);
+
+			try
+			{
+				Directory.CreateDirectory(outputFolderPath);
+				Directory.CreateDirectory(Path.Combine(outputFolderPath, "photos"));
+			}
+			catch (Exception ex)
+			{
+				logger.LogException("Failed to create results folders", ex);
+			}
 		}
 
 		public bool IsResultFileAccessible()
@@ -55,7 +66,8 @@ namespace Primitives
 				resultString.Append($@"{Constants.CsvSeparator}length (mm)");
 				resultString.Append($@"{Constants.CsvSeparator}width (mm)");
 				resultString.Append($@"{Constants.CsvSeparator}height (mm)");
-				resultString.Append($@"{Constants.CsvSeparator}volume (mm^2)");
+				resultString.Append($@"{Constants.CsvSeparator}volume (cm^3)");
+				resultString.Append($@"{Constants.CsvSeparator}comment");
 				resultFile.WriteLine(resultString);
 				resultFile.Flush();
 			}
@@ -63,6 +75,9 @@ namespace Primitives
 
 		public void WriteCalculationResult(CalculationResult result)
 		{
+			var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter();
+			IoUtils.IncrementUniversalObjectCounter();
+
 			var safeName = result.ObjectCode;
 			if (!string.IsNullOrEmpty(safeName))
 			{
@@ -76,7 +91,7 @@ namespace Primitives
 			using (var resultFile = new StreamWriter(FullOutputPath, true, Encoding.Default))
 			{
 				var resultString = new StringBuilder();
-				resultString.Append(IoUtils.GetNextUniversalObjectCounter());
+				resultString.Append(calculationIndex);
 				resultString.Append($@"{Constants.CsvSeparator}{result.CalculationTime.ToShortDateString()}");
 				resultString.Append($@"{Constants.CsvSeparator}{result.CalculationTime.ToShortTimeString()}");
 				resultString.Append($@"{Constants.CsvSeparator}{safeName}");
@@ -86,6 +101,7 @@ namespace Primitives
 				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectWidth}");
 				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectHeight}");
 				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectVolume}");
+				resultString.Append($@"{Constants.CsvSeparator}{result.CalculationComment}");
 				resultFile.WriteLine(resultString);
 				resultFile.Flush();
 			}

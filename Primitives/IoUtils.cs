@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using Newtonsoft.Json;
 
 namespace Primitives
@@ -42,7 +43,7 @@ namespace Primitives
 			return fileLines.Length < 2 ? string.Empty : fileLines[1];
 		}
 
-		public static int GetNextUniversalObjectCounter()
+		public static int GetCurrentUniversalObjectCounter()
 		{
 			if (!File.Exists(Constants.CountersFileName))
 			{
@@ -52,10 +53,28 @@ namespace Primitives
 
 			var fileContents = File.ReadAllText(Constants.CountersFileName);
 			var previousCounter = int.Parse(fileContents);
+
+			return previousCounter;
+		}
+
+		public static void IncrementUniversalObjectCounter()
+		{
+			if (!File.Exists(Constants.CountersFileName))
+			{
+				File.WriteAllText(Constants.CountersFileName, 1.ToString());
+				return ;
+			}
+
+			var fileContents = File.ReadAllText(Constants.CountersFileName);
+			var previousCounter = int.Parse(fileContents);
+
 			var nextCounter = previousCounter + 1;
 			File.WriteAllText(Constants.CountersFileName, nextCounter.ToString());
+		}
 
-			return nextCounter;
+		public static void OpenFile(string filepath)
+		{
+			Process.Start(filepath);
 		}
 	}
 }

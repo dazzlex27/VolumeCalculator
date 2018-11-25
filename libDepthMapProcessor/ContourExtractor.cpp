@@ -1,7 +1,7 @@
 #include "ContourExtractor.h"
 #include "ProcessingUtils.h"
 
-const Contour ContourExtractor::ExtractContourFromBinaryImage(const cv::Mat& image) const
+const Contour ContourExtractor::ExtractContourFromBinaryImage(const cv::Mat& image, const bool saveDebugData) const
 {
 	std::vector<Contour> contours;
 	cv::findContours(image, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
@@ -11,20 +11,13 @@ const Contour ContourExtractor::ExtractContourFromBinaryImage(const cv::Mat& ima
 	if (validContours.size() == 0)
 		return Contour();
 
-	const Contour& contourClosestToCenter = GetContourClosestToCenter(validContours, image.cols, image.rows);
-
-	DmUtils::DrawTargetContour(contourClosestToCenter, image.cols, image.rows, 0);
-
-	return contourClosestToCenter;
+	return GetContourClosestToCenter(validContours, image.cols, image.rows);
 }
 
-const Contour ContourExtractor::ExtractContourFromColorImage(const cv::Mat& image) const
+const Contour ContourExtractor::ExtractContourFromColorImage(const cv::Mat& image, const bool saveDebugData) const
 {
-	cv::imwrite("out/inputRoi.png", image);
-
 	cv::Mat cannied;
 	cv::Canny(image, cannied, _cannyThreshold1, _cannyThreshold2);
-	cv::imwrite("out/cannied.png", cannied);
 
 	std::vector<Contour> contours;
 	cv::findContours(cannied, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
@@ -36,9 +29,18 @@ const Contour ContourExtractor::ExtractContourFromColorImage(const cv::Mat& imag
 			mergedContour.emplace_back(contours[i][j]);
 	}
 
-	DmUtils::DrawTargetContour(mergedContour, image.cols, image.rows, 1);
+	if (saveDebugData)
+	{
+		const std::string& index = DmUtils::GetCurrentCalculationIndex();
+		cv::imwrite(_debugPath + "/" + index + "_cannied.png", cannied);
+	}
 
 	return mergedContour;
+}
+
+void ContourExtractor::SetDebugPath(const std::string& path)
+{
+	_debugPath = std::string(path);
 }
 
 const Contour ContourExtractor::GetContourClosestToCenter(const std::vector<Contour>& contours, const int width, const int height) const
