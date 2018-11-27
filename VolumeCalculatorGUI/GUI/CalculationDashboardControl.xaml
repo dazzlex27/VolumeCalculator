@@ -39,8 +39,11 @@
 				         LostKeyboardFocus="OnCodeBoxLostFocus"
 				         Margin="2"
 				         FontSize="20"
-				         Text="{Binding Path=ObjectCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-				<Button Grid.Column="2" Content="OK" Visibility="{Binding CodeBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="ButtonBase_OnClick"/>
+				         Text="{Binding Path=ObjectCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+				         MaxLength="50"
+				         MaxLines="1"
+				         AcceptsReturn="False"/>
+				<Button Grid.Column="2" Content="OK" IsDefault="{Binding CodeBoxFocused}" Visibility="{Binding CodeBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="ButtonBase_OnClick"/>
 			</Grid>
 			<Grid Margin="2,2,2,0">
 				<Grid.ColumnDefinitions>
@@ -72,8 +75,9 @@
 				        HorizontalAlignment="Center"
 				        VerticalAlignment="Center"
 				        IsTabStop="False"
-				        Content="Сбросить"
-				        Command="{Binding ResetWeightCommand}" />
+				        Content="Сбросить весы"
+				        Command="{Binding ResetWeightCommand}" 
+				        Focusable="False"/>
 			</Grid>
 			<Grid Margin="2,2,2,0">
 				<Grid.ColumnDefinitions>
@@ -96,8 +100,11 @@
 				         Margin="2"
 				         FontSize="20"
 				         MinWidth="50"
-				         Text="{Binding Path=UnitCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-				<Button Grid.Column="2" Content="OK" Visibility="{Binding UnitCountBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="ButtonBase_OnClick"/>
+				         Text="{Binding Path=UnitCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+				         AcceptsReturn="False"
+				         MaxLength="4"
+				         MaxLines="1"/>
+				<Button Grid.Column="2" Content="OK" IsDefault="{Binding UnitCountBoxFocused}" Visibility="{Binding UnitCountBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="ButtonBase_OnClick"/>
 				<TextBlock Grid.Column="3"
 				           Margin="2"
 				           HorizontalAlignment="Center"
@@ -224,8 +231,9 @@
 				         LostKeyboardFocus="OnCommentBoxLostFocus"
 				         Margin="2"
 				         FontSize="20"
-				         Text="{Binding Path=Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="256"/>
-				<Button Grid.Column="2" Content="OK" Visibility="{Binding CommentBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="ButtonBase_OnClick"/>
+				         Text="{Binding Path=Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="256"
+				         AcceptsReturn="False"/>
+				<Button Grid.Column="2" Content="OK" IsDefault="{Binding CodeBoxFocused}" Visibility="{Binding CommentBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="ButtonBase_OnClick"/>
 			</Grid>
 		</StackPanel>
 		<StackPanel Grid.Column="1"
@@ -233,10 +241,12 @@
 		            Margin="3">
 			<Button Margin="2"
 			        Content="Открыть *.csv файл"
-			        Command="{Binding OpenResultsFileCommand}" />
+			        Command="{Binding OpenResultsFileCommand}" 
+			        Focusable="False"/>
 			<Button Margin="2"
 			        Content="Открыть папку с фото"
-			        Command="{Binding OpenPhotosFolderCommand}" />
+			        Command="{Binding OpenPhotosFolderCommand}" 
+			        Focusable="False"/>
 		</StackPanel>
 		<Grid Grid.Row="1"
 		      Grid.Column="0"
@@ -250,13 +260,15 @@
 			        MinHeight="25"
 			        Content="Измерить по глубине"
 			        Command="{Binding CalculateVolumeCommand}"
-			        FontSize="20" />
+			        FontSize="20" 
+			        Focusable="False"/>
 			<Button Grid.Column="1"
 			        Margin="2"
 			        MinHeight="25"
 			        Content="Измерить по видео и глубине"
 			        Command="{Binding CalculateVolumeAltCommand}"
-			        FontSize="20" />
+			        FontSize="20" 
+			        Focusable="False"/>
 		</Grid>
 		<StackPanel Margin="3"
 		            Grid.Row="2"

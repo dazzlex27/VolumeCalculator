@@ -29,24 +29,22 @@ namespace FrameProcessor
 		private DepthMap _latestDepthMap;
 
 		private int _samplesLeft;
-		private bool _hasCompletedFirstRun;
 
 		private WorkingAreaMask _depthMapMask;
 
 		public bool IsRunning { get; private set; }
 
+		private bool HasCompletedFirstRun => _samplesLeft != _settings.SampleDepthMapCount;
+
 		public VolumeCalculator(ILogger logger, FrameProvider frameProvider, DepthMapProcessor processor, ApplicationSettings settings, 
 			bool usingColorData)
 		{
 			_logger = logger;
-			_frameProvider = frameProvider;
-			_processor = processor;
-			_settings = settings;
+			_frameProvider = frameProvider ?? throw new ArgumentNullException(nameof(frameProvider));
+			_processor = processor ?? throw new ArgumentException(nameof(processor));
+			_settings = settings ?? throw new ArgumentException(nameof(settings));
 			_samplesLeft = settings.SampleDepthMapCount;
 			_usingColorData = usingColorData;
-
-			if (_frameProvider == null)
-				throw new ArgumentNullException(nameof(_frameProvider));
 
 			_results = new List<ObjectVolumeData>();
 
@@ -104,18 +102,17 @@ namespace FrameProcessor
 		{
 			_timer.Stop();
 
-			if (!_hasCompletedFirstRun)
+			if (!HasCompletedFirstRun)
 			{
 				CalculateDepthMapZoneMask(depthMap);
 				SaveDebugData();
-				_hasCompletedFirstRun = true;
 			}
 
 			var maskedMap = GetMaskedDepthMap(depthMap);
 
 			var currentResult = _usingColorData
-				? _processor.CalculateObjectVolumeAlt(maskedMap, image)
-				: _processor.CalculateVolume(maskedMap);
+				? _processor.CalculateObjectVolumeAlt(maskedMap, image, !HasCompletedFirstRun)
+				: _processor.CalculateVolume(maskedMap, !HasCompletedFirstRun);
 			_results.Add(currentResult);
 			_samplesLeft--;
 
@@ -157,7 +154,7 @@ namespace FrameProcessor
 
 			_depthFrameReady = true;
 
-			if (_usingColorData && !_colorFrameReady || !_hasCompletedFirstRun)
+			if (_usingColorData && !_colorFrameReady || !HasCompletedFirstRun)
 				return;
 
 			AdvanceCalculation(_latestDepthMap, _latestColorFrame);

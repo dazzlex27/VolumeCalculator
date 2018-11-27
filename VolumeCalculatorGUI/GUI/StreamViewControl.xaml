@@ -31,6 +31,18 @@
 					       HorizontalAlignment="Stretch"
 					       VerticalAlignment="Stretch" 
 					       Visibility="{Binding UseColorStream, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+					<Line StrokeThickness="3"
+					      X1="0" 
+					      X2="{Binding Path=ActualWidth, ElementName=CvColor}" 
+						  Y1="{Binding Path=ActualHeight, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
+					      Y2="{Binding Path=ActualHeight, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
+					      Stroke="Red"/>
+					<Line StrokeThickness="3"
+					      X1="{Binding Path=ActualWidth, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
+					      X2="{Binding Path=ActualWidth, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
+					      Y1="0" 
+					      Y2="{Binding Path=ActualHeight, ElementName=CvColor}" 
+					      Stroke="Red"/>
 				</Canvas>
 				<Grid HorizontalAlignment="Center"
 				      VerticalAlignment="Center">
@@ -69,6 +81,18 @@
 				       HorizontalAlignment="Stretch"
 				       VerticalAlignment="Stretch" 
 					   Visibility="{Binding UseDepthStream, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+					<Line StrokeThickness="3"
+					      X1="0" 
+					      X2="{Binding Path=ActualWidth, ElementName=CvColor}" 
+					      Y1="{Binding Path=ActualHeight, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
+					      Y2="{Binding Path=ActualHeight, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
+					      Stroke="Red"/>
+					<Line StrokeThickness="3"
+					      X1="{Binding Path=ActualWidth, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
+					      X2="{Binding Path=ActualWidth, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
+					      Y1="0" 
+					      Y2="{Binding Path=ActualHeight, ElementName=CvColor}" 
+					      Stroke="Red"/>
 				</Canvas>
 				<Grid HorizontalAlignment="Center"
 				      VerticalAlignment="Center">

@@ -12,6 +12,7 @@
 			<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 			<utils:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
 			<utils:ConjunctionToVisibilityMultiConverter x:Key="ConjunctionToVisibilityMultiConverter"/>
+			<utils:HalfMeasureConverter x:Key="HalfMeasureConverter"/>
 			<SolidColorBrush x:Key="BackgroundKey" Color="#FFFFFF" />
 		</ResourceDictionary>
 	</Application.Resources>

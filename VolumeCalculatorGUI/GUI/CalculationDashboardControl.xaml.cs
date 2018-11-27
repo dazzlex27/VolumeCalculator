@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace VolumeCalculatorGUI.GUI
@@ -48,10 +49,19 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
 		{
+			ResetFocus();
+
+			var button = sender as Button;
+			button?.Focus();
+		}
+
+		private void ResetFocus()
+		{
 			var vm = (CalculationDashboardControlVm)DataContext;
 			vm.CodeBoxFocused = false;
 			vm.UnitCountBoxFocused = false;
 			vm.CommentBoxFocused = false;
+			Keyboard.ClearFocus();
 		}
 	}
 }

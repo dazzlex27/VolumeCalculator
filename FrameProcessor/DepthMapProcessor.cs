@@ -12,10 +12,6 @@ namespace FrameProcessor
 		private readonly ILogger _logger;
 		private readonly IntPtr _nativeHandle;
 
-		private bool _needToSaveDebugData;
-
-		public bool IsActive { get; private set; }
-
 		public DepthMapProcessor(ILogger logger, ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
 		{
 			_logger = logger;
@@ -30,13 +26,9 @@ namespace FrameProcessor
 				var ptr = DepthMapProcessorDll.CreateDepthMapProcessor(colorIntrinsics, depthIntrinsics);
 				_nativeHandle = new IntPtr(ptr);
 			}
-
-			_needToSaveDebugData = true;
-
-			IsActive = true;
 		}
 
-		public ObjectVolumeData CalculateVolume(DepthMap depthMap)
+		public ObjectVolumeData CalculateVolume(DepthMap depthMap, bool needToSaveDebugData = false)
 		{
 			unsafe
 			{
@@ -44,14 +36,13 @@ namespace FrameProcessor
 				{
 					var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
 
-					var res = DepthMapProcessorDll.CalculateObjectVolume(_nativeHandle.ToPointer(), nativeDepthMap, _needToSaveDebugData);
-					_needToSaveDebugData = false;
+					var res = DepthMapProcessorDll.CalculateObjectVolume(_nativeHandle.ToPointer(), nativeDepthMap, needToSaveDebugData);
 					return res == null ? null : new ObjectVolumeData(res->Length, res->Width, res->Height);
 				}
 			}
 		}
 
-		public ObjectVolumeData CalculateObjectVolumeAlt(DepthMap depthMap, ImageData colorFrame)
+		public ObjectVolumeData CalculateObjectVolumeAlt(DepthMap depthMap, ImageData colorFrame, bool needToSaveDebugData)
 		{
 			unsafe
 			{
@@ -68,8 +59,7 @@ namespace FrameProcessor
 						BytesPerPixel = colorFrame.BytesPerPixel
 					};
 
-					var res = DepthMapProcessorDll.CalculateObjectVolumeAlt(_nativeHandle.ToPointer(), nativeDepthMap, nativeColorImage, _needToSaveDebugData);
-					_needToSaveDebugData = false;
+					var res = DepthMapProcessorDll.CalculateObjectVolumeAlt(_nativeHandle.ToPointer(), nativeDepthMap, nativeColorImage, needToSaveDebugData);
 					return res == null ? null : new ObjectVolumeData(res->Length, res->Width, res->Height);
 				}
 			}
@@ -103,8 +93,6 @@ namespace FrameProcessor
 
 		public void Dispose()
 		{
-			IsActive = false;
-
 			_logger.LogInfo("Disposing depth map processor...");
 			unsafe
 			{
@@ -112,7 +100,7 @@ namespace FrameProcessor
 			}
 		}
 
-		private unsafe Native.DepthMap GetNativeDepthMapFromDepthMap(DepthMap depthMap, short* depthData)
+		private static unsafe Native.DepthMap GetNativeDepthMapFromDepthMap(DepthMap depthMap, short* depthData)
 		{
 			return new Native.DepthMap
 			{
@@ -122,7 +110,7 @@ namespace FrameProcessor
 			};
 		}
 
-		private RelRect CreateColorRoiRectFromSettings(ApplicationSettings settings)
+		private static RelRect CreateColorRoiRectFromSettings(ApplicationSettings settings)
 		{
 			float x1;
 			float y1;

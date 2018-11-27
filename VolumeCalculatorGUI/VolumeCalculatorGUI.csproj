@@ -72,6 +72,7 @@
     <Compile Include="GUI\CalculationDashboardControlVm.cs" />
     <Compile Include="GUI\Utils\CommandHandler.cs" />
     <Compile Include="GUI\Utils\ConjunctionToVisibilityMultiConverter.cs" />
+    <Compile Include="GUI\Utils\HalfMeasureConverter.cs" />
     <Compile Include="GUI\Utils\InverseBooleanConverter.cs" />
     <Compile Include="GUI\MainWindowVm.cs" />
     <Compile Include="GUI\SettingsWindowVm.cs" />
