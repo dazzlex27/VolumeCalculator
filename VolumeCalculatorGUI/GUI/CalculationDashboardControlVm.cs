@@ -43,6 +43,7 @@ namespace VolumeCalculatorGUI.GUI
 		private bool _usingManualCodeInput;
 		private SolidColorBrush _statusBrush;
 		private string _statusText;
+		private bool _calculationPending;
 
 		private bool _codeBoxFocused;
 		private bool _unitCountBoxFocused;
@@ -51,7 +52,6 @@ namespace VolumeCalculatorGUI.GUI
 		private readonly Timer _autoStartingCheckingTimer;
 		private Timer _measurementTimer;
 		private bool _waitingForReset;
-		private DateTime _calculationFinishTime;
 
 		public ICommand CalculateVolumeCommand { get; }
 
@@ -63,14 +63,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		public ICommand OpenPhotosFolderCommand { get; }
 
-		public bool CanAcceptBarcodes
-		{
-			get
-			{
-				var boxedAreInactive = !UsingManualCodeInput && !CodeBoxFocused && !CommentBoxFocused && !UnitCountBoxFocused;
-				return boxedAreInactive && !CalculationInProgress;
-			}
-		}
+		public ICommand CancelPendingCalculationCommand { get; }
 
 		public string ObjectCode
 		{
@@ -81,6 +74,9 @@ namespace VolumeCalculatorGUI.GUI
 					return;
 
 				_objectCode = value;
+				if (CodeReady)
+					ResetMeasurementValues();
+
 				OnPropertyChanged();
 			}
 		}
@@ -267,6 +263,30 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
+		public bool CalculationPending
+		{
+			get => _calculationPending;
+			set
+			{
+				if (_calculationPending == value)
+					return;
+
+				_calculationPending = value;
+				OnPropertyChanged();
+			}
+		}
+
+		private bool CanAcceptBarcodes
+		{
+			get
+			{
+				var usingManualInput = UsingManualCodeInput || CodeBoxFocused || CommentBoxFocused || UnitCountBoxFocused;
+				return !usingManualInput && !CalculationInProgress;
+			}
+		}
+
+		private bool CanRunAutoTimer => !_waitingForReset && CodeReady && WeightReady && CanAcceptBarcodes;
+
 		private bool CodeReady => !string.IsNullOrEmpty(ObjectCode);
 
 		private bool WeightReady => CurrentWeighingStatus == MeasurementStatus.Measured;
@@ -306,9 +326,10 @@ namespace VolumeCalculatorGUI.GUI
 			ResetWeightCommand = new CommandHandler(ResetWeight, !CalculationInProgress);
 			OpenResultsFileCommand = new CommandHandler(OpenResultsFile, !CalculationInProgress);
 			OpenPhotosFolderCommand = new CommandHandler(OpenPhotosFolder, !CalculationInProgress);
+			CancelPendingCalculationCommand = new CommandHandler(CancelPendingCalculation, !CalculationInProgress);
 
-			_autoStartingCheckingTimer = new Timer(1000) {AutoReset = true};
-			_autoStartingCheckingTimer.Elapsed += StartAutoTimerIfNecessary;
+			 _autoStartingCheckingTimer = new Timer(1000) {AutoReset = true};
+			_autoStartingCheckingTimer.Elapsed += UpdateAutoTimerStatus;
 			_autoStartingCheckingTimer.Start();
 
 			CreateAutoStartTimer(settings.TimeToStartMeasurementMs);
@@ -382,26 +403,24 @@ namespace VolumeCalculatorGUI.GUI
 			_scales?.ResetWeight();
 		}
 
-		private void StartAutoTimerIfNecessary(object sender, ElapsedEventArgs e)
+		private void UpdateAutoTimerStatus(object sender, ElapsedEventArgs e)
 		{
 			if (CurrentWeighingStatus == MeasurementStatus.Ready && _waitingForReset)
+				SetStatusReady();
+
+			if (_measurementTimer.Enabled)
 			{
-				var timePassedSinceCalculationFinished = DateTime.Now - _calculationFinishTime;
-				if (timePassedSinceCalculationFinished > TimeSpan.FromSeconds(2))
-					SetStatusReady();
+				if (!CanRunAutoTimer)
+					_measurementTimer.Stop();
 			}
-
-			var canProceed = !_waitingForReset && CanAcceptBarcodes;
-			if (!canProceed)
-				return;
-
-			if (CodeReady && WeightReady)
+			else
 			{
+				if (!CanRunAutoTimer)
+					return;
+
 				_measurementTimer.Start();
 				SetStatusAutoStarting();
 			}
-			else
-				_measurementTimer.Stop();
 		}
 
 		private void OpenResultsFile()
@@ -434,6 +453,17 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				_logger.LogException("Failed to open photos folder", ex);
 			}
+		}
+
+		private void CancelPendingCalculation()
+		{
+			var timerEnabled = _measurementTimer != null && _measurementTimer.Enabled;
+			if (!timerEnabled)
+				return;
+
+			_measurementTimer.Stop();
+			ObjectCode = "";
+			SetStatusReady();
 		}
 
 		private void CreateAutoStartTimer(long intervalMs)
@@ -494,17 +524,16 @@ namespace VolumeCalculatorGUI.GUI
 				return false;
 			}
 
-			if (!_calculationResultFileProcessor.IsResultFileAccessible())
-			{
-				MessageBox.Show(
-					"Пожалуйста убедитесь, что файл с результатами доступен для записи и закрыт, прежде чем выполнять вычисление",
-					"Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-				_logger.LogInfo("Failed to access the result file");
+			var killedProcess = IoUtils.KillProcess("Excel");
+			if (killedProcess)
+				return true;
 
-				return false;
-			}
+			MessageBox.Show(
+				"Не удалось закрыть файл с результатами, убедитесь, что файл закрыт",
+				"Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			_logger.LogInfo("Failed to access the result file");
 
-			return true;
+			return false;
 		}
 
 		private void OnCalculationFinished(ObjectVolumeData result, CalculationStatus status)
@@ -632,6 +661,8 @@ namespace VolumeCalculatorGUI.GUI
 			ObjectWidth = 0;
 			ObjectHeight = 0;
 			ObjectVolume = 0;
+			UnitCount = 0;
+			Comment = "";
 		}
 
 		private void SetStatusReady()
@@ -642,7 +673,7 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				StatusBrush = new SolidColorBrush(Colors.Green);
 				StatusText = "Готов к измерению";
-				ResetMeasurementValues();
+				CalculationPending = false;
 			});
 		}
 
@@ -653,7 +684,7 @@ namespace VolumeCalculatorGUI.GUI
 				CalculationInProgress = false;
 				StatusBrush = new SolidColorBrush(Colors.Red);
 				StatusText = "Произошла ошибка";
-				ResetMeasurementValues();
+				CalculationPending = false;
 			});
 		}
 
@@ -663,7 +694,7 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				StatusBrush = new SolidColorBrush(Colors.Blue);
 				StatusText = "Запущен автотаймер...";
-				ResetMeasurementValues();
+				CalculationPending = true;
 			});
 		}
 
@@ -674,20 +705,20 @@ namespace VolumeCalculatorGUI.GUI
 				CalculationInProgress = true;
 				StatusBrush = new SolidColorBrush(Colors.DarkOrange);
 				StatusText = "Выполняется измерение...";
-				ResetMeasurementValues();
+				CalculationPending = false;
 			});
 		}
 
 		private void SetStatusFinished()
 		{
 			_waitingForReset = true;
-			_calculationFinishTime = DateTime.Now;
 
 			Dispatcher.Invoke(() =>
 			{
 				CalculationInProgress = false;
 				StatusBrush = new SolidColorBrush(Colors.DarkGreen);
 				StatusText = "Измерение завершено";
+				CalculationPending = false;
 			});
 		}
 	}

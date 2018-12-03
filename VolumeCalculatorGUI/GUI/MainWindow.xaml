@@ -7,23 +7,31 @@
         mc:Ignorable="d"
         x:ClassModifier="internal"
         Title="{Binding WindowTitle}" 
-        SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterScreen" 
         Closing="Window_Closing"
-        MinWidth="1000"
-        MinHeight="640">
+        WindowStyle="None"
+		WindowState="Maximized"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False">
 	<Window.DataContext>
 		<gui:MainWindowVm/>
 	</Window.DataContext>
 	<Grid Width="Auto" Height="Auto">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
-		<Menu Background="{StaticResource BackgroundKey}">
+		<Menu Background="{StaticResource BackgroundKey}" MinHeight="50">
+			<Menu.Resources>
+				<Style TargetType="MenuItem">
+					<Setter Property="Height" Value="50" />
+					<Setter Property="FontSize" Value="24"/>
+				</Style>
+			</Menu.Resources>
 			<MenuItem Header="Действия">
 				<MenuItem Name="MiOpenSettings" Header="Открыть настройки" Command="{Binding OpenSettingsCommand}"/>
-				<MenuItem Name="MiExitApp" Header="Выйти из приложения" Click="MiExitApp_OnClick"/>
+				<MenuItem Name="MiExitApp" Header="Завершить работу" Command="{Binding ShutDownCommand}"/>
 			</MenuItem>
 			<MenuItem Header="Инструменты">
 				<MenuItem Header="Сохранение тестовых данных" 
@@ -31,7 +39,8 @@
 						  IsChecked="{Binding IsTestDataGenerationControlVisible, Mode=TwoWay}"/>
 			</MenuItem>
 		</Menu>
-		<Grid Grid.Row="1" Margin="5" Name="GrMain" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="Auto">
+		<Separator Grid.Row="1"/>
+		<Grid Grid.Row="2" Margin="5" Name="GrMain" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="Auto">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="*"/>
 				<RowDefinition Height="Auto"/>

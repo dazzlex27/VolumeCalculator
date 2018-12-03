@@ -33,6 +33,7 @@ namespace VolumeCalculatorGUI.GUI
 		private long _timeToStartMeasurementMs;
 		private bool _hasReceivedAColorImage;
 		private bool _hasReceivedDepthMap;
+		private ApplicationSettings _oldSettings;
 
 		public WriteableBitmap ColorImageBitmap
 		{
@@ -249,6 +250,7 @@ namespace VolumeCalculatorGUI.GUI
 		public SettingsWindowVm(ILogger logger, ApplicationSettings settings, DepthCameraParams depthCameraParams, 
 			DepthMapProcessor volumeCalculator)
 		{
+			_oldSettings = settings;
 			_logger = logger;
 			_depthMapProcessor = volumeCalculator;
 
@@ -266,8 +268,9 @@ namespace VolumeCalculatorGUI.GUI
 			var colorMaskPoints = ColorMaskRectangleControlVm.GetPolygonPoints();
 			var depthMaskPoints = DepthMaskPolygonControlVm.GetPolygonPoints();
 
-			return new ApplicationSettings(FloorDepth, MinObjHeight, SampleCount, OutputPath, 
-				UseColorMask, colorMaskPoints, UseDepthMask, depthMaskPoints, TimeToStartMeasurementMs, UseRgbAlgorithmByDefault);
+			return new ApplicationSettings(FloorDepth, MinObjHeight, SampleCount, OutputPath,
+				UseColorMask, colorMaskPoints, UseDepthMask, depthMaskPoints, TimeToStartMeasurementMs,
+				UseRgbAlgorithmByDefault, _oldSettings.RunInFullSreen);
 		}
 
 		public void ColorFrameUpdated(ImageData image)

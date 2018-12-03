@@ -17,7 +17,7 @@
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
-			<CheckBox Grid.Row="0" Margin="0,5" Content="Поток камеры" IsChecked="{Binding UseColorStream, Mode=TwoWay}" />
+			<!--<CheckBox Grid.Row="0" Margin="0,5" Content="Поток камеры" IsChecked="{Binding UseColorStream, Mode=TwoWay}" Focusable="False"/>-->
 			<Grid Grid.Row="1">
 				<Canvas 
 					Name="CvColor"
@@ -67,7 +67,7 @@
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
-			<CheckBox Grid.Row="0" Margin="0,5" Content="Поток 3D-сенсора" IsChecked="{Binding UseDepthStream, Mode=TwoWay}" />
+			<!--<CheckBox Grid.Row="0" Margin="0,5" Content="Поток 3D-сенсора" IsChecked="{Binding UseDepthStream, Mode=TwoWay}" Focusable="False"/>-->
 			<Grid Grid.Row="1">
 				<Canvas 
 			        Name="CvDepth"

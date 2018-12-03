@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Windows;
 
 namespace VolumeCalculatorGUI.GUI
 {
@@ -15,19 +14,8 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void Window_Closing(object sender, CancelEventArgs e)
 		{
-			if (MessageBox.Show("Вы действительно хотите выйти?", "Завершение работы", MessageBoxButton.YesNo,
-					MessageBoxImage.Question) == MessageBoxResult.No)
-			{
+			if (!_vm.ShutDown(false))
 				e.Cancel = true;
-				return;
-			}
-
-			_vm.ExitApplication();
-		}
-
-		private void MiExitApp_OnClick(object sender, RoutedEventArgs e)
-		{
-			Close();
 		}
 	}
 }

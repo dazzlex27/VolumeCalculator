@@ -22,7 +22,7 @@
 		<StackPanel Margin="3" Background="{StaticResource BackgroundKey}">
 			<Grid Margin="2,2,2,0">
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition MinWidth="100"
+					<ColumnDefinition MinWidth="180"
 					                  Width="Auto" />
 					<ColumnDefinition Width="*" />
 					<ColumnDefinition />
@@ -31,14 +31,14 @@
 				           HorizontalAlignment="Center"
 				           VerticalAlignment="Center"
 				           Margin="2,0"
-				           Text="Код:"
-				           FontSize="20" />
+				           Text="Код"
+				           FontSize="24" />
 				<TextBox Style="{StaticResource TextBoxStyle}"
 				         Grid.Column="1"
 				         GotKeyboardFocus="OnCodeBoxGotFocus"
 				         LostKeyboardFocus="OnCodeBoxLostFocus"
 				         Margin="2"
-				         FontSize="20"
+				         FontSize="24"
 				         Text="{Binding Path=ObjectCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
 				         MaxLength="50"
 				         MaxLines="1"
@@ -47,7 +47,7 @@
 			</Grid>
 			<Grid Margin="2,2,2,0">
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition MinWidth="100"
+					<ColumnDefinition MinWidth="180"
 					                  Width="Auto" />
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="Auto" />
@@ -57,19 +57,19 @@
 				           VerticalAlignment="Center"
 				           Style="{StaticResource TextBlockStyle}"
 				           Margin="2,0"
-				           Text="Вес:"
-				           FontSize="20" />
+				           Text="Вес"
+				           FontSize="24" />
 				<TextBlock Style="{StaticResource TextBlockStyle}"
 				           Grid.Column="1"
 				           Margin="2"
 				           Text="{Binding Path=ObjectWeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-				           FontSize="20" />
+				           FontSize="24" />
 				<TextBlock Grid.Column="2"
 				           Margin="2"
 				           HorizontalAlignment="Center"
 				           VerticalAlignment="Center"
 				           Text="кг"
-				           FontSize="20" />
+				           FontSize="24" />
 				<Button Margin="10,2"
 				        Grid.Column="3"
 				        HorizontalAlignment="Center"
@@ -77,11 +77,12 @@
 				        IsTabStop="False"
 				        Content="Сбросить весы"
 				        Command="{Binding ResetWeightCommand}" 
-				        Focusable="False"/>
+				        Focusable="False"
+				        FontSize="24"/>
 			</Grid>
 			<Grid Margin="2,2,2,0">
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition MinWidth="100"
+					<ColumnDefinition MinWidth="180"
 					                  Width="Auto" />
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="Auto" />
@@ -91,130 +92,74 @@
 				           VerticalAlignment="Center"
 				           Style="{StaticResource TextBlockStyle}"
 				           Margin="2,0"
-				           Text="Кол-во:"
-				           FontSize="20" />
+				           Text="Единиц"
+				           FontSize="24" />
 				<TextBox Style="{StaticResource TextBoxStyle}"
 				         Grid.Column="1"
 				         GotKeyboardFocus="OnUnitBoxGotFocus"
 				         LostKeyboardFocus="OnUnitBoxLostFocus"
 				         Margin="2"
-				         FontSize="20"
+				         FontSize="24"
 				         MinWidth="50"
 				         Text="{Binding Path=UnitCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
 				         AcceptsReturn="False"
 				         MaxLength="4"
 				         MaxLines="1"/>
 				<Button Grid.Column="2" Content="OK" IsDefault="{Binding UnitCountBoxFocused}" Visibility="{Binding UnitCountBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="ButtonBase_OnClick"/>
-				<TextBlock Grid.Column="3"
-				           Margin="2"
-				           HorizontalAlignment="Center"
-				           VerticalAlignment="Center"
-				           Text="eдиниц"
-				           FontSize="20" />
 			</Grid>
 			<Grid Margin="2,2,2,0">
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition MinWidth="100"
+					<ColumnDefinition MinWidth="180"
 					                  Width="Auto" />
-					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="Auto" />
 				</Grid.ColumnDefinitions>
 				<TextBlock HorizontalAlignment="Center"
 				           VerticalAlignment="Center"
 				           Style="{StaticResource TextBlockStyle}"
 				           Margin="2,0"
-				           Text="Длина:"
-				           FontSize="20" />
-				<TextBlock Style="{StaticResource TextBlockStyle}"
-				           Grid.Column="1"
+				           Text="Размеры"
+				           FontSize="24" />
+				<StackPanel Grid.Column="1" Orientation="Horizontal">
+					<TextBlock Style="{StaticResource TextBlockStyle}"
 				           Margin="2"
 				           Text="{Binding Path=ObjectLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-				           FontSize="20" />
-				<TextBlock Grid.Column="2"
-				           Margin="2"
-				           HorizontalAlignment="Center"
-				           VerticalAlignment="Center"
-				           Text="мм"
-				           FontSize="20" />
-			</Grid>
-			<Grid Margin="2,2,2,0">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition MinWidth="100"
-					                  Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-				</Grid.ColumnDefinitions>
-				<TextBlock HorizontalAlignment="Center"
-				           VerticalAlignment="Center"
-				           Style="{StaticResource TextBlockStyle}"
-				           Margin="2,0"
-				           Text="Ширина:"
-				           FontSize="20" />
-				<TextBlock Style="{StaticResource TextBlockStyle}"
-				           Grid.Column="1"
+				           FontSize="24" />
+					<TextBlock Style="{StaticResource TextBlockStyle}"
+					           Margin="0,2"
+					           Text="x"
+					           FontSize="24" />
+					<TextBlock Style="{StaticResource TextBlockStyle}"
 				           Margin="2"
 				           Text="{Binding Path=ObjectWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-				           FontSize="20" />
-				<TextBlock Grid.Column="2"
-				           Margin="2"
-				           HorizontalAlignment="Center"
-				           VerticalAlignment="Center"
-				           Text="мм"
-				           FontSize="20" />
-			</Grid>
-			<Grid Margin="2,2,2,0">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition MinWidth="100"
-					                  Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-				</Grid.ColumnDefinitions>
-				<TextBlock HorizontalAlignment="Center"
-				           VerticalAlignment="Center"
-				           Style="{StaticResource TextBlockStyle}"
-				           Margin="2,0"
-				           Text="Высота:"
-				           FontSize="20" />
-				<TextBlock Style="{StaticResource TextBlockStyle}"
-				           Grid.Column="1"
+				           FontSize="24" />
+					<TextBlock Style="{StaticResource TextBlockStyle}"
+					           Margin="0,2"
+					           Text="x"
+					           FontSize="24" />
+					<TextBlock Style="{StaticResource TextBlockStyle}"
 				           Margin="2"
 				           Text="{Binding Path=ObjectHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-				           FontSize="20" />
-				<TextBlock Grid.Column="2"
-				           Margin="2"
+				           FontSize="24" />
+					<TextBlock Margin="2"
 				           HorizontalAlignment="Center"
 				           VerticalAlignment="Center"
-				           Text="мм"
-				           FontSize="20" />
+				           Text="мм ("
+				           FontSize="24" />
+					<TextBlock Margin="2"
+					           HorizontalAlignment="Center"
+					           VerticalAlignment="Center"
+					           Text="{Binding Path=ObjectVolume}"
+					           FontSize="24" />
+					<TextBlock Margin="2"
+					           HorizontalAlignment="Center"
+					           VerticalAlignment="Center"
+					           Text="см³)"
+					           FontSize="24" />
+				</StackPanel>
 			</Grid>
 			<Grid Margin="2,2,2,0">
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition MinWidth="100"
-					                  Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-				</Grid.ColumnDefinitions>
-				<TextBlock HorizontalAlignment="Center"
-				           VerticalAlignment="Center"
-				           Style="{StaticResource TextBlockStyle}"
-				           Margin="2,0"
-				           Text="Объем:"
-				           FontSize="20" />
-				<TextBlock Style="{StaticResource TextBlockStyle}"
-				           Grid.Column="1"
-				           Margin="2"
-				           Text="{Binding Path=ObjectVolume}"
-				           FontSize="20" />
-				<TextBlock Grid.Column="2"
-				           Margin="2"
-				           HorizontalAlignment="Center"
-				           VerticalAlignment="Center"
-				           Text="см³"
-				           FontSize="20" />
-			</Grid>
-			<Grid Margin="2,2,2,0">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition MinWidth="100"
+					<ColumnDefinition MinWidth="180"
 					                  Width="Auto" />
 					<ColumnDefinition Width="*" />
 					<ColumnDefinition Width="Auto" />
@@ -223,14 +168,14 @@
 				           HorizontalAlignment="Center"
 				           VerticalAlignment="Center"
 				           Margin="2,0"
-				           Text="Комментарий:"
-				           FontSize="20" />
+				           Text="Комментарий"
+				           FontSize="24" />
 				<TextBox Style="{StaticResource TextBoxStyle}"
 				         Grid.Column="1"
 				         GotKeyboardFocus="OnCommentBoxGotFocus"
 				         LostKeyboardFocus="OnCommentBoxLostFocus"
 				         Margin="2"
-				         FontSize="20"
+				         FontSize="24"
 				         Text="{Binding Path=Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="256"
 				         AcceptsReturn="False"/>
 				<Button Grid.Column="2" Content="OK" IsDefault="{Binding CodeBoxFocused}" Visibility="{Binding CommentBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="ButtonBase_OnClick"/>
@@ -240,13 +185,17 @@
 		            Grid.Row="0"
 		            Margin="3">
 			<Button Margin="2"
-			        Content="Открыть *.csv файл"
+			        Content="Открыть файл с результатами"
 			        Command="{Binding OpenResultsFileCommand}" 
-			        Focusable="False"/>
+			        Focusable="False"
+			        FontSize="24" 
+			        MinHeight="50"/>
 			<Button Margin="2"
 			        Content="Открыть папку с фото"
 			        Command="{Binding OpenPhotosFolderCommand}" 
-			        Focusable="False"/>
+			        Focusable="False"
+			        FontSize="24" 
+			        MinHeight="50"/>
 		</StackPanel>
 		<Grid Grid.Row="1"
 		      Grid.Column="0"
@@ -257,27 +206,40 @@
 			</Grid.ColumnDefinitions>
 			<Button Grid.Column="0"
 			        Margin="2"
-			        MinHeight="25"
+			        MinHeight="50"
 			        Content="Измерить по глубине"
 			        Command="{Binding CalculateVolumeCommand}"
-			        FontSize="20" 
+			        FontSize="24" 
 			        Focusable="False"/>
 			<Button Grid.Column="1"
 			        Margin="2"
-			        MinHeight="25"
-			        Content="Измерить по видео и глубине"
+			        MinHeight="50"
+			        Content="Измерить по видео"
 			        Command="{Binding CalculateVolumeAltCommand}"
-			        FontSize="20" 
+			        FontSize="24" 
 			        Focusable="False"/>
 		</Grid>
-		<StackPanel Margin="3"
+		<Grid Margin="3"
 		            Grid.Row="2"
 		            Grid.Column="0"
-		            Background="{Binding StatusBrush}">
+		            Background="{Binding StatusBrush}"
+		      MinHeight="50">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="Auto"/>
+			</Grid.ColumnDefinitions>
 			<TextBlock Padding="3"
 			           Text="{Binding StatusText}"
 			           Foreground="White"
-			           FontSize="20" />
-		</StackPanel>
+			           FontSize="20"
+			           VerticalAlignment="Center"/>
+			<Button Grid.Column="1" 
+					MinWidth="70"
+			        MinHeight="50"
+			        Content="Отменить запуск" 
+			        Visibility="{Binding CalculationPending, Converter={StaticResource BooleanToVisibilityConverter}}"
+			        Command="{Binding CancelPendingCalculationCommand}"
+			        FontSize="20" />
+		</Grid>
 	</Grid>
 </UserControl>

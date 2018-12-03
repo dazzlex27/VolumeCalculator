@@ -101,6 +101,8 @@ namespace VolumeCalculatorGUI.GUI
 
 		public ICommand OpenSettingsCommand { get; }
 
+		public ICommand ShutDownCommand { get; }
+
 		public MainWindowVm()
 		{
 			try
@@ -115,6 +117,9 @@ namespace VolumeCalculatorGUI.GUI
 				InitializeSubViewModels();
 
 				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
+				ShutDownCommand = new CommandHandler(() => { ShutDown(true); }, true);
+
+				//Process.Start("osk.exe");
 
 				_logger.LogInfo("Application is initalized");
 			}
@@ -127,26 +132,38 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public void ExitApplication()
+		public bool ShutDown(bool shutPcDown)
 		{
+			if (MessageBox.Show("Вы действительно хотите отключить систему?", "Завершение работы", MessageBoxButton.YesNo,
+				    MessageBoxImage.Question) == MessageBoxResult.No)
+			{
+				return false;
+			}
+
 			try
 			{
-				_logger.LogInfo("Shutting down...");
+				_logger.LogInfo("Disposing the application...");
 
 				SaveSettings();
 				DisposeSubViewModels();
 				DisposeIoDevices();
 
-				_logger.LogInfo("Application stopped");
-				Application.Current.Shutdown();
+				if (!shutPcDown)
+					return true;
+
+				_logger.LogInfo("Application stopped, shutting down the system...");
+				IoUtils.ShutPcDown();
+
+				return true;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException("Failed to complete application clean up", ex);
+				_logger.LogException("Failed to close the application", ex);
+				return false;
 			}
 		}
 
-		public void OpenSettings()
+		private void OpenSettings()
 		{
 			try
 			{

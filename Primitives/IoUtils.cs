@@ -1,5 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace Primitives
@@ -75,6 +77,35 @@ namespace Primitives
 		public static void OpenFile(string filepath)
 		{
 			Process.Start(filepath);
+		}
+
+		public static bool KillProcess(string processName)
+		{
+			try
+			{
+				var runningProcesses = Process.GetProcesses();
+				var matchingProcesses = runningProcesses
+					.Where(p => p.ProcessName.ToLowerInvariant().Contains(processName.ToLowerInvariant())).ToList();
+				foreach (var process in matchingProcesses)
+					process.Kill();
+
+				return true;
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		}
+
+		public static void ShutPcDown()
+		{
+			var shutDownProcess = new ProcessStartInfo("shutdown", "/s /t 0")
+			{
+				CreateNoWindow = true,
+				UseShellExecute = false
+			};
+
+			Process.Start(shutDownProcess);
 		}
 	}
 }
