@@ -134,27 +134,35 @@ namespace DeviceIntegrations.Scales
 
 		private static double GetWeightFromMessage(IReadOnlyList<byte> messageBytes)
 		{
-			var rawWeight = messageBytes[2] + messageBytes[3] + messageBytes[4];
-			var weightMultiplier = GetWeightMultiplierFromCode(messageBytes[1]);
+			var multipler = 1.0;
+			var lastBitActive = (messageBytes[4] & (1 << 7)) != 0;
+			if (lastBitActive)
+				multipler *= -1;
 
-			return rawWeight * weightMultiplier;
-		}
-
-		private static double GetWeightMultiplierFromCode(byte code)
-		{
-			switch (code)
+			switch (messageBytes[1])
 			{
 				case 0:
-					return 0.001;
+					multipler *= 0.001;
+					break;
 				case 1:
-					return 0.0001;
+					multipler *= 0.0001;
+					break;
 				case 4:
-					return 0.01;
+					multipler *= 0.01;
+					break;
 				case 5:
-					return 0.1;
+					multipler *= 0.1;
+					break;
 				default:
-					return -1;
+					multipler *= -1;
+					break;
 			}
+
+			var rawWeight = messageBytes[2] + messageBytes[3] + messageBytes[4];
+			if (lastBitActive)
+				rawWeight -= 128;
+
+			return rawWeight * multipler;
 		}
 	}
 }

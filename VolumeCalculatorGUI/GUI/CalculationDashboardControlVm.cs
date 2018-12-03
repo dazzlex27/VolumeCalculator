@@ -13,6 +13,7 @@ using FrameProviders;
 using Primitives;
 using Primitives.Logging;
 using VolumeCalculatorGUI.GUI.Utils;
+using VolumeCalculatorGUI.Utils;
 
 namespace VolumeCalculatorGUI.GUI
 {
@@ -23,13 +24,13 @@ namespace VolumeCalculatorGUI.GUI
 		private readonly IReadOnlyList<IBarcodeScanner> _scanners;
 		private readonly IScales _scales;
 
-		private ApplicationSettings _applicationSettings;
-		private ColorCameraParams _colorCameraParams;
-		private DepthCameraParams _depthCameraParams;
+		private readonly DashStatusUpdater _dashStatusUpdater;
 
-		private DepthMapProcessor _processor;
+		private ApplicationSettings _applicationSettings;
+
 		private VolumeCalculator _volumeCalculator;
 		private CalculationResultFileProcessor _calculationResultFileProcessor;
+		private readonly DepthMapProcessor _processor;
 
 		private string _objectCode;
 		private double _objectWeight;
@@ -49,10 +50,6 @@ namespace VolumeCalculatorGUI.GUI
 		private bool _unitCountBoxFocused;
 		private bool _commentBoxFocused;
 
-		private readonly Timer _autoStartingCheckingTimer;
-		private Timer _measurementTimer;
-		private bool _waitingForReset;
-
 		public ICommand CalculateVolumeCommand { get; }
 
 		public ICommand CalculateVolumeAltCommand { get; }
@@ -64,6 +61,8 @@ namespace VolumeCalculatorGUI.GUI
 		public ICommand OpenPhotosFolderCommand { get; }
 
 		public ICommand CancelPendingCalculationCommand { get; }
+
+		public bool WaitingForReset { get; set; }
 
 		public string ObjectCode
 		{
@@ -285,19 +284,20 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		private bool CanRunAutoTimer => !_waitingForReset && CodeReady && WeightReady && CanAcceptBarcodes;
+		public bool CanRunAutoTimer => CodeReady && WeightReady && CanAcceptBarcodes;
 
-		private bool CodeReady => !string.IsNullOrEmpty(ObjectCode);
+		public bool CodeReady => !string.IsNullOrEmpty(ObjectCode);
 
-		private bool WeightReady => CurrentWeighingStatus == MeasurementStatus.Measured;
+		public bool WeightReady => CurrentWeighingStatus == MeasurementStatus.Measured;
 
-		private MeasurementStatus CurrentWeighingStatus { get; set; }
+		public MeasurementStatus CurrentWeighingStatus { get; set; }
 
-		public CalculationDashboardControlVm(ILogger logger, FrameProvider frameProvider, IReadOnlyList<IBarcodeScanner> scanners, 
-			IScales scales, ApplicationSettings settings, ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
+		public CalculationDashboardControlVm(ILogger logger, FrameProvider frameProvider, DepthMapProcessor processor, 
+			IReadOnlyList<IBarcodeScanner> scanners, IScales scales, ApplicationSettings settings)
 		{
 			_logger = logger;
 			_frameProvider = frameProvider;
+			_processor = processor;
 
 			if (scanners != null)
 			{
@@ -313,36 +313,23 @@ namespace VolumeCalculatorGUI.GUI
 			}
 
 			_applicationSettings = settings;
-			_colorCameraParams = colorCameraParams;
-			_depthCameraParams = depthCameraParams;
 
 			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.OutputPath);
 
-			_processor = new DepthMapProcessor(_logger, _colorCameraParams, _depthCameraParams);
-			_processor.SetProcessorSettings(_applicationSettings);
+			_dashStatusUpdater = new DashStatusUpdater(_logger, settings, this) { DashStatus = DashboardStatus.Ready };
+			CreateAutoStartTimer(settings.TimeToStartMeasurementMs);
 
 			CalculateVolumeCommand = new CommandHandler(CalculateObjectVolume, !CalculationInProgress);
 			CalculateVolumeAltCommand = new CommandHandler(CalculateObjectVolumeRgb, !CalculationInProgress);
 			ResetWeightCommand = new CommandHandler(ResetWeight, !CalculationInProgress);
 			OpenResultsFileCommand = new CommandHandler(OpenResultsFile, !CalculationInProgress);
 			OpenPhotosFolderCommand = new CommandHandler(OpenPhotosFolder, !CalculationInProgress);
-			CancelPendingCalculationCommand = new CommandHandler(CancelPendingCalculation, !CalculationInProgress);
-
-			 _autoStartingCheckingTimer = new Timer(1000) {AutoReset = true};
-			_autoStartingCheckingTimer.Elapsed += UpdateAutoTimerStatus;
-			_autoStartingCheckingTimer.Start();
-
-			CreateAutoStartTimer(settings.TimeToStartMeasurementMs);
-
-			SetStatusReady();
+			CancelPendingCalculationCommand = new CommandHandler(_dashStatusUpdater.CancelPendingCalculation, !CalculationInProgress);
 		}
 
 		public void Dispose()
 		{
-			if (_volumeCalculator != null && _volumeCalculator.IsRunning)
-				_processor.Dispose();
-
-			_autoStartingCheckingTimer?.Dispose();
+			_dashStatusUpdater?.Dispose();
 
 			if (_scanners != null)
 			{
@@ -357,25 +344,18 @@ namespace VolumeCalculatorGUI.GUI
 		public void ApplicationSettingsUpdated(ApplicationSettings settings)
 		{
 			_applicationSettings = settings;
-			_processor.SetProcessorSettings(settings);
 			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.OutputPath);
 
 			CreateAutoStartTimer(settings.TimeToStartMeasurementMs);
 		}
 
-		public void DeviceParamsUpdated(ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
+		private void CreateAutoStartTimer(long intervalMs)
 		{
-			_colorCameraParams = colorCameraParams;
-			_depthCameraParams = depthCameraParams;
-			Dispose();
+			if (_dashStatusUpdater.Timer != null)
+				_dashStatusUpdater.Timer.Elapsed -= OnMeasurementTimerElapsed;
 
-			_processor = new DepthMapProcessor(_logger, _colorCameraParams, _depthCameraParams);
-			_processor.SetProcessorSettings(_applicationSettings);
-		}
-
-		public DepthMapProcessor GetDepthMapProcessor()
-		{
-			return _processor;
+			_dashStatusUpdater.Timer = new Timer(intervalMs) {AutoReset = false};
+			_dashStatusUpdater.Timer.Elapsed += OnMeasurementTimerElapsed;
 		}
 
 		private void OnBarcodeReady(string code)
@@ -401,26 +381,6 @@ namespace VolumeCalculatorGUI.GUI
 		private void ResetWeight()
 		{
 			_scales?.ResetWeight();
-		}
-
-		private void UpdateAutoTimerStatus(object sender, ElapsedEventArgs e)
-		{
-			if (CurrentWeighingStatus == MeasurementStatus.Ready && _waitingForReset)
-				SetStatusReady();
-
-			if (_measurementTimer.Enabled)
-			{
-				if (!CanRunAutoTimer)
-					_measurementTimer.Stop();
-			}
-			else
-			{
-				if (!CanRunAutoTimer)
-					return;
-
-				_measurementTimer.Start();
-				SetStatusAutoStarting();
-			}
 		}
 
 		private void OpenResultsFile()
@@ -455,26 +415,6 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		private void CancelPendingCalculation()
-		{
-			var timerEnabled = _measurementTimer != null && _measurementTimer.Enabled;
-			if (!timerEnabled)
-				return;
-
-			_measurementTimer.Stop();
-			ObjectCode = "";
-			SetStatusReady();
-		}
-
-		private void CreateAutoStartTimer(long intervalMs)
-		{
-			if (_measurementTimer != null)
-				_measurementTimer.Elapsed -= OnMeasurementTimerElapsed;
-
-			_measurementTimer = new Timer(intervalMs) {AutoReset = false};
-			_measurementTimer.Elapsed += OnMeasurementTimerElapsed;
-		}
-
 		private void OnMeasurementTimerElapsed(object sender, ElapsedEventArgs e)
 		{
 			CalculateObjectVolumeInternal(_applicationSettings.UseRgbAlgorithmByDefault);
@@ -498,7 +438,7 @@ namespace VolumeCalculatorGUI.GUI
 				if (!canRunCalculation)
 					return;
 
-				SetStatusInProgress();
+				_dashStatusUpdater.DashStatus = DashboardStatus.InProgress;
 
 				_logger.LogInfo($"Starting a volume check, using rgb={usingRgbData}...");
 
@@ -511,7 +451,7 @@ namespace VolumeCalculatorGUI.GUI
 				MessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка",
 					MessageBoxButton.OK, MessageBoxImage.Error);
 
-				SetStatusError();
+				_dashStatusUpdater.DashStatus = DashboardStatus.Error;
 			}
 		}
 
@@ -571,12 +511,12 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				if (status == CalculationStatus.Sucessful && result != null)
 				{
-					SetStatusFinished();
+					_dashStatusUpdater.DashStatus = DashboardStatus.Finished;
 					UpdateVolumeData(result);
 				}
 				else
 				{
-					SetStatusError();
+					_dashStatusUpdater.DashStatus = DashboardStatus.Error;
 					var emptyResult = new ObjectVolumeData(0, 0, 0);
 					UpdateVolumeData(emptyResult);
 				}
@@ -601,7 +541,7 @@ namespace VolumeCalculatorGUI.GUI
 					}
 					case CalculationStatus.Undefined:
 					{
-						SetStatusError();
+						_dashStatusUpdater.DashStatus = DashboardStatus.Error;
 						MessageBox.Show("Объект не найден", "Результат измерения",
 							MessageBoxButton.OK, MessageBoxImage.Information);
 						_logger.LogError("No object was found during volume calculation");
@@ -663,63 +603,6 @@ namespace VolumeCalculatorGUI.GUI
 			ObjectVolume = 0;
 			UnitCount = 0;
 			Comment = "";
-		}
-
-		private void SetStatusReady()
-		{
-			_waitingForReset = false;
-
-			Dispatcher.Invoke(() =>
-			{
-				StatusBrush = new SolidColorBrush(Colors.Green);
-				StatusText = "Готов к измерению";
-				CalculationPending = false;
-			});
-		}
-
-		private void SetStatusError()
-		{
-			Dispatcher.Invoke(() =>
-			{
-				CalculationInProgress = false;
-				StatusBrush = new SolidColorBrush(Colors.Red);
-				StatusText = "Произошла ошибка";
-				CalculationPending = false;
-			});
-		}
-
-		private void SetStatusAutoStarting()
-		{
-			Dispatcher.Invoke(() =>
-			{
-				StatusBrush = new SolidColorBrush(Colors.Blue);
-				StatusText = "Запущен автотаймер...";
-				CalculationPending = true;
-			});
-		}
-
-		private void SetStatusInProgress()
-		{
-			Dispatcher.Invoke(() =>
-			{
-				CalculationInProgress = true;
-				StatusBrush = new SolidColorBrush(Colors.DarkOrange);
-				StatusText = "Выполняется измерение...";
-				CalculationPending = false;
-			});
-		}
-
-		private void SetStatusFinished()
-		{
-			_waitingForReset = true;
-
-			Dispatcher.Invoke(() =>
-			{
-				CalculationInProgress = false;
-				StatusBrush = new SolidColorBrush(Colors.DarkGreen);
-				StatusText = "Измерение завершено";
-				CalculationPending = false;
-			});
 		}
 	}
 }

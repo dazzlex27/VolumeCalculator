@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Input;
 using DeviceIntegrations.Scales;
 using DeviceIntegrations.Scanners;
+using FrameProcessor;
 using FrameProviders;
 using Primitives;
 using Primitives.Logging;
@@ -26,6 +27,8 @@ namespace VolumeCalculatorGUI.GUI
 		private CalculationDashboardControlVm _calculationDashboardControlVm;
 		private TestDataGenerationControlVm _testDataGenerationControlVm;
 
+		private FrameProvider _frameProvider;
+		private DepthMapProcessor _processor;
 		private List<IBarcodeScanner> _barcodeScanners;
 		private IScales _scales;
 
@@ -113,13 +116,12 @@ namespace VolumeCalculatorGUI.GUI
 				AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
 				InitializeSettings();
+				InitializeEntities();
 				InitializeIoDevices();
 				InitializeSubViewModels();
 
 				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
 				ShutDownCommand = new CommandHandler(() => { ShutDown(true); }, true);
-
-				//Process.Start("osk.exe");
 
 				_logger.LogInfo("Application is initalized");
 			}
@@ -130,6 +132,22 @@ namespace VolumeCalculatorGUI.GUI
 					MessageBoxButton.OK, MessageBoxImage.Error);
 				Process.GetCurrentProcess().Kill();
 			}
+		}
+
+		private void InitializeEntities()
+		{
+			_frameProvider = DeviceInitializationUtils.CreateRequestedFrameProvider(_logger);
+			_frameProvider.ColorCameraFps = 5;
+			_frameProvider.DepthCameraFps = 5;
+			_frameProvider.ColorFrameReady += OnColorFrameReady;
+			_frameProvider.DepthFrameReady += OnDepthFrameReady;
+			_frameProvider.Start();
+
+			var colorCameraParams = _frameProvider.GetColorCameraParams();
+			var depthCameraParams = _frameProvider.GetDepthCameraParams();
+
+			_processor = new DepthMapProcessor(_logger, colorCameraParams, depthCameraParams);
+			_processor.SetProcessorSettings(Settings);
 		}
 
 		public bool ShutDown(bool shutPcDown)
@@ -167,28 +185,34 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
-				var deviceParams = _streamViewControlVm.GetDepthCameraParams();
-				var depthMapProcessor = CalculationDashboardControlVm.GetDepthMapProcessor();
-
-				var settingsWindowVm = new SettingsWindowVm(_logger, _settings, deviceParams, depthMapProcessor);
-				_streamViewControlVm.ColorFrameReady += settingsWindowVm.ColorFrameUpdated;
-				_streamViewControlVm.DepthFrameReady += settingsWindowVm.DepthFrameUpdated;
-				var settingsWindow = new SettingsWindow
+				var settingsWindowVm = new SettingsWindowVm(_logger, _settings, _frameProvider.GetDepthCameraParams(), _processor);
+				_frameProvider.ColorFrameReady += settingsWindowVm.ColorFrameUpdated;
+				_frameProvider.DepthFrameReady += settingsWindowVm.DepthFrameUpdated;
+				try
 				{
-					Owner = Application.Current.Windows.OfType<Window>().SingleOrDefault(x => x.IsActive),
-					DataContext = settingsWindowVm
-				};
+					var settingsWindow = new SettingsWindow
+					{
+						Owner = Application.Current.Windows.OfType<Window>().SingleOrDefault(x => x.IsActive),
+						DataContext = settingsWindowVm
+					};
 
-				var settingsChanged = settingsWindow.ShowDialog() == true;
-				_streamViewControlVm.ColorFrameReady -= settingsWindowVm.ColorFrameUpdated;
-				_streamViewControlVm.DepthFrameReady -= settingsWindowVm.DepthFrameUpdated;
+					var settingsChanged = settingsWindow.ShowDialog() == true;
+					if (!settingsChanged)
+						return;
 
-				if (!settingsChanged)
-					return;
-
-				Settings = settingsWindowVm.GetSettings();
-				SaveSettings();
-				_logger.LogInfo($"New settings have been applied: {Settings}");
+					Settings = settingsWindowVm.GetSettings();
+					SaveSettings();
+					_logger.LogInfo($"New settings have been applied: {Settings}");
+				}
+				catch (Exception ex)
+				{
+					_logger.LogException("Error occured while changing settings", ex);
+				}
+				finally
+				{
+					_frameProvider.ColorFrameReady -= settingsWindowVm.ColorFrameUpdated;
+					_frameProvider.DepthFrameReady -= settingsWindowVm.DepthFrameUpdated;
+				}
 			}
 			catch (Exception ex)
 			{
@@ -215,21 +239,13 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			_logger.LogInfo("Initializing sub view models...");
 
-			_streamViewControlVm = new StreamViewControlVm(_logger, _settings);
+			_streamViewControlVm = new StreamViewControlVm(_logger, _settings, _frameProvider);
 
-			var colorCameraParams = _streamViewControlVm.GetColorCameraParams();
-			var depthCameraParams = _streamViewControlVm.GetDepthCameraParams();
-
-			var frameProvider = _streamViewControlVm.GetFrameProvider();
-
-			_calculationDashboardControlVm = new CalculationDashboardControlVm(_logger, frameProvider, _barcodeScanners, _scales, 
-				_settings, colorCameraParams, depthCameraParams);
-			_testDataGenerationControlVm = new TestDataGenerationControlVm(_settings, depthCameraParams);
+			_calculationDashboardControlVm = new CalculationDashboardControlVm(_logger, _frameProvider, _processor,
+				_barcodeScanners, _scales, _settings);
+			_testDataGenerationControlVm = new TestDataGenerationControlVm(_settings, _frameProvider.GetDepthCameraParams());
 
 			ApplicationSettingsChanged += OnApplicationSettingsChanged;
-			_streamViewControlVm.DeviceParamsChanged += OnDeviceParametersChanged;
-			_streamViewControlVm.ColorFrameReady += OnColorFrameReady;
-			_streamViewControlVm.DepthFrameReady += OnDepthFrameReady;
 		}
 
 		private void InitializeIoDevices()
@@ -283,14 +299,9 @@ namespace VolumeCalculatorGUI.GUI
 			_scales?.Dispose();
 		}
 
-		private void OnDeviceParametersChanged(ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
-		{
-			_calculationDashboardControlVm.DeviceParamsUpdated(colorCameraParams, depthCameraParams);
-			_testDataGenerationControlVm.DeviceParamsUpdated(colorCameraParams, depthCameraParams);
-		}
-
 		private void OnApplicationSettingsChanged(ApplicationSettings settings)
 		{
+			_processor.SetProcessorSettings(settings);
 			_calculationDashboardControlVm.ApplicationSettingsUpdated(settings);
 			_streamViewControlVm.ApplicationSettingsUpdated(settings);
 			_testDataGenerationControlVm.ApplicationSettingsUpdated(settings);
@@ -298,12 +309,12 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void OnColorFrameReady(ImageData image)
 		{
-			_testDataGenerationControlVm.ColorFrameUpdated(image);
+			_testDataGenerationControlVm?.ColorFrameUpdated(image);
 		}
 
 		private void OnDepthFrameReady(DepthMap depthMap)
 		{
-			_testDataGenerationControlVm.DepthFrameUpdated(depthMap);
+			_testDataGenerationControlVm?.DepthFrameUpdated(depthMap);
 		}
 
 		private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)

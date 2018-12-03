@@ -10,23 +10,13 @@ namespace VolumeCalculatorGUI.GUI
 {
 	internal class StreamViewControlVm : BaseViewModel, IDisposable
 	{
-		public event Action<ImageData> ColorFrameReady
-		{
-			add => _frameProvider.ColorFrameReady += value;
-			remove => _frameProvider.ColorFrameReady -= value;
-		}
-
-		public event Action<DepthMap> DepthFrameReady;
-
 		public event Action<bool> UseColorStreamChanged;
 		public event Action<bool> UseDepthStreamChanged;
-		public event Action<ColorCameraParams, DepthCameraParams> DeviceParamsChanged;
 
 		private readonly FrameProvider _frameProvider;
 		private readonly ILogger _logger;
 
 		private ApplicationSettings _applicationSettings;
-		private DepthCameraParams _depthCameraParams;
 
 		private WriteableBitmap _colorImageBitmap;
 		private WriteableBitmap _depthImageBitmap;
@@ -39,6 +29,8 @@ namespace VolumeCalculatorGUI.GUI
 
 		private bool _useColorMask;
 		private bool _useDepthMask;
+
+		private short _minDepth;
 
 		public WriteableBitmap ColorImageBitmap
 		{
@@ -146,65 +138,31 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		private DepthCameraParams DepthCameraParams
-		{
-			get => _depthCameraParams;
-			set
-			{
-				if (_depthCameraParams == value)
-					return;
-
-				_depthCameraParams = value;
-				DeviceParamsChanged?.Invoke(_frameProvider.GetColorCameraParams(), value);
-			}
-		}
-
-		public StreamViewControlVm(ILogger logger, ApplicationSettings settings)
+		public StreamViewControlVm(ILogger logger, ApplicationSettings settings, FrameProvider frameProvider)
 		{
 			_logger = logger;
 			_applicationSettings = settings;
+			_frameProvider = frameProvider;
 
 			_useColorStream = true;
 			_useDepthStream = true;
 
-			_frameProvider = DeviceInitializationUtils.CreateRequestedFrameProvider(logger);
-			_frameProvider.ColorCameraFps = 5;
-			_frameProvider.DepthCameraFps = 5;
-			_frameProvider.Start();
-
-			DepthCameraParams = _frameProvider.GetDepthCameraParams();
-
 			_frameProvider.ColorFrameReady += ColorImageUpdated;
 			_frameProvider.DepthFrameReady += DepthImageUpdated;
-
-			UseColorStreamChanged += ToggleUseColorStream;
-			UseDepthStreamChanged += ToggleUseDepthStream;
 
 			UseColorMask = settings.UseColorMask;
 			UseDepthMask = settings.UseDepthMask;
 
 			ColorMaskPolygonControlVm = new MaskPolygonControlVm(settings.ColorMaskContour);
 			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.DepthMaskContour);
+
+			_minDepth = _frameProvider.GetDepthCameraParams().MinDepth;
 		}
 
 		public void Dispose()
 		{
-			_frameProvider.Dispose();
-		}
-
-		public FrameProvider GetFrameProvider()
-		{
-			return _frameProvider;
-		}
-
-		public ColorCameraParams GetColorCameraParams()
-		{
-			return _frameProvider.GetColorCameraParams();
-		}
-
-		public DepthCameraParams GetDepthCameraParams()
-		{
-			return _depthCameraParams;
+			_frameProvider.ColorFrameReady -= ColorImageUpdated;
+			_frameProvider.DepthFrameReady -= DepthImageUpdated;
 		}
 
 		public void ApplicationSettingsUpdated(ApplicationSettings settings)
@@ -225,14 +183,11 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
-				DepthFrameReady?.Invoke(depthMap);
-
-				var minDepth = _depthCameraParams.MinDepth;
 				var maxDepth = _applicationSettings.FloorDepth;
 				var maskedMap = new DepthMap(depthMap);
 				var cutOffDepth = (short) (maxDepth - _applicationSettings.MinObjectHeight);
 				DepthMapUtils.FilterDepthMapByDepthtLimit(maskedMap, cutOffDepth);
-				var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, minDepth, maxDepth);
+				var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, _minDepth, maxDepth);
 				var depthMapImage = new ImageData(maskedMap.Width, maskedMap.Height, depthMapData, 1);
 
 				DepthImageBitmap = GraphicsUtils.GetWriteableBitmapFromImageData(depthMapImage);
@@ -240,34 +195,6 @@ namespace VolumeCalculatorGUI.GUI
 			catch (Exception ex)
 			{
 				_logger.LogException("failed to receive a depth frame", ex);
-			}
-		}
-
-		private void ToggleUseColorStream(bool useColorStream)
-		{
-			if (useColorStream)
-			{
-				_frameProvider.ResumeColorStream();
-			}
-			else
-			{
-				_frameProvider.SuspendColorStream();
-				var emptyImage = new ImageData(1, 1, new byte[3], 3);
-				ColorImageUpdated(emptyImage);
-			}
-		}
-
-		private void ToggleUseDepthStream(bool useDepthStream)
-		{
-			if (useDepthStream)
-			{
-				_frameProvider.ResumeDepthStream();
-			}
-			else
-			{
-				_frameProvider.SuspendDepthStream();
-				var emptyMap = new DepthMap(1, 1, new short[1]);
-				DepthImageUpdated(emptyMap);
 			}
 		}
 	}
