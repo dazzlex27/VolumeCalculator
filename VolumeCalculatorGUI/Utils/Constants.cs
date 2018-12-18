@@ -6,7 +6,7 @@
 
 		public const string AppTitle = "VolumeCalculator";
 
-		public const string AppVersion = "v0.134 Beta";
+		public const string AppVersion = "v0.135 Beta";
 
 		public static string AppHeaderString = $@"{ManufacturerName} {AppTitle} {AppVersion}";
 

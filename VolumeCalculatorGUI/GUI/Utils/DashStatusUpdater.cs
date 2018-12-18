@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Timers;
 using System.Windows.Media;
+using DeviceIntegrations.IoCircuits;
 using DeviceIntegrations.Scales;
-using Primitives;
 using Primitives.Logging;
 using VolumeCalculatorGUI.Utils;
 
@@ -11,6 +11,7 @@ namespace VolumeCalculatorGUI.GUI.Utils
 	internal class DashStatusUpdater : IDisposable
 	{
 		private readonly ILogger _logger;
+		private readonly IIoCircuit _circuit;
 		private readonly CalculationDashboardControlVm _vm;
 		private readonly Timer _autoStartingCheckingTimer;
 
@@ -46,12 +47,13 @@ namespace VolumeCalculatorGUI.GUI.Utils
 		public Timer Timer { get; set; }
 	
 
-		public DashStatusUpdater(ILogger logger, ApplicationSettings settings, CalculationDashboardControlVm vm)
+		public DashStatusUpdater(ILogger logger, IIoCircuit circuit, CalculationDashboardControlVm vm)
 		{
 			_logger = logger;
+			_circuit = circuit;
 			_vm = vm;
 
-			_autoStartingCheckingTimer = new Timer(1000) { AutoReset = true };
+			_autoStartingCheckingTimer = new Timer(100) { AutoReset = true };
 			_autoStartingCheckingTimer.Elapsed += UpdateAutoTimerStatus;
 			_autoStartingCheckingTimer.Start();
 		}
@@ -99,9 +101,15 @@ namespace VolumeCalculatorGUI.GUI.Utils
 				if (!_vm.CanRunAutoTimer || _vm.CalculationPending)
 					return;
 
+				_logger.LogInfo($"! started timer, pending={_vm.CalculationPending} canRun={_vm.CanRunAutoTimer} st={Environment.StackTrace}");
 				Timer.Start();
 				DashStatus = DashboardStatus.Pending;
 			}
+		}
+
+		private void ToggleCrosshair(bool enabled)
+		{
+			_circuit?.ToggleRelay(1, enabled);
 		}
 
 		private void SetStatusReady()
@@ -114,6 +122,8 @@ namespace VolumeCalculatorGUI.GUI.Utils
 				_vm.StatusText = "Готов к измерению";
 				_vm.CalculationPending = false;
 			});
+
+			ToggleCrosshair(true);
 
 			_logger.LogInfo("! status ready");
 		}
@@ -129,6 +139,8 @@ namespace VolumeCalculatorGUI.GUI.Utils
 				_vm.CalculationPending = false;
 			});
 
+			ToggleCrosshair(true);
+
 			_logger.LogInfo("! status error");
 		}
 
@@ -140,6 +152,8 @@ namespace VolumeCalculatorGUI.GUI.Utils
 				_vm.StatusText = "Запущен автотаймер...";
 				_vm.CalculationPending = true;
 			});
+
+			ToggleCrosshair(false);
 
 			_logger.LogInfo("! status pending");
 		}
@@ -153,6 +167,8 @@ namespace VolumeCalculatorGUI.GUI.Utils
 				_vm.StatusText = "Выполняется измерение...";
 				_vm.CalculationPending = false;
 			});
+
+			ToggleCrosshair(false);
 
 			_logger.LogInfo("! status in progress");
 		}
@@ -168,6 +184,8 @@ namespace VolumeCalculatorGUI.GUI.Utils
 				_vm.StatusText = "Измерение завершено";
 				_vm.CalculationPending = false;
 			});
+
+			ToggleCrosshair(true);
 
 			_logger.LogInfo("! status finished");
 		}

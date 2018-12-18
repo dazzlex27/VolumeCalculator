@@ -6,6 +6,7 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using DeviceIntegrations.IoCircuits;
 using DeviceIntegrations.Scales;
 using DeviceIntegrations.Scanners;
 using FrameProcessor;
@@ -23,6 +24,7 @@ namespace VolumeCalculatorGUI.GUI
 		private readonly FrameProvider _frameProvider;
 		private readonly IReadOnlyList<IBarcodeScanner> _scanners;
 		private readonly IScales _scales;
+		private readonly IIoCircuit _circuit;
 
 		private readonly DashStatusUpdater _dashStatusUpdater;
 
@@ -293,7 +295,7 @@ namespace VolumeCalculatorGUI.GUI
 		public MeasurementStatus CurrentWeighingStatus { get; set; }
 
 		public CalculationDashboardControlVm(ILogger logger, FrameProvider frameProvider, DepthMapProcessor processor, 
-			IReadOnlyList<IBarcodeScanner> scanners, IScales scales, ApplicationSettings settings)
+			IReadOnlyList<IBarcodeScanner> scanners, IScales scales, IIoCircuit circuit, ApplicationSettings settings)
 		{
 			_logger = logger;
 			_frameProvider = frameProvider;
@@ -312,11 +314,14 @@ namespace VolumeCalculatorGUI.GUI
 				_scales.MeasurementReady += OnWeightMeasurementReady;
 			}
 
+			if (circuit != null)
+				_circuit = circuit;
+
 			_applicationSettings = settings;
 
 			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.OutputPath);
 
-			_dashStatusUpdater = new DashStatusUpdater(_logger, settings, this) { DashStatus = DashboardStatus.Ready };
+			_dashStatusUpdater = new DashStatusUpdater(_logger, _circuit, this) { DashStatus = DashboardStatus.Ready };
 			CreateAutoStartTimer(settings.TimeToStartMeasurementMs);
 
 			CalculateVolumeCommand = new CommandHandler(CalculateObjectVolume, !CalculationInProgress);
@@ -432,17 +437,26 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void CalculateObjectVolumeInternal(bool usingRgbData)
 		{
+			if (CalculationInProgress)
+			{
+				_logger.LogInfo("tried to start calculation while another one was running, " + Environment.StackTrace);
+				return;
+			}
+
 			try
 			{
+				_logger.LogInfo($"! checking preconditions Code={ObjectCode}");
 				var canRunCalculation = CheckIfPreConditionsAreSatisfied();
 				if (!canRunCalculation)
 					return;
 
 				_dashStatusUpdater.DashStatus = DashboardStatus.InProgress;
 
+				_logger.LogInfo($"! starting volume check Code={ObjectCode}");
 				_logger.LogInfo($"Starting a volume check, using rgb={usingRgbData}...");
 
 				_volumeCalculator = new VolumeCalculator(_logger, _frameProvider, _processor, _applicationSettings, usingRgbData);
+				_logger.LogInfo($"! subscribed to calculator event");
 				_volumeCalculator.CalculationFinished += OnCalculationFinished;
 			}
 			catch (Exception ex)
@@ -461,6 +475,8 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				MessageBox.Show("Введите код объекта", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 
+				_logger.LogInfo("bullshit empty code shit occured " + Environment.StackTrace);
+
 				return false;
 			}
 
@@ -478,6 +494,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void OnCalculationFinished(ObjectVolumeData result, CalculationStatus status)
 		{
+			_logger.LogInfo("! calculation finished");
 			DisposeVolumeCalculator();
 
 			ProcessCalculationResult(result, status);

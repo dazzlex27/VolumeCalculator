@@ -45,6 +45,15 @@ namespace Primitives
 			return fileLines.Length < 2 ? string.Empty : fileLines[1];
 		}
 
+		public static string ReadIoBoardPort()
+		{
+			if (!File.Exists(Constants.PortsFileName))
+				return string.Empty;
+
+			var fileLines = File.ReadAllLines(Constants.PortsFileName);
+			return fileLines.Length < 3 ? string.Empty : fileLines[2];
+		}
+
 		public static int GetCurrentUniversalObjectCounter()
 		{
 			if (!File.Exists(Constants.CountersFileName))

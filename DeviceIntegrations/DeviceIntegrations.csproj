@@ -37,6 +37,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IoCircuits\IIoCircuit.cs" />
+    <Compile Include="IoCircuits\KeUsb24RBoard.cs" />
     <Compile Include="Scales\FakeScales.cs" />
     <Compile Include="Scales\IScales.cs" />
     <Compile Include="Scales\MassaKScales.cs" />
@@ -55,5 +57,6 @@
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

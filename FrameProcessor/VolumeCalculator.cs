@@ -39,6 +39,8 @@ namespace FrameProcessor
 		public VolumeCalculator(ILogger logger, FrameProvider frameProvider, DepthMapProcessor processor, ApplicationSettings settings, 
 			bool usingColorData)
 		{
+			logger.LogInfo($"! creating volume calculator sampleCount={settings.SampleDepthMapCount}");
+
 			_logger = logger;
 			_frameProvider = frameProvider ?? throw new ArgumentNullException(nameof(frameProvider));
 			_processor = processor ?? throw new ArgumentException(nameof(processor));
@@ -51,7 +53,7 @@ namespace FrameProcessor
 			_frameProvider.UnrestrictedDepthFrameReady += OnDepthFrameReady;
 			_frameProvider.UnrestrictedColorFrameReady += OnColorFrameReady;
 
-			_timer = new Timer(3000);
+			_timer = new Timer(3000) {AutoReset = false};
 			_timer.Elapsed += Timer_Elapsed;
 			_timer.Start();
 
@@ -102,6 +104,8 @@ namespace FrameProcessor
 		{
 			_timer.Stop();
 
+			_logger.LogInfo($"! advancing calculation samplesLeft={_samplesLeft}");
+
 			if (!HasCompletedFirstRun)
 			{
 				CalculateDepthMapZoneMask(depthMap);
@@ -125,6 +129,7 @@ namespace FrameProcessor
 			IsRunning = false;
 			var totalResult = AggregateCalculationsData();
 
+			_logger.LogInfo($"! calculator finished and is about to generate event");
 			if (totalResult != null)
 				CalculationFinished?.Invoke(totalResult, CalculationStatus.Sucessful);
 			else
@@ -166,6 +171,7 @@ namespace FrameProcessor
 		{
 			try
 			{
+				_logger.LogInfo($"! aggregating data");
 				var lengths = _results.Select(r => r.Length).ToArray();
 				var widths = _results.Select(r => r.Width).ToArray();
 				var heights = _results.Select(r => r.Height).ToArray();
@@ -185,6 +191,7 @@ namespace FrameProcessor
 
 		private void Timer_Elapsed(object sender, ElapsedEventArgs e)
 		{
+			_logger.LogInfo($"! timeout timer elapsed, samplesLeft={_samplesLeft}");
 			CalculationFinished?.Invoke(null, CalculationStatus.TimedOut);
 		}
 
@@ -192,6 +199,8 @@ namespace FrameProcessor
 		{
 			try
 			{
+				_logger.LogInfo($"! saving debugData, samplesLeft={_samplesLeft}");
+
 				Directory.CreateDirectory(Constants.DebugDataDirectoryName);
 				var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter();
 

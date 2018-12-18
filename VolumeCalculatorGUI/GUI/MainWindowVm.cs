@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using DeviceIntegrations.IoCircuits;
 using DeviceIntegrations.Scales;
 using DeviceIntegrations.Scanners;
 using FrameProcessor;
@@ -31,6 +32,7 @@ namespace VolumeCalculatorGUI.GUI
 		private DepthMapProcessor _processor;
 		private List<IBarcodeScanner> _barcodeScanners;
 		private IScales _scales;
+		private IIoCircuit _circuit;
 
 		public string WindowTitle => Constants.AppHeaderString;
 
@@ -242,7 +244,7 @@ namespace VolumeCalculatorGUI.GUI
 			_streamViewControlVm = new StreamViewControlVm(_logger, _settings, _frameProvider);
 
 			_calculationDashboardControlVm = new CalculationDashboardControlVm(_logger, _frameProvider, _processor,
-				_barcodeScanners, _scales, _settings);
+				_barcodeScanners, _scales, _circuit, _settings);
 			_testDataGenerationControlVm = new TestDataGenerationControlVm(_settings, _frameProvider.GetDepthCameraParams());
 
 			ApplicationSettingsChanged += OnApplicationSettingsChanged;
@@ -269,6 +271,18 @@ namespace VolumeCalculatorGUI.GUI
 				var scalesComPort = IoUtils.ReadScalesPort();
 				if (scalesComPort != string.Empty)
 					_scales = DeviceInitializationUtils.CreateRequestedScales(_logger, scalesComPort);
+
+				_logger.LogInfo("reading board port");
+				var circuitComPort = IoUtils.ReadIoBoardPort();
+				if (circuitComPort != string.Empty)
+				{
+					_logger.LogInfo("board port is not null");
+					_circuit = new KeUsb24RBoard(_logger, circuitComPort);
+				}
+				else
+				{
+					_logger.LogInfo("board port is null");
+				}
 			}
 			catch (Exception ex)
 			{
@@ -297,6 +311,8 @@ namespace VolumeCalculatorGUI.GUI
 				listener.Dispose();
 
 			_scales?.Dispose();
+
+			_circuit?.Dispose();
 		}
 
 		private void OnApplicationSettingsChanged(ApplicationSettings settings)
