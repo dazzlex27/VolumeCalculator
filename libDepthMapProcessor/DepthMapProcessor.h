@@ -7,9 +7,9 @@
 class DepthMapProcessor
 {
 private:
-	const ColorCameraIntristics _colorIntrinsics; 
+	const ColorCameraIntristics _colorIntrinsics;
 	const DepthCameraIntristics _depthIntrinsics;
-	
+
 	ContourExtractor _contourExtractor;
 
 	int _colorImageWidth;
@@ -32,15 +32,22 @@ private:
 	byte* _depthMaskBuffer;
 	byte* _colorImageBuffer;
 
+	std::vector<cv::Point2f> _polygonPoints;
+	MeasurementVolume _measurementVolume;
+	bool _needToUpdateMeasurementVolume;
+
 public:
 	DepthMapProcessor(ColorCameraIntristics colorIntrinsics, DepthCameraIntristics depthIntrinsics);
 	~DepthMapProcessor();
 
-	void SetAlgorithmSettings(const short floorDepth, const short cutOffDepth, const RelRect& roiRect);
+	void SetAlgorithmSettings(const short floorDepth, const short cutOffDepth, 
+		const RelPoint* polygonPoints, const int polygonPointCount, const RelRect& roiRect);
 	void SetDebugPath(const char* path);
 	ObjDimDescription* CalculateObjectVolume(const DepthMap& depthMap, const bool saveDebugData);
 	ObjDimDescription* CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image, const bool saveDebugData);
 	const short CalculateFloorDepth(const DepthMap& depthMap);
+
+	const bool AreThereObjectsInTheZone(const DepthMap& depthMap);
 
 private:
 	void FillColorBuffer(const ColorImage& image);
@@ -51,8 +58,11 @@ private:
 	const ObjDimDescription CalculateContourDimensionsAlt(const Contour& objectContour, const Contour& colorObjectContour,
 		const bool saveDebugData) const;
 	const short GetContourTopPlaneDepth(const Contour& contour) const;
-	const TwoDimDescription GetTwoDimDescription(const cv::RotatedRect& contourBoundingRect, 
+	const TwoDimDescription GetTwoDimDescription(const cv::RotatedRect& contourBoundingRect,
 		const short contourTopPlaneDepth, const float fx, const float fy, const float ppx, const float ppy) const;
 	const std::vector<DepthValue> GetWorldDepthValues(const Contour& objectContour) const;
 	const std::vector<cv::Point> GetCameraPoints(const std::vector<DepthValue>& depthValues, const short targetDepth) const;
+	const bool IsObjectInZone(const std::vector<DepthValue>& contour) const;
+	const bool IsPointInZone(const DepthValue& depthValue) const;
+	void UpdateMeasurementVolume(const int mapWidth, const int mapHeight);
 };

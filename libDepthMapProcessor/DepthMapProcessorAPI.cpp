@@ -6,13 +6,14 @@ DLL_EXPORT void* CreateDepthMapProcessor(ColorCameraIntristics colorIntrinsics, 
 	return new DepthMapProcessor(colorIntrinsics, depthIntrinsics);
 }
 
-DLL_EXPORT void SetAlgorithmSettings(void* handle, short floorDepth, short cutOffDepth, RelRect colorRoiRect)
+DLL_EXPORT void SetAlgorithmSettings(void* handle, short floorDepth, short cutOffDepth, RelPoint* polygonPoints, int polygonPointCount, 
+	RelRect colorRoiRect)
 {
 	auto processor = (DepthMapProcessor*)handle;
 	if (processor == nullptr)
 		return;
 
-	processor->SetAlgorithmSettings(floorDepth, cutOffDepth, colorRoiRect);
+	processor->SetAlgorithmSettings(floorDepth, cutOffDepth, polygonPoints, polygonPointCount, colorRoiRect);
 }
 
 DLL_EXPORT void SetDebugPath(void* handle, const char* path)
@@ -49,6 +50,15 @@ DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, DepthMap de
 		return nullptr;
 
 	return processor->CalculateObjectVolumeAlt(depthMap, image, saveDebugData);
+}
+
+DLL_EXPORT bool AreThereObjectsInZone(void* handle, DepthMap depthMap)
+{
+	auto processor = (DepthMapProcessor*)handle;
+	if (processor == nullptr)
+		return false;
+
+	return processor->AreThereObjectsInTheZone(depthMap);
 }
 
 DLL_EXPORT short CalculateFloorDepth(void* handle, DepthMap depthMap)

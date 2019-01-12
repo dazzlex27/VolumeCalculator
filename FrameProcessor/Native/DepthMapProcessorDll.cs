@@ -12,10 +12,14 @@ namespace FrameProcessor.Native
 	    public static extern unsafe void DestroyDepthMapProcessor(void* handle);
 
 		[DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
-	    public static extern unsafe void SetAlgorithmSettings(void* handle, short floorDepth, short cutOffDepth, RelRect colorRoiRect);
+	    public static extern unsafe void SetAlgorithmSettings(void* handle, short floorDepth, short cutOffDepth, 
+			RelPoint* polygonPoints, int polygonPointCount, RelRect colorRoiRect);
 
 	    [DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
 	    public static extern unsafe void SetDebugPath(void* handle, string path);
+
+	    [DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
+	    public static extern unsafe bool AreThereObjectsInZone(void* handle, DepthMap depthMap);
 
 		[DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
 	    public static extern unsafe ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depthMap, bool saveDebugData);

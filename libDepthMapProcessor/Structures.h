@@ -105,3 +105,21 @@ struct DepthValue
 	int YWorld;
 	short Value;
 };
+
+struct AbsPoint
+{
+	int X;
+	int Y;
+};
+
+#include "OpenCVInclude.h"
+
+struct MeasurementVolume
+{
+	cv::Point P0;
+	cv::Point P1;
+	cv::Point P2;
+	cv::Point P3;
+	short smallerDepthValue;
+	short largerDepthValue;
+};

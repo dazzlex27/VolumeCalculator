@@ -28,6 +28,19 @@ namespace FrameProcessor
 			}
 		}
 
+		public bool AreThereObjectsInZone(DepthMap depthMap)
+		{
+			unsafe
+			{
+				fixed (short* depthData = depthMap.Data)
+				{
+					var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
+
+					return DepthMapProcessorDll.AreThereObjectsInZone(_nativeHandle.ToPointer(), nativeDepthMap);
+				}
+			}
+		}
+
 		public ObjectVolumeData CalculateVolume(DepthMap depthMap, bool needToSaveDebugData = false)
 		{
 			unsafe
@@ -85,7 +98,19 @@ namespace FrameProcessor
 
 			unsafe
 			{
-				DepthMapProcessorDll.SetAlgorithmSettings(_nativeHandle.ToPointer(), settings.FloorDepth, cutOffDepth, colorRoiRect);
+				var relPoints = new RelPoint[settings.DepthMaskContour.Count];
+				for (var i = 0; i < relPoints.Length; i++)
+				{
+					relPoints[i].X = (float)settings.DepthMaskContour[i].X;
+					relPoints[i].Y = (float)settings.DepthMaskContour[i].Y;
+				}
+
+				fixed (RelPoint* points = relPoints)
+				{
+					DepthMapProcessorDll.SetAlgorithmSettings(_nativeHandle.ToPointer(), settings.FloorDepth, cutOffDepth, 
+						points, relPoints.Length, colorRoiRect);
+				}
+
 				var terminatedPath = settings.PhotosDirectoryPath + "\0";
 				DepthMapProcessorDll.SetDebugPath(_nativeHandle.ToPointer(), terminatedPath);
 			}

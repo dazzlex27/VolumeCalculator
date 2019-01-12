@@ -46,6 +46,7 @@
     <Compile Include="Native\ColorImage.cs" />
     <Compile Include="Native\DepthMap.cs" />
     <Compile Include="Native\DepthMapProcessorDll.cs" />
+    <Compile Include="Native\RelPoint.cs" />
     <Compile Include="Native\RelRect.cs" />
     <Compile Include="Native\ObjDimDescription.cs" />
     <Compile Include="ObjectVolumeData.cs" />
