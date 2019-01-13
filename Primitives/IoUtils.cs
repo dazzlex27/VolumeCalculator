@@ -14,16 +14,16 @@ namespace Primitives
 				return;
 
 			var settingsText = JsonConvert.SerializeObject(settings);
-
 			File.WriteAllText(Constants.ConfigFileName, settingsText);
 		}
 
 		public static ApplicationSettings DeserializeSettings()
 		{
-			if (!File.Exists(Constants.ConfigFileName))
+			var configFile = Constants.ConfigFileName;
+			if (!File.Exists(configFile))
 				return null;
 
-			var settingsText = File.ReadAllText(Constants.ConfigFileName);
+			var settingsText = File.ReadAllText(configFile);
 			return JsonConvert.DeserializeObject<ApplicationSettings>(settingsText);
 		}
 

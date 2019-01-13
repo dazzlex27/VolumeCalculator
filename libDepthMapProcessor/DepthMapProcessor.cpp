@@ -71,15 +71,7 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& dept
 {
 	FillDepthBufferFromDepthMap(depthMap);
 
-	DmUtils::ConvertDepthMapDataToBinaryMask(_mapLength, _depthMapBuffer, _depthMaskBuffer);
-	cv::Mat image1(_mapHeight, _mapWidth, CV_8UC1, _depthMaskBuffer);
-	cv::imwrite("1.png", image1);
-
 	DmUtils::FilterDepthMapByMaxDepth(_mapLength, _depthMapBuffer, _cutOffDepth);
-
-	DmUtils::ConvertDepthMapDataToBinaryMask(_mapLength, _depthMapBuffer, _depthMaskBuffer);
-	cv::Mat image2(_mapHeight, _mapWidth, CV_8UC1, _depthMaskBuffer);
-	cv::imwrite("2.png", image2);
 
 	if (_needToUpdateMeasurementVolume)
 	{
@@ -89,10 +81,6 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& dept
 
 	const std::vector<DepthValue> worldDepthValues = GetWorldDepthValuesFromDepthMap();
 	DmUtils::FilterDepthMapByMeasurementVolume(_depthMapBuffer, worldDepthValues, _measurementVolume);
-
-	DmUtils::ConvertDepthMapDataToBinaryMask(_mapLength, _depthMapBuffer, _depthMaskBuffer);
-	cv::Mat image3(_mapHeight, _mapWidth, CV_8UC1, _depthMaskBuffer);
-	cv::imwrite("3.png", image3);
 
 	const Contour& objectContour = GetTargetContourFromDepthMap(saveDebugData);
 
@@ -445,8 +433,8 @@ void DepthMapProcessor::UpdateMeasurementVolume(const int mapWidth, const int ma
 	for (int i = 0; i < _polygonPoints.size(); i++)
 	{
 		cv::Point point((int)(_polygonPoints[i].x * mapWidth), (int)(_polygonPoints[i].y * mapHeight));
-		const int x0World = (int)((point.x + 1 - _depthIntrinsics.PrincipalPointX) * _floorDepth / _depthIntrinsics.FocalLengthX);
-		const int y0World = (int)(-(point.y + 1 - _depthIntrinsics.PrincipalPointY) * _floorDepth / _depthIntrinsics.FocalLengthY);
+		const int x0World = (int)((point.x + 1 - _depthIntrinsics.PrincipalPointX) * (_floorDepth + 50) / _depthIntrinsics.FocalLengthX);
+		const int y0World = (int)(-(point.y + 1 - _depthIntrinsics.PrincipalPointY) * (_floorDepth + 50) / _depthIntrinsics.FocalLengthY);
 		_measurementVolume.Points.emplace_back(cv::Point(x0World, y0World));
 	}
 

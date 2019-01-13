@@ -34,9 +34,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCalculatorTests", "Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCalculationRunner", "Tests\VolumeCalculationRunner\VolumeCalculationRunner.csproj", "{6F312ABD-BCA5-4F2D-A5CE-BACCE2A47EDE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceIntegrations", "DeviceIntegrations\DeviceIntegrations.csproj", "{508AFE7E-B27B-4245-8FE3-A04944678115}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceIntegration", "DeviceIntegration\DeviceIntegration.csproj", "{508AFE7E-B27B-4245-8FE3-A04944678115}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameProcessor", "FrameProcessor\FrameProcessor.csproj", "{B824300E-8FF0-4DD7-BD9D-1483E86025D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtIntegration", "ExtIntegration\ExtIntegration.csproj", "{847C984F-67EB-4391-89C3-E70671DB5570}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -84,6 +86,10 @@ Global
 		{B824300E-8FF0-4DD7-BD9D-1483E86025D4}.Debug|x64.Build.0 = Debug|x64
 		{B824300E-8FF0-4DD7-BD9D-1483E86025D4}.Release|x64.ActiveCfg = Release|x64
 		{B824300E-8FF0-4DD7-BD9D-1483E86025D4}.Release|x64.Build.0 = Release|x64
+		{847C984F-67EB-4391-89C3-E70671DB5570}.Debug|x64.ActiveCfg = Debug|x64
+		{847C984F-67EB-4391-89C3-E70671DB5570}.Debug|x64.Build.0 = Debug|x64
+		{847C984F-67EB-4391-89C3-E70671DB5570}.Release|x64.ActiveCfg = Release|x64
+		{847C984F-67EB-4391-89C3-E70671DB5570}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

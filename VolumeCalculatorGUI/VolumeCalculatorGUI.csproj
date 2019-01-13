@@ -169,6 +169,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ExtIntegration\ExtIntegration.csproj">
+      <Project>{847C984F-67EB-4391-89C3-E70671DB5570}</Project>
+      <Name>ExtIntegration</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FrameProcessor\FrameProcessor.csproj">
       <Project>{b824300e-8ff0-4dd7-bd9d-1483e86025d4}</Project>
       <Name>FrameProcessor</Name>
@@ -178,9 +182,9 @@
       <Name>Primitives</Name>
       <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\DeviceIntegrations\DeviceIntegrations.csproj">
+    <ProjectReference Include="..\DeviceIntegration\DeviceIntegration.csproj">
       <Project>{508afe7e-b27b-4245-8fe3-a04944678115}</Project>
-      <Name>DeviceIntegrations</Name>
+      <Name>DeviceIntegration</Name>
       <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\FrameProviders\FrameProviders.csproj">

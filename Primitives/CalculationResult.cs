@@ -8,31 +8,31 @@ namespace Primitives
 
 		public string ObjectCode { get; }
 
-		public double ObjectWeight { get; }
+		public double ObjectWeightKg { get; }
 
 		public uint UnitCount { get; }
 
-		public int ObjectLength { get; }
+		public int ObjectLengthMm { get; }
 
-		public int ObjectWidth { get; }
+		public int ObjectWidthMm { get; }
 
-		public int ObjectHeight { get; }
+		public int ObjectHeightMm { get; }
 
-		public double ObjectVolume { get; }
+		public double ObjectVolumeMm { get; }
 
 		public string CalculationComment { get; }
 
-		public CalculationResult(DateTime calculationTime, string objectCode, double objectWeight, uint unitCount,
-			int objectLength, int objectWidth, int objectHeight, double objectVolume, string calculationComment)
+		public CalculationResult(DateTime calculationTime, string objectCode, double objectWeightKg, uint unitCount,
+			int objectLengthMm, int objectWidthMm, int objectHeightMm, double objectVolumeMm, string calculationComment)
 		{
 			CalculationTime = calculationTime;
 			ObjectCode = objectCode;
-			ObjectWeight = objectWeight;
+			ObjectWeightKg = objectWeightKg;
 			UnitCount = unitCount;
-			ObjectLength = objectLength;
-			ObjectWidth = objectWidth;
-			ObjectHeight = objectHeight;
-			ObjectVolume = objectVolume;
+			ObjectLengthMm = objectLengthMm;
+			ObjectWidthMm = objectWidthMm;
+			ObjectHeightMm = objectHeightMm;
+			ObjectVolumeMm = objectVolumeMm;
 			CalculationComment = calculationComment;
 		}
 	}

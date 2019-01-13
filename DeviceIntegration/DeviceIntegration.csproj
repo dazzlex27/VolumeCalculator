@@ -7,8 +7,8 @@
     <ProjectGuid>{508AFE7E-B27B-4245-8FE3-A04944678115}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DeviceIntegrations</RootNamespace>
-    <AssemblyName>DeviceIntegrations</AssemblyName>
+    <RootNamespace>DeviceIntegration</RootNamespace>
+    <AssemblyName>DeviceIntegration</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

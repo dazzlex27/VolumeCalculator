@@ -9,6 +9,7 @@ using System.Windows.Media;
 using DeviceIntegrations.IoCircuits;
 using DeviceIntegrations.Scales;
 using DeviceIntegrations.Scanners;
+using ExtIntegration;
 using FrameProcessor;
 using FrameProviders;
 using Primitives;
@@ -33,6 +34,8 @@ namespace VolumeCalculatorGUI.GUI
 		private VolumeCalculator _volumeCalculator;
 		private CalculationResultFileProcessor _calculationResultFileProcessor;
 		private readonly DepthMapProcessor _processor;
+
+		private readonly HttpSender _httpSender;
 
 		private string _objectCode;
 		private double _objectWeight;
@@ -295,7 +298,7 @@ namespace VolumeCalculatorGUI.GUI
 		public MeasurementStatus CurrentWeighingStatus { get; set; }
 
 		public CalculationDashboardControlVm(ILogger logger, FrameProvider frameProvider, DepthMapProcessor processor, 
-			IReadOnlyList<IBarcodeScanner> scanners, IScales scales, IIoCircuit circuit, ApplicationSettings settings)
+			IReadOnlyList<IBarcodeScanner> scanners, IScales scales, IIoCircuit circuit, ApplicationSettings applicationSettings)
 		{
 			_logger = logger;
 			_frameProvider = frameProvider;
@@ -317,12 +320,12 @@ namespace VolumeCalculatorGUI.GUI
 			if (circuit != null)
 				_circuit = circuit;
 
-			_applicationSettings = settings;
+			_applicationSettings = applicationSettings;
 
-			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.OutputPath);
+			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, applicationSettings.OutputPath);
 
 			_dashStatusUpdater = new DashStatusUpdater(_logger, _circuit, this) { DashStatus = DashboardStatus.Ready };
-			CreateAutoStartTimer(settings.TimeToStartMeasurementMs);
+			CreateAutoStartTimer(applicationSettings.TimeToStartMeasurementMs);
 
 			CalculateVolumeCommand = new CommandHandler(CalculateObjectVolume, !CalculationInProgress);
 			CalculateVolumeAltCommand = new CommandHandler(CalculateObjectVolumeRgb, !CalculationInProgress);
@@ -330,6 +333,8 @@ namespace VolumeCalculatorGUI.GUI
 			OpenResultsFileCommand = new CommandHandler(OpenResultsFile, !CalculationInProgress);
 			OpenPhotosFolderCommand = new CommandHandler(OpenPhotosFolder, !CalculationInProgress);
 			CancelPendingCalculationCommand = new CommandHandler(_dashStatusUpdater.CancelPendingCalculation, !CalculationInProgress);
+
+			_httpSender = new HttpSender(_logger, applicationSettings.WebRequestSettings);
 		}
 
 		public void Dispose()
@@ -456,7 +461,7 @@ namespace VolumeCalculatorGUI.GUI
 				_logger.LogInfo($"Starting a volume check, using rgb={usingRgbData}...");
 
 				_volumeCalculator = new VolumeCalculator(_logger, _frameProvider, _processor, _applicationSettings, usingRgbData);
-				_logger.LogInfo($"! subscribed to calculator event");
+				_logger.LogInfo("! subscribed to calculator event");
 				_volumeCalculator.CalculationFinished += OnCalculationFinished;
 			}
 			catch (Exception ex)
@@ -497,8 +502,13 @@ namespace VolumeCalculatorGUI.GUI
 			_logger.LogInfo("! calculation finished");
 			DisposeVolumeCalculator();
 
-			ProcessCalculationResult(result, status);
-			WriteObjectDataToFile();
+			UpdateVisualsWithResult(result, status);
+
+			var calculationResult = new CalculationResult(DateTime.Now, ObjectCode, ObjectWeight, UnitCount, ObjectLength,
+				ObjectWidth, ObjectHeight, ObjectVolume, Comment);
+
+			WriteObjectDataToFile(calculationResult);
+			SendWebRequests(calculationResult);
 		}
 
 		private void UpdateVolumeData(ObjectVolumeData volumeData)
@@ -522,7 +532,17 @@ namespace VolumeCalculatorGUI.GUI
 			_volumeCalculator = null;
 		}
 
-		private void ProcessCalculationResult(ObjectVolumeData result, CalculationStatus status)
+		private void ResetMeasurementValues()
+		{
+			ObjectLength = 0;
+			ObjectWidth = 0;
+			ObjectHeight = 0;
+			ObjectVolume = 0;
+			UnitCount = 0;
+			Comment = "";
+		}
+
+		private void UpdateVisualsWithResult(ObjectVolumeData result, CalculationStatus status)
 		{
 			try
 			{
@@ -591,12 +611,10 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		private void WriteObjectDataToFile()
+		private void WriteObjectDataToFile(CalculationResult calculationResult)
 		{
 			try
 			{
-				var calculationResult = new CalculationResult(DateTime.Now, ObjectCode, ObjectWeight, UnitCount, ObjectLength,
-					ObjectWidth, ObjectHeight, ObjectVolume, Comment);
 				_calculationResultFileProcessor.WriteCalculationResult(calculationResult);
 
 				ObjectCode = string.Empty;
@@ -612,14 +630,10 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		private void ResetMeasurementValues()
+		private void SendWebRequests(CalculationResult result)
 		{
-			ObjectLength = 0;
-			ObjectWidth = 0;
-			ObjectHeight = 0;
-			ObjectVolume = 0;
-			UnitCount = 0;
-			Comment = "";
+			if (_applicationSettings.WebRequestSettings.EnableRequests)
+				_httpSender.SendSimpleRequest(result);
 		}
 	}
 }

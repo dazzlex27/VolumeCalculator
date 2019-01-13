@@ -85,7 +85,7 @@ namespace Primitives
 				safeName = nameWithoutReturns.Replace(Constants.CsvSeparator, " ");
 			}
 
-			var safeWeight = result.ObjectWeight.ToString(CultureInfo.InvariantCulture);
+			var safeWeight = result.ObjectWeightKg.ToString(CultureInfo.InvariantCulture);
 
 			Directory.CreateDirectory(_outputFolderPath);
 			using (var resultFile = new StreamWriter(FullOutputPath, true, Encoding.Default))
@@ -97,10 +97,10 @@ namespace Primitives
 				resultString.Append($@"{Constants.CsvSeparator}{safeName}");
 				resultString.Append($@"{Constants.CsvSeparator}{safeWeight}");
 				resultString.Append($@"{Constants.CsvSeparator}{result.UnitCount}");
-				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectLength}");
-				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectWidth}");
-				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectHeight}");
-				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectVolume}");
+				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectLengthMm}");
+				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectWidthMm}");
+				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectHeightMm}");
+				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectVolumeMm}");
 				resultString.Append($@"{Constants.CsvSeparator}{result.CalculationComment}");
 				resultFile.WriteLine(resultString);
 				resultFile.Flush();

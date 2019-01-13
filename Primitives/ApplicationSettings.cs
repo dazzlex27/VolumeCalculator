@@ -39,6 +39,8 @@ namespace Primitives
 		[Obfuscation]
 		public bool UseRgbAlgorithmByDefault { get; set; }
 
+		public WebRequestSettings WebRequestSettings { get; set; }
+
 		public bool RunInFullSreen { get; set; }
 
 	    public string ResultsFilePath => Path.Combine(OutputPath, "results.csv");
@@ -48,7 +50,7 @@ namespace Primitives
 	    public ApplicationSettings(short floorDepth, short minObjectHeight, byte sampleCount, string outputPath, 
 		    bool useColorMask, IReadOnlyCollection<Point> colorMaskContour, 
 		    bool useDepthMask, IReadOnlyCollection<Point> depthMaskContour,
-		    long timeToStartMeasurementMs, bool useRgbAlgorithmByDefault, bool runInFullSreen)
+		    long timeToStartMeasurementMs, bool useRgbAlgorithmByDefault, WebRequestSettings webRequestSettings)
 	    {
 		    FloorDepth = floorDepth > 0 ? floorDepth : (short) 1000;
 		    MinObjectHeight = minObjectHeight;
@@ -60,14 +62,14 @@ namespace Primitives
 		    DepthMaskContour = depthMaskContour != null ? new List<Point>(depthMaskContour) : GetDefaultAreaContour();
 		    TimeToStartMeasurementMs = timeToStartMeasurementMs;
 		    UseRgbAlgorithmByDefault = useRgbAlgorithmByDefault;
-		    RunInFullSreen = runInFullSreen;
+		    WebRequestSettings = webRequestSettings;
 	    }
 
 	    [Obfuscation(Exclude = true)]
 	    public static ApplicationSettings GetDefaultSettings()
 	    {
 		    return new ApplicationSettings(1000, 5, 10, "MeasurementResults", false, GetDefaultAreaContour(),
-			    false, GetDefaultAreaContour(), 5000, false, true);
+			    false, GetDefaultAreaContour(), 5000, false, WebRequestSettings.GetDefaultSettings());
 	    }
 
 	    public override string ToString()
@@ -104,6 +106,9 @@ namespace Primitives
 
 		    if (TimeToStartMeasurementMs <= 0)
 			    TimeToStartMeasurementMs = 5000;
+
+			if (WebRequestSettings == null)
+				WebRequestSettings = WebRequestSettings.GetDefaultSettings();
 	    }
     }
 }
