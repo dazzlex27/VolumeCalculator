@@ -52,11 +52,11 @@ void DepthMapProcessor::SetAlgorithmSettings(const short floorDepth, const short
 	_colorRoiRect.Height = roiRect.Height;
 	_correctPerspective = true;
 
+	_polygonPoints.clear();
 	_polygonPoints.reserve(polygonPointCount);
-	_polygonPoints.emplace_back(cv::Point2f(polygonPoints[0].X, polygonPoints[0].Y));
-	_polygonPoints.emplace_back(cv::Point2f(polygonPoints[1].X, polygonPoints[1].Y));
-	_polygonPoints.emplace_back(cv::Point2f(polygonPoints[2].X, polygonPoints[2].Y));
-	_polygonPoints.emplace_back(cv::Point2f(polygonPoints[3].X, polygonPoints[3].Y));
+
+	for (int i = 0; i < polygonPointCount; i++)
+		_polygonPoints.emplace_back(cv::Point2f(polygonPoints[i].X, polygonPoints[i].Y));
 
 	_needToUpdateMeasurementVolume = true;
 }
@@ -69,9 +69,31 @@ void DepthMapProcessor::SetDebugPath(const char* path)
 
 ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& depthMap, const bool saveDebugData)
 {
-	FillDepthBuffer(depthMap);
-	DmUtils::FilterDepthMap(_mapLength, _depthMapBuffer, _cutOffDepth);
-	 
+	FillDepthBufferFromDepthMap(depthMap);
+
+	DmUtils::ConvertDepthMapDataToBinaryMask(_mapLength, _depthMapBuffer, _depthMaskBuffer);
+	cv::Mat image1(_mapHeight, _mapWidth, CV_8UC1, _depthMaskBuffer);
+	cv::imwrite("1.png", image1);
+
+	DmUtils::FilterDepthMapByMaxDepth(_mapLength, _depthMapBuffer, _cutOffDepth);
+
+	DmUtils::ConvertDepthMapDataToBinaryMask(_mapLength, _depthMapBuffer, _depthMaskBuffer);
+	cv::Mat image2(_mapHeight, _mapWidth, CV_8UC1, _depthMaskBuffer);
+	cv::imwrite("2.png", image2);
+
+	if (_needToUpdateMeasurementVolume)
+	{
+		UpdateMeasurementVolume(depthMap.Width, depthMap.Height);
+		_needToUpdateMeasurementVolume = false;
+	}
+
+	const std::vector<DepthValue> worldDepthValues = GetWorldDepthValuesFromDepthMap();
+	DmUtils::FilterDepthMapByMeasurementVolume(_depthMapBuffer, worldDepthValues, _measurementVolume);
+
+	DmUtils::ConvertDepthMapDataToBinaryMask(_mapLength, _depthMapBuffer, _depthMaskBuffer);
+	cv::Mat image3(_mapHeight, _mapWidth, CV_8UC1, _depthMaskBuffer);
+	cv::imwrite("3.png", image3);
+
 	const Contour& objectContour = GetTargetContourFromDepthMap(saveDebugData);
 
 	_result = CalculateContourDimensions(objectContour, saveDebugData);
@@ -81,9 +103,19 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& dept
 
 ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image, const bool saveDebugData)
 {
-	FillDepthBuffer(depthMap);
-	DmUtils::FilterDepthMap(_mapLength, _depthMapBuffer, _cutOffDepth);
-	FillColorBuffer(image);
+	FillDepthBufferFromDepthMap(depthMap);
+	FillColorBufferFromImage(image);
+
+	DmUtils::FilterDepthMapByMaxDepth(_mapLength, _depthMapBuffer, _cutOffDepth);
+
+	if (_needToUpdateMeasurementVolume)
+	{
+		UpdateMeasurementVolume(depthMap.Width, depthMap.Height);
+		_needToUpdateMeasurementVolume = false;
+	}
+
+	const std::vector<DepthValue> worldDepthValues = GetWorldDepthValuesFromDepthMap();
+	DmUtils::FilterDepthMapByMeasurementVolume(_depthMapBuffer, worldDepthValues, _measurementVolume);
 
 	const Contour& depthObjectContour = GetTargetContourFromDepthMap(saveDebugData);
 	const Contour& colorObjectContour = GetTargetContourFromColorImage(saveDebugData);
@@ -104,31 +136,7 @@ const short DepthMapProcessor::CalculateFloorDepth(const DepthMap& depthMap)
 	return DmUtils::FindModeInSortedArray(nonZeroValues.data(), (int)nonZeroValues.size());
 }
 
-const bool DepthMapProcessor::AreThereObjectsInTheZone(const DepthMap& depthMap)
-{
-	if (_needToUpdateMeasurementVolume)
-	{
-		UpdateMeasurementVolume(depthMap.Width, depthMap.Height);
-		_needToUpdateMeasurementVolume = false;
-	}
-
-	FillDepthBuffer(depthMap);
-	DmUtils::FilterDepthMap(_mapLength, _depthMapBuffer, _cutOffDepth);
-
-	const Contour& objectContour = GetTargetContourFromDepthMap(true);
-	if (objectContour.size() == 0)
-		return false;
-
-	const short contourTopPlaneDepth = GetContourTopPlaneDepth(objectContour);
-
-	const std::vector<DepthValue>& worldDepthValues = GetWorldDepthValues(objectContour);
-	const Contour& perspectiveCorrectedContour = GetCameraPoints(worldDepthValues, contourTopPlaneDepth);
-	const std::vector<DepthValue>& correctedWorldDepthValues = GetWorldDepthValues(perspectiveCorrectedContour);
-
-	return IsObjectInZone(correctedWorldDepthValues);
-}
-
-void DepthMapProcessor::FillColorBuffer(const ColorImage& image)
+void DepthMapProcessor::FillColorBufferFromImage(const ColorImage& image)
 {
 	const bool dimsAreTheSame = _colorImageWidth == image.Width && _colorImageHeight == image.Height && 
 		_colorImageLengthBytes == image.BytesPerPixel;
@@ -148,7 +156,7 @@ void DepthMapProcessor::FillColorBuffer(const ColorImage& image)
 	memcpy(_colorImageBuffer, image.Data, _colorImageLengthBytes);
 }
 
-void DepthMapProcessor::FillDepthBuffer(const DepthMap& depthMap)
+void DepthMapProcessor::FillDepthBufferFromDepthMap(const DepthMap& depthMap)
 {
 	const bool dimsAreTheSame = _mapWidth == depthMap.Width && _mapHeight == depthMap.Height;
 	if (!dimsAreTheSame)
@@ -419,32 +427,11 @@ const bool DepthMapProcessor::IsObjectInZone(const std::vector<DepthValue>& cont
 {
 	for (int i = 0; i < contour.size(); i++)
 	{
-		if (IsPointInZone(contour[i]))
+		if (DmUtils::IsPointInZone(contour[i], _measurementVolume))
 			return true;
 	}
 
 	return false;
-}
-
-const bool DepthMapProcessor::IsPointInZone(const DepthValue& worldPoint) const
-{
-	if (worldPoint.Value > _measurementVolume.largerDepthValue)
-		return false;
-
-	if (worldPoint.Value < _measurementVolume.smallerDepthValue)
-		return false;
-
-	std::vector<cv::Point> contour;
-	contour.emplace_back(_measurementVolume.P0);
-	contour.emplace_back(_measurementVolume.P1);
-	contour.emplace_back(_measurementVolume.P2);
-	contour.emplace_back(_measurementVolume.P3);
-
-	double isInside = cv::pointPolygonTest(contour, cv::Point(worldPoint.XWorld, worldPoint.YWorld), false);
-	if (isInside < 0)
-		return false;
-
-	return true;
 }
 
 void DepthMapProcessor::UpdateMeasurementVolume(const int mapWidth, const int mapHeight)
@@ -452,24 +439,40 @@ void DepthMapProcessor::UpdateMeasurementVolume(const int mapWidth, const int ma
 	_measurementVolume.largerDepthValue = _floorDepth;
 	_measurementVolume.smallerDepthValue = 600;
 
-	cv::Point p0(_polygonPoints[0].x * mapWidth, _polygonPoints[0].y * mapHeight);
-	cv::Point p1(_polygonPoints[1].x * mapWidth, _polygonPoints[1].y * mapHeight);
-	cv::Point p2(_polygonPoints[2].x * mapWidth, _polygonPoints[2].y * mapHeight);
-	cv::Point p3(_polygonPoints[3].x * mapWidth, _polygonPoints[3].y * mapHeight);
+	_measurementVolume.Points.clear();
+	_measurementVolume.Points.reserve(_polygonPoints.size());
 
-	const int x0World = (int)((p0.x + 1 - _depthIntrinsics.PrincipalPointX) * _floorDepth / _depthIntrinsics.FocalLengthX);
-	const int y0World = (int)(-(p0.y + 1 - _depthIntrinsics.PrincipalPointY) * _floorDepth / _depthIntrinsics.FocalLengthY);
-	_measurementVolume.P0 = cv::Point(x0World, y0World);
+	for (int i = 0; i < _polygonPoints.size(); i++)
+	{
+		cv::Point point((int)(_polygonPoints[i].x * mapWidth), (int)(_polygonPoints[i].y * mapHeight));
+		const int x0World = (int)((point.x + 1 - _depthIntrinsics.PrincipalPointX) * _floorDepth / _depthIntrinsics.FocalLengthX);
+		const int y0World = (int)(-(point.y + 1 - _depthIntrinsics.PrincipalPointY) * _floorDepth / _depthIntrinsics.FocalLengthY);
+		_measurementVolume.Points.emplace_back(cv::Point(x0World, y0World));
+	}
 
-	const int x1World = (int)((p1.x + 1 - _depthIntrinsics.PrincipalPointX) * _floorDepth / _depthIntrinsics.FocalLengthX);
-	const int y1World = (int)(-(p1.y + 1 - _depthIntrinsics.PrincipalPointY) * _floorDepth / _depthIntrinsics.FocalLengthY);
-	_measurementVolume.P1 = cv::Point(x1World, y1World);
+	const int width = abs(_measurementVolume.Points[3].x - _measurementVolume.Points[0].x);
+	const int height = abs(_measurementVolume.Points[0].y - _measurementVolume.Points[1].y);
+}
 
-	const int x2World = (int)((p2.x + 1 - _depthIntrinsics.PrincipalPointX) * _floorDepth / _depthIntrinsics.FocalLengthX);
-	const int y2World = (int)(-(p2.y + 1 - _depthIntrinsics.PrincipalPointY) * _floorDepth / _depthIntrinsics.FocalLengthY);
-	_measurementVolume.P2 = cv::Point(x2World, y2World);
+const std::vector<DepthValue> DepthMapProcessor::GetWorldDepthValuesFromDepthMap()
+{
+	std::vector<DepthValue> depthValues;
 
-	const int x3World = (int)((p3.x + 1 - _depthIntrinsics.PrincipalPointX) * _floorDepth / _depthIntrinsics.FocalLengthX);
-	const int y3World = (int)(-(p3.y + 1 - _depthIntrinsics.PrincipalPointY) * _floorDepth / _depthIntrinsics.FocalLengthY);
-	_measurementVolume.P3 = cv::Point(x3World, y3World);
+	for (int j = 0; j < _mapHeight; j++)
+	{
+		for (int i = 0; i < _mapWidth; i++)
+		{
+			const short depth = _depthMapBuffer[j*_mapWidth + i];
+			const int xWorld = (int)((i + 1 - _depthIntrinsics.PrincipalPointX) * depth / _depthIntrinsics.FocalLengthX);
+			const int yWorld = (int)(-(j + 1 - _depthIntrinsics.PrincipalPointY) * depth / _depthIntrinsics.FocalLengthY);
+
+			DepthValue depthValue;
+			depthValue.Value = depth;
+			depthValue.XWorld = xWorld;
+			depthValue.YWorld = yWorld;
+			depthValues.emplace_back(depthValue);
+		}
+	}
+
+	return depthValues;
 }

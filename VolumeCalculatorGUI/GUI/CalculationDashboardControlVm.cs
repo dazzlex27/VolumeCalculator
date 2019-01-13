@@ -51,7 +51,6 @@ namespace VolumeCalculatorGUI.GUI
 		private bool _codeBoxFocused;
 		private bool _unitCountBoxFocused;
 		private bool _commentBoxFocused;
-		private string _isObjectInZoneText;
 
 		public ICommand CalculateVolumeCommand { get; }
 
@@ -278,20 +277,6 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public string IsObjectInZoneText
-		{
-			get => _isObjectInZoneText;
-			set
-			{
-				if (_isObjectInZoneText == value)
-					return;
-
-				_isObjectInZoneText = value;
-				OnPropertyChanged();
-			}
-
-		}
-
 		private bool CanAcceptBarcodes
 		{
 			get
@@ -345,15 +330,6 @@ namespace VolumeCalculatorGUI.GUI
 			OpenResultsFileCommand = new CommandHandler(OpenResultsFile, !CalculationInProgress);
 			OpenPhotosFolderCommand = new CommandHandler(OpenPhotosFolder, !CalculationInProgress);
 			CancelPendingCalculationCommand = new CommandHandler(_dashStatusUpdater.CancelPendingCalculation, !CalculationInProgress);
-
-			_frameProvider.DepthFrameReady += _frameProvider_DepthFrameReady;
-		}
-
-		private void _frameProvider_DepthFrameReady(DepthMap depthMap)
-		{
-			var objectInZone = _processor.AreThereObjectsInZone(depthMap);
-
-			IsObjectInZoneText = objectInZone ? "Objects in zone!" : "No objects";
 		}
 
 		public void Dispose()

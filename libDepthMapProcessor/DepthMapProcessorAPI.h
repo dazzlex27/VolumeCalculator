@@ -15,8 +15,6 @@ DLL_EXPORT ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depth
 
 DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, DepthMap depthMap, ColorImage image, bool saveDebugData);
 
-DLL_EXPORT bool AreThereObjectsInZone(void* handle, DepthMap depthMap);
-
 DLL_EXPORT short CalculateFloorDepth(void* handle, DepthMap depthMap);
 
 DLL_EXPORT void DestroyDepthMapProcessor(void* handle);

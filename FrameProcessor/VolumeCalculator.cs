@@ -30,8 +30,6 @@ namespace FrameProcessor
 
 		private int _samplesLeft;
 
-		private WorkingAreaMask _depthMapMask;
-
 		public bool IsRunning { get; private set; }
 
 		private bool HasCompletedFirstRun => _samplesLeft != _settings.SampleDepthMapCount;
@@ -39,14 +37,14 @@ namespace FrameProcessor
 		public VolumeCalculator(ILogger logger, FrameProvider frameProvider, DepthMapProcessor processor, ApplicationSettings settings, 
 			bool usingColorData)
 		{
-			logger.LogInfo($"! creating volume calculator sampleCount={settings.SampleDepthMapCount}");
-
 			_logger = logger;
 			_frameProvider = frameProvider ?? throw new ArgumentNullException(nameof(frameProvider));
 			_processor = processor ?? throw new ArgumentException(nameof(processor));
 			_settings = settings ?? throw new ArgumentException(nameof(settings));
 			_samplesLeft = settings.SampleDepthMapCount;
 			_usingColorData = usingColorData;
+
+			logger.LogInfo($"! creating volume calculator sampleCount={settings.SampleDepthMapCount}");
 
 			_results = new List<ObjectVolumeData>();
 
@@ -78,13 +76,13 @@ namespace FrameProcessor
 			if (_settings.UseDepthMask)
 			{
 				var points = _settings.DepthMaskContour.ToArray();
-				var maskData = GeometryUtils.CreateWorkingAreaMask(points, depthMap.Width, depthMap.Height);
-				_depthMapMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
+				//var maskData = GeometryUtils.CreateWorkingAreaMask(points, depthMap.Width, depthMap.Height);
+				//_depthMapMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
 			}
 			else
 			{
 				var maskData = Enumerable.Repeat(true, depthMap.Width * depthMap.Height).ToArray();
-				_depthMapMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
+				//_depthMapMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
 			}
 		}
 
@@ -95,7 +93,7 @@ namespace FrameProcessor
 
 			var maskedMap = new DepthMap(depthMap);
 
-			GeometryUtils.ApplyWorkingAreaMask(maskedMap, _depthMapMask.Data);
+			//GeometryUtils.ApplyWorkingAreaMask(maskedMap, _depthMapMask.Data);
 
 			return maskedMap;
 		}

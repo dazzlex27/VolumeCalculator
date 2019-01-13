@@ -28,19 +28,6 @@ namespace FrameProcessor
 			}
 		}
 
-		public bool AreThereObjectsInZone(DepthMap depthMap)
-		{
-			unsafe
-			{
-				fixed (short* depthData = depthMap.Data)
-				{
-					var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
-
-					return DepthMapProcessorDll.AreThereObjectsInZone(_nativeHandle.ToPointer(), nativeDepthMap);
-				}
-			}
-		}
-
 		public ObjectVolumeData CalculateVolume(DepthMap depthMap, bool needToSaveDebugData = false)
 		{
 			unsafe

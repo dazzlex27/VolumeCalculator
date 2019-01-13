@@ -20,11 +20,7 @@
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
 		<StackPanel Margin="3" Background="{StaticResource BackgroundKey}">
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Объект в зоне: " FontSize="24" Margin="5,0"/>
-				<TextBlock Text="{Binding IsObjectInZoneText}" FontSize="24"/>
-			</StackPanel>
-				<Grid Margin="2,2,2,0">
+			<Grid Margin="2,2,2,0">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition MinWidth="180"
 					                  Width="Auto" />

@@ -47,11 +47,9 @@ public:
 	ObjDimDescription* CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image, const bool saveDebugData);
 	const short CalculateFloorDepth(const DepthMap& depthMap);
 
-	const bool AreThereObjectsInTheZone(const DepthMap& depthMap);
-
 private:
-	void FillColorBuffer(const ColorImage& image);
-	void FillDepthBuffer(const DepthMap& depthMap);
+	void FillColorBufferFromImage(const ColorImage& image);
+	void FillDepthBufferFromDepthMap(const DepthMap& depthMap);
 	const Contour GetTargetContourFromDepthMap(const bool saveDebugData) const;
 	const Contour GetTargetContourFromColorImage(const bool saveDebugData) const;
 	const ObjDimDescription CalculateContourDimensions(const Contour& contour, const bool saveDebugData) const;
@@ -63,6 +61,7 @@ private:
 	const std::vector<DepthValue> GetWorldDepthValues(const Contour& objectContour) const;
 	const std::vector<cv::Point> GetCameraPoints(const std::vector<DepthValue>& depthValues, const short targetDepth) const;
 	const bool IsObjectInZone(const std::vector<DepthValue>& contour) const;
-	const bool IsPointInZone(const DepthValue& depthValue) const;
 	void UpdateMeasurementVolume(const int mapWidth, const int mapHeight);
+	bool IsPointInsidePolygon(const std::vector<cv::Point>& polygon, int x, int y);
+	const std::vector<DepthValue> GetWorldDepthValuesFromDepthMap();
 };

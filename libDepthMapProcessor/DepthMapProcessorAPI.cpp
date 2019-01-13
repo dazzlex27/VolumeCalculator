@@ -52,15 +52,6 @@ DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, DepthMap de
 	return processor->CalculateObjectVolumeAlt(depthMap, image, saveDebugData);
 }
 
-DLL_EXPORT bool AreThereObjectsInZone(void* handle, DepthMap depthMap)
-{
-	auto processor = (DepthMapProcessor*)handle;
-	if (processor == nullptr)
-		return false;
-
-	return processor->AreThereObjectsInTheZone(depthMap);
-}
-
 DLL_EXPORT short CalculateFloorDepth(void* handle, DepthMap depthMap)
 {
 	auto processor = (DepthMapProcessor*)handle;

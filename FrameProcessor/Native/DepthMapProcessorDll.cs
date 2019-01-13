@@ -18,9 +18,6 @@ namespace FrameProcessor.Native
 	    [DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
 	    public static extern unsafe void SetDebugPath(void* handle, string path);
 
-	    [DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
-	    public static extern unsafe bool AreThereObjectsInZone(void* handle, DepthMap depthMap);
-
 		[DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
 	    public static extern unsafe ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depthMap, bool saveDebugData);
 

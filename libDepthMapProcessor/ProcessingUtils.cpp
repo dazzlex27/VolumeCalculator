@@ -40,11 +40,22 @@ void DmUtils::ConvertDepthMapDataToBinaryMask(const int mapDataLength, const sho
 	}
 }
 
-void DmUtils::FilterDepthMap(const int mapDataLength, short*const mapData,  const short value)
+void DmUtils::FilterDepthMapByMaxDepth(const int mapDataLength, short*const mapData,  const short value)
 {
 	for (int i = 0; i < mapDataLength; i++)
 	{
 		if (mapData[i] > value)
+			mapData[i] = 0;
+	}
+}
+
+void DmUtils::FilterDepthMapByMeasurementVolume(short*const mapData, const std::vector<DepthValue>& worldDepthValues, 
+	const MeasurementVolume& volume)
+{
+	for (int i = 0; i < worldDepthValues.size(); i++)
+	{
+		const bool pointIsInZone = IsPointInZone(worldDepthValues[i], volume);
+		if (!pointIsInZone)
 			mapData[i] = 0;
 	}
 }
@@ -215,4 +226,39 @@ std::string DmUtils::GetCurrentCalculationIndex()
 	countersFile >> index;
 
 	return index;
+}
+
+bool DmUtils::IsPointInZone(const DepthValue& worldPoint, const MeasurementVolume& volume)
+{
+	if (worldPoint.Value > volume.largerDepthValue)
+		return false;
+
+	if (worldPoint.Value < volume.smallerDepthValue)
+		return false;
+
+	double isInside = cv::pointPolygonTest(volume.Points, cv::Point(worldPoint.XWorld, worldPoint.YWorld), false);
+	if (isInside < 0)
+		return false;
+
+	return true;
+}
+
+// Source:  https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html
+bool DmUtils::IsPointInsidePolygon(const std::vector<cv::Point>& polygon, int x, int y)
+{
+	bool pointIsInPolygon = false;
+
+	for (int i = 0, j = (int)(polygon.size() - 1); i < (int)polygon.size(); j = i++)
+	{
+		bool pointInLineScope = (polygon[i].y > y) != (polygon[j].y > y);
+
+		int lineXHalf = (polygon[j].x - polygon[i].x) * (y - polygon[i].y) / (polygon[j].y - polygon[i].y);
+		int lineXPosition = lineXHalf + polygon[i].x;
+		bool pointInLeftHalfPlaneOfLine = x < lineXPosition;
+
+		if (pointInLineScope && pointInLeftHalfPlaneOfLine)
+			pointIsInPolygon = !pointIsInPolygon;
+	}
+
+	return pointIsInPolygon;
 }

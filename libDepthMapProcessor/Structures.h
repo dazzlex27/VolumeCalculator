@@ -116,10 +116,7 @@ struct AbsPoint
 
 struct MeasurementVolume
 {
-	cv::Point P0;
-	cv::Point P1;
-	cv::Point P2;
-	cv::Point P3;
+	std::vector<cv::Point> Points;
 	short smallerDepthValue;
 	short largerDepthValue;
 };
