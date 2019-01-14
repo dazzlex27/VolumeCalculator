@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using DeviceIntegration.Scales;
 using DeviceIntegrations.Scales;
 using FrameProviders;
 using FrameProviders.D435;

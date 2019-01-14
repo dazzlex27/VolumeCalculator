@@ -1,26 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
+using DeviceIntegrations.Scales;
+using GodSharp.SerialPort;
 using Primitives.Logging;
 
-namespace DeviceIntegrations.Scales
+namespace DeviceIntegration.Scales
 {
 	public class MassaKScales : IScales
 	{
 		public event Action<ScaleMeasurementData> MeasurementReady;
 
 		private const int ErrorTimeOutMs = 500;
-		private const int PollMessage = 0x4A;
-		private const int ResetMessage = 0x0E;
+		private readonly byte[] _pollMessage;
+		private readonly byte[] _resetMessage;
 
 		private readonly ILogger _logger;
 		private readonly string _port;
 		private readonly int _pollingRateMs;
 		private readonly CancellationTokenSource _tokenSource;
-		private readonly SerialPort _serialPort;
+		private readonly GodSerialPort _serialPort;
 
 		public MassaKScales(ILogger logger, string port, int pollingRateMs)
 		{
@@ -31,15 +32,14 @@ namespace DeviceIntegrations.Scales
 
 			_logger.LogInfo($"Starting MassaKScales on port {_port}...");
 
-			_serialPort = new SerialPort(_port)
+			_pollMessage = BitConverter.GetBytes(0x4A);
+			_resetMessage = BitConverter.GetBytes(0x0E);
+
+			_serialPort = new GodSerialPort(port, 4800, "even", 8, "1", "0");
+			_serialPort.UseDataReceived(true, (sp, bytes) =>
 			{
-				BaudRate = 4800,
-				Parity = Parity.Even,
-				StopBits = StopBits.One,
-				DataBits = 8,
-				Handshake = Handshake.None
-			};
-			_serialPort.DataReceived += OnDataReceived;
+				ReadData(bytes);
+			});
 
 			Task.Run(async () =>
 			{
@@ -59,13 +59,12 @@ namespace DeviceIntegrations.Scales
 			_logger.LogInfo($"Disposing MassaKScales on port {_port}...");
 
 			_tokenSource.Cancel();
-			_serialPort.Dispose();
+			_serialPort.Close();
 		}
 
 		public void ResetWeight()
 		{
-			var messageBytes = BitConverter.GetBytes(ResetMessage);
-			_serialPort.Write(messageBytes, 0, 2);
+			_serialPort.Write(_resetMessage, 0, 1);
 		}
 
 		private async Task PollScales()
@@ -76,8 +75,7 @@ namespace DeviceIntegrations.Scales
 			{
 				try
 				{
-					var messageBytes = BitConverter.GetBytes(PollMessage);
-					_serialPort.Write(messageBytes, 0, 2);
+					_serialPort.Write(_pollMessage, 0, 1);
 
 					await Task.Delay(_pollingRateMs);
 				}
@@ -89,18 +87,12 @@ namespace DeviceIntegrations.Scales
 			}
 		}
 
-		private void OnDataReceived(object sender, SerialDataReceivedEventArgs e)
+		private void ReadData(IReadOnlyList<byte> messageBytes)
 		{
 			try
 			{
-				var serialPort = (SerialPort)sender;
-
-				var messageLength = serialPort.BytesToRead;
-				var messageBytes = new byte[messageLength];
-				serialPort.Read(messageBytes, 0, messageLength);
-
-				if (messageBytes.Length % 5 != 0)
-					throw new InvalidDataException($"Incoming data was expected to be 5 bytes long, but was {messageBytes.Length}");
+				if (messageBytes.Count % 5 != 0)
+					throw new InvalidDataException($"Incoming data was expected to be 5 bytes long, but was {messageBytes.Count}");
 
 				var status = GetStatusFromMessage(messageBytes);
 				var totalWeight = GetWeightFromMessage(messageBytes);
