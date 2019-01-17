@@ -7,12 +7,12 @@ using Primitives;
 
 namespace ExtIntegration
 {
-	public class HttpSender
+	public class HttpRequestSender : IRequestSender
 	{
 		private readonly ILogger _logger;
 		private readonly string _fullAddress;
 
-		public HttpSender(ILogger logger, WebRequestSettings settings)
+		public HttpRequestSender(ILogger logger, WebRequestSettings settings)
 		{
 			_logger = logger;
 
@@ -24,10 +24,23 @@ namespace ExtIntegration
 				throw new InvalidDataException($"{_fullAddress} is not a valid url");
 		}
 
-		public bool SendSimpleRequest(CalculationResult result)
+		public void Dispose()
+		{
+		}
+
+		public void Connect()
+		{
+			_logger.LogInfo($"Sending test request to {_fullAddress}...");
+			var webClient = new WebClient();
+			webClient.DownloadString(_fullAddress);
+			_logger.LogInfo($"Test request to {_fullAddress} successful");
+		}
+
+		public bool Send(CalculationResult result)
 		{
 			try
 			{
+				_logger.LogInfo($"Sending GET request to {_fullAddress}...");
 				var parameters = GetParametersFromCalculationResult(result);
 				var webClient = new WebClient();
 
@@ -35,6 +48,8 @@ namespace ExtIntegration
 					webClient.QueryString.Add(param.Name, param.Value);
 
 				webClient.DownloadString(_fullAddress);
+
+				_logger.LogInfo($"Sent GET request to {_fullAddress}");
 
 				return true;
 			}
@@ -44,6 +59,10 @@ namespace ExtIntegration
 				return false;
 			}
 
+		}
+
+		public void Disconnect()
+		{
 		}
 
 		private static IEnumerable<RequestParameter> GetParametersFromCalculationResult(CalculationResult result)

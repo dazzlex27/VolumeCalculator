@@ -270,7 +270,7 @@ namespace VolumeCalculatorGUI.GUI
 
 			return new ApplicationSettings(FloorDepth, MinObjHeight, SampleCount, OutputPath,
 				UseColorMask, colorMaskPoints, UseDepthMask, depthMaskPoints, TimeToStartMeasurementMs,
-				UseRgbAlgorithmByDefault, _oldSettings.WebRequestSettings);
+				UseRgbAlgorithmByDefault, _oldSettings.WebRequestSettings, _oldSettings.SqlRequestSettings);
 		}
 
 		public void ColorFrameUpdated(ImageData image)

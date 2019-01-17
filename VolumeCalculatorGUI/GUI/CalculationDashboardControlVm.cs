@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
@@ -35,7 +36,7 @@ namespace VolumeCalculatorGUI.GUI
 		private CalculationResultFileProcessor _calculationResultFileProcessor;
 		private readonly DepthMapProcessor _processor;
 
-		private readonly HttpSender _httpSender;
+		private readonly List<IRequestSender> _requestSenders;
 
 		private string _objectCode;
 		private double _objectWeight;
@@ -334,7 +335,8 @@ namespace VolumeCalculatorGUI.GUI
 			OpenPhotosFolderCommand = new CommandHandler(OpenPhotosFolder, !CalculationInProgress);
 			CancelPendingCalculationCommand = new CommandHandler(_dashStatusUpdater.CancelPendingCalculation, !CalculationInProgress);
 
-			_httpSender = new HttpSender(_logger, applicationSettings.WebRequestSettings);
+			_requestSenders = new List<IRequestSender>();
+			CreateRequestSenders();
 		}
 
 		public void Dispose()
@@ -349,6 +351,9 @@ namespace VolumeCalculatorGUI.GUI
 
 			if (_scales != null)
 				_scales.MeasurementReady -= OnWeightMeasurementReady;
+
+			foreach (var sender in _requestSenders)
+				sender.Dispose();
 		}
 
 		public void ApplicationSettingsUpdated(ApplicationSettings settings)
@@ -357,6 +362,27 @@ namespace VolumeCalculatorGUI.GUI
 			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.OutputPath);
 
 			CreateAutoStartTimer(settings.TimeToStartMeasurementMs);
+		}
+
+		private void CreateRequestSenders()
+		{
+			if (_applicationSettings.WebRequestSettings.EnableRequests)
+				_requestSenders.Add(new HttpRequestSender(_logger, _applicationSettings.WebRequestSettings));
+
+			if (_applicationSettings.SqlRequestSettings.EnableRequests)
+				_requestSenders.Add(new SqlRequestSender(_logger, _applicationSettings.SqlRequestSettings));
+
+			foreach (var sender in _requestSenders)
+			{
+				try
+				{
+					sender.Connect();
+				}
+				catch (Exception ex)
+				{
+					_logger.LogException("Failed to connect to requet destination", ex);
+				}
+			}
 		}
 
 		private void CreateAutoStartTimer(long intervalMs)
@@ -508,7 +534,7 @@ namespace VolumeCalculatorGUI.GUI
 				ObjectWidth, ObjectHeight, ObjectVolume, Comment);
 
 			WriteObjectDataToFile(calculationResult);
-			SendWebRequests(calculationResult);
+			SendRequests(calculationResult);
 		}
 
 		private void UpdateVolumeData(ObjectVolumeData volumeData)
@@ -630,10 +656,23 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		private void SendWebRequests(CalculationResult result)
+		private void SendRequests(CalculationResult result)
 		{
-			if (_applicationSettings.WebRequestSettings.EnableRequests)
-				_httpSender.SendSimpleRequest(result);
+			foreach (var sender in _requestSenders)
+			{
+				Task.Run(() =>
+				{
+					try
+					{
+						var sent = sender.Send(result);
+					}
+					catch (Exception ex)
+					{
+						_logger.LogException($"Failed to send a request!", ex);
+					}
+
+				});
+			}
 		}
 	}
 }

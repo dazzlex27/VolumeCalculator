@@ -1,4 +1,6 @@
-﻿namespace Primitives
+﻿using ExtIntegration;
+
+namespace Primitives
 {
 	public class WebRequestSettings
 	{

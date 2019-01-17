@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -6,7 +7,7 @@ using System.Windows;
 
 namespace Primitives
 {
-	[Obfuscation(ApplyToMembers = false)]
+	[ObfuscationAttribute(Exclude = false, Feature = "rename")]
 	public class ApplicationSettings
     {
 	    [Obfuscation]
@@ -41,6 +42,8 @@ namespace Primitives
 
 		public WebRequestSettings WebRequestSettings { get; set; }
 
+	    public SqlRequestSettings SqlRequestSettings { get; set; }
+
 		public bool RunInFullSreen { get; set; }
 
 	    public string ResultsFilePath => Path.Combine(OutputPath, "results.csv");
@@ -50,7 +53,8 @@ namespace Primitives
 	    public ApplicationSettings(short floorDepth, short minObjectHeight, byte sampleCount, string outputPath, 
 		    bool useColorMask, IReadOnlyCollection<Point> colorMaskContour, 
 		    bool useDepthMask, IReadOnlyCollection<Point> depthMaskContour,
-		    long timeToStartMeasurementMs, bool useRgbAlgorithmByDefault, WebRequestSettings webRequestSettings)
+		    long timeToStartMeasurementMs, bool useRgbAlgorithmByDefault, WebRequestSettings webRequestSettings, 
+		    SqlRequestSettings sqlRequestSettings)
 	    {
 		    FloorDepth = floorDepth > 0 ? floorDepth : (short) 1000;
 		    MinObjectHeight = minObjectHeight;
@@ -63,13 +67,15 @@ namespace Primitives
 		    TimeToStartMeasurementMs = timeToStartMeasurementMs;
 		    UseRgbAlgorithmByDefault = useRgbAlgorithmByDefault;
 		    WebRequestSettings = webRequestSettings;
+		    SqlRequestSettings = sqlRequestSettings;
 	    }
 
 	    [Obfuscation(Exclude = true)]
 	    public static ApplicationSettings GetDefaultSettings()
 	    {
 		    return new ApplicationSettings(1000, 5, 10, "MeasurementResults", false, GetDefaultAreaContour(),
-			    false, GetDefaultAreaContour(), 5000, false, WebRequestSettings.GetDefaultSettings());
+			    false, GetDefaultAreaContour(), 5000, false, WebRequestSettings.GetDefaultSettings(),
+			    SqlRequestSettings.GetDefaultSettings());
 	    }
 
 	    public override string ToString()
@@ -109,6 +115,9 @@ namespace Primitives
 
 			if (WebRequestSettings == null)
 				WebRequestSettings = WebRequestSettings.GetDefaultSettings();
+
+			if (SqlRequestSettings == null)
+				SqlRequestSettings = SqlRequestSettings.GetDefaultSettings();
 	    }
     }
 }
