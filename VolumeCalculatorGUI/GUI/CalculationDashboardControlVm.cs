@@ -328,8 +328,8 @@ namespace VolumeCalculatorGUI.GUI
 			_dashStatusUpdater = new DashStatusUpdater(_logger, _circuit, this) { DashStatus = DashboardStatus.Ready };
 			CreateAutoStartTimer(applicationSettings.TimeToStartMeasurementMs);
 
-			CalculateVolumeCommand = new CommandHandler(CalculateObjectVolume, !CalculationInProgress);
-			CalculateVolumeAltCommand = new CommandHandler(CalculateObjectVolumeRgb, !CalculationInProgress);
+			CalculateVolumeCommand = new CommandHandler(CalculateObjectVolumeBoxShape, !CalculationInProgress);
+			CalculateVolumeAltCommand = new CommandHandler(CalculateObjectVolumeFreeShape, !CalculationInProgress);
 			ResetWeightCommand = new CommandHandler(ResetWeight, !CalculationInProgress);
 			OpenResultsFileCommand = new CommandHandler(OpenResultsFile, !CalculationInProgress);
 			OpenPhotosFolderCommand = new CommandHandler(OpenPhotosFolder, !CalculationInProgress);
@@ -453,20 +453,20 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void OnMeasurementTimerElapsed(object sender, ElapsedEventArgs e)
 		{
-			CalculateObjectVolumeInternal(_applicationSettings.UseRgbAlgorithmByDefault);
+			CalculateObjectVolumeInternal(_applicationSettings.UseBoxShapeAlgorithmByDefault, false);
 		}
 
-		private void CalculateObjectVolume()
+		private void CalculateObjectVolumeBoxShape()
 		{
-			CalculateObjectVolumeInternal(false);
+			CalculateObjectVolumeInternal(false, false);
 		}
 
-		private void CalculateObjectVolumeRgb()
+		private void CalculateObjectVolumeFreeShape()
 		{
-			CalculateObjectVolumeInternal(true);
+			CalculateObjectVolumeInternal(true, false);
 		}
 
-		private void CalculateObjectVolumeInternal(bool usingRgbData)
+		private void CalculateObjectVolumeInternal(bool applyPerspective, bool useRgbData)
 		{
 			if (CalculationInProgress)
 			{
@@ -476,18 +476,16 @@ namespace VolumeCalculatorGUI.GUI
 
 			try
 			{
-				_logger.LogInfo($"! checking preconditions Code={ObjectCode}");
 				var canRunCalculation = CheckIfPreConditionsAreSatisfied();
 				if (!canRunCalculation)
 					return;
 
 				_dashStatusUpdater.DashStatus = DashboardStatus.InProgress;
 
-				_logger.LogInfo($"! starting volume check Code={ObjectCode}");
-				_logger.LogInfo($"Starting a volume check, using rgb={usingRgbData}...");
+				_logger.LogInfo($"Starting a volume check (applyPerspective={applyPerspective}, useRgb={useRgbData})...");
 
-				_volumeCalculator = new VolumeCalculator(_logger, _frameProvider, _processor, _applicationSettings, usingRgbData);
-				_logger.LogInfo("! subscribed to calculator event");
+				_volumeCalculator = new VolumeCalculator(_logger, _frameProvider, _processor, _applicationSettings, applyPerspective, 
+					useRgbData);
 				_volumeCalculator.CalculationFinished += OnCalculationFinished;
 			}
 			catch (Exception ex)
@@ -506,7 +504,7 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				MessageBox.Show("Введите код объекта", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 
-				_logger.LogInfo("bullshit empty code shit occured " + Environment.StackTrace);
+				_logger.LogInfo("Weird autotimer issue occured" + Environment.StackTrace);
 
 				return false;
 			}
@@ -525,7 +523,8 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void OnCalculationFinished(ObjectVolumeData result, CalculationStatus status)
 		{
-			_logger.LogInfo("! calculation finished");
+			_logger.LogInfo("Calculation finished, processing results...");
+
 			DisposeVolumeCalculator();
 
 			UpdateVisualsWithResult(result, status);
@@ -535,6 +534,8 @@ namespace VolumeCalculatorGUI.GUI
 
 			WriteObjectDataToFile(calculationResult);
 			SendRequests(calculationResult);
+
+			_logger.LogInfo("Done processing calculatiuon results");
 		}
 
 		private void UpdateVolumeData(ObjectVolumeData volumeData)

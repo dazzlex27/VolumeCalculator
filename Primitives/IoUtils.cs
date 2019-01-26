@@ -116,5 +116,10 @@ namespace Primitives
 
 			Process.Start(shutDownProcess);
 		}
+
+		public static bool NeedScalesDebugMode()
+		{
+			return File.Exists("SCDEBUG");
+		}
 	}
 }

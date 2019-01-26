@@ -43,8 +43,9 @@ public:
 	void SetAlgorithmSettings(const short floorDepth, const short cutOffDepth, 
 		const RelPoint* polygonPoints, const int polygonPointCount, const RelRect& roiRect);
 	void SetDebugPath(const char* path);
-	ObjDimDescription* CalculateObjectVolume(const DepthMap& depthMap, const bool saveDebugData);
-	ObjDimDescription* CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image, const bool saveDebugData);
+	ObjDimDescription* CalculateObjectVolume(const DepthMap& depthMap, const bool applyPerspective, const bool saveDebugData);
+	ObjDimDescription* CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image, const bool applyPerspective, 
+		const bool saveDebugData);
 	const short CalculateFloorDepth(const DepthMap& depthMap);
 
 private:
@@ -52,9 +53,11 @@ private:
 	void FillDepthBufferFromDepthMap(const DepthMap& depthMap);
 	const Contour GetTargetContourFromDepthMap(const bool saveDebugData) const;
 	const Contour GetTargetContourFromColorImage(const bool saveDebugData) const;
-	const ObjDimDescription CalculateContourDimensions(const Contour& contour, const bool saveDebugData) const;
+	const ObjDimDescription CalculateContourDimensions(const Contour& contour, const bool applyPerspective, const bool saveDebugData) const;
+	const cv::RotatedRect CalculateObjectBoundingRect(const Contour& depthObjectContour, const short contourTopPlaneDepth,
+		const bool applyPerspective, const bool saveDebugData) const;
 	const ObjDimDescription CalculateContourDimensionsAlt(const Contour& objectContour, const Contour& colorObjectContour,
-		const bool saveDebugData) const;
+		const bool applyPerspective, const bool saveDebugData) const;
 	const short GetContourTopPlaneDepth(const Contour& contour) const;
 	const TwoDimDescription GetTwoDimDescription(const cv::RotatedRect& contourBoundingRect,
 		const short contourTopPlaneDepth, const float fx, const float fy, const float ppx, const float ppy) const;

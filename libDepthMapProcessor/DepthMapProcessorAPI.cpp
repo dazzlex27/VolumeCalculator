@@ -25,7 +25,7 @@ DLL_EXPORT void SetDebugPath(void* handle, const char* path)
 	processor->SetDebugPath(path);
 }
 
-DLL_EXPORT ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depthMap, bool saveDebugData)
+DLL_EXPORT ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depthMap, bool applyPerspective, bool saveDebugData)
 {
 	auto processor = (DepthMapProcessor*)handle;
 	if (processor == nullptr)
@@ -34,10 +34,11 @@ DLL_EXPORT ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depth
 	if (depthMap.Data == nullptr)
 		return nullptr;
 
-	return processor->CalculateObjectVolume(depthMap, saveDebugData);
+	return processor->CalculateObjectVolume(depthMap, applyPerspective, saveDebugData);
 }
 
-DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, DepthMap depthMap, ColorImage image, bool saveDebugData)
+DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, DepthMap depthMap, ColorImage image, bool applyPerspective, 
+	bool saveDebugData)
 {
 	auto processor = (DepthMapProcessor*)handle;
 	if (processor == nullptr)
@@ -49,7 +50,7 @@ DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, DepthMap de
 	if (depthMap.Data == nullptr)
 		return nullptr;
 
-	return processor->CalculateObjectVolumeAlt(depthMap, image, saveDebugData);
+	return processor->CalculateObjectVolumeAlt(depthMap, image, applyPerspective, saveDebugData);
 }
 
 DLL_EXPORT short CalculateFloorDepth(void* handle, DepthMap depthMap)

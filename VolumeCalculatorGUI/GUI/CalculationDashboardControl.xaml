@@ -207,14 +207,14 @@
 			<Button Grid.Column="0"
 			        Margin="2"
 			        MinHeight="50"
-			        Content="Измерить по глубине"
+			        Content="Приямоугольный объект"
 			        Command="{Binding CalculateVolumeCommand}"
 			        FontSize="24" 
 			        Focusable="False"/>
 			<Button Grid.Column="1"
 			        Margin="2"
 			        MinHeight="50"
-			        Content="Измерить по видео"
+			        Content="Произвольный объект"
 			        Command="{Binding CalculateVolumeAltCommand}"
 			        FontSize="24" 
 			        Focusable="False"/>

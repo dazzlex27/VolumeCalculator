@@ -19,10 +19,12 @@ namespace FrameProcessor.Native
 	    public static extern unsafe void SetDebugPath(void* handle, string path);
 
 		[DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
-	    public static extern unsafe ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depthMap, bool saveDebugData);
+	    public static extern unsafe ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depthMap, bool applyPerspective, 
+			bool saveDebugData);
 
 	    [DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
-	    public static extern unsafe ObjDimDescription* CalculateObjectVolumeAlt(void* handle, DepthMap depthMap, ColorImage image, bool saveDebugData);
+	    public static extern unsafe ObjDimDescription* CalculateObjectVolumeAlt(void* handle, DepthMap depthMap, ColorImage image, 
+		    bool applyPerspective, bool saveDebugData);
 
 		[DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
 	    public static extern unsafe short CalculateFloorDepth(void* handle, DepthMap depthMap);

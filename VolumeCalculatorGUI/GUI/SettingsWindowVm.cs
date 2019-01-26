@@ -346,7 +346,7 @@ namespace VolumeCalculatorGUI.GUI
 			UseDepthMask = settings.UseDepthMask;
 			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.DepthMaskContour);
 			TimeToStartMeasurementMs = settings.TimeToStartMeasurementMs;
-			UseRgbAlgorithmByDefault = settings.UseRgbAlgorithmByDefault;
+			UseRgbAlgorithmByDefault = settings.UseBoxShapeAlgorithmByDefault;
 		}
 	}
 }

@@ -67,7 +67,7 @@ void DepthMapProcessor::SetDebugPath(const char* path)
 	_contourExtractor.SetDebugPath(_debugPath);
 }
 
-ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& depthMap, const bool saveDebugData)
+ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& depthMap, const bool applyPerspective, const bool saveDebugData)
 {
 	FillDepthBufferFromDepthMap(depthMap);
 
@@ -84,12 +84,13 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& dept
 
 	const Contour& objectContour = GetTargetContourFromDepthMap(saveDebugData);
 
-	_result = CalculateContourDimensions(objectContour, saveDebugData);
+	_result = CalculateContourDimensions(objectContour, applyPerspective, saveDebugData);
 
 	return &_result;
 }
 
-ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image, const bool saveDebugData)
+ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image, 
+	const bool applyPerspective, const bool saveDebugData)
 {
 	FillDepthBufferFromDepthMap(depthMap);
 	FillColorBufferFromImage(image);
@@ -108,7 +109,7 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const DepthMap& d
 	const Contour& depthObjectContour = GetTargetContourFromDepthMap(saveDebugData);
 	const Contour& colorObjectContour = GetTargetContourFromColorImage(saveDebugData);
 
-	_result = CalculateContourDimensionsAlt(depthObjectContour, colorObjectContour, saveDebugData);
+	_result = CalculateContourDimensionsAlt(depthObjectContour, colorObjectContour, applyPerspective, saveDebugData);
 
 	return &_result;
 }
@@ -186,20 +187,17 @@ const Contour DepthMapProcessor::GetTargetContourFromColorImage(const bool saveD
 	return _contourExtractor.ExtractContourFromColorImage(inputRoi, saveDebugData);
 }
 
-const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Contour& depthObjectContour, const bool saveDebugData) const
+const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Contour& depthObjectContour, const bool applyPerspective,
+	const bool saveDebugData) const
 {
 	if (depthObjectContour.size() == 0)
 		return ObjDimDescription();
 
 	const short contourTopPlaneDepth = GetContourTopPlaneDepth(depthObjectContour);
 
-	const std::vector<DepthValue>& worldDepthValues = GetWorldDepthValues(depthObjectContour);
-	const Contour& perspectiveCorrectedContour = GetCameraPoints(worldDepthValues, contourTopPlaneDepth);
-	const cv::RotatedRect& correctedBoundingRect = cv::minAreaRect(perspectiveCorrectedContour);
-	if (saveDebugData)
-		DmUtils::DrawTargetContour(perspectiveCorrectedContour, _mapWidth, _mapHeight, _debugPath, "ctr_depth");
+	const cv::RotatedRect& boundingRect = CalculateObjectBoundingRect(depthObjectContour, contourTopPlaneDepth, applyPerspective, saveDebugData);
 
-	const TwoDimDescription& twoDimDescription = GetTwoDimDescription(correctedBoundingRect, contourTopPlaneDepth,
+	const TwoDimDescription& twoDimDescription = GetTwoDimDescription(boundingRect, contourTopPlaneDepth,
 		_depthIntrinsics.FocalLengthX, _depthIntrinsics.FocalLengthY,
 		_depthIntrinsics.PrincipalPointX, _depthIntrinsics.PrincipalPointY);
 
@@ -211,8 +209,27 @@ const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Cont
 	return result;
 }
 
+const cv::RotatedRect DepthMapProcessor::CalculateObjectBoundingRect(const Contour& depthObjectContour, const short contourTopPlaneDepth, 
+	const bool applyPerspective, const bool saveDebugData) const
+{
+	if (applyPerspective)
+	{
+		const std::vector<DepthValue>& worldDepthValues = GetWorldDepthValues(depthObjectContour);
+		const Contour& perspectiveCorrectedContour = GetCameraPoints(worldDepthValues, contourTopPlaneDepth);
+		if (saveDebugData)
+			DmUtils::DrawTargetContour(perspectiveCorrectedContour, _mapWidth, _mapHeight, _debugPath, "ctr_depth");
+		return cv::minAreaRect(perspectiveCorrectedContour);
+	}
+	else
+	{
+		if (saveDebugData)
+			DmUtils::DrawTargetContour(depthObjectContour, _mapWidth, _mapHeight, _debugPath, "ctr_depth");
+		return cv::minAreaRect(depthObjectContour);
+	}
+}
+
 const ObjDimDescription DepthMapProcessor::CalculateContourDimensionsAlt(const Contour& depthObjectContour,
-	const Contour& colorObjectContour, const bool saveDebugData) const
+	const Contour& colorObjectContour, const bool applyPerspective, const bool saveDebugData) const
 {
 	if (depthObjectContour.size() == 0 || colorObjectContour.size() == 0)
 		return ObjDimDescription();

@@ -96,7 +96,7 @@ namespace VolumeCalculationRunner
 
 			foreach (var map in testCaseData.DepthMaps)
 			{
-				var objectDimData = processor.CalculateVolume(map);
+				var objectDimData = processor.CalculateVolumeDepth(map, settings.UseBoxShapeAlgorithmByDefault);
 				var result = new ObjectVolumeData(objectDimData.Length, objectDimData.Width, objectDimData.Height);
 				results.Add(result);
 			}

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DeviceIntegrations.Scales;
 using GodSharp.SerialPort;
+using Primitives;
 using Primitives.Logging;
 
 namespace DeviceIntegration.Scales
@@ -22,7 +23,8 @@ namespace DeviceIntegration.Scales
 		private readonly int _pollingRateMs;
 		private readonly CancellationTokenSource _tokenSource;
 		private readonly GodSerialPort _serialPort;
-
+		private readonly bool _debugModeOn;
+		
 		public MassaKScales(ILogger logger, string port, int pollingRateMs)
 		{
 			_logger = logger;
@@ -40,6 +42,8 @@ namespace DeviceIntegration.Scales
 			{
 				ReadData(bytes);
 			});
+
+			_debugModeOn = IoUtils.NeedScalesDebugMode();
 
 			Task.Run(async () =>
 			{
@@ -92,17 +96,40 @@ namespace DeviceIntegration.Scales
 			try
 			{
 				if (messageBytes.Count % 5 != 0)
-					throw new InvalidDataException($"Incoming data was expected to be 5 bytes long, but was {messageBytes.Count}");
+					throw new InvalidDataException(
+						$"Incoming data was expected to be 5 bytes long, but was {messageBytes.Count}");
 
 				var status = GetStatusFromMessage(messageBytes);
 				var totalWeight = GetWeightFromMessage(messageBytes);
 				var scaleMeasurementData = new ScaleMeasurementData(status, totalWeight);
 
 				MeasurementReady?.Invoke(scaleMeasurementData);
+
+				if (_debugModeOn)
+					LogDebugData(messageBytes, status, totalWeight);
 			}
 			catch (Exception ex)
 			{
 				_logger.LogException($"Failed to read data from MassaKScales on serial port {_port}", ex);
+
+				if (_debugModeOn)
+					LogDebugData(messageBytes, MeasurementStatus.Invalid, -1);
+			}
+		}
+
+		private void LogDebugData(IEnumerable<byte> messageBytes, MeasurementStatus status, double totalWeight)
+		{
+			try
+			{
+				using (var f = File.AppendText("scdebug.txt"))
+				{
+					f.WriteLine(
+						$"{string.Join(" ", messageBytes)}; status={status.ToString()} weight={totalWeight}");
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to write scales debug data", ex);
 			}
 		}
 
@@ -124,7 +151,7 @@ namespace DeviceIntegration.Scales
 			}
 		}
 
-		private static double GetWeightFromMessage(IReadOnlyList<byte> messageBytes)
+		private double GetWeightFromMessage(IReadOnlyList<byte> messageBytes)
 		{
 			var multipler = 1.0;
 			var lastBitActive = (messageBytes[4] & (1 << 7)) != 0;
@@ -146,13 +173,12 @@ namespace DeviceIntegration.Scales
 					multipler *= 0.1;
 					break;
 				default:
-					multipler *= -1;
+					multipler = 0;
+					_logger.LogError($"Failed to read scale multiplier data, the value was {messageBytes[1]}");
 					break;
 			}
 
-			var rawWeight = messageBytes[2] + messageBytes[3] + messageBytes[4];
-			if (lastBitActive)
-				rawWeight -= 128;
+			var rawWeight = messageBytes[2] + messageBytes[3] * 256 + (char) messageBytes[4] * 256 * 256;
 
 			return rawWeight * multipler;
 		}

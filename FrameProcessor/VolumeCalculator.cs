@@ -17,7 +17,9 @@ namespace FrameProcessor
 		private readonly FrameProvider _frameProvider;
 		private readonly DepthMapProcessor _processor;
 		private readonly ApplicationSettings _settings;
-		private readonly bool _usingColorData;
+
+		private readonly bool _applyPerspective;
+		private readonly bool _useColorData;
 
 		private readonly Timer _timer;
 		private readonly List<ObjectVolumeData> _results;
@@ -35,14 +37,16 @@ namespace FrameProcessor
 		private bool HasCompletedFirstRun => _samplesLeft != _settings.SampleDepthMapCount;
 
 		public VolumeCalculator(ILogger logger, FrameProvider frameProvider, DepthMapProcessor processor, ApplicationSettings settings, 
-			bool usingColorData)
+			bool applyPerspective, bool useColorData)
 		{
 			_logger = logger;
 			_frameProvider = frameProvider ?? throw new ArgumentNullException(nameof(frameProvider));
 			_processor = processor ?? throw new ArgumentException(nameof(processor));
 			_settings = settings ?? throw new ArgumentException(nameof(settings));
 			_samplesLeft = settings.SampleDepthMapCount;
-			_usingColorData = usingColorData;
+
+			_applyPerspective = applyPerspective;
+			_useColorData = useColorData;
 
 			logger.LogInfo($"! creating volume calculator sampleCount={settings.SampleDepthMapCount}");
 
@@ -71,50 +75,15 @@ namespace FrameProcessor
 			CalculationFinished?.Invoke(null, CalculationStatus.Aborted);
 		}
 
-		private void CalculateDepthMapZoneMask(DepthMap depthMap)
-		{
-			if (_settings.UseDepthMask)
-			{
-				var points = _settings.DepthMaskContour.ToArray();
-				//var maskData = GeometryUtils.CreateWorkingAreaMask(points, depthMap.Width, depthMap.Height);
-				//_depthMapMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
-			}
-			else
-			{
-				var maskData = Enumerable.Repeat(true, depthMap.Width * depthMap.Height).ToArray();
-				//_depthMapMask = new WorkingAreaMask(depthMap.Width, depthMap.Height, maskData);
-			}
-		}
-
-		private DepthMap GetMaskedDepthMap(DepthMap depthMap)
-		{
-			if (!_settings.UseDepthMask)
-				return depthMap;
-
-			var maskedMap = new DepthMap(depthMap);
-
-			//GeometryUtils.ApplyWorkingAreaMask(maskedMap, _depthMapMask.Data);
-
-			return maskedMap;
-		}
-
 		private void AdvanceCalculation(DepthMap depthMap, ImageData image)
 		{
 			_timer.Stop();
 
-			_logger.LogInfo($"! advancing calculation samplesLeft={_samplesLeft}");
-
 			if (!HasCompletedFirstRun)
-			{
-				CalculateDepthMapZoneMask(depthMap);
 				SaveDebugData();
-			}
 
-			var maskedMap = GetMaskedDepthMap(depthMap);
+			var currentResult = CalculateVolume(depthMap, image, _applyPerspective, !HasCompletedFirstRun);
 
-			var currentResult = _usingColorData
-				? _processor.CalculateObjectVolumeAlt(maskedMap, image, !HasCompletedFirstRun)
-				: _processor.CalculateVolume(maskedMap, !HasCompletedFirstRun);
 			_results.Add(currentResult);
 			_samplesLeft--;
 
@@ -127,7 +96,6 @@ namespace FrameProcessor
 			IsRunning = false;
 			var totalResult = AggregateCalculationsData();
 
-			_logger.LogInfo($"! calculator finished and is about to generate event");
 			if (totalResult != null)
 				CalculationFinished?.Invoke(totalResult, CalculationStatus.Sucessful);
 			else
@@ -147,7 +115,7 @@ namespace FrameProcessor
 			_colorFrameReady = false;
 			_depthFrameReady = false;
 
-			if (!_usingColorData)
+			if (!_useColorData)
 				_frameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
 		}
 
@@ -157,7 +125,7 @@ namespace FrameProcessor
 
 			_depthFrameReady = true;
 
-			if (_usingColorData && !_colorFrameReady || !HasCompletedFirstRun)
+			if (_useColorData && !_colorFrameReady || !HasCompletedFirstRun)
 				return;
 
 			AdvanceCalculation(_latestDepthMap, _latestColorFrame);
@@ -165,11 +133,17 @@ namespace FrameProcessor
 			_depthFrameReady = false;
 		}
 
+		private ObjectVolumeData CalculateVolume(DepthMap depthMap, ImageData image, bool applyPerspective, bool needToSavePics)
+		{
+			return _useColorData
+				? _processor.CalculateObjectVolumeRgb(depthMap, image, applyPerspective, needToSavePics)
+				: _processor.CalculateVolumeDepth(depthMap, applyPerspective, needToSavePics);
+		}
+
 		private ObjectVolumeData AggregateCalculationsData()
 		{
 			try
 			{
-				_logger.LogInfo($"! aggregating data");
 				var lengths = _results.Select(r => r.Length).ToArray();
 				var widths = _results.Select(r => r.Width).ToArray();
 				var heights = _results.Select(r => r.Height).ToArray();
@@ -189,7 +163,7 @@ namespace FrameProcessor
 
 		private void Timer_Elapsed(object sender, ElapsedEventArgs e)
 		{
-			_logger.LogInfo($"! timeout timer elapsed, samplesLeft={_samplesLeft}");
+			_logger.LogInfo($"Timeout timer elapsed (samplesLeft={_samplesLeft}), aborting calculation...");
 			CalculationFinished?.Invoke(null, CalculationStatus.TimedOut);
 		}
 
@@ -197,8 +171,6 @@ namespace FrameProcessor
 		{
 			try
 			{
-				_logger.LogInfo($"! saving debugData, samplesLeft={_samplesLeft}");
-
 				Directory.CreateDirectory(Constants.DebugDataDirectoryName);
 				var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter();
 

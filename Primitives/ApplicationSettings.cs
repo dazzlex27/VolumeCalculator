@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -7,7 +6,7 @@ using System.Windows;
 
 namespace Primitives
 {
-	[ObfuscationAttribute(Exclude = false, Feature = "rename")]
+	[Obfuscation(Exclude = true, Feature = "rename")]
 	public class ApplicationSettings
     {
 	    [Obfuscation]
@@ -38,22 +37,24 @@ namespace Primitives
 		public long TimeToStartMeasurementMs { get; set; }
 
 		[Obfuscation]
-		public bool UseRgbAlgorithmByDefault { get; set; }
+		public bool UseBoxShapeAlgorithmByDefault { get; set; }
 
+	    [Obfuscation]
 		public WebRequestSettings WebRequestSettings { get; set; }
 
-	    public SqlRequestSettings SqlRequestSettings { get; set; }
+	    [Obfuscation]
+		public SqlRequestSettings SqlRequestSettings { get; set; }
 
-		public bool RunInFullSreen { get; set; }
+	    [Obfuscation]
+		public string ResultsFilePath => Path.Combine(OutputPath, "results.csv");
 
-	    public string ResultsFilePath => Path.Combine(OutputPath, "results.csv");
-
-	    public string PhotosDirectoryPath => Path.Combine(OutputPath, "photos");
+	    [Obfuscation]
+		public string PhotosDirectoryPath => Path.Combine(OutputPath, "photos");
 
 	    public ApplicationSettings(short floorDepth, short minObjectHeight, byte sampleCount, string outputPath, 
 		    bool useColorMask, IReadOnlyCollection<Point> colorMaskContour, 
 		    bool useDepthMask, IReadOnlyCollection<Point> depthMaskContour,
-		    long timeToStartMeasurementMs, bool useRgbAlgorithmByDefault, WebRequestSettings webRequestSettings, 
+		    long timeToStartMeasurementMs, bool useBoxShapeAlgorithmByDefault, WebRequestSettings webRequestSettings, 
 		    SqlRequestSettings sqlRequestSettings)
 	    {
 		    FloorDepth = floorDepth > 0 ? floorDepth : (short) 1000;
@@ -65,7 +66,7 @@ namespace Primitives
 			UseDepthMask = useDepthMask;
 		    DepthMaskContour = depthMaskContour != null ? new List<Point>(depthMaskContour) : GetDefaultAreaContour();
 		    TimeToStartMeasurementMs = timeToStartMeasurementMs;
-		    UseRgbAlgorithmByDefault = useRgbAlgorithmByDefault;
+		    UseBoxShapeAlgorithmByDefault = useBoxShapeAlgorithmByDefault;
 		    WebRequestSettings = webRequestSettings;
 		    SqlRequestSettings = sqlRequestSettings;
 	    }
