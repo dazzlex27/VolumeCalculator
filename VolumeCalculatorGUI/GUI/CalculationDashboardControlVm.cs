@@ -56,9 +56,11 @@ namespace VolumeCalculatorGUI.GUI
 		private bool _unitCountBoxFocused;
 		private bool _commentBoxFocused;
 
-		public ICommand CalculateVolumeCommand { get; }
+		public ICommand CalculateVolumeBoxCommand { get; }
 
-		public ICommand CalculateVolumeAltCommand { get; }
+		public ICommand CalculateVolumeFreeCommand { get; }
+
+		public ICommand CalculateVolumeRgbCommand { get; }
 
 		public ICommand ResetWeightCommand { get; }
 
@@ -328,8 +330,9 @@ namespace VolumeCalculatorGUI.GUI
 			_dashStatusUpdater = new DashStatusUpdater(_logger, _circuit, this) { DashStatus = DashboardStatus.Ready };
 			CreateAutoStartTimer(applicationSettings.TimeToStartMeasurementMs);
 
-			CalculateVolumeCommand = new CommandHandler(CalculateObjectVolumeBoxShape, !CalculationInProgress);
-			CalculateVolumeAltCommand = new CommandHandler(CalculateObjectVolumeFreeShape, !CalculationInProgress);
+			CalculateVolumeBoxCommand = new CommandHandler(CalculateObjectVolumeBoxShape, !CalculationInProgress);
+			CalculateVolumeFreeCommand = new CommandHandler(CalculateObjectVolumeFreeShape, !CalculationInProgress);
+			CalculateVolumeRgbCommand = new CommandHandler(CalculateObjectVolumeRgb, !CalculationInProgress);
 			ResetWeightCommand = new CommandHandler(ResetWeight, !CalculationInProgress);
 			OpenResultsFileCommand = new CommandHandler(OpenResultsFile, !CalculationInProgress);
 			OpenPhotosFolderCommand = new CommandHandler(OpenPhotosFolder, !CalculationInProgress);
@@ -464,6 +467,11 @@ namespace VolumeCalculatorGUI.GUI
 		private void CalculateObjectVolumeFreeShape()
 		{
 			CalculateObjectVolumeInternal(true, false);
+		}
+
+		private void CalculateObjectVolumeRgb()
+		{
+			CalculateObjectVolumeInternal(false, true);
 		}
 
 		private void CalculateObjectVolumeInternal(bool applyPerspective, bool useRgbData)

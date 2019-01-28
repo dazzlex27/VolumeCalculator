@@ -231,16 +231,17 @@ const cv::RotatedRect DepthMapProcessor::CalculateObjectBoundingRect(const Conto
 const ObjDimDescription DepthMapProcessor::CalculateContourDimensionsAlt(const Contour& depthObjectContour,
 	const Contour& colorObjectContour, const bool applyPerspective, const bool saveDebugData) const
 {
-	if (depthObjectContour.size() == 0 || colorObjectContour.size() == 0)
+	if (colorObjectContour.size() == 0)
 		return ObjDimDescription();
 
-	const short contourTopPlaneDepth = GetContourTopPlaneDepth(depthObjectContour);
 	if (saveDebugData)
 	{
 		DmUtils::DrawTargetContour(depthObjectContour, _mapWidth, _mapHeight, _debugPath, "ctr_depth");
 		DmUtils::DrawTargetContour(colorObjectContour, _mapWidth, _mapHeight, _debugPath, "ctr_color");
 	}
 
+	const short contourTopPlaneDepth = GetContourTopPlaneDepth(depthObjectContour);
+	
 	const cv::RotatedRect& colorObjectBoundingRect = cv::minAreaRect(colorObjectContour);
 
 	const TwoDimDescription& twoDimDescription = GetTwoDimDescription(colorObjectBoundingRect, contourTopPlaneDepth,
@@ -250,13 +251,16 @@ const ObjDimDescription DepthMapProcessor::CalculateContourDimensionsAlt(const C
 	ObjDimDescription result;
 	result.Length = twoDimDescription.Length;
 	result.Width = twoDimDescription.Width;
-	result.Height = _floorDepth - contourTopPlaneDepth;
+	result.Height = contourTopPlaneDepth > 0 ? _floorDepth - contourTopPlaneDepth : 5;
 
 	return result;
 }
 
 const short DepthMapProcessor::GetContourTopPlaneDepth(const Contour& objectContour) const
 {
+	if (objectContour.size() == 0)
+		return 0;
+
 	const cv::RotatedRect& objectBoundingRect = cv::minAreaRect(objectContour);
 
 	const std::vector<short>& contourNonZeroValues = DmUtils::GetNonZeroContourDepthValues(_mapWidth, _mapHeight,

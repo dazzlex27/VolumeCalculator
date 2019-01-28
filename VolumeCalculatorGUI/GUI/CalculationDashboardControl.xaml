@@ -203,19 +203,27 @@
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition />
 				<ColumnDefinition />
+				<ColumnDefinition />
 			</Grid.ColumnDefinitions>
 			<Button Grid.Column="0"
 			        Margin="2"
 			        MinHeight="50"
-			        Content="Приямоугольный объект"
-			        Command="{Binding CalculateVolumeCommand}"
+			        Content="Прямоугольный объект"
+			        Command="{Binding CalculateVolumeBoxCommand}"
 			        FontSize="24" 
 			        Focusable="False"/>
 			<Button Grid.Column="1"
 			        Margin="2"
 			        MinHeight="50"
 			        Content="Произвольный объект"
-			        Command="{Binding CalculateVolumeAltCommand}"
+			        Command="{Binding CalculateVolumeFreeCommand}"
+			        FontSize="24" 
+			        Focusable="False"/>
+			<Button Grid.Column="3"
+			        Margin="2"
+			        MinHeight="50"
+			        Content="Малый объект"
+			        Command="{Binding CalculateVolumeRgbCommand}"
 			        FontSize="24" 
 			        Focusable="False"/>
 		</Grid>
