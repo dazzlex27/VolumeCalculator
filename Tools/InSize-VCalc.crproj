@@ -1,0 +1,8 @@
+<project outputDir="C:\Dev\!Repo\VolumeCalculator\!!bin\x64\Release\Confused" baseDir="C:\Dev\!Repo\VolumeCalculator\!!bin\x64\Release" xmlns="http://confuser.codeplex.com">
+  <rule pattern="true" preset="aggressive" inherit="false" />
+  <module path="DeviceIntegration.dll" />
+  <module path="ExtIntegration.dll" />
+  <module path="FrameProcessor.dll" />
+  <module path="FrameProviders.dll" />
+  <module path="VolumeCalculator.exe" />
+</project>
