@@ -37,9 +37,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Kinect, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\!!bin\$(Platform)\$(Configuration)\Microsoft.Kinect.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\packages\Kinect\Microsoft.Kinect.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

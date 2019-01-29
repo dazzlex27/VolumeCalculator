@@ -2,6 +2,7 @@
 using System.Data.SqlClient;
 using Primitives;
 using Primitives.Logging;
+using Primitives.Settings;
 
 namespace ExtIntegration
 {

@@ -17,3 +17,5 @@ Tests/VolumeCalculationRunner/obj
 /Tests/DepthMapProcessorTests/DepthMapProcessorTests.vcxproj.user
 /VolumeCalculator.sln.DotSettings.user
 /libDepthMapProcessor/libDepthMapProcessor.vcxproj.user
+/Utils/VersionWriter/obj
+/Tools/Build/logs

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Reflection;
 using System.Runtime.Serialization;
 using System.Windows;
 
@@ -7,37 +6,26 @@ namespace Primitives.Settings
 {
 	public class AlgorithmSettings
 	{
-		[Obfuscation]
 		public short FloorDepth { get; set; }
 
-		[Obfuscation]
 		public short MinObjectHeight { get; set; }
 
-		[Obfuscation]
 		public byte SampleDepthMapCount { get; set; }
 
-		[Obfuscation]
 		public bool UseColorMask { get; set; }
 
-		[Obfuscation]
 		public List<Point> ColorMaskContour { get; set; }
 
-		[Obfuscation]
 		public bool UseDepthMask { get; set; }
 
-		[Obfuscation]
 		public List<Point> DepthMaskContour { get; set; }
 
-		[Obfuscation]
 		public long TimeToStartMeasurementMs { get; set; }
 
-		[Obfuscation]
 		public bool EnableDmAlgorithm { get; set; }
 
-		[Obfuscation]
 		public bool EnablePerspectiveDmAlgorithm { get; set; }
 
-		[Obfuscation]
 		public bool EnableRgbAlgorithm { get; set; }
 
 		public AlgorithmSettings(short floorDepth, short minObjectHeight, byte sampleDepthMapCount, bool useColorMask, 
@@ -85,7 +73,6 @@ namespace Primitives.Settings
 				TimeToStartMeasurementMs = 5000;
 		}
 
-		[Obfuscation(Exclude = true)]
 		private static List<Point> GetDefaultAreaContour()
 		{
 			return new List<Point>

@@ -32,7 +32,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		private readonly List<string> _fatalErrorMessages;
 
-		public string WindowTitle => Constants.AppHeaderString;
+		public string WindowTitle => GlobalConstants.AppHeaderString;
 
 		public bool ShutDownInProgress { get; private set; }
 
@@ -116,7 +116,7 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				_fatalErrorMessages = new List<string>();
 				_logger = new Logger();
-				_logger.LogInfo($"Starting up \"{Constants.AppHeaderString}\"...");
+				_logger.LogInfo($"Starting up \"{GlobalConstants.AppHeaderString}\"...");
 				AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
 				InitializeSettings();

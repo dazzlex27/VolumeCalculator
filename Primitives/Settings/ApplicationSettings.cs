@@ -1,21 +1,15 @@
-﻿using System.Reflection;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
 namespace Primitives.Settings
 {
-	[Obfuscation(Exclude = true, Feature = "rename")]
 	public class ApplicationSettings
     {
-	    [Obfuscation]
 	    public IoSettings IoSettings { get; set; }
 
-	    [Obfuscation]
 		public AlgorithmSettings AlgorithmSettings { get; set; }
 
-		[Obfuscation]
 		public WebRequestSettings WebRequestSettings { get; set; }
 
-	    [Obfuscation]
 		public SqlRequestSettings SqlRequestSettings { get; set; }
 
 		public ApplicationSettings(IoSettings ioSettings, AlgorithmSettings algorithmSettings,
@@ -27,7 +21,6 @@ namespace Primitives.Settings
 		    SqlRequestSettings = sqlRequestSettings;
 	    }
 
-	    [Obfuscation(Exclude = true)]
 	    public static ApplicationSettings GetDefaultSettings()
 	    {
 		    return new ApplicationSettings(IoSettings.GetDefaultSettings(), AlgorithmSettings.GetDefaultSettings(), 

@@ -1,38 +1,27 @@
 ﻿using System.IO;
-using System.Reflection;
 
 namespace Primitives.Settings
 {
 	public class IoSettings
 	{
-		[Obfuscation]
 		public string ActiveCameraName { get; set; }
 
-		[Obfuscation]
 		public string ActiveScalesName { get; set; }
 
-		[Obfuscation]
 		public string ScalesPort { get; set; }
 
-		[Obfuscation]
 		public IoEntry[] ActiveScanners { get; set; }
 
-		[Obfuscation]
 		public string ActiveIoCircuitName { get; set; }
 
-		[Obfuscation]
 		public string IoCircuitPort { get; set; }
 
-		[Obfuscation]
 		public string OutputPath { get; set; }
 
-		[Obfuscation]
 		public bool ShutDownPcByDefault { get; set; }
 
-		[Obfuscation]
 		public string ResultsFilePath => Path.Combine(OutputPath, Constants.ResultsFileName);
 
-		[Obfuscation]
 		public string PhotosDirectoryPath => Path.Combine(OutputPath, Constants.ResultPhotosFolder);
 
 		public IoSettings(string activeCameraName, string activeScalesName, string scalesPort, IoEntry[] activeScanners,

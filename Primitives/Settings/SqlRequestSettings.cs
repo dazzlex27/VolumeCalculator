@@ -1,4 +1,4 @@
-﻿namespace Primitives
+﻿namespace Primitives.Settings
 {
 	public class SqlRequestSettings
 	{
