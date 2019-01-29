@@ -1,6 +1,7 @@
 ﻿using System;
+using DeviceIntegrations.Scales;
 
-namespace DeviceIntegrations.Scales
+namespace DeviceIntegration.Scales
 {
     public interface IScales : IDisposable
     {

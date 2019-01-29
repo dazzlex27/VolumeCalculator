@@ -75,8 +75,8 @@ namespace FrameProcessor
 				file.WriteLine(largerDimension);
 				file.WriteLine(smallerDimension);
 				file.WriteLine(_basicCaseInfo.ObjHeight);
-				file.WriteLine(_testCaseData.Settings.FloorDepth);
-				file.Write(_testCaseData.Settings.MinObjectHeight);
+				file.WriteLine(_testCaseData.Settings.AlgorithmSettings.FloorDepth);
+				file.Write(_testCaseData.Settings.AlgorithmSettings.MinObjectHeight);
 			}
 
 			File.WriteAllText(Path.Combine(_testCaseDirectory, "description.txt"), _basicCaseInfo.Description);

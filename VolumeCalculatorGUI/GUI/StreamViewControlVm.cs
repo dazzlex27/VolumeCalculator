@@ -3,6 +3,7 @@ using System.Windows.Media.Imaging;
 using FrameProviders;
 using Primitives;
 using Primitives.Logging;
+using Primitives.Settings;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
 
@@ -15,6 +16,8 @@ namespace VolumeCalculatorGUI.GUI
 
 		private readonly FrameProvider _frameProvider;
 		private readonly ILogger _logger;
+
+		private readonly short _minDepth;
 
 		private ApplicationSettings _applicationSettings;
 
@@ -29,8 +32,6 @@ namespace VolumeCalculatorGUI.GUI
 
 		private bool _useColorMask;
 		private bool _useDepthMask;
-
-		private short _minDepth;
 
 		public WriteableBitmap ColorImageBitmap
 		{
@@ -150,11 +151,11 @@ namespace VolumeCalculatorGUI.GUI
 			_frameProvider.ColorFrameReady += ColorImageUpdated;
 			_frameProvider.DepthFrameReady += DepthImageUpdated;
 
-			UseColorMask = settings.UseColorMask;
-			UseDepthMask = settings.UseDepthMask;
+			UseColorMask = settings.AlgorithmSettings.UseColorMask;
+			UseDepthMask = settings.AlgorithmSettings.UseDepthMask;
 
-			ColorMaskPolygonControlVm = new MaskPolygonControlVm(settings.ColorMaskContour);
-			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.DepthMaskContour);
+			ColorMaskPolygonControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.ColorMaskContour);
+			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.DepthMaskContour);
 
 			_minDepth = _frameProvider.GetDepthCameraParams().MinDepth;
 		}
@@ -168,10 +169,10 @@ namespace VolumeCalculatorGUI.GUI
 		public void ApplicationSettingsUpdated(ApplicationSettings settings)
 		{
 			_applicationSettings = settings;
-			UseColorMask = _applicationSettings.UseColorMask;
-			UseDepthMask = _applicationSettings.UseDepthMask;
-			ColorMaskPolygonControlVm.SetPolygonPoints(settings.ColorMaskContour);
-			DepthMaskPolygonControlVm.SetPolygonPoints(settings.DepthMaskContour);
+			UseColorMask = _applicationSettings.AlgorithmSettings.UseColorMask;
+			UseDepthMask = _applicationSettings.AlgorithmSettings.UseDepthMask;
+			ColorMaskPolygonControlVm.SetPolygonPoints(settings.AlgorithmSettings.ColorMaskContour);
+			DepthMaskPolygonControlVm.SetPolygonPoints(settings.AlgorithmSettings.DepthMaskContour);
 		}
 
 		private void ColorImageUpdated(ImageData image)
@@ -183,9 +184,9 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
-				var maxDepth = _applicationSettings.FloorDepth;
+				var maxDepth = _applicationSettings.AlgorithmSettings.FloorDepth;
 				var maskedMap = new DepthMap(depthMap);
-				var cutOffDepth = (short) (maxDepth - _applicationSettings.MinObjectHeight);
+				var cutOffDepth = (short) (maxDepth - _applicationSettings.AlgorithmSettings.MinObjectHeight);
 				DepthMapUtils.FilterDepthMapByDepthtLimit(maskedMap, cutOffDepth);
 				var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, _minDepth, maxDepth);
 				var depthMapImage = new ImageData(maskedMap.Width, maskedMap.Height, depthMapData, 1);

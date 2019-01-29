@@ -6,6 +6,7 @@ using System.Timers;
 using FrameProviders;
 using Primitives;
 using Primitives.Logging;
+using Primitives.Settings;
 
 namespace FrameProcessor
 {
@@ -34,7 +35,8 @@ namespace FrameProcessor
 
 		public bool IsRunning { get; private set; }
 
-		private bool HasCompletedFirstRun => _samplesLeft != _settings.SampleDepthMapCount;
+
+		private bool HasCompletedFirstRun => _samplesLeft != _settings.AlgorithmSettings.SampleDepthMapCount;
 
 		public VolumeCalculator(ILogger logger, FrameProvider frameProvider, DepthMapProcessor processor, ApplicationSettings settings, 
 			bool applyPerspective, bool useColorData)
@@ -43,12 +45,12 @@ namespace FrameProcessor
 			_frameProvider = frameProvider ?? throw new ArgumentNullException(nameof(frameProvider));
 			_processor = processor ?? throw new ArgumentException(nameof(processor));
 			_settings = settings ?? throw new ArgumentException(nameof(settings));
-			_samplesLeft = settings.SampleDepthMapCount;
+			_samplesLeft = settings.AlgorithmSettings.SampleDepthMapCount;
 
 			_applyPerspective = applyPerspective;
 			_useColorData = useColorData;
 
-			logger.LogInfo($"! creating volume calculator sampleCount={settings.SampleDepthMapCount}");
+			logger.LogInfo($"! creating volume calculator sampleCount={settings.AlgorithmSettings.SampleDepthMapCount}");
 
 			_results = new List<ObjectVolumeData>();
 
@@ -176,7 +178,7 @@ namespace FrameProcessor
 
 				if (_latestColorFrame != null)
 				{
-					var colorFrameFileName = Path.Combine(_settings.PhotosDirectoryPath, $"{calculationIndex}_color.png");
+					var colorFrameFileName = Path.Combine(_settings.IoSettings.PhotosDirectoryPath, $"{calculationIndex}_color.png");
 					ImageUtils.SaveImageDataToFile(_latestColorFrame, colorFrameFileName);
 				}
 
@@ -185,9 +187,9 @@ namespace FrameProcessor
 
 				var depthCameraParams = _frameProvider.GetDepthCameraParams();
 
-				var depthFrameFileName = Path.Combine(_settings.PhotosDirectoryPath, $"{calculationIndex}_depth.png");
+				var depthFrameFileName = Path.Combine(_settings.IoSettings.PhotosDirectoryPath, $"{calculationIndex}_depth.png");
 
-				var cutOffDepth = (short) (_settings.FloorDepth - _settings.MinObjectHeight);
+				var cutOffDepth = (short) (_settings.AlgorithmSettings.FloorDepth - _settings.AlgorithmSettings.MinObjectHeight);
 				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, depthFrameFileName,
 					depthCameraParams.MinDepth, depthCameraParams.MaxDepth, cutOffDepth);
 			}

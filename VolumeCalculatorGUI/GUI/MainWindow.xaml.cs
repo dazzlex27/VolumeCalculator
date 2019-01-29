@@ -14,7 +14,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void Window_Closing(object sender, CancelEventArgs e)
 		{
-			if (!_vm.ShutDown(false))
+			if (!_vm.ShutDown(_vm.ShutDownByDefault, false))
 				e.Cancel = true;
 		}
 	}

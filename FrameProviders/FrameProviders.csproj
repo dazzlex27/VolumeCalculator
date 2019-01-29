@@ -51,6 +51,7 @@
     <Compile Include="DepthCameraParams.cs" />
     <Compile Include="CameraParams.cs" />
     <Compile Include="FrameProvider.cs" />
+    <Compile Include="FrameProvidersCommon.cs" />
     <Compile Include="KinectV2\KinectV2FrameProvider.cs" />
     <Compile Include="D435\RealsenseD435FrameProvider.cs" />
     <Compile Include="LocalFiles\LocalFileFrameProvider.cs" />

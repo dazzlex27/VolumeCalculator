@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
-using DeviceIntegrations.IoCircuits;
-using DeviceIntegrations.Scales;
-using DeviceIntegrations.Scanners;
 using FrameProcessor;
-using FrameProviders;
 using Primitives;
 using Primitives.Logging;
+using Primitives.Settings;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
+using Application = System.Windows.Application;
+using MessageBox = System.Windows.MessageBox;
 
 namespace VolumeCalculatorGUI.GUI
 {
@@ -23,18 +23,18 @@ namespace VolumeCalculatorGUI.GUI
 		private readonly ILogger _logger;
 
 		private ApplicationSettings _settings;
+		private DeviceSet _deviceSet;
+		private DepthMapProcessor _dmProcessor;
 
 		private StreamViewControlVm _streamViewControlVm;
 		private CalculationDashboardControlVm _calculationDashboardControlVm;
 		private TestDataGenerationControlVm _testDataGenerationControlVm;
 
-		private FrameProvider _frameProvider;
-		private DepthMapProcessor _processor;
-		private List<IBarcodeScanner> _barcodeScanners;
-		private IScales _scales;
-		private IIoCircuit _circuit;
+		private readonly List<string> _fatalErrorMessages;
 
 		public string WindowTitle => Constants.AppHeaderString;
+
+		public bool ShutDownInProgress { get; private set; }
 
 		public StreamViewControlVm StreamViewControlVm
 		{
@@ -104,6 +104,8 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
+		public bool ShutDownByDefault => _settings?.IoSettings != null && _settings.IoSettings.ShutDownPcByDefault;
+
 		public ICommand OpenSettingsCommand { get; }
 
 		public ICommand ShutDownCommand { get; }
@@ -112,66 +114,58 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
+				_fatalErrorMessages = new List<string>();
 				_logger = new Logger();
-				_logger.LogInfo("Starting up...");
-				_logger.LogInfo($"App: {Constants.AppHeaderString}");
+				_logger.LogInfo($"Starting up \"{Constants.AppHeaderString}\"...");
 				AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
 				InitializeSettings();
-				InitializeEntities();
 				InitializeIoDevices();
 				InitializeSubViewModels();
 
 				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
-				ShutDownCommand = new CommandHandler(() => { ShutDown(true); }, true);
+				ShutDownCommand = new CommandHandler(() => { ShutDown(true, false); }, true);
 
 				_logger.LogInfo("Application is initalized");
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException("Failed to initialize the application!", ex);
-				MessageBox.Show("Ошибка инициализации приложения, информация записана в журнал.", "Ошибка",
-					MessageBoxButton.OK, MessageBoxImage.Error);
-				Process.GetCurrentProcess().Kill();
+				_logger.LogException("Application is terminating...", ex);
+				DisplayFatalErrorsAndCloseApplication();
 			}
 		}
 
-		private void InitializeEntities()
+		public bool ShutDown(bool shutPcDown, bool force)
 		{
-			_frameProvider = DeviceInitializationUtils.CreateRequestedFrameProvider(_logger);
-			_frameProvider.ColorCameraFps = 5;
-			_frameProvider.DepthCameraFps = 5;
-			_frameProvider.ColorFrameReady += OnColorFrameReady;
-			_frameProvider.DepthFrameReady += OnDepthFrameReady;
-			_frameProvider.Start();
+			if (ShutDownInProgress)
+				return true;
 
-			var colorCameraParams = _frameProvider.GetColorCameraParams();
-			var depthCameraParams = _frameProvider.GetDepthCameraParams();
-
-			_processor = new DepthMapProcessor(_logger, colorCameraParams, depthCameraParams);
-			_processor.SetProcessorSettings(Settings);
-		}
-
-		public bool ShutDown(bool shutPcDown)
-		{
-			if (MessageBox.Show("Вы действительно хотите отключить систему?", "Завершение работы", MessageBoxButton.YesNo,
-				    MessageBoxImage.Question) == MessageBoxResult.No)
-			{
-				return false;
-			}
+			ShutDownInProgress = true;
 
 			try
 			{
+				if (force)
+				{
+					Process.GetCurrentProcess().Kill();
+					return true;
+				}
+
+				if (MessageBox.Show("Вы действительно хотите отключить систему?", "Завершение работы",
+					    MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
+					return false;
+
 				_logger.LogInfo("Disposing the application...");
 
 				SaveSettings();
 				DisposeSubViewModels();
 				DisposeIoDevices();
 
+				_logger.LogInfo("Application stopped");
+
 				if (!shutPcDown)
 					return true;
 
-				_logger.LogInfo("Application stopped, shutting down the system...");
+				_logger.LogInfo("Shutting down the system...");
 				IoUtils.ShutPcDown();
 
 				return true;
@@ -181,15 +175,112 @@ namespace VolumeCalculatorGUI.GUI
 				_logger.LogException("Failed to close the application", ex);
 				return false;
 			}
+			finally
+			{
+				ShutDownInProgress = false;
+			}
+		}
+
+		private void InitializeSettings()
+		{
+			try
+			{
+				_logger.LogInfo("Reading settings...");
+				var settingsFromFile = IoUtils.DeserializeSettings();
+				if (settingsFromFile == null)
+				{
+					_logger.LogError("Failed to read settings from file, will use default settings");
+					Settings = ApplicationSettings.GetDefaultSettings();
+					IoUtils.SerializeSettings(Settings);
+				}
+				else
+					Settings = settingsFromFile;
+
+				_logger.LogInfo("Settings - ok");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("FATAL: Failed to initialize application settings!", ex);
+
+				var message = "Не удалось инициализировать настройки приложения";
+				_fatalErrorMessages.Add(message);
+				throw;
+			}
+		}
+
+		private void InitializeIoDevices()
+		{
+			try
+			{
+				_logger.LogInfo("Initializing IO devices...");
+
+				var deviceSetFaceory = new DeviceSetFactory();
+				_deviceSet = deviceSetFaceory.CreateDeviceSet(_logger, Settings.IoSettings);
+
+				_logger.LogInfo("IO devices- ok");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("FATAL: Failed to initialize IO devices!", ex);
+
+				var message = "Не удалось инициализировать внешние устройства";
+				_fatalErrorMessages.Add(message);
+				throw;
+			}
+		}
+
+		private void InitializeSubViewModels()
+		{
+			try
+			{
+				_logger.LogInfo("Initializing sub view models...");
+
+				var frameProvider = _deviceSet.FrameProvider;
+
+				frameProvider.ColorFrameReady += OnColorFrameReady;
+				frameProvider.DepthFrameReady += OnDepthFrameReady;
+
+				var colorCameraParams = frameProvider.GetColorCameraParams();
+				var depthCameraParams = frameProvider.GetDepthCameraParams();
+
+				_dmProcessor = new DepthMapProcessor(_logger, colorCameraParams, depthCameraParams);
+				_dmProcessor.SetProcessorSettings(Settings);
+
+				_streamViewControlVm = new StreamViewControlVm(_logger, _settings, frameProvider);
+
+				_calculationDashboardControlVm =
+					new CalculationDashboardControlVm(_logger, _settings, _deviceSet, _dmProcessor);
+				_testDataGenerationControlVm =
+					new TestDataGenerationControlVm(_settings, frameProvider.GetDepthCameraParams());
+
+				ApplicationSettingsChanged += OnApplicationSettingsChanged;
+
+				_logger.LogInfo("Sub view models - ok");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("FATAL: Failed to initialize GUI!", ex);
+
+				var message = "Не удалось инициализировать компоненты визуализации";
+				_fatalErrorMessages.Add(message);
+				throw;
+			}
+		}
+
+		private void SaveSettings()
+		{
+			_logger.LogInfo("Saving settings...");
+			IoUtils.SerializeSettings(Settings);
 		}
 
 		private void OpenSettings()
 		{
 			try
 			{
-				var settingsWindowVm = new SettingsWindowVm(_logger, _settings, _frameProvider.GetDepthCameraParams(), _processor);
-				_frameProvider.ColorFrameReady += settingsWindowVm.ColorFrameUpdated;
-				_frameProvider.DepthFrameReady += settingsWindowVm.DepthFrameUpdated;
+				var settingsWindowVm = new SettingsWindowVm(_logger, _settings, _deviceSet.FrameProvider.GetDepthCameraParams(),
+					_dmProcessor);
+				_deviceSet.FrameProvider.ColorFrameReady += settingsWindowVm.ColorFrameUpdated;
+				_deviceSet.FrameProvider.DepthFrameReady += settingsWindowVm.DepthFrameUpdated;
 				try
 				{
 					var settingsWindow = new SettingsWindow
@@ -212,8 +303,8 @@ namespace VolumeCalculatorGUI.GUI
 				}
 				finally
 				{
-					_frameProvider.ColorFrameReady -= settingsWindowVm.ColorFrameUpdated;
-					_frameProvider.DepthFrameReady -= settingsWindowVm.DepthFrameUpdated;
+					_deviceSet.FrameProvider.ColorFrameReady -= settingsWindowVm.ColorFrameUpdated;
+					_deviceSet.FrameProvider.DepthFrameReady -= settingsWindowVm.DepthFrameUpdated;
 				}
 			}
 			catch (Exception ex)
@@ -224,100 +315,33 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		private void InitializeSettings()
-		{
-			_logger.LogInfo("Trying to read settings from file...");
-			var settingsFromFile = IoUtils.DeserializeSettings();
-			if (settingsFromFile == null)
-			{
-				_logger.LogInfo("Failed to read settings from file, will use default settings");
-				Settings = ApplicationSettings.GetDefaultSettings();
-			}
-			else
-				Settings = settingsFromFile;
-		}
-
-		private void InitializeSubViewModels()
-		{
-			_logger.LogInfo("Initializing sub view models...");
-
-			_streamViewControlVm = new StreamViewControlVm(_logger, _settings, _frameProvider);
-
-			_calculationDashboardControlVm = new CalculationDashboardControlVm(_logger, _frameProvider, _processor,
-				_barcodeScanners, _scales, _circuit, _settings);
-			_testDataGenerationControlVm = new TestDataGenerationControlVm(_settings, _frameProvider.GetDepthCameraParams());
-
-			ApplicationSettingsChanged += OnApplicationSettingsChanged;
-		}
-
-		private void InitializeIoDevices()
-		{
-			try
-			{
-				_barcodeScanners = new List<IBarcodeScanner>();
-
-				var keyboardListener = new GenericKeyboardBarcodeScanner(_logger);
-				_barcodeScanners.Add(keyboardListener);
-				var keyEventHandler = new KeyEventHandler(keyboardListener.AddKey);
-				EventManager.RegisterClassHandler(typeof(Window), Keyboard.KeyUpEvent, keyEventHandler, true);
-
-				var scannerComPort = IoUtils.ReadScannerPort();
-				if (scannerComPort != string.Empty)
-				{
-					var serialListener = new GenericSerialPortBarcodeScanner(_logger, scannerComPort);
-					_barcodeScanners.Add(serialListener);
-				}
-
-				var scalesComPort = IoUtils.ReadScalesPort();
-				if (scalesComPort != string.Empty)
-					_scales = DeviceInitializationUtils.CreateRequestedScales(_logger, scalesComPort);
-
-				_logger.LogInfo("reading board port");
-				var circuitComPort = IoUtils.ReadIoBoardPort();
-				if (circuitComPort != string.Empty)
-				{
-					_logger.LogInfo("board port is not null");
-					_circuit = new KeUsb24RBoard(_logger, circuitComPort);
-				}
-				else
-				{
-					_logger.LogInfo("board port is null");
-				}
-			}
-			catch (Exception ex)
-			{
-				_logger.LogException("Failed to initialize Io devices", ex);
-			}
-		}
-
-		private void SaveSettings()
-		{
-			_logger.LogInfo("Saving settings...");
-			IoUtils.SerializeSettings(Settings);
-		}
-
 		private void DisposeSubViewModels()
 		{
 			_logger.LogInfo("Disposing sub view models...");
-			_streamViewControlVm.Dispose();
-			_calculationDashboardControlVm.Dispose();
+			_dmProcessor?.Dispose();
+
+			_streamViewControlVm?.Dispose();
+			_calculationDashboardControlVm?.Dispose();
 		}
 
 		private void DisposeIoDevices()
 		{
 			_logger.LogInfo("Disposing io devices...");
 
-			foreach (var listener in _barcodeScanners.Where(l => l != null))
-				listener.Dispose();
+			if (_deviceSet == null)
+				return;
 
-			_scales?.Dispose();
-
-			_circuit?.Dispose();
+			_deviceSet.FrameProvider?.Dispose();
+			_deviceSet.FrameProvider?.Dispose();
+			_deviceSet.Scales?.Dispose();
+			foreach(var scanner in _deviceSet.Scanners)
+				scanner?.Dispose();
+			_deviceSet.IoCircuit?.Dispose();
 		}
 
 		private void OnApplicationSettingsChanged(ApplicationSettings settings)
 		{
-			_processor.SetProcessorSettings(settings);
+			_dmProcessor.SetProcessorSettings(settings);
 			_calculationDashboardControlVm.ApplicationSettingsUpdated(settings);
 			_streamViewControlVm.ApplicationSettingsUpdated(settings);
 			_testDataGenerationControlVm.ApplicationSettingsUpdated(settings);
@@ -337,8 +361,21 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			_logger.LogException("Unhandled exception in application domain occured, app terminates...",
 				(Exception)e.ExceptionObject);
-			MessageBox.Show("Произошла критическая ошибка, приложение будет закрыто. Информация записана в журнал",
-				"Критическая ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+
+			DisplayFatalErrorsAndCloseApplication();
+		}
+
+		private void DisplayFatalErrorsAndCloseApplication()
+		{
+			var builder = new StringBuilder();
+			builder.AppendLine("Произошли критические ошибки:");
+			foreach (var error in _fatalErrorMessages)
+				builder.AppendLine(error);
+			builder.AppendLine();
+			builder.AppendLine("Приложение будет закрыто, информация записана в журнал");
+
+			MessageBox.Show(builder.ToString(), "Аварийное завершение", MessageBoxButton.OK, MessageBoxImage.Error);
+			ShutDown(Settings.IoSettings.ShutDownPcByDefault, true);
 		}
 	}
 }

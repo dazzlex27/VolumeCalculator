@@ -3,6 +3,7 @@ using FrameProcessor.Native;
 using FrameProviders;
 using Primitives;
 using Primitives.Logging;
+using Primitives.Settings;
 using DepthMap = Primitives.DepthMap;
 
 namespace FrameProcessor
@@ -83,25 +84,25 @@ namespace FrameProcessor
 
 		public void SetProcessorSettings(ApplicationSettings settings)
 		{
-			var cutOffDepth = (short)(settings.FloorDepth - settings.MinObjectHeight);
+			var cutOffDepth = (short)(settings.AlgorithmSettings.FloorDepth - settings.AlgorithmSettings.MinObjectHeight);
 			var colorRoiRect = CreateColorRoiRectFromSettings(settings);
 
 			unsafe
 			{
-				var relPoints = new RelPoint[settings.DepthMaskContour.Count];
+				var relPoints = new RelPoint[settings.AlgorithmSettings.DepthMaskContour.Count];
 				for (var i = 0; i < relPoints.Length; i++)
 				{
-					relPoints[i].X = (float)settings.DepthMaskContour[i].X;
-					relPoints[i].Y = (float)settings.DepthMaskContour[i].Y;
+					relPoints[i].X = (float)settings.AlgorithmSettings.DepthMaskContour[i].X;
+					relPoints[i].Y = (float)settings.AlgorithmSettings.DepthMaskContour[i].Y;
 				}
 
 				fixed (RelPoint* points = relPoints)
 				{
-					DepthMapProcessorDll.SetAlgorithmSettings(_nativeHandle.ToPointer(), settings.FloorDepth, cutOffDepth, 
+					DepthMapProcessorDll.SetAlgorithmSettings(_nativeHandle.ToPointer(), settings.AlgorithmSettings.FloorDepth, cutOffDepth, 
 						points, relPoints.Length, colorRoiRect);
 				}
 
-				var terminatedPath = settings.PhotosDirectoryPath + "\0";
+				var terminatedPath = settings.IoSettings.PhotosDirectoryPath + "\0";
 				DepthMapProcessorDll.SetDebugPath(_nativeHandle.ToPointer(), terminatedPath);
 			}
 		}
@@ -132,9 +133,9 @@ namespace FrameProcessor
 			float x2;
 			float y2;
 
-			if (settings != null && settings.UseDepthMask)
+			if (settings != null && settings.AlgorithmSettings.UseDepthMask)
 			{
-				var rectanglePoints = settings.ColorMaskContour;
+				var rectanglePoints = settings.AlgorithmSettings.ColorMaskContour;
 				x1 = (float)rectanglePoints[0].X;
 				y1 = (float)rectanglePoints[0].Y;
 				x2 = (float)rectanglePoints[2].X;

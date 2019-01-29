@@ -7,14 +7,12 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using DeviceIntegrations.IoCircuits;
 using DeviceIntegrations.Scales;
-using DeviceIntegrations.Scanners;
 using ExtIntegration;
 using FrameProcessor;
-using FrameProviders;
 using Primitives;
 using Primitives.Logging;
+using Primitives.Settings;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
 
@@ -23,20 +21,15 @@ namespace VolumeCalculatorGUI.GUI
 	internal class CalculationDashboardControlVm : BaseViewModel, IDisposable
 	{
 		private readonly ILogger _logger;
-		private readonly FrameProvider _frameProvider;
-		private readonly IReadOnlyList<IBarcodeScanner> _scanners;
-		private readonly IScales _scales;
-		private readonly IIoCircuit _circuit;
-
+		private readonly DeviceSet _deviceSet;
+		private readonly DepthMapProcessor _processor;
 		private readonly DashStatusUpdater _dashStatusUpdater;
+		private readonly List<IRequestSender> _requestSenders;
 
-		private ApplicationSettings _applicationSettings;
+		private ApplicationSettings _settings;
 
 		private VolumeCalculator _volumeCalculator;
 		private CalculationResultFileProcessor _calculationResultFileProcessor;
-		private readonly DepthMapProcessor _processor;
-
-		private readonly List<IRequestSender> _requestSenders;
 
 		private string _objectCode;
 		private double _objectWeight;
@@ -300,35 +293,28 @@ namespace VolumeCalculatorGUI.GUI
 
 		public MeasurementStatus CurrentWeighingStatus { get; set; }
 
-		public CalculationDashboardControlVm(ILogger logger, FrameProvider frameProvider, DepthMapProcessor processor, 
-			IReadOnlyList<IBarcodeScanner> scanners, IScales scales, IIoCircuit circuit, ApplicationSettings applicationSettings)
+		public CalculationDashboardControlVm(ILogger logger, ApplicationSettings settings, DeviceSet deviceSet, 
+			DepthMapProcessor processor)
 		{
 			_logger = logger;
-			_frameProvider = frameProvider;
+			_deviceSet = deviceSet;
 			_processor = processor;
 
-			if (scanners != null)
+			if (_deviceSet.Scanners != null)
 			{
-				_scanners = scanners;
-				foreach (var scanner in scanners.Where(s => s != null))
+				foreach (var scanner in _deviceSet.Scanners.Where(s => s != null))
 					scanner.CharSequenceFormed += OnBarcodeReady;
 			}
 
-			if (scales != null)
-			{
-				_scales = scales;
-				_scales.MeasurementReady += OnWeightMeasurementReady;
-			}
+			if (_deviceSet.Scales != null)
+				_deviceSet.Scales.MeasurementReady += OnWeightMeasurementReady;
 
-			if (circuit != null)
-				_circuit = circuit;
+			_settings = settings;
 
-			_applicationSettings = applicationSettings;
+			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.IoSettings.OutputPath);
 
-			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, applicationSettings.OutputPath);
-
-			_dashStatusUpdater = new DashStatusUpdater(_logger, _circuit, this) { DashStatus = DashboardStatus.Ready };
-			CreateAutoStartTimer(applicationSettings.TimeToStartMeasurementMs);
+			_dashStatusUpdater = new DashStatusUpdater(_logger, _deviceSet.IoCircuit, this) { DashStatus = DashboardStatus.Ready };
+			CreateAutoStartTimer(settings.AlgorithmSettings.TimeToStartMeasurementMs);
 
 			CalculateVolumeBoxCommand = new CommandHandler(CalculateObjectVolumeBoxShape, !CalculationInProgress);
 			CalculateVolumeFreeCommand = new CommandHandler(CalculateObjectVolumeFreeShape, !CalculationInProgress);
@@ -346,14 +332,16 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			_dashStatusUpdater?.Dispose();
 
-			if (_scanners != null)
+			var scanners = _deviceSet.Scanners;
+			if (scanners != null)
 			{
-				foreach (var scanner in _scanners.Where(s => s != null))
+				foreach (var scanner in scanners.Where(s => s != null))
 					scanner.CharSequenceFormed -= OnBarcodeReady;
 			}
 
-			if (_scales != null)
-				_scales.MeasurementReady -= OnWeightMeasurementReady;
+			var scales = _deviceSet.Scales;
+			if (scales != null)
+				scales.MeasurementReady -= OnWeightMeasurementReady;
 
 			foreach (var sender in _requestSenders)
 				sender.Dispose();
@@ -361,19 +349,19 @@ namespace VolumeCalculatorGUI.GUI
 
 		public void ApplicationSettingsUpdated(ApplicationSettings settings)
 		{
-			_applicationSettings = settings;
-			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.OutputPath);
+			_settings = settings;
+			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.IoSettings.OutputPath);
 
-			CreateAutoStartTimer(settings.TimeToStartMeasurementMs);
+			CreateAutoStartTimer(settings.AlgorithmSettings.TimeToStartMeasurementMs);
 		}
 
 		private void CreateRequestSenders()
 		{
-			if (_applicationSettings.WebRequestSettings.EnableRequests)
-				_requestSenders.Add(new HttpRequestSender(_logger, _applicationSettings.WebRequestSettings));
+			if (_settings.WebRequestSettings.EnableRequests)
+				_requestSenders.Add(new HttpRequestSender(_logger, _settings.WebRequestSettings));
 
-			if (_applicationSettings.SqlRequestSettings.EnableRequests)
-				_requestSenders.Add(new SqlRequestSender(_logger, _applicationSettings.SqlRequestSettings));
+			if (_settings.SqlRequestSettings.EnableRequests)
+				_requestSenders.Add(new SqlRequestSender(_logger, _settings.SqlRequestSettings));
 
 			foreach (var sender in _requestSenders)
 			{
@@ -390,11 +378,11 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void CreateAutoStartTimer(long intervalMs)
 		{
-			if (_dashStatusUpdater.Timer != null)
-				_dashStatusUpdater.Timer.Elapsed -= OnMeasurementTimerElapsed;
+			if (_dashStatusUpdater.PendingTimer != null)
+				_dashStatusUpdater.PendingTimer.Elapsed -= OnMeasurementTimerElapsed;
 
-			_dashStatusUpdater.Timer = new Timer(intervalMs) {AutoReset = false};
-			_dashStatusUpdater.Timer.Elapsed += OnMeasurementTimerElapsed;
+			_dashStatusUpdater.PendingTimer = new Timer(intervalMs) {AutoReset = false};
+			_dashStatusUpdater.PendingTimer.Elapsed += OnMeasurementTimerElapsed;
 		}
 
 		private void OnBarcodeReady(string code)
@@ -419,18 +407,18 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void ResetWeight()
 		{
-			_scales?.ResetWeight();
+			_deviceSet?.Scales?.ResetWeight();
 		}
 
 		private void OpenResultsFile()
 		{
 			try
 			{
-				var resultsFileInfo = new FileInfo(_applicationSettings.ResultsFilePath);
+				var resultsFileInfo = new FileInfo(_settings.IoSettings.ResultsFilePath);
 				if (!resultsFileInfo.Exists)
 					return;
 
-				IoUtils.OpenFile(_applicationSettings.ResultsFilePath);
+				IoUtils.OpenFile(_settings.IoSettings.ResultsFilePath);
 			}
 			catch (Exception ex)
 			{
@@ -442,11 +430,11 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
-				var photosDirectoryInfo = new DirectoryInfo(_applicationSettings.PhotosDirectoryPath);
+				var photosDirectoryInfo = new DirectoryInfo(_settings.IoSettings.PhotosDirectoryPath);
 				if (!photosDirectoryInfo.Exists)
 					return;
 
-				IoUtils.OpenFile(_applicationSettings.PhotosDirectoryPath);
+				IoUtils.OpenFile(_settings.IoSettings.PhotosDirectoryPath);
 			}
 			catch (Exception ex)
 			{
@@ -456,7 +444,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void OnMeasurementTimerElapsed(object sender, ElapsedEventArgs e)
 		{
-			CalculateObjectVolumeInternal(_applicationSettings.UseBoxShapeAlgorithmByDefault, false);
+			CalculateObjectVolumeInternal(false, false);
 		}
 
 		private void CalculateObjectVolumeBoxShape()
@@ -492,7 +480,7 @@ namespace VolumeCalculatorGUI.GUI
 
 				_logger.LogInfo($"Starting a volume check (applyPerspective={applyPerspective}, useRgb={useRgbData})...");
 
-				_volumeCalculator = new VolumeCalculator(_logger, _frameProvider, _processor, _applicationSettings, applyPerspective, 
+				_volumeCalculator = new VolumeCalculator(_logger, _deviceSet?.FrameProvider, _processor, _settings, applyPerspective, 
 					useRgbData);
 				_volumeCalculator.CalculationFinished += OnCalculationFinished;
 			}

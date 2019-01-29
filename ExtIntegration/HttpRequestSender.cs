@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using Primitives;
+using Primitives.Settings;
 
 namespace ExtIntegration
 {

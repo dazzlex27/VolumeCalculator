@@ -44,8 +44,7 @@ namespace VolumeCalculatorGUI.GUI.Utils
 			}
 		}
 
-		public Timer Timer { get; set; }
-	
+		public Timer PendingTimer { get; set; }
 
 		public DashStatusUpdater(ILogger logger, IIoCircuit circuit, CalculationDashboardControlVm vm)
 		{
@@ -65,11 +64,11 @@ namespace VolumeCalculatorGUI.GUI.Utils
 
 		public void CancelPendingCalculation()
 		{
-			var timerEnabled = Timer != null && Timer.Enabled;
+			var timerEnabled = PendingTimer != null && PendingTimer.Enabled;
 			if (!timerEnabled)
 				return;
 
-			Timer.Stop();
+			PendingTimer.Stop();
 			_vm.ObjectCode = "";
 			DashStatus = DashboardStatus.Ready;
 		}
@@ -79,10 +78,10 @@ namespace VolumeCalculatorGUI.GUI.Utils
 			if (_vm.CurrentWeighingStatus == MeasurementStatus.Ready && _vm.WaitingForReset)
 				DashStatus = DashboardStatus.Ready;
 
-			if (Timer == null)
+			if (PendingTimer == null)
 				return;
 
-			if (Timer.Enabled)
+			if (PendingTimer.Enabled)
 			{
 				if (DashStatus != DashboardStatus.Pending)
 					DashStatus = DashboardStatus.Pending;
@@ -90,7 +89,7 @@ namespace VolumeCalculatorGUI.GUI.Utils
 				if (_vm.CanRunAutoTimer)
 					return;
 
-				Timer.Stop();
+				PendingTimer.Stop();
 				DashStatus = DashboardStatus.Ready;
 			}
 			else
@@ -101,8 +100,7 @@ namespace VolumeCalculatorGUI.GUI.Utils
 				if (!_vm.CanRunAutoTimer || _vm.CalculationPending)
 					return;
 
-				_logger.LogInfo($"! started timer, pending={_vm.CalculationPending} canRun={_vm.CanRunAutoTimer} st={Environment.StackTrace}");
-				Timer.Start();
+				PendingTimer.Start();
 				DashStatus = DashboardStatus.Pending;
 			}
 		}
@@ -124,8 +122,6 @@ namespace VolumeCalculatorGUI.GUI.Utils
 			});
 
 			ToggleCrosshair(true);
-
-			_logger.LogInfo("! status ready");
 		}
 
 		private void SetStatusError()
@@ -140,8 +136,6 @@ namespace VolumeCalculatorGUI.GUI.Utils
 			});
 
 			ToggleCrosshair(true);
-
-			_logger.LogInfo("! status error");
 		}
 
 		private void SetStatusAutoStarting()
@@ -154,8 +148,6 @@ namespace VolumeCalculatorGUI.GUI.Utils
 			});
 
 			ToggleCrosshair(false);
-
-			_logger.LogInfo("! status pending");
 		}
 
 		private void SetStatusInProgress()
@@ -169,8 +161,6 @@ namespace VolumeCalculatorGUI.GUI.Utils
 			});
 
 			ToggleCrosshair(false);
-
-			_logger.LogInfo("! status in progress");
 		}
 
 		private void SetStatusFinished()
@@ -186,8 +176,6 @@ namespace VolumeCalculatorGUI.GUI.Utils
 			});
 
 			ToggleCrosshair(true);
-
-			_logger.LogInfo("! status finished");
 		}
 	}
 }

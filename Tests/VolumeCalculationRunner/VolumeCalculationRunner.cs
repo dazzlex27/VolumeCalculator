@@ -8,6 +8,7 @@ using FrameProcessor;
 using FrameProviders;
 using Primitives;
 using Primitives.Logging;
+using Primitives.Settings;
 
 namespace VolumeCalculationRunner
 {
@@ -87,16 +88,14 @@ namespace VolumeCalculationRunner
 			LogVerbose($@"Found {testCaseData.DepthMaps.Length} maps");
 
 			LogVerbose("Calculating volume...");
-			var settings = new ApplicationSettings(testCaseData.FloorDepth, testCaseData.MinObjHeight, 30, "", false,
-				null, false, null, 10000, false, WebRequestSettings.GetDefaultSettings(),
-				SqlRequestSettings.GetDefaultSettings());
+			var settings = ApplicationSettings.GetDefaultSettings();
 			processor.SetProcessorSettings(settings);
 
 			var results = new List<ObjectVolumeData>();
 
 			foreach (var map in testCaseData.DepthMaps)
 			{
-				var objectDimData = processor.CalculateVolumeDepth(map, settings.UseBoxShapeAlgorithmByDefault);
+				var objectDimData = processor.CalculateVolumeDepth(map, false);
 				var result = new ObjectVolumeData(objectDimData.Length, objectDimData.Width, objectDimData.Height);
 				results.Add(result);
 			}

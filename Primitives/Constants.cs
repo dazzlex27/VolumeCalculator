@@ -12,5 +12,8 @@ namespace Primitives
 		public const string CountersFileName = "counters";
 
 		public static string CsvSeparator = CultureInfo.CurrentCulture.TextInfo.ListSeparator;
+
+		public const string ResultsFileName = "results.csv";
+		public const string ResultPhotosFolder = "photos";
 	}
 }

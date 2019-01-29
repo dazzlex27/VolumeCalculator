@@ -2,11 +2,12 @@
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
+using DeviceIntegrations.IoCircuits;
 using Primitives.Logging;
 
-namespace DeviceIntegrations.IoCircuits
+namespace DeviceIntegration.IoCircuits
 {
-	public class KeUsb24RBoard : IIoCircuit
+	public class KeUsb24RCircuit : IIoCircuit
 	{
 		private readonly byte[] _headerBytes;
 		private readonly byte[] _footerBytes;
@@ -16,7 +17,7 @@ namespace DeviceIntegrations.IoCircuits
 
 		private readonly SerialPort _serialPort;
 
-		public KeUsb24RBoard(ILogger logger, string port)
+		public KeUsb24RCircuit(ILogger logger, string port)
 		{
 			logger.LogInfo($"Starting KeUsb24RBoard on port 1 {_port}...");
 			_headerBytes = Encoding.ASCII.GetBytes("$KE");

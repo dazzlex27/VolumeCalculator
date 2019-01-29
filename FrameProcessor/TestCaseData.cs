@@ -1,5 +1,6 @@
 ﻿using FrameProviders;
 using Primitives;
+using Primitives.Settings;
 
 namespace FrameProcessor
 {

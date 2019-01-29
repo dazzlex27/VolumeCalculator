@@ -88,10 +88,11 @@
     <Compile Include="GUI\Utils\PathValidationRule.cs" />
     <Compile Include="Utils\DashboardStatus.cs" />
     <Compile Include="Utils\Constants.cs" />
-    <Compile Include="Utils\DeviceInitializationUtils.cs" />
     <Compile Include="GUI\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utils\DeviceInitializer.cs" />
+    <Compile Include="Utils\DeviceSet.cs" />
     <Compile Include="Utils\GraphicsUtils.cs" />
     <Page Include="GUI\CalculationDashboardControl.xaml">
       <SubType>Designer</SubType>

@@ -6,6 +6,7 @@ using FrameProcessor;
 using FrameProviders;
 using Primitives;
 using Primitives.Logging;
+using Primitives.Settings;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
 
@@ -15,6 +16,8 @@ namespace VolumeCalculatorGUI.GUI
 	{
 		private readonly ILogger _logger;
 		private readonly DepthMapProcessor _depthMapProcessor;
+		private readonly ApplicationSettings _oldSettings;
+
 		private DepthMap _latestDepthMap;
 
 		private WriteableBitmap _colorImageBitmap;
@@ -33,7 +36,6 @@ namespace VolumeCalculatorGUI.GUI
 		private long _timeToStartMeasurementMs;
 		private bool _hasReceivedAColorImage;
 		private bool _hasReceivedDepthMap;
-		private ApplicationSettings _oldSettings;
 
 		public WriteableBitmap ColorImageBitmap
 		{
@@ -268,9 +270,16 @@ namespace VolumeCalculatorGUI.GUI
 			var colorMaskPoints = ColorMaskRectangleControlVm.GetPolygonPoints();
 			var depthMaskPoints = DepthMaskPolygonControlVm.GetPolygonPoints();
 
-			return new ApplicationSettings(FloorDepth, MinObjHeight, SampleCount, OutputPath,
-				UseColorMask, colorMaskPoints, UseDepthMask, depthMaskPoints, TimeToStartMeasurementMs,
-				UseRgbAlgorithmByDefault, _oldSettings.WebRequestSettings, _oldSettings.SqlRequestSettings);
+			var oldIoSettings = _oldSettings.IoSettings;
+			var newIoSettings = new IoSettings(oldIoSettings.ActiveCameraName, oldIoSettings.ActiveScalesName,
+				oldIoSettings.ScalesPort, oldIoSettings.ActiveScanners, oldIoSettings.ActiveIoCircuitName,
+				oldIoSettings.IoCircuitPort, OutputPath, oldIoSettings.ShutDownPcByDefault);
+
+			var newAlgorithmSettings = new AlgorithmSettings(FloorDepth, MinObjHeight, SampleCount, UseColorMask,
+				colorMaskPoints, UseDepthMask, depthMaskPoints, TimeToStartMeasurementMs);
+
+			return new ApplicationSettings(newIoSettings, newAlgorithmSettings, _oldSettings.WebRequestSettings,
+				_oldSettings.SqlRequestSettings);
 		}
 
 		public void ColorFrameUpdated(ImageData image)
@@ -337,16 +346,15 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void FillValuesFromSettings(ApplicationSettings settings)
 		{
-			FloorDepth = settings.FloorDepth;
-			MinObjHeight = settings.MinObjectHeight;
-			OutputPath = settings.OutputPath;
-			SampleCount = settings.SampleDepthMapCount;
-			UseColorMask = settings.UseColorMask;
-			ColorMaskRectangleControlVm = new MaskPolygonControlVm(settings.ColorMaskContour);
-			UseDepthMask = settings.UseDepthMask;
-			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.DepthMaskContour);
-			TimeToStartMeasurementMs = settings.TimeToStartMeasurementMs;
-			UseRgbAlgorithmByDefault = settings.UseBoxShapeAlgorithmByDefault;
+			FloorDepth = settings.AlgorithmSettings.FloorDepth;
+			MinObjHeight = settings.AlgorithmSettings.MinObjectHeight;
+			OutputPath = settings.IoSettings.OutputPath;
+			SampleCount = settings.AlgorithmSettings.SampleDepthMapCount;
+			UseColorMask = settings.AlgorithmSettings.UseColorMask;
+			ColorMaskRectangleControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.ColorMaskContour);
+			UseDepthMask = settings.AlgorithmSettings.UseDepthMask;
+			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.DepthMaskContour);
+			TimeToStartMeasurementMs = settings.AlgorithmSettings.TimeToStartMeasurementMs;
 		}
 	}
 }

@@ -3,6 +3,7 @@ using System.Windows.Input;
 using FrameProcessor;
 using FrameProviders;
 using Primitives;
+using Primitives.Settings;
 using VolumeCalculatorGUI.GUI.Utils;
 
 namespace VolumeCalculatorGUI.GUI

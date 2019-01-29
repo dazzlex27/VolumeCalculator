@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using Primitives.Settings;
 
 namespace Primitives
 {
@@ -25,33 +26,6 @@ namespace Primitives
 
 			var settingsText = File.ReadAllText(configFile);
 			return JsonConvert.DeserializeObject<ApplicationSettings>(settingsText);
-		}
-
-		public static string ReadScannerPort()
-		{
-			if (!File.Exists(Constants.PortsFileName))
-				return string.Empty;
-
-			var fileLines = File.ReadAllLines(Constants.PortsFileName);
-			return fileLines.Length == 0 ? string.Empty : fileLines[0];
-		}
-
-		public static string ReadScalesPort()
-		{
-			if (!File.Exists(Constants.PortsFileName))
-				return string.Empty;
-
-			var fileLines = File.ReadAllLines(Constants.PortsFileName);
-			return fileLines.Length < 2 ? string.Empty : fileLines[1];
-		}
-
-		public static string ReadIoBoardPort()
-		{
-			if (!File.Exists(Constants.PortsFileName))
-				return string.Empty;
-
-			var fileLines = File.ReadAllLines(Constants.PortsFileName);
-			return fileLines.Length < 3 ? string.Empty : fileLines[2];
 		}
 
 		public static int GetCurrentUniversalObjectCounter()

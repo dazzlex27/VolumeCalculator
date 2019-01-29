@@ -23,10 +23,17 @@ namespace FrameProviders
 			set
 			{
 				_colorCameraFps = value;
-				_timeBetweenColorFrames =
-					_colorCameraFps > 0 ? TimeSpan.FromMilliseconds(1000 / _colorCameraFps) : TimeSpan.Zero;
 
-				_logger.LogInfo($"FrameProvider: color camera fps was set to {_colorCameraFps}");
+				if (_colorCameraFps > 0)
+				{
+					_timeBetweenColorFrames = TimeSpan.FromMilliseconds(1000 / _colorCameraFps);
+					_logger.LogInfo($"FrameProvider: color camera fps was set to {_colorCameraFps}");
+				}
+				else
+				{
+					_timeBetweenColorFrames = TimeSpan.Zero;
+					_logger.LogInfo("FrameProvider: color camera fps was reset");
+				}
 			}
 		}
 
@@ -36,10 +43,17 @@ namespace FrameProviders
 			set
 			{
 				_depthCameraFps = value;
-				_timeBetweenDepthFrames =
-					_depthCameraFps > 0 ? TimeSpan.FromMilliseconds(1000 / _depthCameraFps) : TimeSpan.Zero;
 
-				_logger.LogInfo($"FrameProvider: depth camera fps was set to {_depthCameraFps}");
+				if (_depthCameraFps > 0)
+				{
+					_timeBetweenDepthFrames = TimeSpan.FromMilliseconds(1000 / _depthCameraFps);
+					_logger.LogInfo($"FrameProvider: depth camera fps was set to {_depthCameraFps}");
+				}
+				else
+				{
+					_timeBetweenDepthFrames = TimeSpan.Zero;
+					_logger.LogInfo("FrameProvider: depth camera fps was reset");
+				}
 			}
 		}
 

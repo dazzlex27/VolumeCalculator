@@ -14,22 +14,22 @@ namespace DeviceIntegration.Scales
 	{
 		public event Action<ScaleMeasurementData> MeasurementReady;
 
+		private const int PollingRateMs = 1000;
 		private const int ErrorTimeOutMs = 500;
+
 		private readonly byte[] _pollMessage;
 		private readonly byte[] _resetMessage;
 
 		private readonly ILogger _logger;
 		private readonly string _port;
-		private readonly int _pollingRateMs;
 		private readonly CancellationTokenSource _tokenSource;
 		private readonly GodSerialPort _serialPort;
 		private readonly bool _debugModeOn;
 		
-		public MassaKScales(ILogger logger, string port, int pollingRateMs)
+		public MassaKScales(ILogger logger, string port)
 		{
 			_logger = logger;
 			_port = port;
-			_pollingRateMs = pollingRateMs;
 			_tokenSource = new CancellationTokenSource();
 
 			_logger.LogInfo($"Starting MassaKScales on port {_port}...");
@@ -81,7 +81,7 @@ namespace DeviceIntegration.Scales
 				{
 					_serialPort.Write(_pollMessage, 0, 1);
 
-					await Task.Delay(_pollingRateMs);
+					await Task.Delay(PollingRateMs);
 				}
 				catch (Exception ex)
 				{
@@ -153,6 +153,8 @@ namespace DeviceIntegration.Scales
 
 		private double GetWeightFromMessage(IReadOnlyList<byte> messageBytes)
 		{
+			var rawWeight = messageBytes[2] + messageBytes[3] * 256 + (char)messageBytes[4] * 256 * 256;
+
 			var multipler = 1.0;
 			var lastBitActive = (messageBytes[4] & (1 << 7)) != 0;
 			if (lastBitActive)
@@ -177,8 +179,6 @@ namespace DeviceIntegration.Scales
 					_logger.LogError($"Failed to read scale multiplier data, the value was {messageBytes[1]}");
 					break;
 			}
-
-			var rawWeight = messageBytes[2] + messageBytes[3] * 256 + (char) messageBytes[4] * 256 * 256;
 
 			return rawWeight * multipler;
 		}
