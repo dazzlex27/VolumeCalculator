@@ -3,13 +3,17 @@ import traceback
 
 dir_list = (
 "D435FrameProvider",
-"DeviceIntegrations",
+"DeviceIntegration",
+"ExtIntegration",
 "FrameProviders",
+"FrameProcessor",
 "libDepthMapProcessor",
 "Primitives",
 "Tests/VolumeCalculatorTests", 
 "Tests/DepthMapProcessorTests", 
 "Tests/VolumeCalculatorTests",
+"Utils/MacReader",
+"Utils/VersionWriter",
 "VolumeCalculatorGUI")
 ext_list = ("h", "cpp", "c", "cs")
 

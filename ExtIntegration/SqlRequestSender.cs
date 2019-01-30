@@ -21,10 +21,10 @@ namespace ExtIntegration
 				DataSource = requestSettings.HostName,
 				UserID = requestSettings.Username,
 				Password = requestSettings.Password,
-				InitialCatalog = requestSettings.BaseTable
+				InitialCatalog = requestSettings.DbName
 			};
 
-			_insertionSqlRequest = $"INSERT {requestSettings.BaseTable} (WEIGHT, LENGHT, WIDTH, HEGHT, IMPORT, COMMENT, INPUTDATE) VALUES (@weight, @length, @width, @height, @import, @comment, @inputdate);";
+			_insertionSqlRequest = $"INSERT {requestSettings.TableName} (WEIGHT, LENGHT, WIDTH, HEGHT, IMPORT, COMMENT, INPUTDATE) VALUES (@weight, @length, @width, @height, @import, @comment, @inputdate);";
 
 			_connection = new SqlConnection(builder.ConnectionString);
 		}

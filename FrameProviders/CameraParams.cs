@@ -26,7 +26,7 @@
 
 		public static byte[] GetM()
 		{
-			return new byte[] {108, 108, 101, 100, 32, 98, 121, 32 };
+			return new byte[] { 32, 32, 32, 32, 32, 57, 83 };
 		}
 	}
 }

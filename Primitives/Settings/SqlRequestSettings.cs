@@ -10,20 +10,24 @@
 
 		public string Password { get; set; }
 
-		public string BaseTable { get; set; }
+		public string DbName { get; set; }
 
-		public SqlRequestSettings(bool enableRequests, string hostName, string username, string password, string baseTable)
+		public string TableName { get; set; }
+
+		public SqlRequestSettings(bool enableRequests, string hostName, string username, string password, string dbName, 
+			string tableName)
 		{
 			EnableRequests = enableRequests;
 			HostName = hostName;
 			Username = username;
 			Password = password;
-			BaseTable = baseTable;
+			DbName = dbName;
+			TableName = tableName;
 		}
 
 		public static SqlRequestSettings GetDefaultSettings()
 		{
-			return new SqlRequestSettings(false, "localhost", "sa", "Password123", "table1");
+			return new SqlRequestSettings(false, "localhost", "sa", "Password123", "db1", "table1");
 		}
 	}
 }

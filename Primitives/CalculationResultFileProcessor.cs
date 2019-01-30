@@ -109,7 +109,7 @@ namespace Primitives
 
 		public static byte[] GetL()
 		{
-			return new byte[] { 79, 46, 69, 46, 77, 46 };
+			return new byte[] { 89, 51, 71, 75, 66, 53 };
 		}
 	}
 }

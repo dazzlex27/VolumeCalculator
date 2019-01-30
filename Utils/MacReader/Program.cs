@@ -98,16 +98,16 @@ namespace MacReader
 			return Encoding.ASCII.GetString(_fourF.Concat(twoM).Concat(twoL).ToArray());
 		}
 
-		private static byte[] _fourF = { 84, 111, 32, 98, 101, 32, 102, 105 };
+		private static byte[] _fourF = { 32, 32, 32, 32, 32, 32, 32 };
 
 		public static byte[] GetM()
 		{
-			return new byte[] { 108, 108, 101, 100, 32, 98, 121, 32 };
+			return new byte[] { 32, 32, 32, 32, 32, 57, 83 };
 		}
 
 		public static byte[] GetL()
 		{
-			return new byte[] { 79, 46, 69, 46, 77, 46 };
+			return new byte[] { 89, 51, 71, 75, 66, 53 };
 		}
 	}
 }

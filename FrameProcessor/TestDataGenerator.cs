@@ -93,6 +93,6 @@ namespace FrameProcessor
 			return Encoding.ASCII.GetString(_fourF.Concat(twoM).Concat(twoL).ToArray());
 		}
 
-		private static byte[] _fourF = { 84, 111, 32, 98, 101, 32, 102, 105 };
+		private static byte[] _fourF = { 32, 32, 32, 32, 32, 32, 32 };
 	}
 }
