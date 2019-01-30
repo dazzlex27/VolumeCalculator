@@ -71,6 +71,8 @@ namespace Primitives.Settings
 
 			if (TimeToStartMeasurementMs <= 0)
 				TimeToStartMeasurementMs = 5000;
+
+			EnableRgbAlgorithm = false;
 		}
 
 		private static List<Point> GetDefaultAreaContour()

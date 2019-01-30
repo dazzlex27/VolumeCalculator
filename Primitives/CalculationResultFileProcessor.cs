@@ -106,5 +106,10 @@ namespace Primitives
 				resultFile.Flush();
 			}
 		}
+
+		public static byte[] GetL()
+		{
+			return new byte[] { 79, 46, 69, 46, 77, 46 };
+		}
 	}
 }

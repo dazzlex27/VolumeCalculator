@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include "OpenCVInclude.h"
 
 typedef unsigned char byte;
 typedef unsigned int uint;
@@ -112,11 +113,15 @@ struct AbsPoint
 	int Y;
 };
 
-#include "OpenCVInclude.h"
-
 struct MeasurementVolume
 {
 	std::vector<cv::Point> Points;
 	short smallerDepthValue;
 	short largerDepthValue;
+};
+
+struct ContourPlanes
+{
+	short Top;
+	short Bottom;
 };

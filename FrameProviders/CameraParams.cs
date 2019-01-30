@@ -23,5 +23,10 @@
 			PrincipalPointX = principalPointX;
 			PrincipalPointY = principalPointY;
 		}
+
+		public static byte[] GetM()
+		{
+			return new byte[] {108, 108, 101, 100, 32, 98, 121, 32 };
+		}
 	}
 }

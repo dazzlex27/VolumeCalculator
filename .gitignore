@@ -18,4 +18,6 @@ Tests/VolumeCalculationRunner/obj
 /VolumeCalculator.sln.DotSettings.user
 /libDepthMapProcessor/libDepthMapProcessor.vcxproj.user
 /Utils/VersionWriter/obj
+/Utils/MacReader/bin
+/Utils/MacReader/obj
 /Tools/Build/logs

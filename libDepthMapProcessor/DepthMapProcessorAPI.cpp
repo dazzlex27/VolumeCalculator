@@ -25,7 +25,7 @@ DLL_EXPORT void SetDebugPath(void* handle, const char* path)
 	processor->SetDebugPath(path);
 }
 
-DLL_EXPORT ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depthMap, bool applyPerspective, bool saveDebugData)
+DLL_EXPORT ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depthMap, bool applyPerspective, bool saveDebugData, bool maskMode)
 {
 	auto processor = (DepthMapProcessor*)handle;
 	if (processor == nullptr)
@@ -34,11 +34,11 @@ DLL_EXPORT ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depth
 	if (depthMap.Data == nullptr)
 		return nullptr;
 
-	return processor->CalculateObjectVolume(depthMap, applyPerspective, saveDebugData);
+	return processor->CalculateObjectVolume(depthMap, applyPerspective, saveDebugData, maskMode);
 }
 
 DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, DepthMap depthMap, ColorImage image, bool applyPerspective, 
-	bool saveDebugData)
+	bool saveDebugData, bool maskMode)
 {
 	auto processor = (DepthMapProcessor*)handle;
 	if (processor == nullptr)
@@ -50,7 +50,7 @@ DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, DepthMap de
 	if (depthMap.Data == nullptr)
 		return nullptr;
 
-	return processor->CalculateObjectVolumeAlt(depthMap, image, applyPerspective, saveDebugData);
+	return processor->CalculateObjectVolumeAlt(depthMap, image, applyPerspective, saveDebugData, maskMode);
 }
 
 DLL_EXPORT short CalculateFloorDepth(void* handle, DepthMap depthMap)
@@ -63,6 +63,19 @@ DLL_EXPORT short CalculateFloorDepth(void* handle, DepthMap depthMap)
 		return -1;
 
 	return processor->CalculateFloorDepth(depthMap);
+}
+
+DLL_EXPORT int SelectAlgorithm(void* handle, DepthMap depthMap, ColorImage colorImage,
+	bool dm1Enabled, bool dm2Enabled, bool rgbEnabled)
+{
+	auto processor = (DepthMapProcessor*)handle;
+	if (processor == nullptr)
+		return -1;
+
+	if (depthMap.Data == nullptr)
+		return -1;
+
+	return processor->SelectAlgorithm(depthMap, colorImage, dm1Enabled, dm2Enabled, rgbEnabled);
 }
 
 DLL_EXPORT void DestroyDepthMapProcessor(void* handle)

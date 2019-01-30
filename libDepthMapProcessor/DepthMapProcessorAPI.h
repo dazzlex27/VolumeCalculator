@@ -11,10 +11,13 @@ DLL_EXPORT void SetAlgorithmSettings(void* handle, short floorDepth, short cutOf
 
 DLL_EXPORT void SetDebugPath(void* handle, const char* path);
 
-DLL_EXPORT ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depthMap, bool applyPerspective, bool saveDebugData);
+DLL_EXPORT ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depthMap, bool applyPerspective, bool saveDebugData, bool maskMode);
 
 DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, DepthMap depthMap, ColorImage image, bool applyPerspective, 
-	bool saveDebugData);
+	bool saveDebugData, bool maskMode);
+
+DLL_EXPORT int SelectAlgorithm(void* handle, DepthMap depthMap, ColorImage colorImage,
+	bool dm1Enabled, bool dm2Enabled, bool rgbEnabled);
 
 DLL_EXPORT short CalculateFloorDepth(void* handle, DepthMap depthMap);
 

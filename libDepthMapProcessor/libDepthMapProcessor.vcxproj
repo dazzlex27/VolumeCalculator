@@ -89,13 +89,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ContourExtractor.cpp" />
-    <ClCompile Include="ProcessingUtils.cpp" />
+    <ClCompile Include="DmUtils.cpp" />
     <ClCompile Include="DepthMapProcessor.cpp" />
     <ClCompile Include="DepthMapProcessorAPI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ContourExtractor.h" />
-    <ClInclude Include="ProcessingUtils.h" />
+    <ClInclude Include="DmUtils.h" />
     <ClInclude Include="OpenCVInclude.h" />
     <ClInclude Include="Structures.h" />
     <ClInclude Include="DepthMapProcessor.h" />

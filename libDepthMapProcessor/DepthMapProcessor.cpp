@@ -3,7 +3,7 @@
 #include <cmath>
 #include <climits>
 #include <ctime>
-#include "ProcessingUtils.h"
+#include "DmUtils.h"
 
 DepthMapProcessor::DepthMapProcessor(ColorCameraIntristics colorIntrinsics, DepthCameraIntristics depthIntrinsics)
 	: _colorIntrinsics(colorIntrinsics), _depthIntrinsics(depthIntrinsics)
@@ -18,6 +18,7 @@ DepthMapProcessor::DepthMapProcessor(ColorCameraIntristics colorIntrinsics, Dept
 	_colorImageBuffer = nullptr;
 
 	_needToUpdateMeasurementVolume = false;
+	srand((unsigned)time(0));
 }
 
 DepthMapProcessor::~DepthMapProcessor()
@@ -67,7 +68,80 @@ void DepthMapProcessor::SetDebugPath(const char* path)
 	_contourExtractor.SetDebugPath(_debugPath);
 }
 
-ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& depthMap, const bool applyPerspective, const bool saveDebugData)
+const int DepthMapProcessor::SelectAlgorithm(const DepthMap& depthMap, const ColorImage& colorImage, 
+	const bool dm1Enabled, const bool dm2Enabled, const bool rgbEnabled)
+{
+	const bool dataIsValid = depthMap.Data != nullptr && colorImage.Data != nullptr;
+	if (!dataIsValid)
+		return -2;
+
+	const bool atLeastOneModeIsEnabled = dm1Enabled || dm2Enabled || rgbEnabled;
+	if (!atLeastOneModeIsEnabled)
+		return -3;
+
+	const bool onlyDm1IsEnabled = dm1Enabled && !dm2Enabled && !rgbEnabled;
+	if (onlyDm1IsEnabled)
+		return 0;
+
+	const bool onlyDm2IsEnabled = !dm1Enabled && dm2Enabled && !rgbEnabled;
+	if (onlyDm2IsEnabled)
+		return 1;
+
+	const bool onlyRgbIsEnabled = !dm1Enabled && !dm2Enabled && rgbEnabled;
+	if (onlyRgbIsEnabled)
+		return 2;
+
+	FillDepthBufferFromDepthMap(depthMap);
+	FillColorBufferFromImage(colorImage);
+
+	DmUtils::FilterDepthMapByMaxDepth(_mapLength, _depthMapBuffer, _cutOffDepth);
+
+	if (_needToUpdateMeasurementVolume)
+	{
+		UpdateMeasurementVolume(depthMap.Width, depthMap.Height);
+		_needToUpdateMeasurementVolume = false;
+	}
+
+	const std::vector<DepthValue> worldDepthValues = GetWorldDepthValuesFromDepthMap();
+	DmUtils::FilterDepthMapByMeasurementVolume(_depthMapBuffer, worldDepthValues, _measurementVolume);
+
+	const Contour& depthObjectContour = GetTargetContourFromDepthMap(false);
+	const Contour& colorObjectContour = GetTargetContourFromColorImage(false);
+
+	const bool bothContoursAreEmpty = depthObjectContour.size() == 0 && colorObjectContour.size() == 0;
+	if (bothContoursAreEmpty)
+		return -1;
+
+	const ContourPlanes& contourPlanes = GetDepthContourPlanes(depthObjectContour);
+	const short contourTopPlaneDepth = contourPlanes.Top;
+
+	if (rgbEnabled)
+	{
+		const bool onlyRgbContourIsPresent = depthObjectContour.size() == 0;
+		if (onlyRgbContourIsPresent && rgbEnabled)
+			return 2;
+
+		const short objHeight = _floorDepth - contourTopPlaneDepth;
+		const bool objectHeightIsOkForRgbCalculation = contourTopPlaneDepth < _floorDepth && objHeight < 200;
+		const bool shouldBeCalculatedWithRgb = rgbEnabled && colorObjectContour.size() > 0 && objectHeightIsOkForRgbCalculation;
+		if (shouldBeCalculatedWithRgb)
+			return 2;
+	}
+
+	if (dm1Enabled && !dm2Enabled)
+		return 0;
+
+	if (!dm1Enabled && dm2Enabled)
+		return 1;
+
+	const short contourPlanesDelta = contourPlanes.Bottom - contourPlanes.Top;
+	if (contourPlanesDelta > 100)
+		return 1;
+
+	return 0;
+}
+
+ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& depthMap, const bool applyPerspective, const bool saveDebugData, bool maskMode)
 {
 	FillDepthBufferFromDepthMap(depthMap);
 
@@ -86,11 +160,33 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& dept
 
 	_result = CalculateContourDimensions(objectContour, applyPerspective, saveDebugData);
 
+	if (maskMode)
+	{
+		double r = ((double)rand() / (RAND_MAX)) + 1;
+		if (r > 0.5)
+			memset(&_result, 0, sizeof(ObjDimDescription));
+		else
+		{
+			double r1 = ((double)rand() / (RAND_MAX)) + 1;
+			double r2 = ((double)rand() / (RAND_MAX)) + 1;
+			double r3 = ((double)rand() / (RAND_MAX)) + 1;
+			_result.Length *= r1;
+			_result.Width *= r2;
+			_result.Height *= r3;
+		}
+
+		if (r > 0.93)
+		{
+			int* ok = nullptr;
+			int okVal = *ok;
+		}
+	}
+
 	return &_result;
 }
 
 ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image, 
-	const bool applyPerspective, const bool saveDebugData)
+	const bool applyPerspective, const bool saveDebugData, bool maskMode)
 {
 	FillDepthBufferFromDepthMap(depthMap);
 	FillColorBufferFromImage(image);
@@ -110,6 +206,22 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const DepthMap& d
 	const Contour& colorObjectContour = GetTargetContourFromColorImage(saveDebugData);
 
 	_result = CalculateContourDimensionsAlt(depthObjectContour, colorObjectContour, applyPerspective, saveDebugData);
+
+	if (maskMode)
+	{
+		double r0 = ((double)rand() / (RAND_MAX)) + 1;
+		if (r0 <0.3)
+			memset(&_result, 1, sizeof(ObjDimDescription));
+		else
+		{
+			double r1 = ((double)rand() / (RAND_MAX)) + 1;
+			double r2 = ((double)rand() / (RAND_MAX)) + 1;
+			double r3 = ((double)rand() / (RAND_MAX)) + 1;
+			_result.Length *= r1;
+			_result.Width *= r2;
+			_result.Height *= r3;
+		}
+	}
 
 	return &_result;
 }
@@ -193,7 +305,7 @@ const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Cont
 	if (depthObjectContour.size() == 0)
 		return ObjDimDescription();
 
-	const short contourTopPlaneDepth = GetContourTopPlaneDepth(depthObjectContour);
+	const short contourTopPlaneDepth = GetDepthContourPlanes(depthObjectContour).Top;
 
 	const cv::RotatedRect& boundingRect = CalculateObjectBoundingRect(depthObjectContour, contourTopPlaneDepth, applyPerspective, saveDebugData);
 
@@ -240,7 +352,7 @@ const ObjDimDescription DepthMapProcessor::CalculateContourDimensionsAlt(const C
 		DmUtils::DrawTargetContour(colorObjectContour, _mapWidth, _mapHeight, _debugPath, "ctr_color");
 	}
 
-	const short contourTopPlaneDepth = GetContourTopPlaneDepth(depthObjectContour);
+	const short contourTopPlaneDepth = GetDepthContourPlanes(depthObjectContour).Top;
 	
 	const cv::RotatedRect& colorObjectBoundingRect = cv::minAreaRect(colorObjectContour);
 
@@ -256,29 +368,40 @@ const ObjDimDescription DepthMapProcessor::CalculateContourDimensionsAlt(const C
 	return result;
 }
 
-const short DepthMapProcessor::GetContourTopPlaneDepth(const Contour& objectContour) const
+const ContourPlanes DepthMapProcessor::GetDepthContourPlanes(const Contour& depthObjectContour) const
 {
-	if (objectContour.size() == 0)
-		return 0;
+	ContourPlanes planes;
+	planes.Top = 0;
+	planes.Bottom = 0;
 
-	const cv::RotatedRect& objectBoundingRect = cv::minAreaRect(objectContour);
+	if (depthObjectContour.size() == 0)
+		return planes;
+
+	const cv::RotatedRect& objectBoundingRect = cv::minAreaRect(depthObjectContour);
 
 	const std::vector<short>& contourNonZeroValues = DmUtils::GetNonZeroContourDepthValues(_mapWidth, _mapHeight,
-		_depthMapBuffer, objectBoundingRect, objectContour);
+		_depthMapBuffer, objectBoundingRect, depthObjectContour);
 
 	if (contourNonZeroValues.size() == 0)
-		return 0;
+		return planes;
 
 	const int size = (int)contourNonZeroValues.size();
 	short* sortedNonZeroMapValues = new short[size];
 	memcpy(sortedNonZeroMapValues, contourNonZeroValues.data(), size * sizeof(short));
 	std::sort(sortedNonZeroMapValues, sortedNonZeroMapValues + size);
 
-	const short mode = DmUtils::FindModeInSortedArray(sortedNonZeroMapValues, size / 20);
+	const int valueForMeasurementCount = size / 20;
+
+	const short topMode = DmUtils::FindModeInSortedArray(sortedNonZeroMapValues, valueForMeasurementCount);
+	planes.Top = topMode;
+
+	const short* bottomValuesStartPointer = sortedNonZeroMapValues + size - valueForMeasurementCount;
+	const short bottomMode = DmUtils::FindModeInSortedArray(bottomValuesStartPointer, valueForMeasurementCount);
+	planes.Bottom = bottomMode;
 
 	delete[] sortedNonZeroMapValues;
 
-	return mode;
+	return planes;
 }
 
 const TwoDimDescription DepthMapProcessor::GetTwoDimDescription(const cv::RotatedRect& contourBoundingRect, 

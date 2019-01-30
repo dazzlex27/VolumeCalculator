@@ -29,7 +29,8 @@ namespace FrameProcessor
 			}
 		}
 
-		public ObjectVolumeData CalculateVolumeDepth(DepthMap depthMap, bool applyPerspective, bool needToSaveDebugData = false)
+		public ObjectVolumeData CalculateVolumeDepth(DepthMap depthMap, bool applyPerspective, bool needToSaveDebugData = false,
+			bool maskMode = false)
 		{
 			unsafe
 			{
@@ -38,14 +39,14 @@ namespace FrameProcessor
 					var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
 
 					var res = DepthMapProcessorDll.CalculateObjectVolume(_nativeHandle.ToPointer(), nativeDepthMap, applyPerspective, 
-						needToSaveDebugData);
+						needToSaveDebugData, maskMode);
 					return res == null ? null : new ObjectVolumeData(res->Length, res->Width, res->Height);
 				}
 			}
 		}
 
 		public ObjectVolumeData CalculateObjectVolumeRgb(DepthMap depthMap, ImageData colorFrame, bool applyPerspective, 
-			bool needToSaveDebugData)
+			bool needToSaveDebugData = false, bool maskMode = false)
 		{
 			unsafe
 			{
@@ -63,7 +64,7 @@ namespace FrameProcessor
 					};
 
 					var res = DepthMapProcessorDll.CalculateObjectVolumeAlt(_nativeHandle.ToPointer(), nativeDepthMap, 
-						nativeColorImage, applyPerspective, needToSaveDebugData);
+						nativeColorImage, applyPerspective, needToSaveDebugData, maskMode);
 					return res == null ? null : new ObjectVolumeData(res->Length, res->Width, res->Height);
 				}
 			}
@@ -78,6 +79,30 @@ namespace FrameProcessor
 					var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
 
 					return DepthMapProcessorDll.CalculateFloorDepth(_nativeHandle.ToPointer(), nativeDepthMap);
+				}
+			}
+		}
+
+		public AlgorithmSelectionResult SelectAlgorithm(DepthMap depthMap, ImageData colorFrame, 
+			bool dm1Enabled, bool dm2Enabled, bool rgbEnabled)
+		{
+			unsafe
+			{
+				fixed (short* depthData = depthMap.Data)
+				fixed (byte* colorData = colorFrame.Data)
+				{
+					var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
+
+					var nativeColorImage = new ColorImage
+					{
+						Width = colorFrame.Width,
+						Height = colorFrame.Height,
+						Data = colorData,
+						BytesPerPixel = colorFrame.BytesPerPixel
+					};
+
+					return (AlgorithmSelectionResult) DepthMapProcessorDll.SelectAlgorithm(_nativeHandle.ToPointer(),
+						nativeDepthMap, nativeColorImage, dm1Enabled, dm2Enabled, rgbEnabled);
 				}
 			}
 		}

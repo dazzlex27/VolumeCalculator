@@ -4,8 +4,9 @@
 	{
 		Undefined,
 		Sucessful,
-		Aborted,
+		AbortedByUser,
 		TimedOut,
-		Error
+		Error,
+		FailedToSelectAlgorithm,
 	}
 }

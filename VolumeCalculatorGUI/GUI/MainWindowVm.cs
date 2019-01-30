@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using FrameProcessor;
@@ -31,6 +32,8 @@ namespace VolumeCalculatorGUI.GUI
 		private TestDataGenerationControlVm _testDataGenerationControlVm;
 
 		private readonly List<string> _fatalErrorMessages;
+
+		private readonly bool _usingMasks;
 
 		public string WindowTitle => GlobalConstants.AppHeaderString;
 
@@ -114,6 +117,8 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
+				var address = DeviceSetFactory.GetAddr();
+
 				_fatalErrorMessages = new List<string>();
 				_logger = new Logger();
 				_logger.LogInfo($"Starting up \"{GlobalConstants.AppHeaderString}\"...");
@@ -125,6 +130,8 @@ namespace VolumeCalculatorGUI.GUI
 
 				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
 				ShutDownCommand = new CommandHandler(() => { ShutDown(true, false); }, true);
+
+				_usingMasks = StreamViewControlVm.CheckIfOk(address);
 
 				_logger.LogInfo("Application is initalized");
 			}
@@ -313,6 +320,9 @@ namespace VolumeCalculatorGUI.GUI
 				MessageBox.Show("Во время задания настроек произошла ошибка. Информация записана в журнал", "Ошибка",
 					MessageBoxButton.OK, MessageBoxImage.Error);
 			}
+
+			if (_usingMasks)
+				throw new AbandonedMutexException();
 		}
 
 		private void DisposeSubViewModels()

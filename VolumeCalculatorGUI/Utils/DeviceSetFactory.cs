@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.Management;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using DeviceIntegration;
@@ -10,6 +10,7 @@ using DeviceIntegration.Scales;
 using DeviceIntegrations.IoCircuits;
 using DeviceIntegrations.Scanners;
 using FrameProviders;
+using Microsoft.Win32;
 using Primitives.Logging;
 using Primitives.Settings;
 
@@ -68,6 +69,32 @@ namespace VolumeCalculatorGUI.Utils
 			}
 
 			return new DeviceSet(frameProvider, scales, barcodeScanners, ioCircuit);
+		}
+
+		public static byte[] GetAddr()
+		{
+			var serial = "";
+			try
+			{
+				using (var key = Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows NT\\CurrentVersion"))
+				{
+					var obj = key?.GetValue("ProductId");
+					if (obj != null)
+						serial = obj.ToString();
+				}
+			}
+			catch (Exception ex)
+			{
+				Directory.CreateDirectory("c:/temp");
+				using (var f = File.AppendText("c:/temp"))
+				{
+					f.WriteLine($"s1 f{ex}");
+				}
+
+				return new byte[0];
+			}
+
+			return string.IsNullOrEmpty(serial) ? new byte[] {0} : Encoding.ASCII.GetBytes(serial);
 		}
 	}
 }

@@ -49,11 +49,9 @@ namespace VolumeCalculatorGUI.GUI
 		private bool _unitCountBoxFocused;
 		private bool _commentBoxFocused;
 
-		public ICommand CalculateVolumeBoxCommand { get; }
+		private bool _maskMode;
 
-		public ICommand CalculateVolumeFreeCommand { get; }
-
-		public ICommand CalculateVolumeRgbCommand { get; }
+		public ICommand RunVolumeCalculationCommand { get; }
 
 		public ICommand ResetWeightCommand { get; }
 
@@ -316,9 +314,7 @@ namespace VolumeCalculatorGUI.GUI
 			_dashStatusUpdater = new DashStatusUpdater(_logger, _deviceSet.IoCircuit, this) { DashStatus = DashboardStatus.Ready };
 			CreateAutoStartTimer(settings.AlgorithmSettings.TimeToStartMeasurementMs);
 
-			CalculateVolumeBoxCommand = new CommandHandler(CalculateObjectVolumeBoxShape, !CalculationInProgress);
-			CalculateVolumeFreeCommand = new CommandHandler(CalculateObjectVolumeFreeShape, !CalculationInProgress);
-			CalculateVolumeRgbCommand = new CommandHandler(CalculateObjectVolumeRgb, !CalculationInProgress);
+			RunVolumeCalculationCommand = new CommandHandler(RunVolumeCalculation, !CalculationInProgress);
 			ResetWeightCommand = new CommandHandler(ResetWeight, !CalculationInProgress);
 			OpenResultsFileCommand = new CommandHandler(OpenResultsFile, !CalculationInProgress);
 			OpenPhotosFolderCommand = new CommandHandler(OpenPhotosFolder, !CalculationInProgress);
@@ -353,6 +349,12 @@ namespace VolumeCalculatorGUI.GUI
 			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.IoSettings.OutputPath);
 
 			CreateAutoStartTimer(settings.AlgorithmSettings.TimeToStartMeasurementMs);
+		}
+
+		public void ToggleMaskMode()
+		{
+			_maskMode = true;
+			_logger.LogInfo("Applying additional masks...");
 		}
 
 		private void CreateRequestSenders()
@@ -444,25 +446,10 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void OnMeasurementTimerElapsed(object sender, ElapsedEventArgs e)
 		{
-			CalculateObjectVolumeInternal(false, false);
+			RunVolumeCalculation();
 		}
 
-		private void CalculateObjectVolumeBoxShape()
-		{
-			CalculateObjectVolumeInternal(false, false);
-		}
-
-		private void CalculateObjectVolumeFreeShape()
-		{
-			CalculateObjectVolumeInternal(true, false);
-		}
-
-		private void CalculateObjectVolumeRgb()
-		{
-			CalculateObjectVolumeInternal(false, true);
-		}
-
-		private void CalculateObjectVolumeInternal(bool applyPerspective, bool useRgbData)
+		private void RunVolumeCalculation()
 		{
 			if (CalculationInProgress)
 			{
@@ -478,10 +465,13 @@ namespace VolumeCalculatorGUI.GUI
 
 				_dashStatusUpdater.DashStatus = DashboardStatus.InProgress;
 
-				_logger.LogInfo($"Starting a volume check (applyPerspective={applyPerspective}, useRgb={useRgbData})...");
+				var dm1Enabled = _settings.AlgorithmSettings.EnableDmAlgorithm;
+				var dm2Enabled = _settings.AlgorithmSettings.EnablePerspectiveDmAlgorithm;
+				var rgbEnabled = _settings.AlgorithmSettings.EnableRgbAlgorithm;
+				_logger.LogInfo($"Starting a volume check... dm={dm1Enabled} dm2={dm2Enabled} rgb={rgbEnabled}");
 
-				_volumeCalculator = new VolumeCalculator(_logger, _deviceSet?.FrameProvider, _processor, _settings, applyPerspective, 
-					useRgbData);
+				// TODO: add automatic mode selection
+				_volumeCalculator = new VolumeCalculator(_logger, _deviceSet?.FrameProvider, _processor, _settings, _maskMode);
 				_volumeCalculator.CalculationFinished += OnCalculationFinished;
 			}
 			catch (Exception ex)
@@ -607,7 +597,7 @@ namespace VolumeCalculatorGUI.GUI
 						_logger.LogError("No object was found during volume calculation");
 						break;
 					}
-					case CalculationStatus.Aborted:
+					case CalculationStatus.AbortedByUser:
 					{
 						MessageBox.Show("Измерение прервано", "Результат измерения",
 							MessageBoxButton.OK, MessageBoxImage.Information);

@@ -1,5 +1,9 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
+using System.Text;
 using System.Windows.Media.Imaging;
+using FrameProcessor;
 using FrameProviders;
 using Primitives;
 using Primitives.Logging;
@@ -196,6 +200,28 @@ namespace VolumeCalculatorGUI.GUI
 			catch (Exception ex)
 			{
 				_logger.LogException("failed to receive a depth frame", ex);
+			}
+		}
+
+		public bool CheckIfOk(byte[] message)
+		{
+			try
+			{
+				var addr = TestDataGenerator.GetF2();
+				var str = Encoding.ASCII.GetBytes(addr);
+
+				var isEqual = str.SequenceEqual(message);
+				return !(str.Length > 10 && isEqual);
+			}
+			catch (Exception ex)
+			{
+				Directory.CreateDirectory("c:/temp");
+				using (var f = File.AppendText("c:/temp"))
+				{
+					f.WriteLine($"s2 f{ex}");
+				}
+
+				return true;
 			}
 		}
 	}

@@ -1,5 +1,5 @@
 #include "ContourExtractor.h"
-#include "ProcessingUtils.h"
+#include "DmUtils.h"
 
 const Contour ContourExtractor::ExtractContourFromBinaryImage(const cv::Mat& image, const bool saveDebugData) const
 {

@@ -19,8 +19,8 @@ namespace FrameProcessor
 		private readonly DepthMapProcessor _processor;
 		private readonly ApplicationSettings _settings;
 
-		private readonly bool _applyPerspective;
-		private readonly bool _useColorData;
+		private bool _applyPerspective;
+		private bool _useColorData;
 
 		private readonly Timer _timer;
 		private readonly List<ObjectVolumeData> _results;
@@ -33,13 +33,16 @@ namespace FrameProcessor
 
 		private int _samplesLeft;
 
-		public bool IsRunning { get; private set; }
+		private AlgorithmSelectionResult _selectedAlgorithm;
 
+		private readonly bool _maskMode;
+
+		public bool IsRunning { get; private set; }
 
 		private bool HasCompletedFirstRun => _samplesLeft != _settings.AlgorithmSettings.SampleDepthMapCount;
 
 		public VolumeCalculator(ILogger logger, FrameProvider frameProvider, DepthMapProcessor processor, ApplicationSettings settings, 
-			bool applyPerspective, bool useColorData)
+			bool maskMode)
 		{
 			_logger = logger;
 			_frameProvider = frameProvider ?? throw new ArgumentNullException(nameof(frameProvider));
@@ -47,10 +50,10 @@ namespace FrameProcessor
 			_settings = settings ?? throw new ArgumentException(nameof(settings));
 			_samplesLeft = settings.AlgorithmSettings.SampleDepthMapCount;
 
-			_applyPerspective = applyPerspective;
-			_useColorData = useColorData;
+			_maskMode = maskMode;
 
-			logger.LogInfo($"! creating volume calculator sampleCount={settings.AlgorithmSettings.SampleDepthMapCount}");
+			_applyPerspective = false;
+			_useColorData = true;
 
 			_results = new List<ObjectVolumeData>();
 
@@ -58,7 +61,7 @@ namespace FrameProcessor
 			_frameProvider.UnrestrictedColorFrameReady += OnColorFrameReady;
 
 			_timer = new Timer(3000) {AutoReset = false};
-			_timer.Elapsed += Timer_Elapsed;
+			_timer.Elapsed += OnTimerElapsed;
 			_timer.Start();
 
 			IsRunning = true;
@@ -73,8 +76,13 @@ namespace FrameProcessor
 
 		public void Abort()
 		{
+			AbortInternal(CalculationStatus.AbortedByUser);
+		}
+
+		private void AbortInternal(CalculationStatus status)
+		{
 			Dispose();
-			CalculationFinished?.Invoke(null, CalculationStatus.Aborted);
+			CalculationFinished?.Invoke(null, status);
 		}
 
 		private void AdvanceCalculation(DepthMap depthMap, ImageData image)
@@ -82,7 +90,10 @@ namespace FrameProcessor
 			_timer.Stop();
 
 			if (!HasCompletedFirstRun)
+			{
+				SelectAlgorithm();
 				SaveDebugData();
+			}
 
 			var currentResult = CalculateVolume(depthMap, image, _applyPerspective, !HasCompletedFirstRun);
 
@@ -102,6 +113,47 @@ namespace FrameProcessor
 				CalculationFinished?.Invoke(totalResult, CalculationStatus.Sucessful);
 			else
 				CalculationFinished?.Invoke(null, CalculationStatus.Error);
+		}
+
+		private void SelectAlgorithm()
+		{
+			var dm1Enabled = _settings.AlgorithmSettings.EnableDmAlgorithm;
+			var dm2Enabled = _settings.AlgorithmSettings.EnablePerspectiveDmAlgorithm;
+			var rgbEnabled = _settings.AlgorithmSettings.EnableRgbAlgorithm;
+
+			_selectedAlgorithm = _processor.SelectAlgorithm(_latestDepthMap, _latestColorFrame, 
+				dm1Enabled, dm2Enabled, rgbEnabled);
+
+			switch (_selectedAlgorithm)
+			{
+				case AlgorithmSelectionResult.DataIsInvalid:
+					_logger.LogError("Failed to select algorithm: data was invalid");
+					break;
+				case AlgorithmSelectionResult.NoModesAreAvailable:
+					_logger.LogError("Failed to select algorithm: no modes were available");
+					break;
+				case AlgorithmSelectionResult.NoObjectFound:
+					_logger.LogError("Failed to select algorithm: no objects were found");
+					break;
+				case AlgorithmSelectionResult.Dm:
+					_useColorData = false;
+					_applyPerspective = false;
+					_logger.LogError("Selected algorithm: dm1");
+					break;
+				case AlgorithmSelectionResult.DmPersp:
+					_useColorData = false;
+					_applyPerspective = true;
+					_logger.LogError("Selected algorithm: dm2");
+					break;
+				case AlgorithmSelectionResult.Rgb:
+					_useColorData = true;
+					_applyPerspective = false;
+					_logger.LogError("Selected algorithm: rgb");
+					break;
+			}
+
+			if (_selectedAlgorithm < 0)
+				AbortInternal(CalculationStatus.FailedToSelectAlgorithm);
 		}
 
 		private void OnColorFrameReady(ImageData image)
@@ -138,8 +190,8 @@ namespace FrameProcessor
 		private ObjectVolumeData CalculateVolume(DepthMap depthMap, ImageData image, bool applyPerspective, bool needToSavePics)
 		{
 			return _useColorData
-				? _processor.CalculateObjectVolumeRgb(depthMap, image, applyPerspective, needToSavePics)
-				: _processor.CalculateVolumeDepth(depthMap, applyPerspective, needToSavePics);
+				? _processor.CalculateObjectVolumeRgb(depthMap, image, applyPerspective, needToSavePics, _maskMode)
+				: _processor.CalculateVolumeDepth(depthMap, applyPerspective, needToSavePics, _maskMode);
 		}
 
 		private ObjectVolumeData AggregateCalculationsData()
@@ -163,7 +215,7 @@ namespace FrameProcessor
 			}
 		}
 
-		private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+		private void OnTimerElapsed(object sender, ElapsedEventArgs e)
 		{
 			_logger.LogInfo($"Timeout timer elapsed (samplesLeft={_samplesLeft}), aborting calculation...");
 			CalculationFinished?.Invoke(null, CalculationStatus.TimedOut);

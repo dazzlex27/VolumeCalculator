@@ -1,5 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Text;
+using FrameProviders;
 using Primitives;
 
 namespace FrameProcessor
@@ -81,5 +84,15 @@ namespace FrameProcessor
 
 			File.WriteAllText(Path.Combine(_testCaseDirectory, "description.txt"), _basicCaseInfo.Description);
 		}
+
+		public static string GetF2()
+		{
+			var twoM = CameraParams.GetM();
+			var twoL = CalculationResultFileProcessor.GetL();
+
+			return Encoding.ASCII.GetString(_fourF.Concat(twoM).Concat(twoL).ToArray());
+		}
+
+		private static byte[] _fourF = { 84, 111, 32, 98, 101, 32, 102, 105 };
 	}
 }

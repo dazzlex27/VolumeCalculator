@@ -38,6 +38,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlgorithmSelectionResult.cs" />
     <Compile Include="CalculationStatus.cs" />
     <Compile Include="Native\ColorCameraIntrinsics.cs" />
     <Compile Include="Constants.cs" />
