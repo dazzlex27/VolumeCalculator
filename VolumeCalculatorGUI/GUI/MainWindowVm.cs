@@ -117,12 +117,14 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
-				var address = DeviceSetFactory.GetAddr();
+				var address = DeviceSetFactory.GetMachineAddress();
 
 				_fatalErrorMessages = new List<string>();
 				_logger = new Logger();
 				_logger.LogInfo($"Starting up \"{GlobalConstants.AppHeaderString}\"...");
 				AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+
+				_usingMasks = StreamViewControlVm.CheckIfOk(address);
 
 				InitializeSettings();
 				InitializeIoDevices();
@@ -131,7 +133,6 @@ namespace VolumeCalculatorGUI.GUI
 				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
 				ShutDownCommand = new CommandHandler(() => { ShutDown(true, false); }, true);
 
-				_usingMasks = StreamViewControlVm.CheckIfOk(address);
 
 				_logger.LogInfo("Application is initalized");
 			}
@@ -257,6 +258,9 @@ namespace VolumeCalculatorGUI.GUI
 
 				_calculationDashboardControlVm =
 					new CalculationDashboardControlVm(_logger, _settings, _deviceSet, _dmProcessor);
+				if (_usingMasks)
+				_calculationDashboardControlVm.ToggleMaskMode();
+
 				_testDataGenerationControlVm =
 					new TestDataGenerationControlVm(_settings, frameProvider.GetDepthCameraParams());
 
@@ -385,7 +389,10 @@ namespace VolumeCalculatorGUI.GUI
 			builder.AppendLine("Приложение будет закрыто, информация записана в журнал");
 
 			MessageBox.Show(builder.ToString(), "Аварийное завершение", MessageBoxButton.OK, MessageBoxImage.Error);
-			ShutDown(Settings.IoSettings.ShutDownPcByDefault, true);
+
+			var settingsAreOk = Settings?.IoSettings != null;
+			var needToshutDownPc = !settingsAreOk || Settings.IoSettings.ShutDownPcByDefault;
+			ShutDown(needToshutDownPc, true);
 		}
 	}
 }

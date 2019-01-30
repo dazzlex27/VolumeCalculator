@@ -108,7 +108,8 @@ const int DepthMapProcessor::SelectAlgorithm(const DepthMap& depthMap, const Col
 	const Contour& depthObjectContour = GetTargetContourFromDepthMap(false);
 	const Contour& colorObjectContour = GetTargetContourFromColorImage(false);
 
-	const bool bothContoursAreEmpty = depthObjectContour.size() == 0 && colorObjectContour.size() == 0;
+	const bool depthContourIsEmpty = depthObjectContour.size() == 0;
+	const bool bothContoursAreEmpty = depthContourIsEmpty && colorObjectContour.size() == 0;
 	if (bothContoursAreEmpty)
 		return -1;
 
@@ -117,16 +118,18 @@ const int DepthMapProcessor::SelectAlgorithm(const DepthMap& depthMap, const Col
 
 	if (rgbEnabled)
 	{
-		const bool onlyRgbContourIsPresent = depthObjectContour.size() == 0;
-		if (onlyRgbContourIsPresent && rgbEnabled)
+		if (depthContourIsEmpty)
 			return 2;
 
 		const short objHeight = _floorDepth - contourTopPlaneDepth;
 		const bool objectHeightIsOkForRgbCalculation = contourTopPlaneDepth < _floorDepth && objHeight < 200;
-		const bool shouldBeCalculatedWithRgb = rgbEnabled && colorObjectContour.size() > 0 && objectHeightIsOkForRgbCalculation;
+		const bool shouldBeCalculatedWithRgb = colorObjectContour.size() > 0 && objectHeightIsOkForRgbCalculation;
 		if (shouldBeCalculatedWithRgb)
 			return 2;
 	}
+	
+	if (depthContourIsEmpty && !rgbEnabled)
+		return -1;
 
 	if (dm1Enabled && !dm2Enabled)
 		return 0;

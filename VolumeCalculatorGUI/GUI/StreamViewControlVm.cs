@@ -203,7 +203,7 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public bool CheckIfOk(byte[] message)
+		public static bool CheckIfOk(byte[] message)
 		{
 			try
 			{

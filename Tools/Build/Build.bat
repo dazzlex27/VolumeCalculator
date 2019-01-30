@@ -28,7 +28,7 @@ call ..\ConfuserEx\Confuser.CLI.exe vcalc.crproj > logs\confuser.log
 if not errorlevel 0 goto failed
 
 echo Copying libs to temp output folder...
-call CopyDlls.bat > logs\copydlls.log
+call CopyFiles.bat > logs\copyFiles.log
 if not errorlevel 0 goto failed
 
 echo Archiving...

@@ -32,7 +32,8 @@ namespace VolumeCalculatorGUI.GUI
 		private short _minObjHeight;
 		private byte _sampleCount;
 		private string _outputPath;
-		private bool _useRgbAlgorithmByDefault;
+
+		private bool _enableAutoTimer;
 		private long _timeToStartMeasurementMs;
 		private bool _hasReceivedAColorImage;
 		private bool _hasReceivedDepthMap;
@@ -206,15 +207,15 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public bool UseRgbAlgorithmByDefault
+		public bool EnableAutoTimer
 		{
-			get => _useRgbAlgorithmByDefault;
+			get => _enableAutoTimer;
 			set
 			{
-				if (_useRgbAlgorithmByDefault == value)
+				if (_enableAutoTimer == value)
 					return;
 
-				_useRgbAlgorithmByDefault = value;
+				_enableAutoTimer = value;
 				OnPropertyChanged();
 			}
 		}
@@ -276,7 +277,7 @@ namespace VolumeCalculatorGUI.GUI
 				oldIoSettings.IoCircuitPort, OutputPath, oldIoSettings.ShutDownPcByDefault);
 
 			var newAlgorithmSettings = new AlgorithmSettings(FloorDepth, MinObjHeight, SampleCount, UseColorMask,
-				colorMaskPoints, UseDepthMask, depthMaskPoints, TimeToStartMeasurementMs);
+				colorMaskPoints, UseDepthMask, depthMaskPoints, EnableAutoTimer, TimeToStartMeasurementMs);
 
 			return new ApplicationSettings(newIoSettings, newAlgorithmSettings, _oldSettings.WebRequestSettings,
 				_oldSettings.SqlRequestSettings);
@@ -354,6 +355,7 @@ namespace VolumeCalculatorGUI.GUI
 			ColorMaskRectangleControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.ColorMaskContour);
 			UseDepthMask = settings.AlgorithmSettings.UseDepthMask;
 			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.DepthMaskContour);
+			EnableAutoTimer = settings.AlgorithmSettings.EnableAutoTimer;
 			TimeToStartMeasurementMs = settings.AlgorithmSettings.TimeToStartMeasurementMs;
 		}
 	}

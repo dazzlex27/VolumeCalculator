@@ -9,3 +9,4 @@ xcopy "%binariesFolder%\opencv_world310.dll" "%outputFolder%\" /s /y
 xcopy "%binariesFolder%\realsense2.dll" "%outputFolder%\" /s /y
 xcopy "%binariesFolder%\realsense2.dll" "%outputFolder%\" /s /y
 xcopy "%rootFolder%\Primitives\settings.cfg" "%outputFolder%\" /s /y
+xcopy "%rootFolder%\packages\NOTICE.txt" "%outputFolder%\" /s /y

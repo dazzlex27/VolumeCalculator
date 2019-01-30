@@ -311,8 +311,8 @@ namespace VolumeCalculatorGUI.GUI
 
 			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.IoSettings.OutputPath);
 
-			_dashStatusUpdater = new DashStatusUpdater(_logger, _deviceSet.IoCircuit, this) { DashStatus = DashboardStatus.Ready };
-			CreateAutoStartTimer(settings.AlgorithmSettings.TimeToStartMeasurementMs);
+			_dashStatusUpdater = new DashStatusUpdater(_logger, _deviceSet.IoCircuit, this) {DashStatus = DashboardStatus.Ready};
+			CreateAutoStartTimer(settings.AlgorithmSettings.EnableAutoTimer, settings.AlgorithmSettings.TimeToStartMeasurementMs);
 
 			RunVolumeCalculationCommand = new CommandHandler(RunVolumeCalculation, !CalculationInProgress);
 			ResetWeightCommand = new CommandHandler(ResetWeight, !CalculationInProgress);
@@ -348,7 +348,7 @@ namespace VolumeCalculatorGUI.GUI
 			_settings = settings;
 			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.IoSettings.OutputPath);
 
-			CreateAutoStartTimer(settings.AlgorithmSettings.TimeToStartMeasurementMs);
+			CreateAutoStartTimer(settings.AlgorithmSettings.EnableAutoTimer, settings.AlgorithmSettings.TimeToStartMeasurementMs);
 		}
 
 		public void ToggleMaskMode()
@@ -378,13 +378,20 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		private void CreateAutoStartTimer(long intervalMs)
+		private void CreateAutoStartTimer(bool timerEnabled, long intervalMs)
 		{
 			if (_dashStatusUpdater.PendingTimer != null)
 				_dashStatusUpdater.PendingTimer.Elapsed -= OnMeasurementTimerElapsed;
 
-			_dashStatusUpdater.PendingTimer = new Timer(intervalMs) {AutoReset = false};
-			_dashStatusUpdater.PendingTimer.Elapsed += OnMeasurementTimerElapsed;
+			if (timerEnabled)
+			{
+				_dashStatusUpdater.PendingTimer = new Timer(intervalMs) {AutoReset = false};
+				_dashStatusUpdater.PendingTimer.Elapsed += OnMeasurementTimerElapsed;
+			}
+			else
+			{
+				_dashStatusUpdater.PendingTimer = null;
+			}
 		}
 
 		private void OnBarcodeReady(string code)
@@ -470,7 +477,6 @@ namespace VolumeCalculatorGUI.GUI
 				var rgbEnabled = _settings.AlgorithmSettings.EnableRgbAlgorithm;
 				_logger.LogInfo($"Starting a volume check... dm={dm1Enabled} dm2={dm2Enabled} rgb={rgbEnabled}");
 
-				// TODO: add automatic mode selection
 				_volumeCalculator = new VolumeCalculator(_logger, _deviceSet?.FrameProvider, _processor, _settings, _maskMode);
 				_volumeCalculator.CalculationFinished += OnCalculationFinished;
 			}

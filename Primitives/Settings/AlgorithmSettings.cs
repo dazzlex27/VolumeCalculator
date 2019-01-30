@@ -20,6 +20,8 @@ namespace Primitives.Settings
 
 		public List<Point> DepthMaskContour { get; set; }
 
+		public bool EnableAutoTimer { get; set; }
+
 		public long TimeToStartMeasurementMs { get; set; }
 
 		public bool EnableDmAlgorithm { get; set; }
@@ -29,7 +31,8 @@ namespace Primitives.Settings
 		public bool EnableRgbAlgorithm { get; set; }
 
 		public AlgorithmSettings(short floorDepth, short minObjectHeight, byte sampleDepthMapCount, bool useColorMask, 
-			IEnumerable<Point> colorMaskContour, bool useDepthMask, IEnumerable<Point> depthMaskContour, long timeToStartMeasurementMs)
+			IEnumerable<Point> colorMaskContour, bool useDepthMask, IEnumerable<Point> depthMaskContour, bool enableAutoTimer, 
+			long timeToStartMeasurementMs)
 		{
 			FloorDepth = floorDepth;
 			MinObjectHeight = minObjectHeight;
@@ -38,6 +41,7 @@ namespace Primitives.Settings
 			ColorMaskContour = new List<Point>(colorMaskContour);
 			UseDepthMask = useDepthMask;
 			DepthMaskContour = new List<Point>(depthMaskContour);
+			EnableAutoTimer = enableAutoTimer;
 			TimeToStartMeasurementMs = timeToStartMeasurementMs;
 			EnableDmAlgorithm = true;
 			EnablePerspectiveDmAlgorithm = true;
@@ -46,7 +50,7 @@ namespace Primitives.Settings
 
 		public static AlgorithmSettings GetDefaultSettings()
 		{
-			return new AlgorithmSettings(1000, 5, 10, false, GetDefaultAreaContour(), false, GetDefaultAreaContour(), 5000);
+			return new AlgorithmSettings(1000, 5, 10, false, GetDefaultAreaContour(), false, GetDefaultAreaContour(), true, 5000);
 		}
 
 		public override string ToString()
@@ -72,7 +76,8 @@ namespace Primitives.Settings
 			if (TimeToStartMeasurementMs <= 0)
 				TimeToStartMeasurementMs = 5000;
 
-			EnableRgbAlgorithm = false;
+			if (EnableRgbAlgorithm)
+				EnableRgbAlgorithm = false;
 		}
 
 		private static List<Point> GetDefaultAreaContour()

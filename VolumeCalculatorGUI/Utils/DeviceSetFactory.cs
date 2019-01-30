@@ -71,16 +71,18 @@ namespace VolumeCalculatorGUI.Utils
 			return new DeviceSet(frameProvider, scales, barcodeScanners, ioCircuit);
 		}
 
-		public static byte[] GetAddr()
+		public static byte[] GetMachineAddress()
 		{
 			var serial = "";
 			try
 			{
-				using (var key = Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows NT\\CurrentVersion"))
+				var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
+
+				foreach (var o in searcher.Get())
 				{
-					var obj = key?.GetValue("ProductId");
-					if (obj != null)
-						serial = obj.ToString();
+					var wmiHd = (ManagementObject)o;
+
+					serial = wmiHd["SerialNumber"].ToString();
 				}
 			}
 			catch (Exception ex)
