@@ -44,7 +44,7 @@ namespace DeviceIntegration
 		{
 			switch (name)
 			{
-				case "ke24usbr":
+				case "keusb24r":
 					return new KeUsb24RCircuit(logger, port);
 				default:
 					logger.LogError($"Failed to create IO circuit by the name \"{name}\"");

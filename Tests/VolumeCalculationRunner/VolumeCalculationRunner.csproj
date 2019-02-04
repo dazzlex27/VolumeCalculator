@@ -62,7 +62,7 @@
       <Name>FrameProviders</Name>
       <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\VolumeCalculator\VolumeCalculatorGUI\VolumeCalculatorGUI.csproj">
+    <ProjectReference Include="..\..\VolumeCalculatorGUI\VolumeCalculatorGUI.csproj">
       <Project>{08b98c3a-c054-464c-9594-f4eb7f7b2333}</Project>
       <Name>VolumeCalculatorGUI</Name>
       <Private>False</Private>

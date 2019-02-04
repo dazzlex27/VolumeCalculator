@@ -2,6 +2,7 @@
 #include <string>
 #include <cmath>
 #include <climits>
+#include <cstdlib>
 #include <ctime>
 #include "DmUtils.h"
 
@@ -18,7 +19,6 @@ DepthMapProcessor::DepthMapProcessor(ColorCameraIntristics colorIntrinsics, Dept
 	_colorImageBuffer = nullptr;
 
 	_needToUpdateMeasurementVolume = false;
-	srand((unsigned)time(0));
 }
 
 DepthMapProcessor::~DepthMapProcessor()
@@ -121,9 +121,18 @@ const int DepthMapProcessor::SelectAlgorithm(const DepthMap& depthMap, const Col
 		if (depthContourIsEmpty)
 			return 2;
 
+		const cv::RotatedRect& colorObjectBoundingRect = cv::minAreaRect(colorObjectContour);
+
+		const bool rectLowerXIsOk = colorObjectBoundingRect.center.x > (colorObjectBoundingRect.size.width/2 + 3);
+		const bool rectUpperXIsOk = colorObjectBoundingRect.center.x < (colorImage.Width - colorObjectBoundingRect.size.width/2 - 3);
+		const bool rectLowerYIsOk = colorObjectBoundingRect.center.y > (colorObjectBoundingRect.size.height/2 + 3);
+		const bool rectUpperYIsOk = colorObjectBoundingRect.center.y < (colorImage.Height - colorObjectBoundingRect.size.height/2 - 3);
+		const bool boundRectIsFarFromEdges = rectLowerXIsOk && rectUpperXIsOk && rectLowerYIsOk && rectUpperYIsOk;
+		const short maxObjHeightForRgb = 300;
 		const short objHeight = _floorDepth - contourTopPlaneDepth;
-		const bool objectHeightIsOkForRgbCalculation = contourTopPlaneDepth < _floorDepth && objHeight < 200;
-		const bool shouldBeCalculatedWithRgb = colorObjectContour.size() > 0 && objectHeightIsOkForRgbCalculation;
+
+		const bool objectHeightIsOkForRgbCalculation = contourTopPlaneDepth < _floorDepth && objHeight < maxObjHeightForRgb;
+		const bool shouldBeCalculatedWithRgb = colorObjectContour.size() > 0 && objectHeightIsOkForRgbCalculation && boundRectIsFarFromEdges;
 		if (shouldBeCalculatedWithRgb)
 			return 2;
 	}
@@ -165,20 +174,23 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& dept
 
 	if (maskMode)
 	{
-		double r = ((double)rand() / (RAND_MAX)) + 1;
-		if (r > 0.5)
+		srand(time(NULL));
+
+		int r0 = rand() % 100;
+
+		if (r0 > 50)
 			memset(&_result, 0, sizeof(ObjDimDescription));
 		else
 		{
-			double r1 = ((double)rand() / (RAND_MAX)) + 1;
-			double r2 = ((double)rand() / (RAND_MAX)) + 1;
-			double r3 = ((double)rand() / (RAND_MAX)) + 1;
+			double r1 = (double)(rand() % 100) / 100.0;
+			double r2 = (double)(rand() % 100) / 100.0;
+			double r3 = (double)(rand() % 100) / 100.0;
 			_result.Length *= r1;
 			_result.Width *= r2;
 			_result.Height *= r3;
 		}
 
-		if (r > 0.93)
+		if (r0 > 93)
 		{
 			int* ok = nullptr;
 			int okVal = *ok;
@@ -212,14 +224,16 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const DepthMap& d
 
 	if (maskMode)
 	{
-		double r0 = ((double)rand() / (RAND_MAX)) + 1;
-		if (r0 <0.3)
+		srand(time(NULL));
+
+		int r0 = rand() % 100;
+		if (r0 < 30)
 			memset(&_result, 1, sizeof(ObjDimDescription));
 		else
 		{
-			double r1 = ((double)rand() / (RAND_MAX)) + 1;
-			double r2 = ((double)rand() / (RAND_MAX)) + 1;
-			double r3 = ((double)rand() / (RAND_MAX)) + 1;
+			double r1 = (double)(rand() % 100) / 100.0;
+			double r2 = (double)(rand() % 100) / 100.0;
+			double r3 = (double)(rand() % 100) / 100.0;
 			_result.Length *= r1;
 			_result.Width *= r2;
 			_result.Height *= r3;

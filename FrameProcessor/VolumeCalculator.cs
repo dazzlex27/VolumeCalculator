@@ -138,17 +138,17 @@ namespace FrameProcessor
 				case AlgorithmSelectionResult.Dm:
 					_useColorData = false;
 					_applyPerspective = false;
-					_logger.LogError("Selected algorithm: dm1");
+					_logger.LogInfo("Selected algorithm: dm1");
 					break;
 				case AlgorithmSelectionResult.DmPersp:
 					_useColorData = false;
 					_applyPerspective = true;
-					_logger.LogError("Selected algorithm: dm2");
+					_logger.LogInfo("Selected algorithm: dm2");
 					break;
 				case AlgorithmSelectionResult.Rgb:
 					_useColorData = true;
 					_applyPerspective = false;
-					_logger.LogError("Selected algorithm: rgb");
+					_logger.LogInfo("Selected algorithm: rgb");
 					break;
 			}
 

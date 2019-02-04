@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using DeviceIntegrations.Scales;
@@ -26,6 +27,8 @@ namespace DeviceIntegration.Scales
 			{
 				ReadMessage(bytes);
 			});
+
+			_serialPort.Open();
 		}
 
 		public void Dispose()
@@ -93,7 +96,7 @@ namespace DeviceIntegration.Scales
 
 			var weightArray = messageBytes.Skip(4).Take(6).ToArray();
 			var weightString = Encoding.ASCII.GetString(weightArray);
-			var rawWeight = double.Parse(weightString);
+			var rawWeight = double.Parse(weightString, CultureInfo.InvariantCulture);
 
 			var unitsArray = messageBytes.Skip(10).Take(2).ToArray();
 			var unitsString = Encoding.ASCII.GetString(unitsArray);

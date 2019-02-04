@@ -102,12 +102,12 @@ namespace MacReader
 
 		public static byte[] GetM()
 		{
-			return new byte[] { 32, 32, 32, 32, 32, 57, 83 };
+			return new byte[] { 32, 32, 32, 32, 32, 87, 50 };
 		}
 
 		public static byte[] GetL()
 		{
-			return new byte[] { 89, 51, 71, 75, 66, 53 };
+			return new byte[] { 65, 55, 75, 53, 80, 68 };
 		}
 	}
 }

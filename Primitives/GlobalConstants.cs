@@ -6,7 +6,7 @@
 
 		public const string AppTitle = "VolumeCalculator";
 
-		public const string Edition = "Standard";
+		public const string Edition = "Pro";
 
 		public static string AppVersion = $"v1.04 {Edition}";
 
