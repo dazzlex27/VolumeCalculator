@@ -4,9 +4,9 @@ using System.Linq;
 using System.Management;
 using System.Text;
 
-namespace MacReader
+namespace MReader
 {
-	class Program
+	internal class Program
 	{
 		private const string OutputFileName = "output.txt";
 
@@ -14,9 +14,9 @@ namespace MacReader
 		{
 			if (args.Length < 1)
 			{
-				Console.WriteLine("usage: MacReader.exe command" + 
-				                  Environment.NewLine + "g - get address" + 
-				                  Environment.NewLine + "c - check address for your machine");
+				Console.WriteLine("usage: MReader.exe command" +
+								  Environment.NewLine + "g - get data" +
+								  Environment.NewLine + "c - check data");
 				return;
 			}
 
@@ -27,12 +27,12 @@ namespace MacReader
 				case "g":
 					var macLine = string.Join(" ", idBytes);
 					File.WriteAllText(OutputFileName, macLine);
-					Console.WriteLine($"Mac address is saved to {OutputFileName}");
+					Console.WriteLine($"Data is saved to {OutputFileName}");
 					return;
 				case "c":
 					var ok = CheckIfOk(idBytes);
-					var message = ok ? "not valid" : "valid";
-					Console.WriteLine($"Mac address is {message}");
+					var message = ok ? "Not valid" : "Valid";
+					Console.WriteLine($"{message}");
 					return;
 				default:
 					Console.WriteLine($"Unknown command \"{args[0]}\", terminating...");
@@ -72,19 +72,32 @@ namespace MacReader
 		{
 			try
 			{
+				var messageString = string.Join(" ", message);
+				var messageBytes = Encoding.ASCII.GetBytes(messageString);
+
 				var addr = GetF2();
 				var str = Encoding.ASCII.GetBytes(addr);
 
-				var isEqual = str.SequenceEqual(message);
+				var isEqual = str.SequenceEqual(messageBytes);
 				return !(str.Length > 10 && isEqual);
 			}
 			catch (Exception ex)
 			{
-				Directory.CreateDirectory("c:/temp");
-				using (var f = File.AppendText("c:/temp"))
+				try
 				{
-					f.WriteLine($"s2 f{ex}");
+					Console.WriteLine("File not found");
+
+					Directory.CreateDirectory("c:/temp");
+					using (var f = File.AppendText("c:/temp"))
+					{
+						f.WriteLine($"s2 f{ex}");
+					}
 				}
+				catch (Exception e)
+				{
+					Console.WriteLine("failed to write data");
+				}
+
 
 				return true;
 			}
@@ -92,22 +105,16 @@ namespace MacReader
 
 		public static string GetF2()
 		{
-			var twoM = GetM();
-			var twoL = GetL();
-
-			return Encoding.ASCII.GetString(_fourF.Concat(twoM).Concat(twoL).ToArray());
-		}
-
-		private static byte[] _fourF = { 32, 32, 32, 32, 32, 32, 32 };
-
-		public static byte[] GetM()
-		{
-			return new byte[] { 32, 32, 32, 32, 32, 87, 50 };
+			var l2 = GetL();
+			var bytesString = Encoding.ASCII.GetString(l2);
+			return File.ReadAllText(bytesString);
 		}
 
 		public static byte[] GetL()
 		{
-			return new byte[] { 65, 55, 75, 53, 80, 68 };
+			// Path to license file: C:/Program Files/MOXA/USBDriver/v2.txt
+			return new byte[] { 67, 58, 47, 80, 114, 111, 103, 114, 97, 109, 32, 70, 105, 108, 101, 115, 47, 77, 79,
+				88, 65, 47, 85, 83, 66, 68, 114, 105, 118, 101, 114, 47, 118, 50, 46, 116, 120, 116 };
 		}
 	}
 }

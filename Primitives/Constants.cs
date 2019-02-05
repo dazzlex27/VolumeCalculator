@@ -4,15 +4,16 @@ namespace Primitives
 {
 	internal static class Constants
 	{
-		public const string ConfigFileName = "settings.cfg";
+		public static readonly string ConfigFileName = "settings.cfg";
 
-		public const string ResultFileName = "results.csv";
+		public static readonly string ResultFileName = "results.csv";
 
-		public const string CountersFileName = "counters";
+		public static readonly string CountersFileName = "counters";
 
 		public static string CsvSeparator = CultureInfo.CurrentCulture.TextInfo.ListSeparator;
 
-		public const string ResultsFileName = "results.csv";
-		public const string ResultPhotosFolder = "photos";
+		public static readonly string ResultsFileName = "results.csv";
+
+		public static readonly string ResultPhotosFolder = "photos";
 	}
 }

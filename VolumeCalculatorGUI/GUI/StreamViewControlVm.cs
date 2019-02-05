@@ -93,7 +93,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		public bool UseColorMask
 		{
-			get => _useColorMask;
+			get => _useColorMask && GlobalConstants.ProEdition;
 			set
 			{
 				if (_useColorMask == value)
@@ -215,10 +215,17 @@ namespace VolumeCalculatorGUI.GUI
 			}
 			catch (Exception ex)
 			{
-				Directory.CreateDirectory("c:/temp");
-				using (var f = File.AppendText("c:/temp"))
+				try
 				{
-					f.WriteLine($"s2 f{ex}");
+					Directory.CreateDirectory("c:/temp");
+					using (var f = File.AppendText("c:/temp"))
+					{
+						f.WriteLine($"s2 f{ex}");
+					}
+				}
+				catch (Exception)
+				{
+					return true;
 				}
 
 				return true;

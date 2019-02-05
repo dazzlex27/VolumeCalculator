@@ -11,6 +11,13 @@ if not exist logs mkdir logs
 echo Removing output folders...
 if exist %binariesFolder% @rd %binariesFolder% /s /q
 
+::if not "%~1"=="pro" goto main
+::echo Switching to pro...
+::call "%binariesFolder%\ProBuilder.exe"
+::if not errorlevel 0 goto failed
+:::main
+
+
 echo Building solution...
 call "%devenvPath%\devenv.exe" %rootFolder%\VolumeCalculator.sln /Build "Release|x64" /Out "logs\vcbuild.log"
 if not errorlevel 0 goto failed

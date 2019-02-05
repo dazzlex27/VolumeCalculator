@@ -44,7 +44,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utils", "Utils", "{6662A328
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VersionWriter", "Utils\VersionWriter\VersionWriter.csproj", "{AE0BF620-EE8F-41C6-B981-7D342FD2EC3B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MacReader", "Utils\MacReader\MacReader.csproj", "{846AD7C7-DBAC-4185-8DEB-FCD51E0F10BB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MReader", "Utils\MReader\MReader.csproj", "{846AD7C7-DBAC-4185-8DEB-FCD51E0F10BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProBuilder", "Utils\ProBuilder\ProBuilder.csproj", "{CCC5644C-967B-455E-BB05-3F6035E5BB73}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -104,6 +106,10 @@ Global
 		{846AD7C7-DBAC-4185-8DEB-FCD51E0F10BB}.Debug|x64.Build.0 = Debug|x64
 		{846AD7C7-DBAC-4185-8DEB-FCD51E0F10BB}.Release|x64.ActiveCfg = Release|x64
 		{846AD7C7-DBAC-4185-8DEB-FCD51E0F10BB}.Release|x64.Build.0 = Release|x64
+		{CCC5644C-967B-455E-BB05-3F6035E5BB73}.Debug|x64.ActiveCfg = Debug|x64
+		{CCC5644C-967B-455E-BB05-3F6035E5BB73}.Debug|x64.Build.0 = Debug|x64
+		{CCC5644C-967B-455E-BB05-3F6035E5BB73}.Release|x64.ActiveCfg = Release|x64
+		{CCC5644C-967B-455E-BB05-3F6035E5BB73}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -114,6 +120,7 @@ Global
 		{6F312ABD-BCA5-4F2D-A5CE-BACCE2A47EDE} = {6AF5FFB4-9230-437F-B802-E0122EB628D3}
 		{AE0BF620-EE8F-41C6-B981-7D342FD2EC3B} = {6662A328-9321-4460-B32A-D8D20A42541C}
 		{846AD7C7-DBAC-4185-8DEB-FCD51E0F10BB} = {6662A328-9321-4460-B32A-D8D20A42541C}
+		{CCC5644C-967B-455E-BB05-3F6035E5BB73} = {6662A328-9321-4460-B32A-D8D20A42541C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2C1AE4EA-452B-4AFD-A6A6-98D4514E4441}

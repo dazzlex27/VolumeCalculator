@@ -24,7 +24,7 @@ namespace ExtIntegration
 				InitialCatalog = requestSettings.DbName
 			};
 
-			_insertionSqlRequest = $"INSERT {requestSettings.TableName} (WEIGHT, LENGHT, WIDTH, HEGHT, IMPORT, COMMENT, INPUTDATE) VALUES (@weight, @length, @width, @height, @import, @comment, @inputdate);";
+			_insertionSqlRequest = $"INSERT {requestSettings.TableName} (WEIGHT, LENGHT, WIDTH, HEGHT, BARCODE) VALUES (@weight, @length, @width, @height, @barcode);";
 
 			_connection = new SqlConnection(builder.ConnectionString);
 		}
@@ -53,9 +53,7 @@ namespace ExtIntegration
 					command.Parameters.AddWithValue("@length", result.ObjectLengthMm);
 					command.Parameters.AddWithValue("@width", result.ObjectWidthMm);
 					command.Parameters.AddWithValue("@height", result.ObjectHeightMm);
-					command.Parameters.AddWithValue("@import", DateTime.Now);
-					command.Parameters.AddWithValue("@comment", result.CalculationComment);
-					command.Parameters.AddWithValue("@inputdate", result.CalculationTime);
+					command.Parameters.AddWithValue("@barcode", result.ObjectCode);
 					var affectedRowsCount = command.ExecuteNonQuery();
 					_logger.LogInfo($"Sent SQL request to {_connection.ConnectionString}, {affectedRowsCount} rows affected");
 				}

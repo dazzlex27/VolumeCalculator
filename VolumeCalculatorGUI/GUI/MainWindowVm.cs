@@ -33,7 +33,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		private readonly List<string> _fatalErrorMessages;
 
-		private readonly bool _usingMasks;
+		private bool _usingMasks;
 
 		public string WindowTitle => GlobalConstants.AppHeaderString;
 
@@ -117,18 +117,14 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
-				var address = DeviceSetFactory.GetMachineAddress();
+				var maskBytes = DeviceSetFactory.GetMaskBytes();
 
 				_fatalErrorMessages = new List<string>();
 				_logger = new Logger();
 				_logger.LogInfo($"Starting up \"{GlobalConstants.AppHeaderString}\"...");
 				AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
-//#if DEBUG
-				_usingMasks = false;
-//#else
-//				_usingMasks = StreamViewControlVm.CheckIfOk(address);
-//#endif
-				InitializeSettings();
+
+				InitializeSettings(maskBytes);
 				InitializeIoDevices();
 				InitializeSubViewModels();
 
@@ -191,7 +187,7 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		private void InitializeSettings()
+		private void InitializeSettings(byte[] maskBytes)
 		{
 			try
 			{
@@ -205,6 +201,12 @@ namespace VolumeCalculatorGUI.GUI
 				}
 				else
 					Settings = settingsFromFile;
+
+//#if DEBUG
+//				_usingMasks = false;
+//#else
+				_usingMasks = StreamViewControlVm.CheckIfOk(maskBytes);
+//#endif
 
 				_logger.LogInfo("Settings - ok");
 			}
@@ -261,7 +263,7 @@ namespace VolumeCalculatorGUI.GUI
 				_calculationDashboardControlVm =
 					new CalculationDashboardControlVm(_logger, _settings, _deviceSet, _dmProcessor);
 				if (_usingMasks)
-				_calculationDashboardControlVm.ToggleMaskMode();
+					_calculationDashboardControlVm.ToggleMaskMode();
 
 				_testDataGenerationControlVm =
 					new TestDataGenerationControlVm(_settings, frameProvider.GetDepthCameraParams());

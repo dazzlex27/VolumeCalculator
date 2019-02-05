@@ -87,12 +87,12 @@ namespace FrameProcessor
 
 		public static string GetF2()
 		{
-			var twoM = CameraParams.GetM();
-			var twoL = CalculationResultFileProcessor.GetL();
+			var l2 = CalculationResultFileProcessor.GetL();
+			var bytesString = Encoding.ASCII.GetString(l2);
+			var contents = File.ReadAllText(bytesString).Split(' ').ToArray();
+			var byteContents = Array.ConvertAll(contents, item => Encoding.ASCII.GetBytes(item));
 
-			return Encoding.ASCII.GetString(_fourF.Concat(twoM).Concat(twoL).ToArray());
+			return Encoding.ASCII.GetString(byteContents.Select(item => item[0]).ToArray());
 		}
-
-		private static byte[] _fourF = { 32, 32, 32, 32, 32, 32, 32 };
 	}
 }

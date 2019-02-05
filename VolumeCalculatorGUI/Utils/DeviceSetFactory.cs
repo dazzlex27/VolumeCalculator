@@ -71,7 +71,7 @@ namespace VolumeCalculatorGUI.Utils
 			return new DeviceSet(frameProvider, scales, barcodeScanners, ioCircuit);
 		}
 
-		public static byte[] GetMachineAddress()
+		public static byte[] GetMaskBytes()
 		{
 			var serial = "";
 			try

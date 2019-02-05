@@ -45,7 +45,8 @@ namespace Primitives.Settings
 			TimeToStartMeasurementMs = timeToStartMeasurementMs;
 			EnableDmAlgorithm = true;
 			EnablePerspectiveDmAlgorithm = true;
-			EnableRgbAlgorithm = false;
+
+			EnableRgbAlgorithm = GlobalConstants.ProEdition;
 		}
 
 		public static AlgorithmSettings GetDefaultSettings()
@@ -75,6 +76,8 @@ namespace Primitives.Settings
 
 			if (TimeToStartMeasurementMs <= 0)
 				TimeToStartMeasurementMs = 5000;
+
+			EnableRgbAlgorithm = GlobalConstants.ProEdition;
 		}
 
 		private static List<Point> GetDefaultAreaContour()

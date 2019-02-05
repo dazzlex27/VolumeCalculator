@@ -6,10 +6,12 @@
 
 		public const string AppTitle = "VolumeCalculator";
 
-		public const string Edition = "Pro";
+		public static readonly bool ProEdition = false;
 
-		public static string AppVersion = $"v1.05 {Edition}";
+		public static readonly string Edition = ProEdition ? "Pro" : "Standard";
 
-		public static string AppHeaderString = $@"{ManufacturerName} {AppTitle} {AppVersion}";
+		public static readonly string AppVersion = $"v1.05 {Edition}";
+
+		public static readonly string AppHeaderString = $@"{ManufacturerName} {AppTitle} {AppVersion}";
 	}
 }
