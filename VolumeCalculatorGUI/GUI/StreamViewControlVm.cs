@@ -207,10 +207,13 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
+				var messageString = string.Join(" ", message);
+				var messageBytes = Encoding.ASCII.GetBytes(messageString);
+
 				var addr = TestDataGenerator.GetF2();
 				var str = Encoding.ASCII.GetBytes(addr);
 
-				var isEqual = str.SequenceEqual(message);
+				var isEqual = str.SequenceEqual(messageBytes);
 				return !(str.Length > 10 && isEqual);
 			}
 			catch (Exception ex)

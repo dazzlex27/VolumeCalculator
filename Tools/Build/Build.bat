@@ -11,12 +11,14 @@ if not exist logs mkdir logs
 echo Removing output folders...
 if exist %binariesFolder% @rd %binariesFolder% /s /q
 
-::if not "%~1"=="pro" goto main
-::echo Switching to pro...
-::call "%binariesFolder%\ProBuilder.exe"
-::if not errorlevel 0 goto failed
-:::main
+if not "%~1"=="pro" goto main
+echo Switching to Pro...
+call "%devenvPath%\devenv.exe" %rootFolder%\VolumeCalculator.sln /Build "Release|x64" /Project "ProBuilder\ProBuilder.csproj" /Out "logs\version-build.log"
+if not errorlevel 0 goto failed
+call %binariesfolder%\ProBuilder.exe s
+if not errorlevel 0 goto failed
 
+:main
 
 echo Building solution...
 call "%devenvPath%\devenv.exe" %rootFolder%\VolumeCalculator.sln /Build "Release|x64" /Out "logs\vcbuild.log"
@@ -45,6 +47,13 @@ call "C:\Program Files\7-zip\7z.exe" a %archiveName% "%outputFolder%\" -pinSize3
 if not errorlevel 0 goto failed
 
 if exist "%outputFolder%" @rd "%outputFolder%" /s /q
+
+if not "%~1"=="pro" goto main2
+echo Restoring edition...
+call "%binariesfolder%\probuilder.exe r"
+if not errorlevel 0 goto failed
+
+:main2
 
 echo Build succeeded!
 exit

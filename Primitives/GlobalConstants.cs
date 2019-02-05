@@ -10,7 +10,7 @@
 
 		public static readonly string Edition = ProEdition ? "Pro" : "Standard";
 
-		public static readonly string AppVersion = $"v1.05 {Edition}";
+		public static readonly string AppVersion = $"v1.06 {Edition}";
 
 		public static readonly string AppHeaderString = $@"{ManufacturerName} {AppTitle} {AppVersion}";
 	}

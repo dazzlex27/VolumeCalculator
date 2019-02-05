@@ -93,7 +93,7 @@ namespace MReader
 						f.WriteLine($"s2 f{ex}");
 					}
 				}
-				catch (Exception e)
+				catch (Exception)
 				{
 					Console.WriteLine("failed to write data");
 				}

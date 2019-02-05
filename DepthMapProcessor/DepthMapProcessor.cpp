@@ -106,10 +106,12 @@ const int DepthMapProcessor::SelectAlgorithm(const DepthMap& depthMap, const Col
 	DmUtils::FilterDepthMapByMeasurementVolume(_depthMapBuffer, worldDepthValues, _measurementVolume);
 
 	const Contour& depthObjectContour = GetTargetContourFromDepthMap(false);
-	const Contour& colorObjectContour = GetTargetContourFromColorImage(false);
+	const Contour& colorObjectContour = rgbEnabled ? GetTargetContourFromColorImage(false) : Contour();
 
 	const bool depthContourIsEmpty = depthObjectContour.size() == 0;
-	const bool bothContoursAreEmpty = depthContourIsEmpty && colorObjectContour.size() == 0;
+	const int depthContourArea = depthContourIsEmpty ? 0 : cv::contourArea(depthObjectContour);
+	const bool noDepthObject = depthContourArea < 4;
+	const bool bothContoursAreEmpty = noDepthObject && colorObjectContour.size() == 0;
 	if (bothContoursAreEmpty)
 		return -1;
 

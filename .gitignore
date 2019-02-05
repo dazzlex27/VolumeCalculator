@@ -19,5 +19,6 @@
 /Utils/VersionWriter/obj
 /Utils/MReader/obj
 /Utils/ProBuilder/obj
+/Utils/PortSetter/obj
 /Tools/Build/logs
 /VolumeCalculator.sln.DotSettings.user

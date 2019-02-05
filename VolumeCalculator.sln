@@ -48,6 +48,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MReader", "Utils\MReader\MR
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProBuilder", "Utils\ProBuilder\ProBuilder.csproj", "{CCC5644C-967B-455E-BB05-3F6035E5BB73}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortSetter", "Utils\PortSetter\PortSetter.csproj", "{531B0C63-A397-4BC0-9BA3-6F35B440FDE4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -110,6 +112,10 @@ Global
 		{CCC5644C-967B-455E-BB05-3F6035E5BB73}.Debug|x64.Build.0 = Debug|x64
 		{CCC5644C-967B-455E-BB05-3F6035E5BB73}.Release|x64.ActiveCfg = Release|x64
 		{CCC5644C-967B-455E-BB05-3F6035E5BB73}.Release|x64.Build.0 = Release|x64
+		{531B0C63-A397-4BC0-9BA3-6F35B440FDE4}.Debug|x64.ActiveCfg = Debug|x64
+		{531B0C63-A397-4BC0-9BA3-6F35B440FDE4}.Debug|x64.Build.0 = Debug|x64
+		{531B0C63-A397-4BC0-9BA3-6F35B440FDE4}.Release|x64.ActiveCfg = Release|x64
+		{531B0C63-A397-4BC0-9BA3-6F35B440FDE4}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -121,6 +127,7 @@ Global
 		{AE0BF620-EE8F-41C6-B981-7D342FD2EC3B} = {6662A328-9321-4460-B32A-D8D20A42541C}
 		{846AD7C7-DBAC-4185-8DEB-FCD51E0F10BB} = {6662A328-9321-4460-B32A-D8D20A42541C}
 		{CCC5644C-967B-455E-BB05-3F6035E5BB73} = {6662A328-9321-4460-B32A-D8D20A42541C}
+		{531B0C63-A397-4BC0-9BA3-6F35B440FDE4} = {6662A328-9321-4460-B32A-D8D20A42541C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2C1AE4EA-452B-4AFD-A6A6-98D4514E4441}

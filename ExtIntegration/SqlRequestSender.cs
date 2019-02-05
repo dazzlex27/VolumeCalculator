@@ -24,7 +24,7 @@ namespace ExtIntegration
 				InitialCatalog = requestSettings.DbName
 			};
 
-			_insertionSqlRequest = $"INSERT {requestSettings.TableName} (WEIGHT, LENGHT, WIDTH, HEGHT, BARCODE) VALUES (@weight, @length, @width, @height, @barcode);";
+			_insertionSqlRequest = $"INSERT {requestSettings.TableName} (WEIGHT, LENGHT, WIDTH, HEIGHT, BARCODE) VALUES (@weight, @length, @width, @height, @barcode);";
 
 			_connection = new SqlConnection(builder.ConnectionString);
 		}

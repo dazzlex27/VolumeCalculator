@@ -202,11 +202,7 @@ namespace VolumeCalculatorGUI.GUI
 				else
 					Settings = settingsFromFile;
 
-//#if DEBUG
-//				_usingMasks = false;
-//#else
 				_usingMasks = StreamViewControlVm.CheckIfOk(maskBytes);
-//#endif
 
 				_logger.LogInfo("Settings - ok");
 			}
@@ -276,7 +272,7 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				_logger.LogException("FATAL: Failed to initialize GUI!", ex);
 
-				var message = "Не удалось инициализировать компоненты визуализации";
+				var message = "Не удалось инициализировать основные программные компоненты системы";
 				_fatalErrorMessages.Add(message);
 				throw;
 			}

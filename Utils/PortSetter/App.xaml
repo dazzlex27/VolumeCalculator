@@ -1,0 +1,14 @@
+﻿<Application x:Class="PortSetter.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml">
+	<Application.Resources>
+		<ResourceDictionary>
+			<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+			<!--<utils:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+			<utils:ConjunctionToVisibilityMultiConverter x:Key="ConjunctionToVisibilityMultiConverter"/>
+			<utils:HalfMeasureConverter x:Key="HalfMeasureConverter"/>-->
+			<SolidColorBrush x:Key="BackgroundKey" Color="#FFFFFF" />
+		</ResourceDictionary>
+	</Application.Resources>
+</Application>

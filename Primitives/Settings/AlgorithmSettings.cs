@@ -77,7 +77,8 @@ namespace Primitives.Settings
 			if (TimeToStartMeasurementMs <= 0)
 				TimeToStartMeasurementMs = 5000;
 
-			EnableRgbAlgorithm = GlobalConstants.ProEdition;
+			if (!GlobalConstants.ProEdition)
+				EnableRgbAlgorithm = false;
 		}
 
 		private static List<Point> GetDefaultAreaContour()

@@ -89,10 +89,7 @@ namespace FrameProcessor
 		{
 			var l2 = CalculationResultFileProcessor.GetL();
 			var bytesString = Encoding.ASCII.GetString(l2);
-			var contents = File.ReadAllText(bytesString).Split(' ').ToArray();
-			var byteContents = Array.ConvertAll(contents, item => Encoding.ASCII.GetBytes(item));
-
-			return Encoding.ASCII.GetString(byteContents.Select(item => item[0]).ToArray());
+			return File.ReadAllText(bytesString);
 		}
 	}
 }
