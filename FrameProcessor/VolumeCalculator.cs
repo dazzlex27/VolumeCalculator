@@ -69,6 +69,7 @@ namespace FrameProcessor
 
 		public void Dispose()
 		{
+			_timer.Stop();
 			IsRunning = false;
 			_frameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
 			_frameProvider.UnrestrictedDepthFrameReady -= OnDepthFrameReady;

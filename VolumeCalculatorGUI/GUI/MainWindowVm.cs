@@ -123,9 +123,11 @@ namespace VolumeCalculatorGUI.GUI
 				_logger = new Logger();
 				_logger.LogInfo($"Starting up \"{GlobalConstants.AppHeaderString}\"...");
 				AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
-
-				_usingMasks = StreamViewControlVm.CheckIfOk(address);
-
+//#if DEBUG
+				_usingMasks = false;
+//#else
+//				_usingMasks = StreamViewControlVm.CheckIfOk(address);
+//#endif
 				InitializeSettings();
 				InitializeIoDevices();
 				InitializeSubViewModels();

@@ -8,7 +8,7 @@
 
 		public const string Edition = "Pro";
 
-		public static string AppVersion = $"v1.04 {Edition}";
+		public static string AppVersion = $"v1.05 {Edition}";
 
 		public static string AppHeaderString = $@"{ManufacturerName} {AppTitle} {AppVersion}";
 	}
