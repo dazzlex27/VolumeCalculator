@@ -130,10 +130,9 @@ const int DepthMapProcessor::SelectAlgorithm(const DepthMap& depthMap, const Col
 		const bool rectLowerYIsOk = colorObjectBoundingRect.center.y > (colorObjectBoundingRect.size.height/2 + 3);
 		const bool rectUpperYIsOk = colorObjectBoundingRect.center.y < (colorImage.Height - colorObjectBoundingRect.size.height/2 - 3);
 		const bool boundRectIsFarFromEdges = rectLowerXIsOk && rectUpperXIsOk && rectLowerYIsOk && rectUpperYIsOk;
-		const short maxObjHeightForRgb = 300;
 		const short objHeight = _floorDepth - contourTopPlaneDepth;
 
-		const bool objectHeightIsOkForRgbCalculation = contourTopPlaneDepth < _floorDepth && objHeight < maxObjHeightForRgb;
+		const bool objectHeightIsOkForRgbCalculation = contourTopPlaneDepth < _floorDepth && objHeight < _maxObjHeightForRgb;
 		const bool shouldBeCalculatedWithRgb = colorObjectContour.size() > 0 && objectHeightIsOkForRgbCalculation && boundRectIsFarFromEdges;
 		if (shouldBeCalculatedWithRgb)
 			return 2;
@@ -149,7 +148,7 @@ const int DepthMapProcessor::SelectAlgorithm(const DepthMap& depthMap, const Col
 		return 1;
 
 	const short contourPlanesDelta = contourPlanes.Bottom - contourPlanes.Top;
-	if (contourPlanesDelta > 100)
+	if (contourPlanesDelta > _contourPlaneDepthDelta)
 		return 1;
 
 	return 0;
@@ -371,7 +370,8 @@ const ObjDimDescription DepthMapProcessor::CalculateContourDimensionsAlt(const C
 		DmUtils::DrawTargetContour(colorObjectContour, _mapWidth, _mapHeight, _debugPath, "ctr_color");
 	}
 
-	const short contourTopPlaneDepth = GetDepthContourPlanes(depthObjectContour).Top;
+	const short topPlane = GetDepthContourPlanes(depthObjectContour).Top;
+	const short contourTopPlaneDepth = topPlane > 0 ? topPlane : (_floorDepth - _minObjHeight);
 	
 	const cv::RotatedRect& colorObjectBoundingRect = cv::minAreaRect(colorObjectContour);
 
@@ -382,7 +382,7 @@ const ObjDimDescription DepthMapProcessor::CalculateContourDimensionsAlt(const C
 	ObjDimDescription result;
 	result.Length = twoDimDescription.Length;
 	result.Width = twoDimDescription.Width;
-	result.Height = contourTopPlaneDepth > 0 ? _floorDepth - contourTopPlaneDepth : 5;
+	result.Height = _floorDepth - contourTopPlaneDepth;
 
 	return result;
 }

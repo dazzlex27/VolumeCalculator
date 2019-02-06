@@ -10,6 +10,10 @@ private:
 	const ColorCameraIntristics _colorIntrinsics;
 	const DepthCameraIntristics _depthIntrinsics;
 
+	const short _minObjHeight = 3; // if no depth object is found, this value will be set for height
+	const short _maxObjHeightForRgb = 300; // 300 and shorter objects are ok for rgb calculation
+	const short _contourPlaneDepthDelta = 100; // if exceeded - use dm2, dm1 - otherwise
+
 	ContourExtractor _contourExtractor;
 
 	int _colorImageWidth;
