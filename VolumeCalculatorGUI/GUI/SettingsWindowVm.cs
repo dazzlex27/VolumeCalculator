@@ -31,6 +31,7 @@ namespace VolumeCalculatorGUI.GUI
 		private short _distanceToFloor;
 		private short _minObjHeight;
 		private byte _sampleCount;
+		private bool _requireBarcode;
 		private string _outputPath;
 
 		private bool _enableAutoTimer;
@@ -181,6 +182,19 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
+		public bool RequireBarcode
+		{
+			get => _requireBarcode;
+			set
+			{
+				if (value == _requireBarcode)
+					return;
+
+				_requireBarcode = value;
+				OnPropertyChanged();
+			}
+		}
+
 		public string OutputPath
 		{
 			get => _outputPath;
@@ -277,7 +291,7 @@ namespace VolumeCalculatorGUI.GUI
 				oldIoSettings.IoCircuitPort, OutputPath, oldIoSettings.ShutDownPcByDefault);
 
 			var newAlgorithmSettings = new AlgorithmSettings(FloorDepth, MinObjHeight, SampleCount, UseColorMask,
-				colorMaskPoints, UseDepthMask, depthMaskPoints, EnableAutoTimer, TimeToStartMeasurementMs);
+				colorMaskPoints, UseDepthMask, depthMaskPoints, EnableAutoTimer, TimeToStartMeasurementMs, RequireBarcode);
 
 			return new ApplicationSettings(newIoSettings, newAlgorithmSettings, _oldSettings.WebRequestSettings,
 				_oldSettings.SqlRequestSettings);
@@ -313,8 +327,7 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				if (_latestDepthMap == null)
 				{
-					MessageBox.Show("Нет кадров для обработки!", "Ошибка", MessageBoxButton.OK,
-						MessageBoxImage.Exclamation);
+					AutoClosingMessageBox.Show("Нет кадров для обработки!", "Ошибка");
 					_logger.LogInfo("Attempted a volume check with no maps");
 
 					return;
@@ -331,8 +344,8 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				_logger.LogException("Failed to calculate floor depth!", ex);
 
-				MessageBox.Show("Во время вычисления произошла ошибка, автоматический расчёт не был выполнен", "Ошибка",
-					MessageBoxButton.OK, MessageBoxImage.Error);
+				AutoClosingMessageBox.Show("Во время вычисления произошла ошибка, автоматический расчёт не был выполнен", 
+					"Ошибка");
 			}
 		}
 
@@ -357,6 +370,7 @@ namespace VolumeCalculatorGUI.GUI
 			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.DepthMaskContour);
 			EnableAutoTimer = settings.AlgorithmSettings.EnableAutoTimer;
 			TimeToStartMeasurementMs = settings.AlgorithmSettings.TimeToStartMeasurementMs;
+			RequireBarcode = settings.AlgorithmSettings.RequireBarcode;
 		}
 	}
 }

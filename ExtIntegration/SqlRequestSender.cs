@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Data.SqlClient;
 using Primitives;
 using Primitives.Logging;
@@ -45,6 +46,12 @@ namespace ExtIntegration
 		{
 			try
 			{
+				if (_connection.State != ConnectionState.Open)
+				{
+					_logger.LogError($"Restoring SQL connection to {_connection.ConnectionString}...");
+					_connection.Open();
+				}
+
 				_logger.LogInfo($"Sending SQL request to {_connection.ConnectionString}...");
 
 				using (var command = new SqlCommand(_insertionSqlRequest, _connection))
@@ -70,7 +77,7 @@ namespace ExtIntegration
 		public void Disconnect()
 		{
 			_logger.LogInfo($"Disconnecting from {_connection.ConnectionString}...");
-			_connection.Open();
+			_connection.Close();
 			_logger.LogInfo($"Disconnected from {_connection.ConnectionString}");
 		}
 	}

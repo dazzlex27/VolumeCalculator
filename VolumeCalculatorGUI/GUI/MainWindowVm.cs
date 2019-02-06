@@ -13,7 +13,6 @@ using Primitives.Settings;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
 using Application = System.Windows.Application;
-using MessageBox = System.Windows.MessageBox;
 
 namespace VolumeCalculatorGUI.GUI
 {
@@ -321,8 +320,7 @@ namespace VolumeCalculatorGUI.GUI
 			catch (Exception ex)
 			{
 				_logger.LogException("Exception occured during a settings change", ex);
-				MessageBox.Show("Во время задания настроек произошла ошибка. Информация записана в журнал", "Ошибка",
-					MessageBoxButton.OK, MessageBoxImage.Error);
+				AutoClosingMessageBox.Show("Во время задания настроек произошла ошибка. Информация записана в журнал", "Ошибка");
 			}
 
 			if (_usingMasks)
@@ -388,7 +386,7 @@ namespace VolumeCalculatorGUI.GUI
 			builder.AppendLine();
 			builder.AppendLine("Приложение будет закрыто, информация записана в журнал");
 
-			MessageBox.Show(builder.ToString(), "Аварийное завершение", MessageBoxButton.OK, MessageBoxImage.Error);
+			AutoClosingMessageBox.Show(builder.ToString(), "Аварийное завершение");
 
 			var settingsAreOk = Settings?.IoSettings != null;
 			var needToshutDownPc = !settingsAreOk || Settings.IoSettings.ShutDownPcByDefault;

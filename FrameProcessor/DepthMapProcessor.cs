@@ -86,6 +86,14 @@ namespace FrameProcessor
 		public AlgorithmSelectionResult SelectAlgorithm(DepthMap depthMap, ImageData colorFrame, 
 			bool dm1Enabled, bool dm2Enabled, bool rgbEnabled)
 		{
+			var dataIsInvalid = depthMap?.Data == null || colorFrame?.Data == null;
+			if (dataIsInvalid)
+				return AlgorithmSelectionResult.DataIsInvalid;
+
+			var atLeastOneModeIsAvailable = dm1Enabled || dm2Enabled || rgbEnabled;
+			if (!atLeastOneModeIsAvailable)
+				return AlgorithmSelectionResult.NoModesAreAvailable;
+
 			unsafe
 			{
 				fixed (short* depthData = depthMap.Data)

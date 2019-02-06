@@ -108,19 +108,21 @@ const int DepthMapProcessor::SelectAlgorithm(const DepthMap& depthMap, const Col
 	const Contour& depthObjectContour = GetTargetContourFromDepthMap(false);
 	const Contour& colorObjectContour = rgbEnabled ? GetTargetContourFromColorImage(false) : Contour();
 
+	const bool colorContourIsEmpty = colorObjectContour.size() == 0;
 	const bool depthContourIsEmpty = depthObjectContour.size() == 0;
+
 	const int depthContourArea = depthContourIsEmpty ? 0 : cv::contourArea(depthObjectContour);
 	const bool noDepthObject = depthContourArea < 4;
-	const bool bothContoursAreEmpty = noDepthObject && colorObjectContour.size() == 0;
+	const bool bothContoursAreEmpty = noDepthObject && colorContourIsEmpty;
 	if (bothContoursAreEmpty)
 		return -1;
 
 	const ContourPlanes& contourPlanes = GetDepthContourPlanes(depthObjectContour);
 	const short contourTopPlaneDepth = contourPlanes.Top;
 
-	if (rgbEnabled)
+	if (rgbEnabled && !colorContourIsEmpty)
 	{
-		if (depthContourIsEmpty)
+		if (noDepthObject)
 			return 2;
 
 		const cv::RotatedRect& colorObjectBoundingRect = cv::minAreaRect(colorObjectContour);
@@ -137,7 +139,7 @@ const int DepthMapProcessor::SelectAlgorithm(const DepthMap& depthMap, const Col
 		if (shouldBeCalculatedWithRgb)
 			return 2;
 	}
-	
+
 	if (depthContourIsEmpty && !rgbEnabled)
 		return -1;
 

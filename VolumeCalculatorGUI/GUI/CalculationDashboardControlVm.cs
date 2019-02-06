@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
-using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using DeviceIntegrations.Scales;
@@ -285,7 +284,19 @@ namespace VolumeCalculatorGUI.GUI
 
 		public bool CanRunAutoTimer => CodeReady && WeightReady && CanAcceptBarcodes;
 
-		public bool CodeReady => !string.IsNullOrEmpty(ObjectCode);
+		public bool CodeReady
+		{
+			get
+			{
+				if (_settings?.AlgorithmSettings == null)
+					return !string.IsNullOrEmpty(ObjectCode);
+
+				if (_settings.AlgorithmSettings.RequireBarcode)
+					return !string.IsNullOrEmpty(ObjectCode);
+					
+				return true;
+			}
+		}
 
 		public bool WeightReady => CurrentWeighingStatus == MeasurementStatus.Measured;
 
@@ -483,8 +494,7 @@ namespace VolumeCalculatorGUI.GUI
 			catch (Exception ex)
 			{
 				_logger.LogException("Failed to start volume calculation", ex);
-				MessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка",
-					MessageBoxButton.OK, MessageBoxImage.Error);
+				AutoClosingMessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка");
 
 				_dashStatusUpdater.DashStatus = DashboardStatus.Error;
 			}
@@ -492,11 +502,9 @@ namespace VolumeCalculatorGUI.GUI
 
 		private bool CheckIfPreConditionsAreSatisfied()
 		{
-			if (string.IsNullOrEmpty(ObjectCode))
+			if (!CodeReady)
 			{
-				MessageBox.Show("Введите код объекта", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-
-				_logger.LogInfo("Weird autotimer issue occured" + Environment.StackTrace);
+				AutoClosingMessageBox.Show("Введите код объекта", "Ошибка");
 
 				return false;
 			}
@@ -505,9 +513,7 @@ namespace VolumeCalculatorGUI.GUI
 			if (killedProcess)
 				return true;
 
-			MessageBox.Show(
-				"Не удалось закрыть файл с результатами, убедитесь, что файл закрыт",
-				"Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			AutoClosingMessageBox.Show("Не удалось закрыть файл с результатами, убедитесь, что файл закрыт", "Ошибка");
 			_logger.LogInfo("Failed to access the result file");
 
 			return false;
@@ -581,32 +587,28 @@ namespace VolumeCalculatorGUI.GUI
 				{
 					case CalculationStatus.Error:
 					{
-						MessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал",
-							"Результат измерения",
-							MessageBoxButton.OK, MessageBoxImage.Error);
+						_dashStatusUpdater.LastErrorMessage = "ошибка измерения";
+						_dashStatusUpdater.DashStatus = DashboardStatus.Error;
 						_logger.LogError("Volume calculation finished with errors");
 						break;
 					}
 					case CalculationStatus.TimedOut:
 					{
-						MessageBox.Show(
-							"Не удалось собрать указанное количество образцов для измерения, проверьте соединение с устройством",
-							"Ошибка", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+						_dashStatusUpdater.LastErrorMessage = "нарушена связь с устройством";
+						_dashStatusUpdater.DashStatus = DashboardStatus.Error;
 						_logger.LogError("Failed to acquire enough samples for volume calculation");
 						break;
 					}
 					case CalculationStatus.Undefined:
 					{
 						_dashStatusUpdater.DashStatus = DashboardStatus.Error;
-						MessageBox.Show("Объект не найден", "Результат измерения",
-							MessageBoxButton.OK, MessageBoxImage.Information);
 						_logger.LogError("No object was found during volume calculation");
 						break;
 					}
 					case CalculationStatus.AbortedByUser:
 					{
-						MessageBox.Show("Измерение прервано", "Результат измерения",
-							MessageBoxButton.OK, MessageBoxImage.Information);
+						_dashStatusUpdater.LastErrorMessage = "измерение прервано";
+						_dashStatusUpdater.DashStatus = DashboardStatus.Error;
 						_logger.LogError("Volume calculation was aborted");
 						break;
 					}
@@ -618,6 +620,18 @@ namespace VolumeCalculatorGUI.GUI
 						else
 							_logger.LogError("Calculation was successful, but null result was returned");
 						break;
+					}
+					case CalculationStatus.FailedToSelectAlgorithm:
+					{
+						_dashStatusUpdater.LastErrorMessage = "не удалось выбрать алгоритм";
+						_dashStatusUpdater.DashStatus = DashboardStatus.Error;
+							break;
+					}
+					case CalculationStatus.ObjectNotFound:
+					{
+						_dashStatusUpdater.LastErrorMessage = "объект не найден";
+						_dashStatusUpdater.DashStatus = DashboardStatus.Error;
+							break;
 					}
 					default:
 						throw new ArgumentOutOfRangeException(nameof(status), status,
@@ -640,9 +654,9 @@ namespace VolumeCalculatorGUI.GUI
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show(
+				AutoClosingMessageBox.Show(
 					"Не удалось записать результат измерений в файл, проверьте доступность файла и повторите измерения",
-					"Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+					"Ошибка");
 				_logger.LogException(
 					$@"Failed to write calculated values to {_calculationResultFileProcessor.FullOutputPath})",
 					ex);

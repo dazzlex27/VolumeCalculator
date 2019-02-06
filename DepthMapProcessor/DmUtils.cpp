@@ -230,6 +230,9 @@ std::string DmUtils::GetCurrentCalculationIndex()
 
 bool DmUtils::IsPointInZone(const DepthValue& worldPoint, const MeasurementVolume& volume)
 {
+	if (volume.Points.size() == 0)
+		return false;
+
 	if (worldPoint.Value > volume.largerDepthValue)
 		return false;
 

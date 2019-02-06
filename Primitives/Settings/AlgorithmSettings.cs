@@ -6,6 +6,11 @@ namespace Primitives.Settings
 {
 	public class AlgorithmSettings
 	{
+		private const int DefaultFloorDepthMm = 1000;
+		private const int DefaultTimerValueMs = 3000;
+		private const int DefaultSampleCount = 10;
+		private const int DefaultMinObjHeightMm = 10;
+
 		public short FloorDepth { get; set; }
 
 		public short MinObjectHeight { get; set; }
@@ -30,9 +35,11 @@ namespace Primitives.Settings
 
 		public bool EnableRgbAlgorithm { get; set; }
 
-		public AlgorithmSettings(short floorDepth, short minObjectHeight, byte sampleDepthMapCount, bool useColorMask, 
-			IEnumerable<Point> colorMaskContour, bool useDepthMask, IEnumerable<Point> depthMaskContour, bool enableAutoTimer, 
-			long timeToStartMeasurementMs)
+		public bool RequireBarcode { get; set; }
+
+		public AlgorithmSettings(short floorDepth, short minObjectHeight, byte sampleDepthMapCount, bool useColorMask,
+			IEnumerable<Point> colorMaskContour, bool useDepthMask, IEnumerable<Point> depthMaskContour,
+			bool enableAutoTimer, long timeToStartMeasurementMs, bool requireBarcode)
 		{
 			FloorDepth = floorDepth;
 			MinObjectHeight = minObjectHeight;
@@ -45,13 +52,14 @@ namespace Primitives.Settings
 			TimeToStartMeasurementMs = timeToStartMeasurementMs;
 			EnableDmAlgorithm = true;
 			EnablePerspectiveDmAlgorithm = true;
-
 			EnableRgbAlgorithm = GlobalConstants.ProEdition;
+			RequireBarcode = requireBarcode;
 		}
 
 		public static AlgorithmSettings GetDefaultSettings()
 		{
-			return new AlgorithmSettings(1000, 5, 10, false, GetDefaultAreaContour(), false, GetDefaultAreaContour(), true, 5000);
+			return new AlgorithmSettings(DefaultFloorDepthMm, DefaultMinObjHeightMm, DefaultSampleCount, false,
+				GetDefaultAreaContour(), false, GetDefaultAreaContour(), true, DefaultTimerValueMs, true);
 		}
 
 		public override string ToString()
@@ -59,14 +67,17 @@ namespace Primitives.Settings
 			return $"floorDepth={FloorDepth} useColorMask={UseColorMask} useDepthMask={UseDepthMask} minObjHeight={MinObjectHeight} sampleCount={SampleDepthMapCount}";
 		}
 
-		[OnDeserializing]
-		private void OnDeserialize(StreamingContext context)
+		[OnDeserialized]
+		private void OnDeserialized(StreamingContext context)
 		{
 			if (FloorDepth <= 0)
-				FloorDepth = 1000;
+				FloorDepth = DefaultFloorDepthMm;
+
+			if (MinObjectHeight <= 0)
+				MinObjectHeight = DefaultMinObjHeightMm;
 
 			if (SampleDepthMapCount <= 0)
-				SampleDepthMapCount = 10;
+				SampleDepthMapCount = DefaultSampleCount;
 
 			if (ColorMaskContour == null)
 				ColorMaskContour = GetDefaultAreaContour();
@@ -75,7 +86,7 @@ namespace Primitives.Settings
 				DepthMaskContour = GetDefaultAreaContour();
 
 			if (TimeToStartMeasurementMs <= 0)
-				TimeToStartMeasurementMs = 5000;
+				TimeToStartMeasurementMs = DefaultTimerValueMs;
 
 			if (!GlobalConstants.ProEdition)
 				EnableRgbAlgorithm = false;

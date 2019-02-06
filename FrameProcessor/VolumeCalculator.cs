@@ -153,6 +153,12 @@ namespace FrameProcessor
 					break;
 			}
 
+			if (_selectedAlgorithm == AlgorithmSelectionResult.NoObjectFound)
+			{
+				AbortInternal(CalculationStatus.ObjectNotFound);
+				return;
+			}
+
 			if (_selectedAlgorithm < 0)
 				AbortInternal(CalculationStatus.FailedToSelectAlgorithm);
 		}

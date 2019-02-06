@@ -6,6 +6,8 @@ namespace VolumeCalculatorGUI.GUI
 {
 	internal partial class CalculationDashboardControl
 	{
+		private CalculationDashboardControlVm _vm;
+
 		public CalculationDashboardControl()
 		{
 			InitializeComponent();
@@ -57,11 +59,18 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void ResetFocus()
 		{
-			var vm = (CalculationDashboardControlVm)DataContext;
-			vm.CodeBoxFocused = false;
-			vm.UnitCountBoxFocused = false;
-			vm.CommentBoxFocused = false;
+			_vm.CodeBoxFocused = false;
+			_vm.UnitCountBoxFocused = false;
+			_vm.CommentBoxFocused = false;
 			Keyboard.ClearFocus();
+		}
+
+		private void CalculationDashboardControl_OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+		{
+			if (!(DataContext is CalculationDashboardControlVm vm))
+				return;
+
+			_vm = vm;
 		}
 	}
 }

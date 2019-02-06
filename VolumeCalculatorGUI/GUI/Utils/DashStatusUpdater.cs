@@ -44,6 +44,8 @@ namespace VolumeCalculatorGUI.GUI.Utils
 			}
 		}
 
+		public string LastErrorMessage { get; set; }
+
 		public Timer PendingTimer { get; set; }
 
 		public DashStatusUpdater(ILogger logger, IIoCircuit circuit, CalculationDashboardControlVm vm)
@@ -75,6 +77,9 @@ namespace VolumeCalculatorGUI.GUI.Utils
 
 		private void UpdateAutoTimerStatus(object sender, ElapsedEventArgs e)
 		{
+			if (_vm.CalculationInProgress)
+				return;
+
 			if (_vm.CurrentWeighingStatus == MeasurementStatus.Ready && _vm.WaitingForReset)
 				DashStatus = DashboardStatus.Ready;
 
@@ -131,9 +136,11 @@ namespace VolumeCalculatorGUI.GUI.Utils
 				_vm.ObjectCode = "";
 				_vm.CalculationInProgress = false;
 				_vm.StatusBrush = new SolidColorBrush(Colors.Red);
-				_vm.StatusText = "Произошла ошибка";
+				_vm.StatusText = $"Произошла ошибка: {LastErrorMessage}";
 				_vm.CalculationPending = false;
 			});
+
+			LastErrorMessage = "";
 
 			ToggleCrosshair(true);
 		}

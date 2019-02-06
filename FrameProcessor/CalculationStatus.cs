@@ -8,5 +8,6 @@
 		TimedOut,
 		Error,
 		FailedToSelectAlgorithm,
+		ObjectNotFound
 	}
 }

@@ -48,7 +48,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MReader", "Utils\MReader\MR
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProBuilder", "Utils\ProBuilder\ProBuilder.csproj", "{CCC5644C-967B-455E-BB05-3F6035E5BB73}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortSetter", "Utils\PortSetter\PortSetter.csproj", "{531B0C63-A397-4BC0-9BA3-6F35B440FDE4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VCConfigurator", "Utils\VCConfigurator\VCConfigurator.csproj", "{531B0C63-A397-4BC0-9BA3-6F35B440FDE4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

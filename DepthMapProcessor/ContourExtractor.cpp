@@ -16,6 +16,10 @@ const Contour ContourExtractor::ExtractContourFromBinaryImage(const cv::Mat& ima
 
 const Contour ContourExtractor::ExtractContourFromColorImage(const cv::Mat& image, const bool saveDebugData) const
 {
+	const bool imageIsValid = image.cols > 0 && image.rows > 0 && image.data != nullptr;
+	if (!imageIsValid)
+		return Contour();
+
 	cv::Mat cannied;
 	cv::Canny(image, cannied, _cannyThreshold1, _cannyThreshold2);
 
