@@ -1,12 +1,11 @@
-﻿using System.Windows.Controls;
-
-namespace PortSetter
+﻿namespace VCConfigurator
 {
-	internal partial class MainWindow : UserControl
+	internal partial class MainWindow
 	{
 		public MainWindow()
 		{
 			InitializeComponent();
+			DataContext = new MainWindowVm();
 		}
 	}
 }

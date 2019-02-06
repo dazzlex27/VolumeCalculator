@@ -5,34 +5,39 @@ namespace ProBuilder
 {
 	internal class Program
 	{
-		private static void Main(string[] args)
+		private static int Main(string[] args)
 		{
 			try
 			{
 				if (args.Length < 1)
-					Environment.Exit(1);
+					return 3;
+
+				var exitCode = 1;
 
 				switch(args[0])
 				{
 					case "s":
-						Replace("false", "true");
+						exitCode = Replace("false", "true");
 						break;
 					case "r":
-						Replace("true", "false");
+						exitCode = Replace("true", "false");
 						break;
 				}
 
+				if (exitCode == 0)
+					return 0;
+
 				Console.WriteLine("Failed to find edition line!");
-				Environment.Exit(2);
+				return 2;
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Failed to change app edition! {ex}");
-				Environment.Exit(1);
+				return 1;
 			}
 		}
 
-		private static void Replace(string from, string to)
+		private static int Replace(string from, string to)
 		{
 			var fileLines = File.ReadAllLines(@"..\..\Primitives\GlobalConstants.cs");
 
@@ -52,9 +57,11 @@ namespace ProBuilder
 						Console.WriteLine("Edition restored");
 						break;
 				}
-				
-				Environment.Exit(0);
+
+				return 0;
 			}
+
+			return 1;
 		}
 	}
 }

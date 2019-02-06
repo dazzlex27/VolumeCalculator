@@ -10,14 +10,14 @@ namespace MReader
 	{
 		private const string OutputFileName = "output.txt";
 
-		static void Main(string[] args)
+		static int Main(string[] args)
 		{
 			if (args.Length < 1)
 			{
 				Console.WriteLine("usage: MReader.exe command" +
 								  Environment.NewLine + "g - get data" +
 								  Environment.NewLine + "c - check data");
-				return;
+				return 3;
 			}
 
 			var idBytes = GetAddr();
@@ -28,15 +28,16 @@ namespace MReader
 					var macLine = string.Join(" ", idBytes);
 					File.WriteAllText(OutputFileName, macLine);
 					Console.WriteLine($"Data is saved to {OutputFileName}");
-					return;
+					return 0;
 				case "c":
 					var ok = CheckIfOk(idBytes);
 					var message = ok ? "Not valid" : "Valid";
 					Console.WriteLine($"{message}");
-					return;
+					
+					return ok ? 1 : 0;
 				default:
 					Console.WriteLine($"Unknown command \"{args[0]}\", terminating...");
-					return;
+					return 3;
 			}
 		}
 

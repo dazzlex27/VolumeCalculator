@@ -1,22 +1,89 @@
-﻿<UserControl x:Class="PortSetter.MainWindow"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800" x:ClassModifier="internal">
-    <Grid>
+﻿<Window x:Class="VCConfigurator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VCConfigurator"
+        mc:Ignorable="d"
+        Title="Настройка VolumeCalculator" MinHeight="100" MinWidth="200" x:ClassModifier="internal"
+        ShowInTaskbar="False"
+        d:DataContext="{d:DesignInstance local:MainWindowVm}"
+        WindowStartupLocation="CenterScreen"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="NoResize">
+	<Grid Margin="3">
 		<Grid.RowDefinitions>
 			<RowDefinition/>
 			<RowDefinition/>
+			<RowDefinition/>
+			<RowDefinition/>
 		</Grid.RowDefinitions>
-		<StackPanel Grid.Row="0" Orientation="Horizontal">
-			<TextBlock Text="Весы"/>
-			<TextBox Width="70"/>
+		<StackPanel Margin="5" 
+		            Orientation="Horizontal">
+			<TextBlock Text="Весы:" 
+			           MinWidth="50" 
+			           Margin="3" 
+			           VerticalAlignment="Center"/>
+			<ComboBox MinWidth="150"
+			          SelectedItem="{Binding SelectedScalesName, Mode=TwoWay}" 
+			          Margin="3" 
+			          MaxWidth="150" 
+			          ItemsSource="{Binding ScalesNames}" 
+			          VerticalAlignment="Center"/>
+			<TextBlock Text="Порт:" 
+			           Margin="3" 
+			           VerticalAlignment="Center"/>
+			<TextBox Margin="3" 
+			         MinWidth="40"
+			         Text="{Binding ScalesPort, Mode=TwoWay}" 
+			         VerticalAlignment="Center"/>
 		</StackPanel>
-	    <StackPanel Grid.Row="1" Orientation="Horizontal">
-		    <TextBlock Text="Плата"/>
-		    <TextBox Width="70"/>
+		<StackPanel Grid.Row="1" 
+		            Margin="5" 
+		            Orientation="Horizontal">
+			<TextBlock Text="Плата:" 
+			           MinWidth="50" 
+			           Margin="3" 
+			           VerticalAlignment="Center"/>
+			<ComboBox MinWidth="150" 
+			          Margin="3" 
+			          SelectedItem="{Binding SelectedBoardName, Mode=TwoWay}" 
+			          MaxWidth="150" 
+			          ItemsSource="{Binding IoCircuitNames}" 
+			          VerticalAlignment="Center"/>
+			<TextBlock Text="Порт:" 
+			           Margin="3" 
+			           VerticalAlignment="Center"/>
+			<TextBox Margin="3" 
+			         MinWidth="40" 
+			         Text="{Binding IoCircuitPort, Mode=TwoWay}" 
+			         VerticalAlignment="Center"/>
+		</StackPanel>
+		<StackPanel Grid.Row="2" 
+		            Margin="5" 
+		            Orientation="Horizontal">
+			<TextBlock Text="Камера:" 
+			           MinWidth="50" 
+			           Margin="3" 
+			           VerticalAlignment="Center"/>
+			<ComboBox MinWidth="150" 
+			          Margin="3" 
+			          SelectedItem="{Binding SelectedCameraName, Mode=TwoWay}" 
+			          MaxWidth="150" 
+			          ItemsSource="{Binding CameraNames}" 
+			          VerticalAlignment="Center"/>
+		</StackPanel>
+		<StackPanel Grid.Row="3" 
+		            Orientation="Horizontal" 
+		            HorizontalAlignment="Center">
+			<Button Margin="5" 
+			        Width="130" 
+			        Content="Сохранить и закрыть" 
+			        Command="{Binding ApplySettingsAndCloseCommand}"/>
+			<Button Margin="5" 
+			        Width="70" 
+			        Content="Сохранить" 
+			        Command="{Binding ApplySettingsCommand}"/>
 		</StackPanel>
 	</Grid>
-</UserControl>
+</Window>

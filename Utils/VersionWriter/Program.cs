@@ -8,7 +8,7 @@ namespace VersionWriter
 	{
 		private const string OutputFileName = "appversion.txt";
 
-		private static void Main()
+		private static int Main()
 		{
 			try
 			{
@@ -20,12 +20,12 @@ namespace VersionWriter
 					sw.WriteLine($"VCalc {GlobalConstants.AppVersion}");
 				}
 
-				Environment.Exit(0);
+				return 0;
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Failed to extract version! {ex}");
-				Environment.Exit(2);
+				return 1;
 			}
 		}
 	}
