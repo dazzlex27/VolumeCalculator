@@ -48,6 +48,11 @@ namespace DeviceIntegration.Scales
 			var status = GetStatusFromMessage(messageBytes);
 			var signMultipler = GetSignMultiplierFromMessage(messageBytes);
 			var weight = GetWeightFromMessage(messageBytes);
+			if (weight < 0.001)
+			{
+				status = MeasurementStatus.Ready;
+				weight = 0;
+			}
 
 			var measurementData = new ScaleMeasurementData(status, weight * signMultipler);
 			MeasurementReady?.Invoke(measurementData);

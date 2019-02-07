@@ -282,7 +282,7 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public bool CanRunAutoTimer => CodeReady && WeightReady && CanAcceptBarcodes;
+		public bool CanRunAutoTimer => CodeReady && WeightReady && CanAcceptBarcodes && !WaitingForReset;
 
 		public bool CodeReady
 		{
@@ -298,7 +298,7 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public bool WeightReady => CurrentWeighingStatus == MeasurementStatus.Measured;
+		public bool WeightReady => CurrentWeighingStatus == MeasurementStatus.Measured && ObjectWeight > 0.001;
 
 		public MeasurementStatus CurrentWeighingStatus { get; set; }
 

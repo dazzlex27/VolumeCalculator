@@ -39,7 +39,9 @@ namespace ProBuilder
 
 		private static int Replace(string from, string to)
 		{
-			var fileLines = File.ReadAllLines(@"..\..\Primitives\GlobalConstants.cs");
+			const string filePath = @"..\..\Primitives\GlobalConstants.cs";
+
+			var fileLines = File.ReadAllLines(filePath);
 
 			for (var i = 0; i < fileLines.Length; i++)
 			{
@@ -57,6 +59,8 @@ namespace ProBuilder
 						Console.WriteLine("Edition restored");
 						break;
 				}
+
+				File.WriteAllLines(filePath, fileLines);
 
 				return 0;
 			}

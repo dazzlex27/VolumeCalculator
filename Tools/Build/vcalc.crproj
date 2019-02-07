@@ -2,7 +2,7 @@
   <module path="GodSharp.SerialPort.dll"/>
   <module path="Newtonsoft.Json.dll"/>
   <module path="Primitives.dll"/>
-  <module path="VCConfigurator.exe">
+  <module path="VCConfigurator.exe"/>
   <module path="DeviceIntegration.dll">
     <rule pattern="true" preset="aggressive" inherit="false">
       <protection id="rename" />
@@ -27,11 +27,6 @@
       <protection id="constants" />
     </rule>
   </module>
-  <module path="ServerComponents.dll">
-    <rule pattern="true" preset="aggressive" inherit="false">
-      <protection id="rename" />
-      <protection id="constants" />
-    </rule>
   <module path="VolumeCalculator.exe">
     <rule pattern="true" preset="aggressive" inherit="false">
       <protection id="rename" />
