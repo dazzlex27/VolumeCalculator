@@ -2,9 +2,9 @@
 using System.IO.Ports;
 using Primitives.Logging;
 
-namespace DeviceIntegrations.Scanners
+namespace DeviceIntegration.Scanners
 {
-	public class GenericSerialPortBarcodeScanner : IBarcodeScanner
+	internal class GenericSerialPortBarcodeScanner : IBarcodeScanner
 	{
 		public event Action<string> CharSequenceFormed;
 

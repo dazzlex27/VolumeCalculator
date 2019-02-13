@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DeviceIntegrations.IoCircuits
+namespace DeviceIntegration.IoCircuits
 {
 	public interface IIoCircuit : IDisposable
 	{

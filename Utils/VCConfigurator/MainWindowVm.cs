@@ -12,14 +12,121 @@ namespace VCConfigurator
 	{
 		private readonly ApplicationSettings _settings;
 
-		private string _scalesPort;
-		private string _ioCircuitPort;		
 		private ObservableCollection<string> _scalesNames;
-		private ObservableCollection<string> _boardNames;
+		private ObservableCollection<string> _ioCircuitNames;
+		private ObservableCollection<string> _rangeMeterNames;
 		private ObservableCollection<string> _cameraNames;
-		private string _selectedScalesName;
-		private string _selectedBoardName;
-		private string _selectedCameraName;
+		private string _activeScalesName;
+		private string _activeIoCircuitName;
+		private string _activeRangeMeterName;
+		private string _activeCameraName;
+		private string _scalesPort;
+		private string _ioCircuitPort;
+		private string _rangeMeterPort;
+
+		public ObservableCollection<string> ScalesNames
+		{
+			get => _scalesNames;
+			set
+			{
+				if (_scalesNames == value)
+					return;
+
+				_scalesNames = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public ObservableCollection<string> IoCircuitNames
+		{
+			get => _ioCircuitNames;
+			set
+			{
+				if (_ioCircuitNames == value)
+					return;
+
+				_ioCircuitNames = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public ObservableCollection<string> RangeMeterNames
+		{
+			get => _rangeMeterNames;
+			set
+			{
+				if (_rangeMeterNames == value)
+					return;
+
+				_rangeMeterNames = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public ObservableCollection<string> CameraNames
+		{
+			get => _cameraNames;
+			set
+			{
+				if (_cameraNames == value)
+					return;
+
+				_cameraNames = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public string ActiveScalesName
+		{
+			get => _activeScalesName;
+			set
+			{
+				if (_activeScalesName == value)
+					return;
+
+				_activeScalesName = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public string ActiveIoCircuitName
+		{
+			get => _activeIoCircuitName;
+			set
+			{
+				if (_activeIoCircuitName == value)
+					return;
+
+				_activeIoCircuitName = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public string ActiveRangeMeterName
+		{
+			get => _activeRangeMeterName;
+			set
+			{
+				if (_activeRangeMeterName == value)
+					return;
+
+				_activeRangeMeterName = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public string ActiveCameraName
+		{
+			get => _activeCameraName;
+			set
+			{
+				if (_activeCameraName == value)
+					return;
+
+				_activeCameraName = value;
+				OnPropertyChanged();
+			}
+		}
 
 		public string ScalesPort
 		{
@@ -47,80 +154,15 @@ namespace VCConfigurator
 			}
 		}
 
-		public ObservableCollection<string> ScalesNames
+		public string RangeMeterPort
 		{
-			get => _scalesNames;
+			get => _rangeMeterPort;
 			set
 			{
-				if (_scalesNames == value)
+				if (_rangeMeterPort == value)
 					return;
 
-				_scalesNames = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public ObservableCollection<string> IoCircuitNames
-		{
-			get => _boardNames;
-			set
-			{
-				if (_boardNames == value)
-					return;
-
-				_boardNames = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public ObservableCollection<string> CameraNames
-		{
-			get => _cameraNames;
-			set
-			{
-				if (_cameraNames == value)
-					return;
-
-				_cameraNames = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public string SelectedScalesName
-		{
-			get => _selectedScalesName;
-			set
-			{
-				if (_selectedScalesName == value)
-					return;
-
-				_selectedScalesName = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public string SelectedBoardName
-		{
-			get => _selectedBoardName;
-			set
-			{
-				if (_selectedBoardName == value)
-					return;
-
-				_selectedBoardName = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public string SelectedCameraName
-		{
-			get => _selectedCameraName;
-			set
-			{
-				if (_selectedCameraName == value)
-					return;
-
-				_selectedCameraName = value;
+				_rangeMeterPort = value;
 				OnPropertyChanged();
 			}
 		}
@@ -131,15 +173,16 @@ namespace VCConfigurator
 
 		public MainWindowVm()
 		{
-			ScalesNames = new ObservableCollection<string> {"massak", "casm", "fakescales"};
-			IoCircuitNames = new ObservableCollection<string> {"keusb24r"};
-			CameraNames = new ObservableCollection<string> { "kinectv2", "d435", "local" };
+			ScalesNames = new ObservableCollection<string> {"", "massak", "casm", "fakescales"};
+			IoCircuitNames = new ObservableCollection<string> {"", "keusb24r"};
+			RangeMeterNames = new ObservableCollection<string> {"", "custom"};
+			CameraNames = new ObservableCollection<string> {"kinectv2", "d435", "local"};
 
 			_settings = ReadSettingsFromFile();
 			FillValuesFromSettings(_settings.IoSettings);
 
 			ApplySettingsAndCloseCommand = new CommandHandler(() => ApplySettings(true), true);
-			ApplySettingsCommand = new CommandHandler(()=>ApplySettings(false), true);
+			ApplySettingsCommand = new CommandHandler(() => ApplySettings(false), true);
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -169,20 +212,24 @@ namespace VCConfigurator
 
 		private void FillValuesFromSettings(IoSettings settings)
 		{
-			SelectedScalesName = settings.ActiveScalesName;
-			SelectedBoardName = settings.ActiveIoCircuitName;
+			ActiveScalesName = settings.ActiveScalesName;
+			ActiveIoCircuitName = settings.ActiveIoCircuitName;
+			ActiveRangeMeterName = settings.ActiveRangeMeterName;
+			ActiveCameraName = settings.ActiveCameraName;
 			ScalesPort = settings.ScalesPort;
 			IoCircuitPort = settings.IoCircuitPort;
-			SelectedCameraName = settings.ActiveCameraName;
+			RangeMeterPort = settings.RangeMeterPort;
 		}
 
 		private void ApplySettings(bool closeApplication)
 		{
-			_settings.IoSettings.ActiveScalesName = SelectedScalesName;
-			_settings.IoSettings.ActiveIoCircuitName = SelectedBoardName;
+			_settings.IoSettings.ActiveScalesName = ActiveScalesName;
+			_settings.IoSettings.ActiveIoCircuitName = ActiveIoCircuitName;
+			_settings.IoSettings.ActiveRangeMeterName = ActiveRangeMeterName;
+			_settings.IoSettings.ActiveCameraName = ActiveCameraName;
 			_settings.IoSettings.ScalesPort = ScalesPort;
 			_settings.IoSettings.IoCircuitPort = IoCircuitPort;
-			_settings.IoSettings.ActiveCameraName = SelectedCameraName;
+			_settings.IoSettings.RangeMeterPort = RangeMeterPort;
 
 			IoUtils.SerializeSettings(_settings);
 

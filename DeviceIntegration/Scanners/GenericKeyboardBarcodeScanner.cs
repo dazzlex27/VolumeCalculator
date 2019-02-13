@@ -4,7 +4,7 @@ using System.Timers;
 using System.Windows.Input;
 using Primitives.Logging;
 
-namespace DeviceIntegrations.Scanners
+namespace DeviceIntegration.Scanners
 {
 	public class GenericKeyboardBarcodeScanner : IBarcodeScanner
 	{

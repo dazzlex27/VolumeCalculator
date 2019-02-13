@@ -35,6 +35,7 @@ namespace FrameProcessor
 
 		private AlgorithmSelectionResult _selectedAlgorithm;
 
+		private readonly long _measuredDistance;
 		private readonly bool _maskMode;
 
 		public bool IsRunning { get; private set; }
@@ -42,7 +43,7 @@ namespace FrameProcessor
 		private bool HasCompletedFirstRun => _samplesLeft != _settings.AlgorithmSettings.SampleDepthMapCount;
 
 		public VolumeCalculator(ILogger logger, FrameProvider frameProvider, DepthMapProcessor processor, ApplicationSettings settings, 
-			bool maskMode)
+			long measuredDistance, bool maskMode)
 		{
 			_logger = logger;
 			_frameProvider = frameProvider ?? throw new ArgumentNullException(nameof(frameProvider));
@@ -50,6 +51,7 @@ namespace FrameProcessor
 			_settings = settings ?? throw new ArgumentException(nameof(settings));
 			_samplesLeft = settings.AlgorithmSettings.SampleDepthMapCount;
 
+			_measuredDistance = measuredDistance;
 			_maskMode = maskMode;
 
 			_applyPerspective = false;
@@ -96,7 +98,7 @@ namespace FrameProcessor
 				SaveDebugData();
 			}
 
-			var currentResult = CalculateVolume(depthMap, image, _applyPerspective, !HasCompletedFirstRun);
+			var currentResult = CalculateVolume(depthMap, image, _measuredDistance, _applyPerspective, !HasCompletedFirstRun);
 
 			_results.Add(currentResult);
 			_samplesLeft--;
@@ -122,7 +124,7 @@ namespace FrameProcessor
 			var dm2Enabled = _settings.AlgorithmSettings.EnablePerspectiveDmAlgorithm;
 			var rgbEnabled = _settings.AlgorithmSettings.EnableRgbAlgorithm;
 
-			_selectedAlgorithm = _processor.SelectAlgorithm(_latestDepthMap, _latestColorFrame, 
+			_selectedAlgorithm = _processor.SelectAlgorithm(_latestDepthMap, _latestColorFrame, _measuredDistance,
 				dm1Enabled, dm2Enabled, rgbEnabled);
 
 			switch (_selectedAlgorithm)
@@ -194,11 +196,12 @@ namespace FrameProcessor
 			_depthFrameReady = false;
 		}
 
-		private ObjectVolumeData CalculateVolume(DepthMap depthMap, ImageData image, bool applyPerspective, bool needToSavePics)
+		private ObjectVolumeData CalculateVolume(DepthMap depthMap, ImageData image, long measuredDistance, bool applyPerspective, 
+			bool needToSavePics)
 		{
 			return _useColorData
-				? _processor.CalculateObjectVolumeRgb(depthMap, image, applyPerspective, needToSavePics, _maskMode)
-				: _processor.CalculateVolumeDepth(depthMap, applyPerspective, needToSavePics, _maskMode);
+				? _processor.CalculateObjectVolumeRgb(depthMap, image, measuredDistance, applyPerspective, needToSavePics, _maskMode)
+				: _processor.CalculateVolumeDepth(depthMap, measuredDistance, applyPerspective, needToSavePics, _maskMode);
 		}
 
 		private ObjectVolumeData AggregateCalculationsData()

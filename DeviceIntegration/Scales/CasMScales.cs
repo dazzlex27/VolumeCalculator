@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO.Ports;
 using System.Linq;
 using System.Text;
-using DeviceIntegrations.Scales;
 using GodSharp.SerialPort;
 using Primitives.Logging;
 
 namespace DeviceIntegration.Scales
 {
-	public class CasMScales : IScales
+	internal class CasMScales : IScales
 	{
 		public event Action<ScaleMeasurementData> MeasurementReady;
 
@@ -22,7 +22,7 @@ namespace DeviceIntegration.Scales
 			_logger = logger;
 			_port = port;
 
-			_serialPort = new GodSerialPort(port, 9600, "none", 8, "1", "0");
+			_serialPort = new GodSerialPort(port, 9600, Parity.None, 8, StopBits.One);
 			_serialPort.UseDataReceived(true, (sp, bytes) =>
 			{
 				ReadMessage(bytes);

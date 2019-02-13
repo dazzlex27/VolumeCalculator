@@ -29,8 +29,8 @@ namespace FrameProcessor
 			}
 		}
 
-		public ObjectVolumeData CalculateVolumeDepth(DepthMap depthMap, bool applyPerspective, bool needToSaveDebugData = false,
-			bool maskMode = false)
+		public ObjectVolumeData CalculateVolumeDepth(DepthMap depthMap, long measuredDistance, bool applyPerspective, 
+			bool needToSaveDebugData = false, bool maskMode = false)
 		{
 			unsafe
 			{
@@ -38,15 +38,15 @@ namespace FrameProcessor
 				{
 					var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
 
-					var res = DepthMapProcessorDll.CalculateObjectVolume(_nativeHandle.ToPointer(), nativeDepthMap, applyPerspective, 
-						needToSaveDebugData, maskMode);
+					var res = DepthMapProcessorDll.CalculateObjectVolume(_nativeHandle.ToPointer(), nativeDepthMap, measuredDistance,
+						applyPerspective, needToSaveDebugData, maskMode);
 					return res == null ? null : new ObjectVolumeData(res->Length, res->Width, res->Height);
 				}
 			}
 		}
 
-		public ObjectVolumeData CalculateObjectVolumeRgb(DepthMap depthMap, ImageData colorFrame, bool applyPerspective, 
-			bool needToSaveDebugData = false, bool maskMode = false)
+		public ObjectVolumeData CalculateObjectVolumeRgb(DepthMap depthMap, ImageData colorFrame, long measuredDistance, 
+			bool applyPerspective, bool needToSaveDebugData = false, bool maskMode = false)
 		{
 			unsafe
 			{
@@ -64,7 +64,7 @@ namespace FrameProcessor
 					};
 
 					var res = DepthMapProcessorDll.CalculateObjectVolumeAlt(_nativeHandle.ToPointer(), nativeDepthMap, 
-						nativeColorImage, applyPerspective, needToSaveDebugData, maskMode);
+						nativeColorImage, measuredDistance, applyPerspective, needToSaveDebugData, maskMode);
 					return res == null ? null : new ObjectVolumeData(res->Length, res->Width, res->Height);
 				}
 			}
@@ -83,7 +83,7 @@ namespace FrameProcessor
 			}
 		}
 
-		public AlgorithmSelectionResult SelectAlgorithm(DepthMap depthMap, ImageData colorFrame, 
+		public AlgorithmSelectionResult SelectAlgorithm(DepthMap depthMap, ImageData colorFrame, long measuredDistance,
 			bool dm1Enabled, bool dm2Enabled, bool rgbEnabled)
 		{
 			var dataIsInvalid = depthMap?.Data == null || colorFrame?.Data == null;
@@ -110,7 +110,7 @@ namespace FrameProcessor
 					};
 
 					return (AlgorithmSelectionResult) DepthMapProcessorDll.SelectAlgorithm(_nativeHandle.ToPointer(),
-						nativeDepthMap, nativeColorImage, dm1Enabled, dm2Enabled, rgbEnabled);
+						nativeDepthMap, nativeColorImage, measuredDistance, dm1Enabled, dm2Enabled, rgbEnabled);
 				}
 			}
 		}

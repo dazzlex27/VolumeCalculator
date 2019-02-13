@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using DeviceIntegrations.Scales;
 using GodSharp.SerialPort;
 using Primitives;
 using Primitives.Logging;
 
 namespace DeviceIntegration.Scales
 {
-	public class MassaKScales : IScales
+	internal class MassaKScales : IScales
 	{
 		public event Action<ScaleMeasurementData> MeasurementReady;
 

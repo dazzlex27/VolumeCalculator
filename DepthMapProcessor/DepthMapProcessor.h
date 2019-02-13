@@ -47,12 +47,13 @@ public:
 	void SetAlgorithmSettings(const short floorDepth, const short cutOffDepth, 
 		const RelPoint* polygonPoints, const int polygonPointCount, const RelRect& roiRect);
 	void SetDebugPath(const char* path);
-	const int SelectAlgorithm(const DepthMap& depthMap, const ColorImage& colorImage,
+	const int SelectAlgorithm(const DepthMap& depthMap, const ColorImage& colorImage, const long measuredDistance,
 		const bool dm1Enabled, const bool dm2Enabled, const bool rgbEnabled);
 
-	ObjDimDescription* CalculateObjectVolume(const DepthMap& depthMap, const bool applyPerspective, const bool saveDebugData, bool maskMode);
-	ObjDimDescription* CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image, const bool applyPerspective, 
+	ObjDimDescription* CalculateObjectVolume(const DepthMap& depthMap, const long distance, const bool applyPerspective, 
 		const bool saveDebugData, bool maskMode);
+	ObjDimDescription* CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image, const long distance, 
+		const bool applyPerspective, const bool saveDebugData, bool maskMode);
 	const short CalculateFloorDepth(const DepthMap& depthMap);
 
 private:
@@ -60,11 +61,12 @@ private:
 	void FillDepthBufferFromDepthMap(const DepthMap& depthMap);
 	const Contour GetTargetContourFromDepthMap(const bool saveDebugData) const;
 	const Contour GetTargetContourFromColorImage(const bool saveDebugData) const;
-	const ObjDimDescription CalculateContourDimensions(const Contour& contour, const bool applyPerspective, const bool saveDebugData) const;
+	const ObjDimDescription CalculateContourDimensions(const Contour& contour, const long distance, const bool applyPerspective, 
+		const bool saveDebugData) const;
 	const cv::RotatedRect CalculateObjectBoundingRect(const Contour& depthObjectContour, const short contourTopPlaneDepth,
 		const bool applyPerspective, const bool saveDebugData) const;
 	const ObjDimDescription CalculateContourDimensionsAlt(const Contour& objectContour, const Contour& colorObjectContour,
-		const bool applyPerspective, const bool saveDebugData) const;
+		const long distance, const bool applyPerspective, const bool saveDebugData) const;
 	const ContourPlanes GetDepthContourPlanes(const Contour& contour) const;
 	const TwoDimDescription GetTwoDimDescription(const cv::RotatedRect& contourBoundingRect,
 		const short contourTopPlaneDepth, const float fx, const float fy, const float ppx, const float ppy) const;

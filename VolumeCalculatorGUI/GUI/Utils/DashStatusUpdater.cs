@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Timers;
 using System.Windows.Media;
-using DeviceIntegrations.IoCircuits;
-using DeviceIntegrations.Scales;
+using DeviceIntegration.IoCircuits;
+using DeviceIntegration.Scales;
 using Primitives.Logging;
 using VolumeCalculatorGUI.Utils;
 

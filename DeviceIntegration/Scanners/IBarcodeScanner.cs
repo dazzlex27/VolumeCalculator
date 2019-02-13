@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DeviceIntegrations.Scanners
+namespace DeviceIntegration.Scanners
 {
 	public interface IBarcodeScanner : IDisposable
 	{

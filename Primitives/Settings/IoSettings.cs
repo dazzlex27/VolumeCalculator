@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 namespace Primitives.Settings
 {
@@ -17,6 +16,10 @@ namespace Primitives.Settings
 
 		public string IoCircuitPort { get; set; }
 
+		public string ActiveRangeMeterName { get; set; }
+
+		public string RangeMeterPort { get; set; }
+
 		public string OutputPath { get; set; }
 
 		public bool ShutDownPcByDefault { get; set; }
@@ -26,7 +29,8 @@ namespace Primitives.Settings
 		public string PhotosDirectoryPath => Path.Combine(OutputPath, Constants.ResultPhotosFolder);
 
 		public IoSettings(string activeCameraName, string activeScalesName, string scalesPort, IoEntry[] activeScanners,
-			string activeIoCircuitName, string ioCircuitPort, string outputPath, bool shutDownPcByDefault)
+			string activeIoCircuitName, string ioCircuitPort, string activeRangeMeterName, string rangeMeterPort,
+			string outputPath, bool shutDownPcByDefault)
 		{
 			ActiveCameraName = activeCameraName;
 			ActiveScalesName = activeScalesName;
@@ -34,6 +38,8 @@ namespace Primitives.Settings
 			ActiveScanners = activeScanners;
 			ActiveIoCircuitName = activeIoCircuitName;
 			IoCircuitPort = ioCircuitPort;
+			ActiveRangeMeterName = activeRangeMeterName;
+			RangeMeterPort = rangeMeterPort;
 			OutputPath = outputPath;
 			ShutDownPcByDefault = shutDownPcByDefault;
 		}
@@ -42,8 +48,8 @@ namespace Primitives.Settings
 		{
 			var defaultScanners = new[] {new IoEntry("keyboard", "")};
 
-			return new IoSettings("kinectv2", "massak", "", defaultScanners, "keusb24r", "", "MeasurementResults",
-				false);
+			return new IoSettings("kinectv2", "massak", "", defaultScanners, "keusb24r", "", "custom", "",
+				"MeasurementResults", false);
 		}
 	}
 }

@@ -17,15 +17,16 @@
 			<RowDefinition/>
 			<RowDefinition/>
 			<RowDefinition/>
+			<RowDefinition/>
 		</Grid.RowDefinitions>
 		<StackPanel Margin="5" 
 		            Orientation="Horizontal">
 			<TextBlock Text="Весы:" 
-			           MinWidth="50" 
+			           MinWidth="80" 
 			           Margin="3" 
 			           VerticalAlignment="Center"/>
 			<ComboBox MinWidth="150"
-			          SelectedItem="{Binding SelectedScalesName, Mode=TwoWay}" 
+			          SelectedItem="{Binding ActiveScalesName, Mode=TwoWay}" 
 			          Margin="3" 
 			          MaxWidth="150" 
 			          ItemsSource="{Binding ScalesNames}" 
@@ -42,12 +43,12 @@
 		            Margin="5" 
 		            Orientation="Horizontal">
 			<TextBlock Text="Плата:" 
-			           MinWidth="50" 
+			           MinWidth="80" 
 			           Margin="3" 
 			           VerticalAlignment="Center"/>
 			<ComboBox MinWidth="150" 
 			          Margin="3" 
-			          SelectedItem="{Binding SelectedBoardName, Mode=TwoWay}" 
+			          SelectedItem="{Binding ActiveIoCircuitName, Mode=TwoWay}" 
 			          MaxWidth="150" 
 			          ItemsSource="{Binding IoCircuitNames}" 
 			          VerticalAlignment="Center"/>
@@ -62,18 +63,39 @@
 		<StackPanel Grid.Row="2" 
 		            Margin="5" 
 		            Orientation="Horizontal">
-			<TextBlock Text="Камера:" 
-			           MinWidth="50" 
+			<TextBlock Text="Дальномер:" 
+			           MinWidth="80" 
 			           Margin="3" 
 			           VerticalAlignment="Center"/>
 			<ComboBox MinWidth="150" 
 			          Margin="3" 
-			          SelectedItem="{Binding SelectedCameraName, Mode=TwoWay}" 
+			          SelectedItem="{Binding ActiveRangeMeterName, Mode=TwoWay}" 
+			          MaxWidth="150" 
+			          ItemsSource="{Binding RangeMeterNames}" 
+			          VerticalAlignment="Center"/>
+			<TextBlock Text="Порт:" 
+			           Margin="3" 
+			           VerticalAlignment="Center"/>
+			<TextBox Margin="3" 
+			         MinWidth="40"
+			         Text="{Binding RangeMeterPort, Mode=TwoWay}" 
+			         VerticalAlignment="Center"/>
+		</StackPanel>
+		<StackPanel Grid.Row="3" 
+		            Margin="5" 
+		            Orientation="Horizontal">
+			<TextBlock Text="Камера:" 
+			           MinWidth="80" 
+			           Margin="3" 
+			           VerticalAlignment="Center"/>
+			<ComboBox MinWidth="150" 
+			          Margin="3" 
+			          SelectedItem="{Binding ActiveCameraName, Mode=TwoWay}" 
 			          MaxWidth="150" 
 			          ItemsSource="{Binding CameraNames}" 
 			          VerticalAlignment="Center"/>
 		</StackPanel>
-		<StackPanel Grid.Row="3" 
+		<StackPanel Grid.Row="4" 
 		            Orientation="Horizontal" 
 		            HorizontalAlignment="Center">
 			<Button Margin="5" 

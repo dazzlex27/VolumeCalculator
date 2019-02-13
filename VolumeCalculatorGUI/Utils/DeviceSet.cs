@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
+using DeviceIntegration.IoCircuits;
+using DeviceIntegration.RangeMeters;
 using DeviceIntegration.Scales;
-using DeviceIntegrations.IoCircuits;
-using DeviceIntegrations.Scanners;
+using DeviceIntegration.Scanners;
 using FrameProviders;
 
 namespace VolumeCalculatorGUI.Utils
@@ -16,13 +17,16 @@ namespace VolumeCalculatorGUI.Utils
 
 		public IIoCircuit IoCircuit { get; }
 
-		public DeviceSet(FrameProvider frameProvider, IScales scales, IReadOnlyList<IBarcodeScanner> scanners,
-			IIoCircuit ioCircuit)
+		public IRangeMeter RangeMeter { get; }
+
+		public DeviceSet(FrameProvider frameProvider, IScales scales, IEnumerable<IBarcodeScanner> scanners,
+			IIoCircuit ioCircuit, IRangeMeter rangeMeter)
 		{
 			FrameProvider = frameProvider;
 			Scales = scales;
 			Scanners = new List<IBarcodeScanner>(scanners);
 			IoCircuit = ioCircuit;
+			RangeMeter = rangeMeter;
 		}
 	}
 }

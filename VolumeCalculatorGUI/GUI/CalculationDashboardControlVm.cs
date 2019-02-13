@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
 using System.Windows.Media;
-using DeviceIntegrations.Scales;
+using DeviceIntegration.Scales;
 using ExtIntegration;
 using FrameProcessor;
 using Primitives;
@@ -488,7 +488,16 @@ namespace VolumeCalculatorGUI.GUI
 				var rgbEnabled = _settings.AlgorithmSettings.EnableRgbAlgorithm;
 				_logger.LogInfo($"Starting a volume check... dm={dm1Enabled} dm2={dm2Enabled} rgb={rgbEnabled}");
 
-				_volumeCalculator = new VolumeCalculator(_logger, _deviceSet?.FrameProvider, _processor, _settings, _maskMode);
+				long measuredDistanse = 0;
+				if (_deviceSet?.RangeMeter != null)
+				{
+					measuredDistanse = _deviceSet.RangeMeter.GetReading();
+					if (measuredDistanse <= 0)
+						_logger.LogError("Failed to get range reading, will use depth calculation...");
+				}
+
+				_volumeCalculator = new VolumeCalculator(_logger, _deviceSet?.FrameProvider, _processor, _settings, measuredDistanse, 
+					_maskMode);
 				_volumeCalculator.CalculationFinished += OnCalculationFinished;
 			}
 			catch (Exception ex)

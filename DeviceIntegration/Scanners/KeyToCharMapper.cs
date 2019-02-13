@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Windows.Input;
 
-namespace DeviceIntegrations.Scanners
+namespace DeviceIntegration.Scanners
 {
 	internal class KeyToCharMapper
 	{

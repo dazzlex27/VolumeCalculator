@@ -349,6 +349,7 @@ namespace VolumeCalculatorGUI.GUI
 			foreach(var scanner in _deviceSet.Scanners)
 				scanner?.Dispose();
 			_deviceSet.IoCircuit?.Dispose();
+			_deviceSet.RangeMeter?.Dispose();
 		}
 
 		private void OnApplicationSettingsChanged(ApplicationSettings settings)

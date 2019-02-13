@@ -1,4 +1,4 @@
-﻿namespace DeviceIntegrations.Scales
+﻿namespace DeviceIntegration.Scales
 {
 	public class ScaleMeasurementData
 	{

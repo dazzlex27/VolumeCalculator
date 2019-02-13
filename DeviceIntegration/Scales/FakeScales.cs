@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using DeviceIntegration.Scales;
 using Primitives.Logging;
 
-namespace DeviceIntegrations.Scales
+namespace DeviceIntegration.Scales
 {
-	public class FakeScales : IScales
+	internal class FakeScales : IScales
 	{
 		private readonly CancellationTokenSource _tokenSource;
 

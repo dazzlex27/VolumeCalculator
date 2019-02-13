@@ -68,7 +68,7 @@ void DepthMapProcessor::SetDebugPath(const char* path)
 	_contourExtractor.SetDebugPath(_debugPath);
 }
 
-const int DepthMapProcessor::SelectAlgorithm(const DepthMap& depthMap, const ColorImage& colorImage, 
+const int DepthMapProcessor::SelectAlgorithm(const DepthMap& depthMap, const ColorImage& colorImage, const long measuredDistance,
 	const bool dm1Enabled, const bool dm2Enabled, const bool rgbEnabled)
 {
 	const bool dataIsValid = depthMap.Data != nullptr && colorImage.Data != nullptr;
@@ -111,14 +111,15 @@ const int DepthMapProcessor::SelectAlgorithm(const DepthMap& depthMap, const Col
 	const bool colorContourIsEmpty = colorObjectContour.size() == 0;
 	const bool depthContourIsEmpty = depthObjectContour.size() == 0;
 
-	const int depthContourArea = depthContourIsEmpty ? 0 : cv::contourArea(depthObjectContour);
+	const int depthContourArea = depthContourIsEmpty ? 0 : (int)cv::contourArea(depthObjectContour);
 	const bool noDepthObject = depthContourArea < 4;
 	const bool bothContoursAreEmpty = noDepthObject && colorContourIsEmpty;
 	if (bothContoursAreEmpty)
 		return -1;
 
 	const ContourPlanes& contourPlanes = GetDepthContourPlanes(depthObjectContour);
-	const short contourTopPlaneDepth = contourPlanes.Top;
+	const short measuredDistanceShort = measuredDistance > SHRT_MAX ? SHRT_MAX : measuredDistance;
+	const short contourTopPlaneDepth = measuredDistance > 0 ? measuredDistanceShort : contourPlanes.Top;
 
 	if (rgbEnabled && !colorContourIsEmpty)
 	{
@@ -149,14 +150,16 @@ const int DepthMapProcessor::SelectAlgorithm(const DepthMap& depthMap, const Col
 	if (!dm1Enabled && dm2Enabled)
 		return 1;
 
-	const short contourPlanesDelta = contourPlanes.Bottom - contourPlanes.Top;
+	// if data from range meter is present - ignore the bottom plane
+	const short contourPlanesDelta = measuredDistanceShort > 0 ? 0 : contourPlanes.Bottom - contourPlanes.Top;
 	if (contourPlanesDelta > _contourPlaneDepthDelta)
 		return 1;
 
 	return 0;
 }
 
-ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& depthMap, const bool applyPerspective, const bool saveDebugData, bool maskMode)
+ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& depthMap, const long measuredDistance, 
+	const bool applyPerspective, const bool saveDebugData, bool maskMode)
 {
 	FillDepthBufferFromDepthMap(depthMap);
 
@@ -173,11 +176,11 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& dept
 
 	const Contour& objectContour = GetTargetContourFromDepthMap(saveDebugData);
 
-	_result = CalculateContourDimensions(objectContour, applyPerspective, saveDebugData);
+	_result = CalculateContourDimensions(objectContour, measuredDistance, applyPerspective, saveDebugData);
 
 	if (maskMode)
 	{
-		srand(time(NULL));
+		srand((uint)time(NULL));
 
 		int r0 = rand() % 100;
 
@@ -204,7 +207,7 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& dept
 }
 
 ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image, 
-	const bool applyPerspective, const bool saveDebugData, bool maskMode)
+	const long measuredDistance, const bool applyPerspective, const bool saveDebugData, bool maskMode)
 {
 	FillDepthBufferFromDepthMap(depthMap);
 	FillColorBufferFromImage(image);
@@ -223,11 +226,11 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const DepthMap& d
 	const Contour& depthObjectContour = GetTargetContourFromDepthMap(saveDebugData);
 	const Contour& colorObjectContour = GetTargetContourFromColorImage(saveDebugData);
 
-	_result = CalculateContourDimensionsAlt(depthObjectContour, colorObjectContour, applyPerspective, saveDebugData);
+	_result = CalculateContourDimensionsAlt(depthObjectContour, colorObjectContour, measuredDistance, applyPerspective, saveDebugData);
 
 	if (maskMode)
 	{
-		srand(time(NULL));
+		srand((uint)time(NULL));
 
 		int r0 = rand() % 100;
 		if (r0 < 30)
@@ -319,13 +322,14 @@ const Contour DepthMapProcessor::GetTargetContourFromColorImage(const bool saveD
 	return _contourExtractor.ExtractContourFromColorImage(inputRoi, saveDebugData);
 }
 
-const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Contour& depthObjectContour, const bool applyPerspective,
-	const bool saveDebugData) const
+const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Contour& depthObjectContour, const long measuredDistance, 
+	const bool applyPerspective, const bool saveDebugData) const
 {
 	if (depthObjectContour.size() == 0)
 		return ObjDimDescription();
-
-	const short contourTopPlaneDepth = GetDepthContourPlanes(depthObjectContour).Top;
+	
+	const short measuredDistanceShort = measuredDistance > SHRT_MAX ? SHRT_MAX : measuredDistance;
+	const short contourTopPlaneDepth = measuredDistanceShort > 0 ? measuredDistanceShort : GetDepthContourPlanes(depthObjectContour).Top;
 
 	const cv::RotatedRect& boundingRect = CalculateObjectBoundingRect(depthObjectContour, contourTopPlaneDepth, applyPerspective, saveDebugData);
 
@@ -361,7 +365,7 @@ const cv::RotatedRect DepthMapProcessor::CalculateObjectBoundingRect(const Conto
 }
 
 const ObjDimDescription DepthMapProcessor::CalculateContourDimensionsAlt(const Contour& depthObjectContour,
-	const Contour& colorObjectContour, const bool applyPerspective, const bool saveDebugData) const
+	const Contour& colorObjectContour, const long measuredDistance, const bool applyPerspective, const bool saveDebugData) const
 {
 	if (colorObjectContour.size() == 0)
 		return ObjDimDescription();
@@ -372,7 +376,8 @@ const ObjDimDescription DepthMapProcessor::CalculateContourDimensionsAlt(const C
 		DmUtils::DrawTargetContour(colorObjectContour, _mapWidth, _mapHeight, _debugPath, "ctr_color");
 	}
 
-	const short topPlane = GetDepthContourPlanes(depthObjectContour).Top;
+	const short measuredDistanceShort = measuredDistance > SHRT_MAX ? SHRT_MAX : measuredDistance;
+	const short topPlane = measuredDistanceShort > 0 ? measuredDistanceShort : GetDepthContourPlanes(depthObjectContour).Top;
 	const short contourTopPlaneDepth = topPlane > 0 ? topPlane : (_floorDepth - _minObjHeight);
 	
 	const cv::RotatedRect& colorObjectBoundingRect = cv::minAreaRect(colorObjectContour);

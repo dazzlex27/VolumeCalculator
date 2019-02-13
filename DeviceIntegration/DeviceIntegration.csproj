@@ -43,6 +43,8 @@
     <Compile Include="DeviceIntegrationCommon.cs" />
     <Compile Include="IoCircuits\IIoCircuit.cs" />
     <Compile Include="IoCircuits\KeUsb24RCircuit.cs" />
+    <Compile Include="RangeMeters\CustomRangeMeter.cs" />
+    <Compile Include="RangeMeters\IRangeMeter.cs" />
     <Compile Include="Scales\CasMScales.cs" />
     <Compile Include="Scales\FakeScales.cs" />
     <Compile Include="Scales\IScales.cs" />

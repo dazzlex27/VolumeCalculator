@@ -1,5 +1,4 @@
 ﻿using System;
-using DeviceIntegrations.Scales;
 
 namespace DeviceIntegration.Scales
 {

@@ -78,7 +78,7 @@ namespace VolumeCalculatorTests
 			using (var processor = new DepthMapProcessor(_logger,
 				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams()))
 			{
-				var algorithmSelectionResult = processor.SelectAlgorithm(map, image, true, true, true);
+				var algorithmSelectionResult = processor.SelectAlgorithm(map, image, 0, true, true, true);
 				Assert.IsTrue(algorithmSelectionResult == AlgorithmSelectionResult.NoObjectFound);
 			}
 		}
@@ -92,7 +92,7 @@ namespace VolumeCalculatorTests
 			using (var processor = new DepthMapProcessor(_logger,
 				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams()))
 			{
-				var algorithmSelectionResult = processor.SelectAlgorithm(map, image, false, false, false);
+				var algorithmSelectionResult = processor.SelectAlgorithm(map, image, 0, false, false, false);
 				Assert.IsTrue(algorithmSelectionResult == AlgorithmSelectionResult.NoModesAreAvailable);
 			}
 		}
@@ -106,7 +106,7 @@ namespace VolumeCalculatorTests
 			using (var processor = new DepthMapProcessor(_logger,
 				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams()))
 			{
-				var algorithmSelectionResult = processor.SelectAlgorithm(map, image, true, false, false);
+				var algorithmSelectionResult = processor.SelectAlgorithm(map, image, 0, true, false, false);
 				Assert.IsTrue(algorithmSelectionResult == AlgorithmSelectionResult.Dm);
 			}
 		}
@@ -120,7 +120,7 @@ namespace VolumeCalculatorTests
 			using (var processor = new DepthMapProcessor(_logger,
 				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams()))
 			{
-				var algorithmSelectionResult = processor.SelectAlgorithm(map, image, false, true, false);
+				var algorithmSelectionResult = processor.SelectAlgorithm(map, image, 0, false, true, false);
 				Assert.IsTrue(algorithmSelectionResult == AlgorithmSelectionResult.DmPersp);
 			}
 		}
@@ -134,7 +134,7 @@ namespace VolumeCalculatorTests
 			using (var processor = new DepthMapProcessor(_logger,
 				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams()))
 			{
-				var algorithmSelectionResult = processor.SelectAlgorithm(map, image, false, false, true);
+				var algorithmSelectionResult = processor.SelectAlgorithm(map, image, 0, false, false, true);
 				Assert.IsTrue(algorithmSelectionResult == AlgorithmSelectionResult.Rgb);
 			}
 		}
@@ -148,7 +148,7 @@ namespace VolumeCalculatorTests
 			using (var processor = new DepthMapProcessor(_logger,
 				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams()))
 			{
-				var algorithmSelectionResult = processor.SelectAlgorithm(map, image, false, false, true);
+				var algorithmSelectionResult = processor.SelectAlgorithm(map, image, 0, false, false, true);
 				Assert.IsTrue(algorithmSelectionResult == AlgorithmSelectionResult.DataIsInvalid);
 			}
 		}

@@ -2,12 +2,11 @@
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
-using DeviceIntegrations.IoCircuits;
 using Primitives.Logging;
 
 namespace DeviceIntegration.IoCircuits
 {
-	public class KeUsb24RCircuit : IIoCircuit
+	internal class KeUsb24RCircuit : IIoCircuit
 	{
 		private readonly byte[] _headerBytes;
 		private readonly byte[] _footerBytes;

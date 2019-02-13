@@ -6,11 +6,11 @@ using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using DeviceIntegration;
+using DeviceIntegration.IoCircuits;
+using DeviceIntegration.RangeMeters;
 using DeviceIntegration.Scales;
-using DeviceIntegrations.IoCircuits;
-using DeviceIntegrations.Scanners;
+using DeviceIntegration.Scanners;
 using FrameProviders;
-using Microsoft.Win32;
 using Primitives.Logging;
 using Primitives.Settings;
 
@@ -23,6 +23,7 @@ namespace VolumeCalculatorGUI.Utils
 			IScales scales = null;
 			var barcodeScanners = new List<IBarcodeScanner>();
 			IIoCircuit ioCircuit = null;
+			IRangeMeter rangeMeter = null;
 
 			var frameProviderName = settings.ActiveCameraName;
 			logger.LogInfo($"Creating frame provider \"{frameProviderName}\"...");
@@ -68,7 +69,15 @@ namespace VolumeCalculatorGUI.Utils
 				ioCircuit = DeviceIntegrationCommon.CreateRequestedIoCircuit(ioCircuitName, logger, ioCircuitPort);
 			}
 
-			return new DeviceSet(frameProvider, scales, barcodeScanners, ioCircuit);
+			var rangeMeterName = settings.ActiveRangeMeterName;
+			var rangeMeterPort = settings.RangeMeterPort;
+			if (rangeMeterPort != string.Empty)
+			{
+				logger.LogInfo($"Creating range meter \"{rangeMeterName}\"");
+				rangeMeter = DeviceIntegrationCommon.CreateRequestedRangeMeter(rangeMeterName, logger, rangeMeterPort);
+			}
+
+			return new DeviceSet(frameProvider, scales, barcodeScanners, ioCircuit, rangeMeter);
 		}
 
 		public static byte[] GetMaskBytes()
