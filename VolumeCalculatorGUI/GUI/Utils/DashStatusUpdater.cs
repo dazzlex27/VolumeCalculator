@@ -14,6 +14,7 @@ namespace VolumeCalculatorGUI.GUI.Utils
 		private readonly IIoCircuit _circuit;
 		private readonly CalculationDashboardControlVm _vm;
 		private readonly Timer _autoStartingCheckingTimer;
+		private readonly LightToggler _lightToggler;
 
 		private DashboardStatus _dashStatus;
 
@@ -53,6 +54,8 @@ namespace VolumeCalculatorGUI.GUI.Utils
 			_logger = logger;
 			_circuit = circuit;
 			_vm = vm;
+			if (circuit != null)
+				_lightToggler = new LightToggler(circuit);
 
 			_autoStartingCheckingTimer = new Timer(100) { AutoReset = true };
 			_autoStartingCheckingTimer.Elapsed += UpdateAutoTimerStatus;
@@ -126,6 +129,8 @@ namespace VolumeCalculatorGUI.GUI.Utils
 				_vm.CalculationPending = false;
 			});
 
+			_lightToggler?.ToggleReady();
+
 			ToggleCrosshair(true);
 		}
 
@@ -142,6 +147,8 @@ namespace VolumeCalculatorGUI.GUI.Utils
 
 			LastErrorMessage = "";
 
+			_lightToggler?.ToggleError();
+
 			ToggleCrosshair(true);
 		}
 
@@ -153,6 +160,8 @@ namespace VolumeCalculatorGUI.GUI.Utils
 				_vm.StatusText = "Запущен автотаймер...";
 				_vm.CalculationPending = true;
 			});
+
+			_lightToggler?.ToggleMeasuring();
 
 			ToggleCrosshair(false);
 		}
@@ -166,6 +175,8 @@ namespace VolumeCalculatorGUI.GUI.Utils
 				_vm.StatusText = "Выполняется измерение...";
 				_vm.CalculationPending = false;
 			});
+
+			_lightToggler?.ToggleMeasuring();
 
 			ToggleCrosshair(false);
 		}
