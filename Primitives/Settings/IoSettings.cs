@@ -20,6 +20,8 @@ namespace Primitives.Settings
 
 		public string RangeMeterPort { get; set; }
 
+		public int RangeMeterSubtractionValueMm { get; set; }
+
 		public string OutputPath { get; set; }
 
 		public bool ShutDownPcByDefault { get; set; }
@@ -30,7 +32,7 @@ namespace Primitives.Settings
 
 		public IoSettings(string activeCameraName, string activeScalesName, string scalesPort, IoEntry[] activeScanners,
 			string activeIoCircuitName, string ioCircuitPort, string activeRangeMeterName, string rangeMeterPort,
-			string outputPath, bool shutDownPcByDefault)
+			int rangeMeterSubtractionValueMm, string outputPath, bool shutDownPcByDefault)
 		{
 			ActiveCameraName = activeCameraName;
 			ActiveScalesName = activeScalesName;
@@ -40,6 +42,7 @@ namespace Primitives.Settings
 			IoCircuitPort = ioCircuitPort;
 			ActiveRangeMeterName = activeRangeMeterName;
 			RangeMeterPort = rangeMeterPort;
+			RangeMeterSubtractionValueMm = rangeMeterSubtractionValueMm;
 			OutputPath = outputPath;
 			ShutDownPcByDefault = shutDownPcByDefault;
 		}
@@ -48,7 +51,7 @@ namespace Primitives.Settings
 		{
 			var defaultScanners = new[] {new IoEntry("keyboard", "")};
 
-			return new IoSettings("kinectv2", "massak", "", defaultScanners, "keusb24r", "", "custom", "",
+			return new IoSettings("kinectv2", "massak", "", defaultScanners, "keusb24r", "", "custom", "", 0,
 				"MeasurementResults", false);
 		}
 	}

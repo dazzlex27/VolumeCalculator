@@ -320,10 +320,9 @@ namespace VolumeCalculatorGUI.GUI
 
 			_settings = settings;
 
-			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.IoSettings.OutputPath);
+			_dashStatusUpdater = new DashStatusUpdater(_logger, _deviceSet, this) { DashStatus = DashboardStatus.Ready };
 
-			_dashStatusUpdater = new DashStatusUpdater(_logger, _deviceSet, this) {DashStatus = DashboardStatus.Ready};
-			CreateAutoStartTimer(settings.AlgorithmSettings.EnableAutoTimer, settings.AlgorithmSettings.TimeToStartMeasurementMs);
+			ApplyValuesFromSettings(settings);
 
 			RunVolumeCalculationCommand = new CommandHandler(RunVolumeCalculation, !CalculationInProgress);
 			ResetWeightCommand = new CommandHandler(ResetWeight, !CalculationInProgress);
@@ -357,15 +356,21 @@ namespace VolumeCalculatorGUI.GUI
 		public void ApplicationSettingsUpdated(ApplicationSettings settings)
 		{
 			_settings = settings;
-			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.IoSettings.OutputPath);
-
-			CreateAutoStartTimer(settings.AlgorithmSettings.EnableAutoTimer, settings.AlgorithmSettings.TimeToStartMeasurementMs);
+			ApplyValuesFromSettings(settings);
 		}
 
 		public void ToggleMaskMode()
 		{
 			_maskMode = true;
 			_logger.LogInfo("Applying additional masks...");
+		}
+
+
+		private void ApplyValuesFromSettings(ApplicationSettings settings)
+		{
+			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.IoSettings.OutputPath);
+			_deviceSet.RangeMeter.SetSubtractionValueMm(settings.IoSettings.RangeMeterSubtractionValueMm);
+			CreateAutoStartTimer(settings.AlgorithmSettings.EnableAutoTimer, settings.AlgorithmSettings.TimeToStartMeasurementMs);
 		}
 
 		private void CreateRequestSenders()
@@ -492,6 +497,7 @@ namespace VolumeCalculatorGUI.GUI
 				if (_deviceSet?.RangeMeter != null)
 				{
 					measuredDistanse = _deviceSet.RangeMeter.GetReading();
+					_logger.LogInfo($"Measured distance - {measuredDistanse}");
 					if (measuredDistanse <= 0)
 						_logger.LogError("Failed to get range reading, will use depth calculation...");
 				}

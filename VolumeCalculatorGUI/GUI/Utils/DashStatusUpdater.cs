@@ -11,6 +11,8 @@ namespace VolumeCalculatorGUI.GUI.Utils
 {
 	internal class DashStatusUpdater : IDisposable
 	{
+		private readonly TimeSpan _laserUpdateTimeSpan = TimeSpan.FromSeconds(10);
+
 		private readonly ILogger _logger;
 		private readonly IIoCircuit _circuit;
 		private readonly IRangeMeter _rangeMeter;
@@ -19,6 +21,8 @@ namespace VolumeCalculatorGUI.GUI.Utils
 		private readonly LightToggler _lightToggler;
 
 		private DashboardStatus _dashStatus;
+
+		private DateTime _lastUpdatedLaser;
 
 		public DashboardStatus DashStatus
 		{
@@ -81,10 +85,20 @@ namespace VolumeCalculatorGUI.GUI.Utils
 			DashStatus = DashboardStatus.Ready;
 		}
 
+		private void UpdateLaser(bool enable)
+		{
+			_rangeMeter?.ToggleLaser(enable);
+			_circuit?.ToggleRelay(1, enable);
+			_lastUpdatedLaser = DateTime.Now;
+		}
+
 		private void UpdateAutoTimerStatus(object sender, ElapsedEventArgs e)
 		{
 			if (_vm.CalculationInProgress)
 				return;
+
+			if (DateTime.Now > _lastUpdatedLaser + _laserUpdateTimeSpan)
+				UpdateLaser(true);
 
 			if (_vm.CurrentWeighingStatus == MeasurementStatus.Ready && _vm.WaitingForReset)
 				DashStatus = DashboardStatus.Ready;
@@ -116,11 +130,6 @@ namespace VolumeCalculatorGUI.GUI.Utils
 			}
 		}
 
-		private void ToggleCrosshair(bool enabled)
-		{
-			_circuit?.ToggleRelay(1, enabled);
-		}
-
 		private void SetStatusReady()
 		{
 			_vm.WaitingForReset = false;
@@ -133,9 +142,7 @@ namespace VolumeCalculatorGUI.GUI.Utils
 			});
 
 			_lightToggler?.ToggleReady();
-			_rangeMeter.ToggleLaser(true);
-
-			ToggleCrosshair(true);
+			UpdateLaser(true);
 		}
 
 		private void SetStatusError()
@@ -151,9 +158,8 @@ namespace VolumeCalculatorGUI.GUI.Utils
 
 			LastErrorMessage = "";
 
+			UpdateLaser(true);
 			_lightToggler?.ToggleError();
-
-			ToggleCrosshair(true);
 		}
 
 		private void SetStatusAutoStarting()
@@ -167,7 +173,7 @@ namespace VolumeCalculatorGUI.GUI.Utils
 
 			_lightToggler?.ToggleMeasuring();
 
-			ToggleCrosshair(false);
+			UpdateLaser(false);
 		}
 
 		private void SetStatusInProgress()
@@ -182,7 +188,7 @@ namespace VolumeCalculatorGUI.GUI.Utils
 
 			_lightToggler?.ToggleMeasuring();
 
-			ToggleCrosshair(false);
+			UpdateLaser(false);
 		}
 
 		private void SetStatusFinished()
@@ -197,9 +203,9 @@ namespace VolumeCalculatorGUI.GUI.Utils
 				_vm.CalculationPending = false;
 			});
 
-			_lightToggler?.ToggleReady();
+			UpdateLaser(true);
 
-			ToggleCrosshair(true);
+			_lightToggler?.ToggleReady();
 		}
 	}
 }

@@ -135,7 +135,8 @@ const int DepthMapProcessor::SelectAlgorithm(const DepthMap& depthMap, const Col
 		const bool boundRectIsFarFromEdges = rectLowerXIsOk && rectUpperXIsOk && rectLowerYIsOk && rectUpperYIsOk;
 		const short objHeight = _floorDepth - contourTopPlaneDepth;
 
-		const bool objectHeightIsOkForRgbCalculation = contourTopPlaneDepth < _floorDepth && objHeight < _maxObjHeightForRgb;
+		const bool heightIsOkForRgb = measuredDistanceShort > 0 ? true : objHeight < _maxObjHeightForRgb;
+		const bool objectHeightIsOkForRgbCalculation = contourTopPlaneDepth < _floorDepth && heightIsOkForRgb;
 		const bool shouldBeCalculatedWithRgb = colorObjectContour.size() > 0 && objectHeightIsOkForRgbCalculation && boundRectIsFarFromEdges;
 		if (shouldBeCalculatedWithRgb)
 			return 2;

@@ -7,5 +7,7 @@ namespace DeviceIntegration.RangeMeters
 		void ToggleLaser(bool enable);
 
 		long GetReading();
+
+		void SetSubtractionValueMm(int value);
 	}
 }
