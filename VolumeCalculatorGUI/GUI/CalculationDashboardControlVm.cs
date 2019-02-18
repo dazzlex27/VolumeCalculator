@@ -322,7 +322,7 @@ namespace VolumeCalculatorGUI.GUI
 
 			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.IoSettings.OutputPath);
 
-			_dashStatusUpdater = new DashStatusUpdater(_logger, _deviceSet.IoCircuit, this) {DashStatus = DashboardStatus.Ready};
+			_dashStatusUpdater = new DashStatusUpdater(_logger, _deviceSet, this) {DashStatus = DashboardStatus.Ready};
 			CreateAutoStartTimer(settings.AlgorithmSettings.EnableAutoTimer, settings.AlgorithmSettings.TimeToStartMeasurementMs);
 
 			RunVolumeCalculationCommand = new CommandHandler(RunVolumeCalculation, !CalculationInProgress);

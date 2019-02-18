@@ -2,6 +2,7 @@
 using System.Timers;
 using System.Windows.Media;
 using DeviceIntegration.IoCircuits;
+using DeviceIntegration.RangeMeters;
 using DeviceIntegration.Scales;
 using Primitives.Logging;
 using VolumeCalculatorGUI.Utils;
@@ -12,6 +13,7 @@ namespace VolumeCalculatorGUI.GUI.Utils
 	{
 		private readonly ILogger _logger;
 		private readonly IIoCircuit _circuit;
+		private readonly IRangeMeter _rangeMeter;
 		private readonly CalculationDashboardControlVm _vm;
 		private readonly Timer _autoStartingCheckingTimer;
 		private readonly LightToggler _lightToggler;
@@ -49,13 +51,14 @@ namespace VolumeCalculatorGUI.GUI.Utils
 
 		public Timer PendingTimer { get; set; }
 
-		public DashStatusUpdater(ILogger logger, IIoCircuit circuit, CalculationDashboardControlVm vm)
+		public DashStatusUpdater(ILogger logger, DeviceSet deviceSet, CalculationDashboardControlVm vm)
 		{
 			_logger = logger;
-			_circuit = circuit;
+			_circuit = deviceSet?.IoCircuit;
+			_rangeMeter = deviceSet?.RangeMeter;
 			_vm = vm;
-			if (circuit != null)
-				_lightToggler = new LightToggler(circuit);
+			if (_circuit != null)
+				_lightToggler = new LightToggler(_circuit);
 
 			_autoStartingCheckingTimer = new Timer(100) { AutoReset = true };
 			_autoStartingCheckingTimer.Elapsed += UpdateAutoTimerStatus;
@@ -130,6 +133,7 @@ namespace VolumeCalculatorGUI.GUI.Utils
 			});
 
 			_lightToggler?.ToggleReady();
+			_rangeMeter.ToggleLaser(true);
 
 			ToggleCrosshair(true);
 		}
@@ -192,6 +196,8 @@ namespace VolumeCalculatorGUI.GUI.Utils
 				_vm.StatusText = "Измерение завершено";
 				_vm.CalculationPending = false;
 			});
+
+			_lightToggler?.ToggleReady();
 
 			ToggleCrosshair(true);
 		}

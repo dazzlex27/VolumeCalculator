@@ -20,14 +20,14 @@ namespace VolumeCalculatorGUI.Utils
 
 		public void ToggleError()
 		{
-			_circuit.ToggleRelay(3, true);
+			_circuit.ToggleRelay(2, true);
 			_circuit.ToggleRelay(3, true);
 			_circuit.ToggleRelay(4, false);
 		}
 
 		public void ToggleMeasuring()
 		{
-			_circuit.ToggleRelay(4, true);
+			_circuit.ToggleRelay(2, true);
 			_circuit.ToggleRelay(3, false);
 			_circuit.ToggleRelay(4, true);
 		}

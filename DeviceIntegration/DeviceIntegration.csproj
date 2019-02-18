@@ -34,6 +34,9 @@
     <Reference Include="GodSharp.SerialPort, Version=1.2.0.5, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\GodSharp.SerialPort.1.2.0.5\lib\net46\GodSharp.SerialPort.dll</HintPath>
     </Reference>
+    <Reference Include="LibUsbDotNet.LibUsbDotNet">
+      <HintPath>..\packages\LibUsbDotNet\LibUsbDotNet.LibUsbDotNet.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -43,7 +46,7 @@
     <Compile Include="DeviceIntegrationCommon.cs" />
     <Compile Include="IoCircuits\IIoCircuit.cs" />
     <Compile Include="IoCircuits\KeUsb24RCircuit.cs" />
-    <Compile Include="RangeMeters\CustomRangeMeter.cs" />
+    <Compile Include="RangeMeters\TeslaM70RangeMeter.cs" />
     <Compile Include="RangeMeters\IRangeMeter.cs" />
     <Compile Include="Scales\CasMScales.cs" />
     <Compile Include="Scales\FakeScales.cs" />

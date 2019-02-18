@@ -56,7 +56,7 @@ namespace DeviceIntegration
 			switch (name)
 			{
 				case "custom":
-					return new CustomRangeMeter(logger, port);
+					return new TeslaM70RangeMeter(logger, port);
 				default:
 					logger.LogError($"Failed to create range meter by the name \"{name}\"");
 					throw new NotSupportedException();
