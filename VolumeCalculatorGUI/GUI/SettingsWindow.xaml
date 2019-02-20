@@ -6,8 +6,12 @@
         xmlns:gui="clr-namespace:VolumeCalculatorGUI.GUI"
         mc:Ignorable="d"
         x:ClassModifier="internal"
-        Title="Настройки приложения" Height="Auto" Width="Auto"
-        SizeToContent="WidthAndHeight" WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Title="Настройки приложения" 
+        Height="Auto" 
+        Width="Auto"
+        SizeToContent="WidthAndHeight" 
+        WindowStartupLocation="CenterOwner" 
+        ResizeMode="NoResize"
         SizeChanged="SettingsWindow_OnSizeChanged"
         d:DataContext="{d:DesignInstance gui:SettingsWindowVm}">
 	<StackPanel Margin="10">
@@ -74,11 +78,15 @@
 					         Text="{Binding Path=FloorDepth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 					         PreviewTextInput="CheckNumericTextPreview" />
 				</Grid>
-				<Button Name="BtCalculateFloorDepth" Margin="3" Content="Рассчитать автоматически"
+				<Button Name="BtCalculateFloorDepth" 
+				        Margin="3" 
+				        Content="Рассчитать автоматически"
 				        Command="{Binding CalculateFloorDepthCommand}" />
 			</StackPanel>
 			<StackPanel Margin="3" Orientation="Horizontal" VerticalAlignment="Center">
-				<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Минимальная высота объекта, мм: " VerticalAlignment="Center" />
+				<TextBlock Style="{StaticResource TextBlockStyle}" 
+				           Margin="2,0" Text="Минимальная высота объекта, мм: " 
+				           VerticalAlignment="Center" />
 				<TextBox Margin="2"
 				         Name="TbMinObjHeight"
 				         TextAlignment="Center"
@@ -99,8 +107,11 @@
 				         PreviewTextInput="CheckNumericTextPreview" />
 			</StackPanel>
 			<StackPanel Margin="3">
-				<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Путь для сохранения результатов (будут записаны в 'results.csv)" />
-				<TextBox Style="{StaticResource TextBoxStyle}" Margin="2,2,2,0" Name="TbOutputPath"
+				<TextBlock Style="{StaticResource TextBlockStyle}" 
+				           Margin="2,0" 
+				           Text="Путь для сохранения результатов (будут записаны в 'results.csv)" />
+				<TextBox Style="{StaticResource TextBoxStyle}" 
+				         Margin="2,2,2,0"
 				         Text="{Binding Path=OutputPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 			</StackPanel>
 			<StackPanel Margin="0,10,0,0">
@@ -113,6 +124,11 @@
 			</StackPanel>
 			<StackPanel Margin="0,10,0,0">
 				<CheckBox Content="Обязательный ввод штрихкода" IsChecked="{Binding RequireBarcode, Mode=TwoWay}"/>
+			</StackPanel>
+			<StackPanel Margin="3" Visibility="{Binding RangeMeterAvailable, Converter={StaticResource BooleanToVisibilityConverter}}">
+				<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Поправка показаний дальномера" />
+				<TextBox Style="{StaticResource TextBoxStyle}" Margin="2,2,2,0" Name="TbOutputPath"
+				         Text="{Binding Path=RangeMeterSubtractionValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 			</StackPanel>
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 				<Button Margin="5" MinWidth="100" Content="OK" Click="BtOk_Click" IsDefault="True" />

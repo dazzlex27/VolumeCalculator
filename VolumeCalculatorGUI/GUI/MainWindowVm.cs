@@ -130,7 +130,6 @@ namespace VolumeCalculatorGUI.GUI
 				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
 				ShutDownCommand = new CommandHandler(() => { ShutDown(true, false); }, true);
 
-
 				_logger.LogInfo("Application is initalized");
 			}
 			catch (Exception ex)

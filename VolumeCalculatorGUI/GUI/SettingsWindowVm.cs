@@ -38,6 +38,8 @@ namespace VolumeCalculatorGUI.GUI
 		private long _timeToStartMeasurementMs;
 		private bool _hasReceivedAColorImage;
 		private bool _hasReceivedDepthMap;
+		private int _rangeMeterSubtractionValue;
+		private bool _rangeMeterAvailable;
 
 		public WriteableBitmap ColorImageBitmap
 		{
@@ -234,6 +236,19 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
+		public int RangeMeterSubtractionValue
+		{
+			get => _rangeMeterSubtractionValue;
+			set
+			{
+				if (_rangeMeterSubtractionValue == value)
+					return;
+
+				_rangeMeterSubtractionValue = value;
+				OnPropertyChanged();
+			}
+		}
+
 		public bool HasReceivedAColorImage
 		{
 			get => _hasReceivedAColorImage;
@@ -256,6 +271,19 @@ namespace VolumeCalculatorGUI.GUI
 					return;
 
 				_hasReceivedDepthMap = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public bool RangeMeterAvailable
+		{
+			get => _rangeMeterAvailable;
+			set
+			{
+				if (_rangeMeterAvailable == value)
+					return;
+
+				_rangeMeterAvailable = value;
 				OnPropertyChanged();
 			}
 		}
@@ -289,7 +317,7 @@ namespace VolumeCalculatorGUI.GUI
 			var newIoSettings = new IoSettings(oldIoSettings.ActiveCameraName, oldIoSettings.ActiveScalesName,
 				oldIoSettings.ScalesPort, oldIoSettings.ActiveScanners, oldIoSettings.ActiveIoCircuitName,
 				oldIoSettings.IoCircuitPort, oldIoSettings.ActiveRangeMeterName, oldIoSettings.RangeMeterPort, 
-				oldIoSettings.RangeMeterSubtractionValueMm, OutputPath, oldIoSettings.ShutDownPcByDefault);
+				RangeMeterSubtractionValue, OutputPath, oldIoSettings.ShutDownPcByDefault);
 
 			var newAlgorithmSettings = new AlgorithmSettings(FloorDepth, MinObjHeight, SampleCount, UseColorMask,
 				colorMaskPoints, UseDepthMask, depthMaskPoints, EnableAutoTimer, TimeToStartMeasurementMs, RequireBarcode);
@@ -372,6 +400,8 @@ namespace VolumeCalculatorGUI.GUI
 			EnableAutoTimer = settings.AlgorithmSettings.EnableAutoTimer;
 			TimeToStartMeasurementMs = settings.AlgorithmSettings.TimeToStartMeasurementMs;
 			RequireBarcode = settings.AlgorithmSettings.RequireBarcode;
+			RangeMeterAvailable = settings.IoSettings.RangeMeterPort != "";
+			RangeMeterSubtractionValue = settings.IoSettings.RangeMeterSubtractionValueMm;
 		}
 	}
 }

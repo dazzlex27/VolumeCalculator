@@ -4,15 +4,19 @@ namespace Primitives.Logging
 {
 	public class DummyLogger : ILogger
 	{
-		public void LogInfo(string info)
+		public void LogInfo(string message)
 		{
 		}
 
-		public void LogError(string info)
+		public void LogError(string message)
 		{
 		}
 
-		public void LogException(string info, Exception ex)
+		public void LogException(string message, Exception ex)
+		{
+		}
+
+		public void LogDebug(string message)
 		{
 		}
 	}

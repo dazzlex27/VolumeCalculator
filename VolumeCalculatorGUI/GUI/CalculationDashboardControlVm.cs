@@ -365,11 +365,10 @@ namespace VolumeCalculatorGUI.GUI
 			_logger.LogInfo("Applying additional masks...");
 		}
 
-
 		private void ApplyValuesFromSettings(ApplicationSettings settings)
 		{
 			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.IoSettings.OutputPath);
-			_deviceSet.RangeMeter.SetSubtractionValueMm(settings.IoSettings.RangeMeterSubtractionValueMm);
+			_deviceSet?.RangeMeter?.SetSubtractionValueMm(settings.IoSettings.RangeMeterSubtractionValueMm);
 			CreateAutoStartTimer(settings.AlgorithmSettings.EnableAutoTimer, settings.AlgorithmSettings.TimeToStartMeasurementMs);
 		}
 

@@ -11,7 +11,7 @@ namespace VolumeCalculatorGUI.GUI.Utils
 {
 	internal class DashStatusUpdater : IDisposable
 	{
-		private readonly TimeSpan _laserUpdateTimeSpan = TimeSpan.FromSeconds(10);
+		private readonly TimeSpan _laserUpdateTimeSpan = TimeSpan.FromSeconds(120);
 
 		private readonly ILogger _logger;
 		private readonly IIoCircuit _circuit;
@@ -87,9 +87,9 @@ namespace VolumeCalculatorGUI.GUI.Utils
 
 		private void UpdateLaser(bool enable)
 		{
+			_lastUpdatedLaser = DateTime.Now;
 			_rangeMeter?.ToggleLaser(enable);
 			_circuit?.ToggleRelay(1, enable);
-			_lastUpdatedLaser = DateTime.Now;
 		}
 
 		private void UpdateAutoTimerStatus(object sender, ElapsedEventArgs e)

@@ -4,10 +4,12 @@ namespace Primitives.Logging
 {
 	public interface ILogger
 	{
-		void LogInfo(string info);
+		void LogInfo(string message);
 
-		void LogError(string info);
+		void LogError(string message);
 
-		void LogException(string info, Exception ex);
+		void LogException(string message, Exception ex);
+
+		void LogDebug(string message);
 	}
 }

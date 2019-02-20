@@ -42,6 +42,11 @@ namespace Primitives.Logging
 			WriteMessageToLog("EXCEPTION", $"{message} {ex}");
 		}
 
+		public void LogDebug(string message)
+		{
+			WriteMessageToLog("DEBUG", message);
+		}
+
 		private void WriteMessageToLog(string type, string message)
 		{
 			lock (_writeLock)

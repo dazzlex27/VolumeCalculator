@@ -57,6 +57,9 @@ namespace DeviceIntegration.RangeMeters
 
 		public void ToggleLaser(bool enable)
 		{
+			if (!enable)
+				return;
+
 			SendClearCommand();
 			SendReadCommand();
 		}
