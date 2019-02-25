@@ -8,28 +8,28 @@ namespace Primitives.Settings
 
 		public AlgorithmSettings AlgorithmSettings { get; set; }
 
-		public WebRequestSettings WebRequestSettings { get; set; }
+		public HttpRequestSettings HttpRequestSettings { get; set; }
 
 		public SqlRequestSettings SqlRequestSettings { get; set; }
 
 		public ApplicationSettings(IoSettings ioSettings, AlgorithmSettings algorithmSettings,
-			WebRequestSettings webRequestSettings, SqlRequestSettings sqlRequestSettings)
+			HttpRequestSettings httpRequestSettings, SqlRequestSettings sqlRequestSettings)
 		{
 			IoSettings = ioSettings;
 			AlgorithmSettings = algorithmSettings;
-		    WebRequestSettings = webRequestSettings;
+		    HttpRequestSettings = httpRequestSettings;
 		    SqlRequestSettings = sqlRequestSettings;
 	    }
 
 	    public static ApplicationSettings GetDefaultSettings()
 	    {
 		    return new ApplicationSettings(IoSettings.GetDefaultSettings(), AlgorithmSettings.GetDefaultSettings(), 
-			    WebRequestSettings.GetDefaultSettings(), SqlRequestSettings.GetDefaultSettings());
+			    HttpRequestSettings.GetDefaultSettings(), SqlRequestSettings.GetDefaultSettings());
 	    }
 
 	    public override string ToString()
 	    {
-		    return $"{IoSettings}; {AlgorithmSettings}; {WebRequestSettings}; {SqlRequestSettings}";
+		    return $"{IoSettings}; {AlgorithmSettings}; {HttpRequestSettings}; {SqlRequestSettings}";
 	    }
 
 		[OnDeserializing]
@@ -41,8 +41,8 @@ namespace Primitives.Settings
 			if (AlgorithmSettings == null)
 				AlgorithmSettings = AlgorithmSettings.GetDefaultSettings();
 
-			if (WebRequestSettings == null)
-				WebRequestSettings = WebRequestSettings.GetDefaultSettings();
+			if (HttpRequestSettings == null)
+				HttpRequestSettings = HttpRequestSettings.GetDefaultSettings();
 
 			if (SqlRequestSettings == null)
 				SqlRequestSettings = SqlRequestSettings.GetDefaultSettings();

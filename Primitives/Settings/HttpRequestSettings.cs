@@ -1,6 +1,6 @@
 ﻿namespace Primitives.Settings
 {
-	public class WebRequestSettings
+	public class HttpRequestSettings
 	{
 		public bool EnableRequests { get; set; }
 
@@ -8,16 +8,16 @@
 
 		public int Port { get; set; }
 
-		public WebRequestSettings(bool enableRequests, string address, int port)
+		public HttpRequestSettings(bool enableRequests, string address, int port)
 		{
 			EnableRequests = enableRequests;
 			Address = address;
 			Port = port;
 		}
 
-		public static WebRequestSettings GetDefaultSettings()
+		public static HttpRequestSettings GetDefaultSettings()
 		{
-			return new WebRequestSettings(false, "localhost", 8080);
+			return new HttpRequestSettings(false, "localhost", 8080);
 		}
 	}
 }

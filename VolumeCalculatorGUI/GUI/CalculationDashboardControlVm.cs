@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
@@ -23,12 +24,15 @@ namespace VolumeCalculatorGUI.GUI
 		private readonly DeviceSet _deviceSet;
 		private readonly DepthMapProcessor _processor;
 		private readonly DashStatusUpdater _dashStatusUpdater;
-		private readonly List<IRequestSender> _requestSenders;
 
 		private ApplicationSettings _settings;
 
 		private VolumeCalculator _volumeCalculator;
 		private CalculationResultFileProcessor _calculationResultFileProcessor;
+
+		private List<IRequestSender> _requestSenders;
+		private HttpRequestHandler _httpRequestHandler;
+		private Queue<HttpListenerContext> _activeHttpListeners;
 
 		private string _objectCode;
 		private double _objectWeight;
@@ -330,8 +334,7 @@ namespace VolumeCalculatorGUI.GUI
 			OpenPhotosFolderCommand = new CommandHandler(OpenPhotosFolder, !CalculationInProgress);
 			CancelPendingCalculationCommand = new CommandHandler(_dashStatusUpdater.CancelPendingCalculation, !CalculationInProgress);
 
-			_requestSenders = new List<IRequestSender>();
-			CreateRequestSenders();
+			CreateIntegrationEntities();
 		}
 
 		public void Dispose()
@@ -349,8 +352,15 @@ namespace VolumeCalculatorGUI.GUI
 			if (scales != null)
 				scales.MeasurementReady -= OnWeightMeasurementReady;
 
+			if (_httpRequestHandler != null)
+			{
+				_httpRequestHandler.CalculationStartRequested -= OnHttpStartRequestReceived;
+				_httpRequestHandler.CalculationStartRequestTimedOut -= OnHttpRequestHandlerTimedOut;
+				_httpRequestHandler.Dispose();
+			}
+
 			foreach (var sender in _requestSenders)
-				sender.Dispose();
+				sender?.Dispose();
 		}
 
 		public void ApplicationSettingsUpdated(ApplicationSettings settings)
@@ -372,10 +382,19 @@ namespace VolumeCalculatorGUI.GUI
 			CreateAutoStartTimer(settings.AlgorithmSettings.EnableAutoTimer, settings.AlgorithmSettings.TimeToStartMeasurementMs);
 		}
 
-		private void CreateRequestSenders()
+		private void CreateIntegrationEntities()
 		{
-			if (_settings.WebRequestSettings.EnableRequests)
-				_requestSenders.Add(new HttpRequestSender(_logger, _settings.WebRequestSettings));
+			if (_settings.HttpRequestSettings.EnableRequests)
+			{
+				_httpRequestHandler = new HttpRequestHandler(_logger, _settings.HttpRequestSettings.Address,
+					_settings.HttpRequestSettings.Port);
+				_httpRequestHandler.CalculationStartRequested += OnHttpStartRequestReceived;
+				_httpRequestHandler.CalculationStartRequestTimedOut += OnHttpRequestHandlerTimedOut;
+
+				_activeHttpListeners = new Queue<HttpListenerContext>(1);
+			}
+
+			_requestSenders = new List<IRequestSender>();
 
 			if (_settings.SqlRequestSettings.EnableRequests)
 				_requestSenders.Add(new SqlRequestSender(_logger, _settings.SqlRequestSettings));
@@ -391,6 +410,24 @@ namespace VolumeCalculatorGUI.GUI
 					_logger.LogException("Failed to connect to requet destination", ex);
 				}
 			}
+		}
+
+		private void OnHttpRequestHandlerTimedOut()
+		{
+		}
+
+		private void OnHttpStartRequestReceived(HttpListenerContext obj)
+		{
+			if (CalculationInProgress)
+			{
+				_logger.LogError("HTTP start requested while a calculation was already in progress!");
+				_httpRequestHandler.Reset(obj, "Calculation already in progress");
+				return;
+			}
+
+			_logger.LogInfo("Starting volume calculation upon HTTP request...");
+			_activeHttpListeners.Enqueue(obj);
+			RunVolumeCalculation();
 		}
 
 		private void CreateAutoStartTimer(bool timerEnabled, long intervalMs)
@@ -481,11 +518,23 @@ namespace VolumeCalculatorGUI.GUI
 
 			try
 			{
+				_dashStatusUpdater.DashStatus = DashboardStatus.InProgress;
+
 				var canRunCalculation = CheckIfPreConditionsAreSatisfied();
 				if (!canRunCalculation)
-					return;
+				{
+					_dashStatusUpdater.DashStatus = DashboardStatus.Ready;
+					if (_httpRequestHandler == null)
+						return;
 
-				_dashStatusUpdater.DashStatus = DashboardStatus.InProgress;
+					if (!_activeHttpListeners.Any())
+						return;
+
+					_httpRequestHandler.Reset(_activeHttpListeners.Dequeue(), "Barcode was not entered");
+					_activeHttpListeners.Clear();
+
+					return;
+				}
 
 				var dm1Enabled = _settings.AlgorithmSettings.EnableDmAlgorithm;
 				var dm2Enabled = _settings.AlgorithmSettings.EnablePerspectiveDmAlgorithm;
@@ -518,7 +567,7 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			if (!CodeReady)
 			{
-				AutoClosingMessageBox.Show("Введите код объекта", "Ошибка");
+				ShowMessageBox("Введите код объекта", "Ошибка");
 
 				return false;
 			}
@@ -527,7 +576,7 @@ namespace VolumeCalculatorGUI.GUI
 			if (killedProcess)
 				return true;
 
-			AutoClosingMessageBox.Show("Не удалось закрыть файл с результатами, убедитесь, что файл закрыт", "Ошибка");
+			ShowMessageBox("Не удалось закрыть файл с результатами, убедитесь, что файл закрыт", "Ошибка");
 			_logger.LogInfo("Failed to access the result file");
 
 			return false;
@@ -668,7 +717,7 @@ namespace VolumeCalculatorGUI.GUI
 			}
 			catch (Exception ex)
 			{
-				AutoClosingMessageBox.Show(
+				ShowMessageBox(
 					"Не удалось записать результат измерений в файл, проверьте доступность файла и повторите измерения",
 					"Ошибка");
 				_logger.LogException(
@@ -679,6 +728,12 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void SendRequests(CalculationResult result)
 		{
+			if (_httpRequestHandler != null)
+			{
+				var httpContext = _activeHttpListeners.Dequeue();
+				_httpRequestHandler.SendResponse(httpContext, result);
+			}
+
 			foreach (var sender in _requestSenders)
 			{
 				Task.Run(() =>
@@ -694,6 +749,11 @@ namespace VolumeCalculatorGUI.GUI
 
 				});
 			}
+		}
+
+		private void ShowMessageBox(string message, string caption)
+		{
+			Dispatcher.Invoke(() => { AutoClosingMessageBox.Show(message, caption); });
 		}
 	}
 }

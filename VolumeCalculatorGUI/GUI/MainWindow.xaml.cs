@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 
 namespace VolumeCalculatorGUI.GUI
 {
@@ -16,6 +17,11 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			if (!_vm.ShutDown(_vm.ShutDownByDefault, false))
 				e.Cancel = true;
+		}
+
+		private void OnContentRendered(object sender, EventArgs e)
+		{
+			Focus();
 		}
 	}
 }

@@ -11,7 +11,8 @@
         Closing="Window_Closing"
         WindowStyle="None"
 		WindowState="Maximized"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        ContentRendered="OnContentRendered">
 	<Window.DataContext>
 		<gui:MainWindowVm/>
 	</Window.DataContext>

@@ -139,6 +139,7 @@ namespace VolumeCalculatorGUI.GUI.Utils
 				_vm.StatusBrush = new SolidColorBrush(Colors.Green);
 				_vm.StatusText = "Готов к измерению";
 				_vm.CalculationPending = false;
+				_vm.CalculationInProgress = false;
 			});
 
 			_lightToggler?.ToggleReady();

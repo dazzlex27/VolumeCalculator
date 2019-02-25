@@ -65,7 +65,7 @@
     <Compile Include="RequestParameter.cs" />
     <Compile Include="Settings\IoSettings.cs" />
     <Compile Include="Settings\SqlRequestSettings.cs" />
-    <Compile Include="Settings\WebRequestSettings.cs" />
+    <Compile Include="Settings\HttpRequestSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
