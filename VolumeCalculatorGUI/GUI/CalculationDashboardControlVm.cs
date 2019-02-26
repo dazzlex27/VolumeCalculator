@@ -594,7 +594,7 @@ namespace VolumeCalculatorGUI.GUI
 				ObjectWidth, ObjectHeight, ObjectVolume, Comment);
 
 			WriteObjectDataToFile(calculationResult);
-			SendRequests(calculationResult);
+			SendRequests(calculationResult, status);
 
 			_logger.LogInfo("Done processing calculatiuon results");
 		}
@@ -726,12 +726,18 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		private void SendRequests(CalculationResult result)
+		private void SendRequests(CalculationResult result, CalculationStatus status)
 		{
-			if (_httpRequestHandler != null)
+			if (_httpRequestHandler != null && _activeHttpListeners.Any())
 			{
 				var httpContext = _activeHttpListeners.Dequeue();
-				_httpRequestHandler.SendResponse(httpContext, result);
+				_httpRequestHandler.SendResponse(httpContext, result, status);
+			}
+
+			if (status != CalculationStatus.Sucessful)
+			{
+				_logger.LogInfo("Calculation status was not successful, will skip request sending");
+				return;
 			}
 
 			foreach (var sender in _requestSenders)
@@ -744,7 +750,7 @@ namespace VolumeCalculatorGUI.GUI
 					}
 					catch (Exception ex)
 					{
-						_logger.LogException($"Failed to send a request!", ex);
+						_logger.LogException("Failed to send a request!", ex);
 					}
 
 				});

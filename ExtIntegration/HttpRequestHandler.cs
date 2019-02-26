@@ -57,7 +57,7 @@ namespace ExtIntegration
 			_running = false;
 		}
 
-		public void SendResponse(HttpListenerContext context, CalculationResult result)
+		public void SendResponse(HttpListenerContext context, CalculationResult result, CalculationStatus status)
 		{
 			try
 			{
@@ -66,7 +66,7 @@ namespace ExtIntegration
 
 				_logger.LogInfo($"Generating HTTP response for {_address}...");
 				_requesthandlingTimeoutTimer.Stop();
-				var responseString = RequestUtils.GenerateXmlResponseText(result);
+				var responseString = RequestUtils.GenerateXmlResponseText(result, status);
 				_logger.LogInfo($"Response text is the following: {Environment.NewLine}{responseString}");
 
 				var response = context.Response;
@@ -127,13 +127,16 @@ namespace ExtIntegration
 				var context = _listener.GetContext();
 				var request = context.Request;
 				var url = request.RawUrl;
+				var command = url.Contains("?")
+					? url.Substring(1, url.IndexOf("?", StringComparison.Ordinal))
+					: url.Substring(1);
 				var method = request.HttpMethod;
 				_logger.LogInfo($"HTTP request accepted from {_address} containing {url}, the method is {method}");
 
-				if (url != "/start")
+				if (command != "calculate")
 					continue;
 
-				_logger.LogInfo($"Received a start command from {_address}...");
+				_logger.LogInfo($"Received a calculate command from {_address}...");
 				RaiseCalculationStartRequestedEvent(context);
 			}
 

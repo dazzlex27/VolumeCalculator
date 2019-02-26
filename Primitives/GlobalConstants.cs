@@ -10,7 +10,7 @@ namespace Primitives
 
 		public static readonly string Edition = ProEdition ? "Pro" : "Standard";
 
-		public static readonly string AppVersion = $"v1.20 {Edition}";
+		public static readonly string AppVersion = $"v1.21 {Edition}";
 
 		public static readonly string AppHeaderString = $@"{ManufacturerName} {AppTitle} {AppVersion}";
 	}

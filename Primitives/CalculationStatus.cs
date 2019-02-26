@@ -1,4 +1,4 @@
-﻿namespace FrameProcessor
+﻿namespace Primitives
 {
 	public enum CalculationStatus
 	{
