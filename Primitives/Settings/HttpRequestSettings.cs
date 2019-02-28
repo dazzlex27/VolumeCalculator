@@ -8,16 +8,19 @@
 
 		public int Port { get; set; }
 
-		public HttpRequestSettings(bool enableRequests, string address, int port)
+		public string Url { get; set; }
+
+		public HttpRequestSettings(bool enableRequests, string address, int port, string url)
 		{
 			EnableRequests = enableRequests;
 			Address = address;
 			Port = port;
+			Url = url;
 		}
 
 		public static HttpRequestSettings GetDefaultSettings()
 		{
-			return new HttpRequestSettings(false, "localhost", 8080);
+			return new HttpRequestSettings(false, "localhost", 8888, "");
 		}
 	}
 }

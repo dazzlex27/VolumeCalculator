@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 using System.Timers;
 using Primitives;
 using Primitives.Logging;
+using Primitives.Settings;
 
-namespace ExtIntegration
+namespace ExtIntegration.RequestHandlers
 {
 	public class HttpRequestHandler
 	{
@@ -24,10 +25,10 @@ namespace ExtIntegration
 		private bool _running;
 		private bool _sessionInProgress;
 
-		public HttpRequestHandler(ILogger logger, string ip, int port)
+		public HttpRequestHandler(ILogger logger, HttpHandlerSettings settings)
 		{
 			_logger = logger;
-			_address = $"http://{ip}:{port}/";
+			_address = $"http://{settings.Address}:{settings.Port}/";
 
 			_logger.LogInfo($"Creating http listener for {_address} ...");
 
@@ -57,7 +58,7 @@ namespace ExtIntegration
 			_running = false;
 		}
 
-		public void SendResponse(HttpListenerContext context, CalculationResult result, CalculationStatus status)
+		public void SendResponse(HttpListenerContext context, CalculationResult result)
 		{
 			try
 			{
@@ -66,7 +67,7 @@ namespace ExtIntegration
 
 				_logger.LogInfo($"Generating HTTP response for {_address}...");
 				_requesthandlingTimeoutTimer.Stop();
-				var responseString = RequestUtils.GenerateXmlResponseText(result, status);
+				var responseString = RequestUtils.GenerateXmlResponseText(result, result.Status);
 				_logger.LogInfo($"Response text is the following: {Environment.NewLine}{responseString}");
 
 				var response = context.Response;

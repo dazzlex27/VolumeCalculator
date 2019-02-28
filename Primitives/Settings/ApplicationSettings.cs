@@ -8,32 +8,28 @@ namespace Primitives.Settings
 
 		public AlgorithmSettings AlgorithmSettings { get; set; }
 
-		public HttpRequestSettings HttpRequestSettings { get; set; }
+		public IntegrationSettings IntegrationSettings { get; set; }
 
-		public SqlRequestSettings SqlRequestSettings { get; set; }
-
-		public ApplicationSettings(IoSettings ioSettings, AlgorithmSettings algorithmSettings,
-			HttpRequestSettings httpRequestSettings, SqlRequestSettings sqlRequestSettings)
-		{
-			IoSettings = ioSettings;
-			AlgorithmSettings = algorithmSettings;
-		    HttpRequestSettings = httpRequestSettings;
-		    SqlRequestSettings = sqlRequestSettings;
+	    public ApplicationSettings(IoSettings ioSettings, AlgorithmSettings algorithmSettings, IntegrationSettings integrationSettings)
+	    {
+		    IoSettings = ioSettings;
+		    AlgorithmSettings = algorithmSettings;
+		    IntegrationSettings = integrationSettings;
 	    }
 
 	    public static ApplicationSettings GetDefaultSettings()
 	    {
 		    return new ApplicationSettings(IoSettings.GetDefaultSettings(), AlgorithmSettings.GetDefaultSettings(), 
-			    HttpRequestSettings.GetDefaultSettings(), SqlRequestSettings.GetDefaultSettings());
+			    IntegrationSettings.GetDefaultSettings());
 	    }
 
 	    public override string ToString()
 	    {
-		    return $"{IoSettings}; {AlgorithmSettings}; {HttpRequestSettings}; {SqlRequestSettings}";
+		    return $"{IoSettings}; {AlgorithmSettings}; {IntegrationSettings}";
 	    }
 
-		[OnDeserializing]
-	    private void OnDeserialize(StreamingContext context)
+		[OnDeserialized]
+	    private void OnDeserialized(StreamingContext context)
 		{
 			if (IoSettings == null)
 				IoSettings = IoSettings.GetDefaultSettings();
@@ -41,11 +37,8 @@ namespace Primitives.Settings
 			if (AlgorithmSettings == null)
 				AlgorithmSettings = AlgorithmSettings.GetDefaultSettings();
 
-			if (HttpRequestSettings == null)
-				HttpRequestSettings = HttpRequestSettings.GetDefaultSettings();
-
-			if (SqlRequestSettings == null)
-				SqlRequestSettings = SqlRequestSettings.GetDefaultSettings();
+			if (IntegrationSettings == null)
+				IntegrationSettings = IntegrationSettings.GetDefaultSettings();
 	    }
     }
 }

@@ -322,8 +322,7 @@ namespace VolumeCalculatorGUI.GUI
 			var newAlgorithmSettings = new AlgorithmSettings(FloorDepth, MinObjHeight, SampleCount, UseColorMask,
 				colorMaskPoints, UseDepthMask, depthMaskPoints, EnableAutoTimer, TimeToStartMeasurementMs, RequireBarcode);
 
-			return new ApplicationSettings(newIoSettings, newAlgorithmSettings, _oldSettings.HttpRequestSettings,
-				_oldSettings.SqlRequestSettings);
+			return new ApplicationSettings(newIoSettings, newAlgorithmSettings, _oldSettings.IntegrationSettings);
 		}
 
 		public void ColorFrameUpdated(ImageData image)
