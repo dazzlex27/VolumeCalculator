@@ -237,6 +237,7 @@ namespace FrameProcessor
 			{
 				Directory.CreateDirectory(Constants.DebugDataDirectoryName);
 				var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter();
+				_logger.LogInfo($"Global object ID = {calculationIndex}");
 
 				if (_latestColorFrame != null)
 				{

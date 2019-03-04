@@ -15,6 +15,7 @@ namespace ExtIntegration.RequestSenders
 		{
 			_logger = logger;
 			_address = $"http://{settings.Address}:{settings.Port}/{settings.Url}";
+			_logger.LogInfo($"Creating GET request sender for {_address}");
 		}
 
 		public void Dispose()

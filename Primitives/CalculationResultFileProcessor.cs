@@ -8,14 +8,19 @@ namespace Primitives
 {
 	public class CalculationResultFileProcessor
 	{
+		private readonly ILogger _logger;
 		private readonly string _outputFolderPath;
+		private readonly object _fileWriteLock;
 
 		public string FullOutputPath { get; }
 
 		public CalculationResultFileProcessor(ILogger logger, string outputFolderPath)
 		{
+			_logger = logger;
 			_outputFolderPath = outputFolderPath;
 			FullOutputPath = Path.Combine(outputFolderPath, Constants.ResultFileName);
+
+			_fileWriteLock = new object();
 
 			try
 			{
@@ -53,57 +58,71 @@ namespace Primitives
 
 		public void CreateFileIfNecessary()
 		{
-			Directory.CreateDirectory(_outputFolderPath);
-			using (var resultFile = new StreamWriter(FullOutputPath, true, Encoding.Default))
+			lock (_fileWriteLock)
 			{
-				var resultString = new StringBuilder();
-				resultString.Append("#");
-				resultString.Append($@"{Constants.CsvSeparator}date local");
-				resultString.Append($@"{Constants.CsvSeparator}time local");
-				resultString.Append($@"{Constants.CsvSeparator}code");
-				resultString.Append($@"{Constants.CsvSeparator}weight (kg)");
-				resultString.Append($@"{Constants.CsvSeparator}unitCount (p)");
-				resultString.Append($@"{Constants.CsvSeparator}length (mm)");
-				resultString.Append($@"{Constants.CsvSeparator}width (mm)");
-				resultString.Append($@"{Constants.CsvSeparator}height (mm)");
-				resultString.Append($@"{Constants.CsvSeparator}volume (cm^3)");
-				resultString.Append($@"{Constants.CsvSeparator}comment");
-				resultFile.WriteLine(resultString);
-				resultFile.Flush();
+				Directory.CreateDirectory(_outputFolderPath);
+				using (var resultFile = new StreamWriter(FullOutputPath, true, Encoding.Default))
+				{
+					var resultString = new StringBuilder();
+					resultString.Append("#");
+					resultString.Append($@"{Constants.CsvSeparator}date local");
+					resultString.Append($@"{Constants.CsvSeparator}time local");
+					resultString.Append($@"{Constants.CsvSeparator}code");
+					resultString.Append($@"{Constants.CsvSeparator}weight (kg)");
+					resultString.Append($@"{Constants.CsvSeparator}unitCount (p)");
+					resultString.Append($@"{Constants.CsvSeparator}length (mm)");
+					resultString.Append($@"{Constants.CsvSeparator}width (mm)");
+					resultString.Append($@"{Constants.CsvSeparator}height (mm)");
+					resultString.Append($@"{Constants.CsvSeparator}volume (cm^3)");
+					resultString.Append($@"{Constants.CsvSeparator}comment");
+					resultFile.WriteLine(resultString);
+					resultFile.Flush();
+				}
 			}
 		}
 
 		public void WriteCalculationResult(CalculationResult result)
 		{
-			var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter();
-			IoUtils.IncrementUniversalObjectCounter();
-
-			var safeName = result.ObjectCode;
-			if (!string.IsNullOrEmpty(safeName))
+			lock (_fileWriteLock)
 			{
-				var nameWithoutReturns = result.ObjectCode.Replace(Environment.NewLine, " ");
-				safeName = nameWithoutReturns.Replace(Constants.CsvSeparator, " ");
-			}
+				try
+				{
+					var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter();
+					IoUtils.IncrementUniversalObjectCounter();
+					_logger.LogInfo($"Global object ID incremented to {calculationIndex}");
 
-			var safeWeight = result.ObjectWeightKg.ToString(CultureInfo.InvariantCulture);
+					var safeName = result.ObjectCode;
+					if (!string.IsNullOrEmpty(safeName))
+					{
+						var nameWithoutReturns = result.ObjectCode.Replace(Environment.NewLine, " ");
+						safeName = nameWithoutReturns.Replace(Constants.CsvSeparator, " ");
+					}
 
-			Directory.CreateDirectory(_outputFolderPath);
-			using (var resultFile = new StreamWriter(FullOutputPath, true, Encoding.Default))
-			{
-				var resultString = new StringBuilder();
-				resultString.Append(calculationIndex);
-				resultString.Append($@"{Constants.CsvSeparator}{result.CalculationTime.ToShortDateString()}");
-				resultString.Append($@"{Constants.CsvSeparator}{result.CalculationTime.ToShortTimeString()}");
-				resultString.Append($@"{Constants.CsvSeparator}{safeName}");
-				resultString.Append($@"{Constants.CsvSeparator}{safeWeight}");
-				resultString.Append($@"{Constants.CsvSeparator}{result.UnitCount}");
-				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectLengthMm}");
-				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectWidthMm}");
-				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectHeightMm}");
-				resultString.Append($@"{Constants.CsvSeparator}{result.ObjectVolumeMm}");
-				resultString.Append($@"{Constants.CsvSeparator}{result.CalculationComment}");
-				resultFile.WriteLine(resultString);
-				resultFile.Flush();
+					var safeWeight = result.ObjectWeightKg.ToString(CultureInfo.InvariantCulture);
+
+					Directory.CreateDirectory(_outputFolderPath);
+					using (var resultFile = new StreamWriter(FullOutputPath, true, Encoding.Default))
+					{
+						var resultString = new StringBuilder();
+						resultString.Append(calculationIndex);
+						resultString.Append($@"{Constants.CsvSeparator}{result.CalculationTime.ToShortDateString()}");
+						resultString.Append($@"{Constants.CsvSeparator}{result.CalculationTime.ToShortTimeString()}");
+						resultString.Append($@"{Constants.CsvSeparator}{safeName}");
+						resultString.Append($@"{Constants.CsvSeparator}{safeWeight}");
+						resultString.Append($@"{Constants.CsvSeparator}{result.UnitCount}");
+						resultString.Append($@"{Constants.CsvSeparator}{result.ObjectLengthMm}");
+						resultString.Append($@"{Constants.CsvSeparator}{result.ObjectWidthMm}");
+						resultString.Append($@"{Constants.CsvSeparator}{result.ObjectHeightMm}");
+						resultString.Append($@"{Constants.CsvSeparator}{result.ObjectVolumeMm}");
+						resultString.Append($@"{Constants.CsvSeparator}{result.CalculationComment}");
+						resultFile.WriteLine(resultString);
+						resultFile.Flush();
+					}
+				}
+				catch (Exception ex)
+				{
+					_logger.LogException("Failed to write data to csv...", ex);
+				}
 			}
 		}
 
