@@ -592,8 +592,8 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			_logger.LogInfo("Calculation finished, processing results...");
 
-			var calculationResult = new CalculationResult(status, DateTime.Now, ObjectCode, ObjectWeight, UnitCount, ObjectLength,
-				ObjectWidth, ObjectHeight, ObjectVolume, Comment);
+			var calculationResult = new CalculationResult(status, DateTime.Now, ObjectCode, ObjectWeight, UnitCount,
+				result.Length, result.Width, result.Height, ObjectVolume, Comment);
 
 			DisposeVolumeCalculator();
 

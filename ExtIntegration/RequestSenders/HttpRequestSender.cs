@@ -32,7 +32,7 @@ namespace ExtIntegration.RequestSenders
 			{
 				_logger.LogInfo($"Sending GET request to {_address}...");
 
-				var resultIsOk = result != null && result.Status != CalculationStatus.Sucessful;
+				var resultIsOk = result != null && result.Status == CalculationStatus.Sucessful;
 				if (!resultIsOk)
 				{
 					var message = result == null ? "result was null" : result.Status.ToString();
