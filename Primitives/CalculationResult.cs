@@ -4,8 +4,6 @@ namespace Primitives
 {
 	public class CalculationResult
 	{
-		public CalculationStatus Status { get; }
-
 		public DateTime CalculationTime { get; }
 
 		public string ObjectCode { get; }
@@ -24,11 +22,10 @@ namespace Primitives
 
 		public string CalculationComment { get; }
 
-		public CalculationResult(CalculationStatus status, DateTime calculationTime, string objectCode,
+		public CalculationResult(DateTime calculationTime, string objectCode,
 			double objectWeightKg, uint unitCount, int objectLengthMm, int objectWidthMm, int objectHeightMm,
 			double objectVolumeMm, string calculationComment)
 		{
-			Status = status;
 			CalculationTime = calculationTime;
 			ObjectCode = objectCode;
 			ObjectWeightKg = objectWeightKg;

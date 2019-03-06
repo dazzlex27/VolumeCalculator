@@ -5,7 +5,7 @@ using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 
-namespace ExtIntegration
+namespace ExtIntegration.RequestSenders
 {
 	public class SqlRequestSender : IRequestSender
 	{
@@ -42,8 +42,14 @@ namespace ExtIntegration
 			_logger.LogInfo($"Connected to {_connection.ConnectionString}");
 		}
 
-		public bool Send(CalculationResult result)
+		public bool Send(CalculationResultData resultData)
 		{
+			if (resultData.Status != CalculationStatus.Sucessful)
+			{
+				_logger.LogError($"The result was not successful but {resultData.Status}, will not send SQL request");
+				return false;
+			}
+
 			try
 			{
 				if (_connection.State != ConnectionState.Open)
@@ -53,6 +59,8 @@ namespace ExtIntegration
 				}
 
 				_logger.LogInfo($"Sending SQL request to {_connection.ConnectionString}...");
+
+				var result = resultData.Result;
 
 				using (var command = new SqlCommand(_insertionSqlRequest, _connection))
 				{

@@ -1,13 +1,13 @@
 ﻿using System;
 using Primitives;
 
-namespace ExtIntegration
+namespace ExtIntegration.RequestSenders
 {
 	public interface IRequestSender : IDisposable
 	{
 		void Connect();
 
-		bool Send(CalculationResult result);
+		bool Send(CalculationResultData resultData);
 
 		void Disconnect();
 	}

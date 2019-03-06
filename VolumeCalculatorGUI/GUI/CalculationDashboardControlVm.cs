@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
 using System.Windows.Media;
 using DeviceIntegration.Scales;
-using ExtIntegration;
-using ExtIntegration.RequestHandlers;
-using ExtIntegration.RequestSenders;
 using FrameProcessor;
 using Primitives;
 using Primitives.Logging;
@@ -22,6 +16,10 @@ namespace VolumeCalculatorGUI.GUI
 {
 	internal class CalculationDashboardControlVm : BaseViewModel, IDisposable
 	{
+		public event Action<CalculationResultData> CalculationFinished;
+
+		private event Action CalculationStartRequested;
+
 		private readonly ILogger _logger;
 		private readonly DeviceSet _deviceSet;
 		private readonly DepthMapProcessor _processor;
@@ -31,10 +29,6 @@ namespace VolumeCalculatorGUI.GUI
 
 		private VolumeCalculator _volumeCalculator;
 		private CalculationResultFileProcessor _calculationResultFileProcessor;
-
-		private List<IRequestSender> _requestSenders;
-		private HttpRequestHandler _httpRequestHandler;
-		private Queue<HttpListenerContext> _activeHttpListeners;
 
 		private string _objectCode;
 		private double _objectWeight;
@@ -330,17 +324,27 @@ namespace VolumeCalculatorGUI.GUI
 
 			ApplyValuesFromSettings(settings);
 
-			RunVolumeCalculationCommand = new CommandHandler(RunVolumeCalculation, !CalculationInProgress);
+			RunVolumeCalculationCommand = new CommandHandler(OnCalculationStartRequested, !CalculationInProgress);
 			ResetWeightCommand = new CommandHandler(ResetWeight, !CalculationInProgress);
 			OpenResultsFileCommand = new CommandHandler(OpenResultsFile, !CalculationInProgress);
 			OpenPhotosFolderCommand = new CommandHandler(OpenPhotosFolder, !CalculationInProgress);
 			CancelPendingCalculationCommand = new CommandHandler(_dashStatusUpdater.CancelPendingCalculation, !CalculationInProgress);
+		}
 
-			CreateIntegrationEntities();
+		public void StartCalculation()
+		{
+			OnCalculationStartRequested();
+		}
+
+		private void OnCalculationStartRequested()
+		{
+			RunVolumeCalculation();
 		}
 
 		public void Dispose()
 		{
+			CalculationStartRequested -= CalculationStartRequested;
+
 			_dashStatusUpdater?.Dispose();
 
 			var scanners = _deviceSet.Scanners;
@@ -353,16 +357,6 @@ namespace VolumeCalculatorGUI.GUI
 			var scales = _deviceSet.Scales;
 			if (scales != null)
 				scales.MeasurementReady -= OnWeightMeasurementReady;
-
-			if (_httpRequestHandler != null)
-			{
-				_httpRequestHandler.CalculationStartRequested -= OnHttpStartRequestReceived;
-				_httpRequestHandler.CalculationStartRequestTimedOut -= OnHttpRequestHandlerTimedOut;
-				_httpRequestHandler.Dispose();
-			}
-
-			foreach (var sender in _requestSenders)
-				sender?.Dispose();
 		}
 
 		public void ApplicationSettingsUpdated(ApplicationSettings settings)
@@ -382,58 +376,6 @@ namespace VolumeCalculatorGUI.GUI
 			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.IoSettings.OutputPath);
 			_deviceSet?.RangeMeter?.SetSubtractionValueMm(settings.IoSettings.RangeMeterSubtractionValueMm);
 			CreateAutoStartTimer(settings.AlgorithmSettings.EnableAutoTimer, settings.AlgorithmSettings.TimeToStartMeasurementMs);
-		}
-
-		private void CreateIntegrationEntities()
-		{
-			var integrationSettings = _settings.IntegrationSettings;
-
-			if (integrationSettings.HttpRequestSettings.EnableRequests)
-			{
-				_httpRequestHandler = new HttpRequestHandler(_logger, integrationSettings.HttpHandlerSettings);
-				_httpRequestHandler.CalculationStartRequested += OnHttpStartRequestReceived;
-				_httpRequestHandler.CalculationStartRequestTimedOut += OnHttpRequestHandlerTimedOut;
-
-				_activeHttpListeners = new Queue<HttpListenerContext>(1);
-			}
-
-			_requestSenders = new List<IRequestSender>();
-
-			if (integrationSettings.SqlRequestSettings.EnableRequests)
-				_requestSenders.Add(new SqlRequestSender(_logger, integrationSettings.SqlRequestSettings));
-
-			if (integrationSettings.HttpRequestSettings.EnableRequests)
-				_requestSenders.Add(new HttpRequestSender(_logger, integrationSettings.HttpRequestSettings));
-
-			foreach (var sender in _requestSenders)
-			{
-				try
-				{
-					sender.Connect();
-				}
-				catch (Exception ex)
-				{
-					_logger.LogException("Failed to connect to requet destination", ex);
-				}
-			}
-		}
-
-		private void OnHttpRequestHandlerTimedOut()
-		{
-		}
-
-		private void OnHttpStartRequestReceived(HttpListenerContext obj)
-		{
-			if (CalculationInProgress)
-			{
-				_logger.LogError("HTTP start requested while a calculation was already in progress!");
-				_httpRequestHandler.Reset(obj, "Calculation already in progress");
-				return;
-			}
-
-			_logger.LogInfo("Starting volume calculation upon HTTP request...");
-			_activeHttpListeners.Enqueue(obj);
-			RunVolumeCalculation();
 		}
 
 		private void CreateAutoStartTimer(bool timerEnabled, long intervalMs)
@@ -511,14 +453,14 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void OnMeasurementTimerElapsed(object sender, ElapsedEventArgs e)
 		{
-			RunVolumeCalculation();
+			CalculationStartRequested?.Invoke();
 		}
 
 		private void RunVolumeCalculation()
 		{
 			if (CalculationInProgress)
 			{
-				_logger.LogInfo("tried to start calculation while another one was running, " + Environment.StackTrace);
+				_logger.LogInfo("tried to start calculation while another one was running");
 				return;
 			}
 
@@ -530,15 +472,7 @@ namespace VolumeCalculatorGUI.GUI
 				if (!canRunCalculation)
 				{
 					_dashStatusUpdater.DashStatus = DashboardStatus.Ready;
-					if (_httpRequestHandler == null)
-						return;
-
-					if (!_activeHttpListeners.Any())
-						return;
-
-					_httpRequestHandler.Reset(_activeHttpListeners.Dequeue(), "Barcode was not entered");
-					_activeHttpListeners.Clear();
-
+					CalculationFinished?.Invoke(new CalculationResultData(null, CalculationStatus.BarcodeNotEntered));
 					return;
 				}
 
@@ -592,14 +526,16 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			_logger.LogInfo("Calculation finished, processing results...");
 
-			var calculationResult = new CalculationResult(status, DateTime.Now, ObjectCode, ObjectWeight, UnitCount,
+			var calculationResult = new CalculationResult(DateTime.Now, ObjectCode, ObjectWeight, UnitCount,
 				result.Length, result.Width, result.Height, ObjectVolume, Comment);
+			var calculationResultData = new CalculationResultData(calculationResult, status);
 
 			DisposeVolumeCalculator();
 
-			UpdateVisualsWithResult(calculationResult);
+			UpdateVisualsWithResult(calculationResultData);
 			WriteObjectDataToFile(calculationResult);
-			SendRequests(calculationResult);
+
+			CalculationFinished?.Invoke(calculationResultData);
 
 			_logger.LogInfo("Done processing calculatiuon results");
 		}
@@ -635,22 +571,24 @@ namespace VolumeCalculatorGUI.GUI
 			Comment = "";
 		}
 
-		private void UpdateVisualsWithResult(CalculationResult result)
+		private void UpdateVisualsWithResult(CalculationResultData resultData)
 		{
 			try
 			{
-				if (result != null && result.Status == CalculationStatus.Sucessful)
+				var calculationResult = resultData.Result;
+
+				if (resultData.Status == CalculationStatus.Sucessful)
 				{
 					_dashStatusUpdater.DashStatus = DashboardStatus.Finished;
-					UpdateVolumeData(result);
+					UpdateVolumeData(calculationResult);
 				}
 				else
 				{
 					_dashStatusUpdater.DashStatus = DashboardStatus.Error;
-					UpdateVolumeData(result);
+					UpdateVolumeData(calculationResult);
 				}
 
-				var status = result.Status;
+				var status = resultData.Status;
 
 				switch (status)
 				{
@@ -684,7 +622,7 @@ namespace VolumeCalculatorGUI.GUI
 					case CalculationStatus.Sucessful:
 					{
 						_logger.LogInfo(
-							$"Completed a volume check, L={result.ObjectLengthMm} W={result.ObjectWidthMm} H={result.ObjectHeightMm}");
+							$"Completed a volume check, L={calculationResult.ObjectLengthMm} W={calculationResult.ObjectWidthMm} H={calculationResult.ObjectHeightMm}");
 						break;
 					}
 					case CalculationStatus.FailedToSelectAlgorithm:
@@ -726,31 +664,6 @@ namespace VolumeCalculatorGUI.GUI
 				_logger.LogException(
 					$@"Failed to write calculated values to {_calculationResultFileProcessor.FullOutputPath})",
 					ex);
-			}
-		}
-
-		private void SendRequests(CalculationResult result)
-		{
-			if (_httpRequestHandler != null && _activeHttpListeners.Any())
-			{
-				var httpContext = _activeHttpListeners.Dequeue();
-				_httpRequestHandler.SendResponse(httpContext, result);
-			}
-
-			foreach (var sender in _requestSenders)
-			{
-				Task.Run(() =>
-				{
-					try
-					{
-						var sent = sender.Send(result);
-					}
-					catch (Exception ex)
-					{
-						_logger.LogException("Failed to send a request!", ex);
-					}
-
-				});
 			}
 		}
 

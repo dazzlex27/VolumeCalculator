@@ -58,16 +58,17 @@ namespace ExtIntegration.RequestHandlers
 			_running = false;
 		}
 
-		public void SendResponse(HttpListenerContext context, CalculationResult result)
+		public void SendResponse(HttpListenerContext context, CalculationResultData resultData)
 		{
 			try
 			{
 				if (!_sessionInProgress)
 					_logger.LogError($"Response generation call for {_address} came after the session timeout");
 
-				_logger.LogInfo($"Generating HTTP response for {_address}...");
 				_requesthandlingTimeoutTimer.Stop();
-				var responseString = RequestUtils.GenerateXmlResponseText(result, result.Status);
+
+				_logger.LogInfo($"Generating HTTP response for {_address}...");
+				var responseString = GetResponseFromStatus(resultData);
 				_logger.LogInfo($"Response text is the following: {Environment.NewLine}{responseString}");
 
 				var response = context.Response;
@@ -89,6 +90,38 @@ namespace ExtIntegration.RequestHandlers
 			{
 				_sessionInProgress = false;
 			}
+		}
+
+		private static string GetResponseFromStatus(CalculationResultData resultData)
+		{
+			var responseString = "";
+
+			switch (resultData.Status)
+			{
+				case CalculationStatus.Error:
+					responseString = "Unknown error";
+					break;
+				case CalculationStatus.Sucessful:
+					responseString = RequestUtils.GenerateXmlResponseText(resultData.Result, resultData.Status);
+					break;
+				case CalculationStatus.BarcodeNotEntered:
+					responseString = "Barcode not entered";
+					break;
+				case CalculationStatus.AbortedByUser:
+					responseString = "Aborted by user";
+					break;
+				case CalculationStatus.FailedToSelectAlgorithm:
+					responseString = "Failed to start calculation";
+					break;
+				case CalculationStatus.ObjectNotFound:
+					responseString = "Object was not found";
+					break;
+				case CalculationStatus.TimedOut:
+					responseString = "Timed out";
+					break;
+			}
+
+			return responseString;
 		}
 
 		public void Reset(HttpListenerContext context, string text)

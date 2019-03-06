@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+using ExtIntegration;
 using FrameProcessor;
 using Primitives;
 using Primitives.Logging;
@@ -18,6 +19,7 @@ namespace VolumeCalculatorGUI.GUI
 {
 	internal class MainWindowVm : BaseViewModel
 	{
+		public event Action CalculationStartRequested;
 		private event Action<ApplicationSettings> ApplicationSettingsChanged;
 
 		private readonly ILogger _logger;
@@ -25,6 +27,7 @@ namespace VolumeCalculatorGUI.GUI
 		private ApplicationSettings _settings;
 		private DeviceSet _deviceSet;
 		private DepthMapProcessor _dmProcessor;
+		private RequestProcessor _requestProcessor;
 
 		private StreamViewControlVm _streamViewControlVm;
 		private CalculationDashboardControlVm _calculationDashboardControlVm;
@@ -125,6 +128,7 @@ namespace VolumeCalculatorGUI.GUI
 
 				InitializeSettings(maskBytes);
 				InitializeIoDevices();
+				InitializeSubSystems();
 				InitializeSubViewModels();
 
 				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
@@ -162,6 +166,7 @@ namespace VolumeCalculatorGUI.GUI
 
 				SaveSettings();
 				DisposeSubViewModels();
+				DisposeSubSystems();
 				DisposeIoDevices();
 
 				_logger.LogInfo("Application stopped");
@@ -183,6 +188,11 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				ShutDownInProgress = false;
 			}
+		}
+
+		private void DisposeSubSystems()
+		{
+			_requestProcessor?.Dispose();
 		}
 
 		private void InitializeSettings(byte[] maskBytes)
@@ -235,6 +245,32 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
+		private void InitializeSubSystems()
+		{
+			try
+			{
+				_logger.LogInfo("Initializing sub systems...");
+
+				_requestProcessor = new RequestProcessor(_logger, _settings.IntegrationSettings);
+				_requestProcessor.StartRequestReceived += OnCalculationStartRequested;
+
+				_logger.LogInfo("Sub systems - ok");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("FATAL: Failed to initialize sub systems!", ex);
+
+				var message = "Не удалось инициализировать дополнительные подсистемы";
+				_fatalErrorMessages.Add(message);
+				throw;
+			}
+		}
+
+		private void OnCalculationStartRequested()
+		{
+			CalculationStartRequested?.Invoke();
+		}
+
 		private void InitializeSubViewModels()
 		{
 			try
@@ -256,6 +292,8 @@ namespace VolumeCalculatorGUI.GUI
 
 				_calculationDashboardControlVm =
 					new CalculationDashboardControlVm(_logger, _settings, _deviceSet, _dmProcessor);
+				_calculationDashboardControlVm.CalculationFinished += OnCalculationFinished;
+				CalculationStartRequested += _calculationDashboardControlVm.StartCalculation;
 				if (_usingMasks)
 					_calculationDashboardControlVm.ToggleMaskMode();
 
@@ -274,6 +312,11 @@ namespace VolumeCalculatorGUI.GUI
 				_fatalErrorMessages.Add(message);
 				throw;
 			}
+		}
+
+		private void OnCalculationFinished(CalculationResultData resultData)
+		{
+			_requestProcessor.SendRequests(resultData);
 		}
 
 		private void SaveSettings()

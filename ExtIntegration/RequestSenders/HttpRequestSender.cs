@@ -26,20 +26,22 @@ namespace ExtIntegration.RequestSenders
 		{
 		}
 
-		public bool Send(CalculationResult result)
+		public bool Send(CalculationResultData resultData)
 		{
 			try
 			{
 				_logger.LogInfo($"Sending GET request to {_address}...");
 
-				var resultIsOk = result != null && result.Status == CalculationStatus.Sucessful;
+				var resultIsOk = resultData != null && resultData.Status == CalculationStatus.Sucessful;
 				if (!resultIsOk)
 				{
-					var message = result == null ? "result was null" : result.Status.ToString();
+					var message = resultData == null ? "result was null" : resultData.Status.ToString();
 					_logger.LogError($"HttpRequestSender: result was invalid: {message}, will not send request");
 
 					return false;
 				}
+
+				var result = resultData.Result;
 
 				var webClient = new WebClient();
 				webClient.QueryString.Add("bar", result.ObjectCode);

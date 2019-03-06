@@ -4,6 +4,7 @@
 	{
 		Undefined,
 		Sucessful,
+		BarcodeNotEntered,
 		AbortedByUser,
 		TimedOut,
 		Error,
