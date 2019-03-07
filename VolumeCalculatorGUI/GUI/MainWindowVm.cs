@@ -28,6 +28,7 @@ namespace VolumeCalculatorGUI.GUI
 		private DeviceSet _deviceSet;
 		private DepthMapProcessor _dmProcessor;
 		private RequestProcessor _requestProcessor;
+		private CalculationResultFileProcessor _calculationResultFileProcessor;
 
 		private StreamViewControlVm _streamViewControlVm;
 		private CalculationDashboardControlVm _calculationDashboardControlVm;
@@ -251,8 +252,22 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				_logger.LogInfo("Initializing sub systems...");
 
+				var frameProvider = _deviceSet.FrameProvider;
+
+				frameProvider.ColorFrameReady += OnColorFrameReady;
+				frameProvider.DepthFrameReady += OnDepthFrameReady;
+
+				var colorCameraParams = frameProvider.GetColorCameraParams();
+				var depthCameraParams = frameProvider.GetDepthCameraParams();
+
+				_dmProcessor = new DepthMapProcessor(_logger, colorCameraParams, depthCameraParams);
+				_dmProcessor.SetProcessorSettings(Settings);
+
 				_requestProcessor = new RequestProcessor(_logger, _settings.IntegrationSettings);
 				_requestProcessor.StartRequestReceived += OnCalculationStartRequested;
+
+				var outputPath = _settings.IoSettings.OutputPath;
+				_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, outputPath);
 
 				_logger.LogInfo("Sub systems - ok");
 			}
@@ -278,15 +293,6 @@ namespace VolumeCalculatorGUI.GUI
 				_logger.LogInfo("Initializing sub view models...");
 
 				var frameProvider = _deviceSet.FrameProvider;
-
-				frameProvider.ColorFrameReady += OnColorFrameReady;
-				frameProvider.DepthFrameReady += OnDepthFrameReady;
-
-				var colorCameraParams = frameProvider.GetColorCameraParams();
-				var depthCameraParams = frameProvider.GetDepthCameraParams();
-
-				_dmProcessor = new DepthMapProcessor(_logger, colorCameraParams, depthCameraParams);
-				_dmProcessor.SetProcessorSettings(Settings);
 
 				_streamViewControlVm = new StreamViewControlVm(_logger, _settings, frameProvider);
 
@@ -317,6 +323,7 @@ namespace VolumeCalculatorGUI.GUI
 		private void OnCalculationFinished(CalculationResultData resultData)
 		{
 			_requestProcessor.SendRequests(resultData);
+			_calculationResultFileProcessor.WriteCalculationResult(resultData);
 		}
 
 		private void SaveSettings()
@@ -400,6 +407,7 @@ namespace VolumeCalculatorGUI.GUI
 			_calculationDashboardControlVm.ApplicationSettingsUpdated(settings);
 			_streamViewControlVm.ApplicationSettingsUpdated(settings);
 			_testDataGenerationControlVm.ApplicationSettingsUpdated(settings);
+			_calculationResultFileProcessor.UpdateSettings(settings);
 		}
 
 		private void OnColorFrameReady(ImageData image)

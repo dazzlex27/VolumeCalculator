@@ -28,8 +28,6 @@ namespace VolumeCalculatorGUI.GUI
 		private ApplicationSettings _settings;
 
 		private VolumeCalculator _volumeCalculator;
-		private CalculationResultFileProcessor _calculationResultFileProcessor;
-
 		private string _objectCode;
 		private double _objectWeight;
 		private uint _unitCount;
@@ -373,7 +371,6 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void ApplyValuesFromSettings(ApplicationSettings settings)
 		{
-			_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, settings.IoSettings.OutputPath);
 			_deviceSet?.RangeMeter?.SetSubtractionValueMm(settings.IoSettings.RangeMeterSubtractionValueMm);
 			CreateAutoStartTimer(settings.AlgorithmSettings.EnableAutoTimer, settings.AlgorithmSettings.TimeToStartMeasurementMs);
 		}
@@ -530,10 +527,11 @@ namespace VolumeCalculatorGUI.GUI
 				result.Length, result.Width, result.Height, ObjectVolume, Comment);
 			var calculationResultData = new CalculationResultData(calculationResult, status);
 
+			ObjectCode = "";
+
 			DisposeVolumeCalculator();
 
 			UpdateVisualsWithResult(calculationResultData);
-			WriteObjectDataToFile(calculationResult);
 
 			CalculationFinished?.Invoke(calculationResultData);
 
@@ -645,25 +643,6 @@ namespace VolumeCalculatorGUI.GUI
 			catch (Exception ex)
 			{
 				_logger.LogException("Failed to process result data", ex);
-			}
-		}
-
-		private void WriteObjectDataToFile(CalculationResult calculationResult)
-		{
-			try
-			{
-				_calculationResultFileProcessor.WriteCalculationResult(calculationResult);
-
-				ObjectCode = string.Empty;
-			}
-			catch (Exception ex)
-			{
-				ShowMessageBox(
-					"Не удалось записать результат измерений в файл, проверьте доступность файла и повторите измерения",
-					"Ошибка");
-				_logger.LogException(
-					$@"Failed to write calculated values to {_calculationResultFileProcessor.FullOutputPath})",
-					ex);
 			}
 		}
 

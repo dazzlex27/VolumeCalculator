@@ -117,7 +117,7 @@ namespace ExtIntegration.RequestHandlers
 					responseString = "Object was not found";
 					break;
 				case CalculationStatus.TimedOut:
-					responseString = "Timed out";
+					responseString = "Device connection error";
 					break;
 			}
 
