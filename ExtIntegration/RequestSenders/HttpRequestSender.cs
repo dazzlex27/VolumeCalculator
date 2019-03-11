@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using Primitives;
 using Primitives.Logging;
@@ -9,13 +10,19 @@ namespace ExtIntegration.RequestSenders
 	public class HttpRequestSender : IRequestSender
 	{
 		private readonly ILogger _logger;
-		private readonly string _address;
+		private readonly List<string> _destinationAddresses;
 
 		public HttpRequestSender(ILogger logger, HttpRequestSettings settings)
 		{
 			_logger = logger;
-			_address = $"http://{settings.Address}:{settings.Port}/{settings.Url}";
-			_logger.LogInfo($"Creating GET request sender for {_address}");
+
+			_destinationAddresses = new List<string>();
+			foreach (var ip in settings.DestinationIps)
+			{
+				var address = $"http://{ip}:{settings.Port}/{settings.Url}";
+				_destinationAddresses.Add(address);
+				_logger.LogInfo($"Creating GET request sender for {address}");
+			}
 		}
 
 		public void Dispose()
@@ -26,12 +33,14 @@ namespace ExtIntegration.RequestSenders
 		{
 		}
 
+		public void Disconnect()
+		{
+		}
+
 		public bool Send(CalculationResultData resultData)
 		{
 			try
 			{
-				_logger.LogInfo($"Sending GET request to {_address}...");
-
 				var resultIsOk = resultData != null && resultData.Status == CalculationStatus.Sucessful;
 				if (!resultIsOk)
 				{
@@ -43,28 +52,41 @@ namespace ExtIntegration.RequestSenders
 
 				var result = resultData.Result;
 
-				var webClient = new WebClient();
-				webClient.QueryString.Add("bar", result.ObjectCode);
-				webClient.QueryString.Add("wt", ((int) (result.ObjectWeightKg * 1000)).ToString());
-				webClient.QueryString.Add("l", result.ObjectLengthMm.ToString());
-				webClient.QueryString.Add("w", result.ObjectWidthMm.ToString());
-				webClient.QueryString.Add("h", result.ObjectHeightMm.ToString());
-				var response = webClient.DownloadString(_address);
+				var oneOfTheRequestsFailed = false;
 
-				_logger.LogInfo($"Sent GET request to {_address}, response was {response}");
+				foreach (var address in _destinationAddresses)
+				{
+					try
+					{
+						_logger.LogInfo($"Sending GET request to {address}...");
 
-				return true;
+						var webClient = new WebClient();
+						webClient.QueryString.Add("bar", result.ObjectCode);
+						webClient.QueryString.Add("wt", ((int)(result.ObjectWeightKg * 1000)).ToString());
+						webClient.QueryString.Add("l", result.ObjectLengthMm.ToString());
+						webClient.QueryString.Add("w", result.ObjectWidthMm.ToString());
+						webClient.QueryString.Add("h", result.ObjectHeightMm.ToString());
+						var response = webClient.DownloadString(address);
+
+						_logger.LogInfo($"Sent GET request to {address}, response was {response}");
+					}
+					catch (Exception ex)
+					{
+						_logger.LogException($"Failed to send GET request to {address}", ex);
+
+						oneOfTheRequestsFailed = true;
+					}
+				}
+
+				return !oneOfTheRequestsFailed;
+
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException($"Failed to send GET request to {_address}", ex);
+				_logger.LogException($"Failed to send GET request", ex);
 
 				return false;
 			}
-		}
-
-		public void Disconnect()
-		{
 		}
 	}
 }
