@@ -450,7 +450,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		private void OnMeasurementTimerElapsed(object sender, ElapsedEventArgs e)
 		{
-			CalculationStartRequested?.Invoke();
+			OnCalculationStartRequested();
 		}
 
 		private void RunVolumeCalculation()

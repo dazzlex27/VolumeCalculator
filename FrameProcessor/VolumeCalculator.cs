@@ -85,7 +85,7 @@ namespace FrameProcessor
 		private void AbortInternal(CalculationStatus status)
 		{
 			CleanUp();
-			CalculationFinished?.Invoke(null, status, _latestColorFrame);
+			CalculationFinished?.Invoke(new ObjectVolumeData(0, 0, 0), status, _latestColorFrame);
 		}
 
 		private void AdvanceCalculation(DepthMap depthMap, ImageData image)
@@ -229,7 +229,7 @@ namespace FrameProcessor
 			_logger.LogInfo($"Timeout timer elapsed (samplesLeft={_samplesLeft}), aborting calculation...");
 
 			CleanUp();
-			CalculationFinished?.Invoke(null, CalculationStatus.TimedOut, _latestColorFrame);
+			AbortInternal(CalculationStatus.TimedOut);
 		}
 
 		private void SaveDebugData()
