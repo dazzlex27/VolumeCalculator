@@ -23,6 +23,7 @@ namespace VolumeCalculatorGUI.GUI
 		private event Action<ApplicationSettings> ApplicationSettingsChanged;
 
 		private readonly ILogger _logger;
+		private readonly List<string> _fatalErrorMessages;
 
 		private ApplicationSettings _settings;
 		private DeviceSet _deviceSet;
@@ -33,8 +34,6 @@ namespace VolumeCalculatorGUI.GUI
 		private StreamViewControlVm _streamViewControlVm;
 		private CalculationDashboardControlVm _calculationDashboardControlVm;
 		private TestDataGenerationControlVm _testDataGenerationControlVm;
-
-		private readonly List<string> _fatalErrorMessages;
 
 		private bool _usingMasks;
 
@@ -254,9 +253,6 @@ namespace VolumeCalculatorGUI.GUI
 
 				var frameProvider = _deviceSet.FrameProvider;
 
-				frameProvider.ColorFrameReady += OnColorFrameReady;
-				frameProvider.DepthFrameReady += OnDepthFrameReady;
-
 				var colorCameraParams = frameProvider.GetColorCameraParams();
 				var depthCameraParams = frameProvider.GetDepthCameraParams();
 
@@ -303,8 +299,7 @@ namespace VolumeCalculatorGUI.GUI
 				if (_usingMasks)
 					_calculationDashboardControlVm.ToggleMaskMode();
 
-				_testDataGenerationControlVm =
-					new TestDataGenerationControlVm(_settings, frameProvider.GetDepthCameraParams());
+				_testDataGenerationControlVm = new TestDataGenerationControlVm(_logger, _settings, frameProvider);
 
 				ApplicationSettingsChanged += OnApplicationSettingsChanged;
 
@@ -408,16 +403,6 @@ namespace VolumeCalculatorGUI.GUI
 			_streamViewControlVm.ApplicationSettingsUpdated(settings);
 			_testDataGenerationControlVm.ApplicationSettingsUpdated(settings);
 			_calculationResultFileProcessor.UpdateSettings(settings);
-		}
-
-		private void OnColorFrameReady(ImageData image)
-		{
-			_testDataGenerationControlVm?.ColorFrameUpdated(image);
-		}
-
-		private void OnDepthFrameReady(DepthMap depthMap)
-		{
-			_testDataGenerationControlVm?.DepthFrameUpdated(depthMap);
 		}
 
 		private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)

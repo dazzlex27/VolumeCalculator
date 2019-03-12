@@ -469,7 +469,7 @@ namespace VolumeCalculatorGUI.GUI
 				if (!canRunCalculation)
 				{
 					_dashStatusUpdater.DashStatus = DashboardStatus.Ready;
-					CalculationFinished?.Invoke(new CalculationResultData(null, CalculationStatus.BarcodeNotEntered));
+					CalculationFinished?.Invoke(new CalculationResultData(null, CalculationStatus.BarcodeNotEntered, null));
 					return;
 				}
 
@@ -519,13 +519,13 @@ namespace VolumeCalculatorGUI.GUI
 			return false;
 		}
 
-		private void OnCalculationFinished(ObjectVolumeData result, CalculationStatus status)
+		private void OnCalculationFinished(ObjectVolumeData result, CalculationStatus status, ImageData objectPhoto)
 		{
 			_logger.LogInfo("Calculation finished, processing results...");
 
 			var calculationResult = new CalculationResult(DateTime.Now, ObjectCode, ObjectWeight, UnitCount,
 				result.Length, result.Width, result.Height, ObjectVolume, Comment);
-			var calculationResultData = new CalculationResultData(calculationResult, status);
+			var calculationResultData = new CalculationResultData(calculationResult, status, objectPhoto);
 
 			ObjectCode = "";
 
@@ -555,7 +555,6 @@ namespace VolumeCalculatorGUI.GUI
 				return;
 
 			_volumeCalculator.CalculationFinished -= OnCalculationFinished;
-			_volumeCalculator.Dispose();
 			_volumeCalculator = null;
 		}
 

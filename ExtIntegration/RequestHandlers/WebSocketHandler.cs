@@ -2,6 +2,7 @@
 using Fleck;
 using Primitives.Logging;
 using Primitives.Settings;
+using Primitives.Settings.Integration;
 
 namespace ExtIntegration.RequestHandlers
 {

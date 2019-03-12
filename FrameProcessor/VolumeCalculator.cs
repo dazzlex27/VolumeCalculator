@@ -10,9 +10,9 @@ using Primitives.Settings;
 
 namespace FrameProcessor
 {
-	public class VolumeCalculator : IDisposable
+	public class VolumeCalculator
 	{
-		public event Action<ObjectVolumeData, CalculationStatus> CalculationFinished;
+		public event Action<ObjectVolumeData, CalculationStatus, ImageData> CalculationFinished;
 
 		private readonly ILogger _logger;
 		private readonly FrameProvider _frameProvider;
@@ -69,23 +69,23 @@ namespace FrameProcessor
 			IsRunning = true;
 		}
 
-		public void Dispose()
-		{
-			_timer.Stop();
-			IsRunning = false;
-			_frameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
-			_frameProvider.UnrestrictedDepthFrameReady -= OnDepthFrameReady;
-		}
-
 		public void Abort()
 		{
 			AbortInternal(CalculationStatus.AbortedByUser);
 		}
 
+		private void CleanUp()
+		{
+			_timer.Stop();
+			_frameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
+			_frameProvider.UnrestrictedDepthFrameReady -= OnDepthFrameReady;
+			IsRunning = false;
+		}
+
 		private void AbortInternal(CalculationStatus status)
 		{
-			Dispose();
-			CalculationFinished?.Invoke(null, status);
+			CleanUp();
+			CalculationFinished?.Invoke(null, status, _latestColorFrame);
 		}
 
 		private void AdvanceCalculation(DepthMap depthMap, ImageData image)
@@ -105,17 +105,20 @@ namespace FrameProcessor
 
 			if (_samplesLeft > 0)
 			{
+				_colorFrameReady = false;
+				_depthFrameReady = false;
 				_timer.Start();
+
 				return;
 			}
 
-			IsRunning = false;
-			var totalResult = AggregateCalculationsData();
+			CleanUp();
 
+			var totalResult = AggregateCalculationsData();
 			if (totalResult != null)
-				CalculationFinished?.Invoke(totalResult, CalculationStatus.Sucessful);
+				CalculationFinished?.Invoke(totalResult, CalculationStatus.Sucessful, _latestColorFrame);
 			else
-				CalculationFinished?.Invoke(null, CalculationStatus.Error);
+				CalculationFinished?.Invoke(null, CalculationStatus.Error, _latestColorFrame);
 		}
 
 		private void SelectAlgorithm()
@@ -175,8 +178,6 @@ namespace FrameProcessor
 				return;
 
 			AdvanceCalculation(_latestDepthMap, _latestColorFrame);
-			_colorFrameReady = false;
-			_depthFrameReady = false;
 
 			if (!_useColorData)
 				_frameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
@@ -192,8 +193,6 @@ namespace FrameProcessor
 				return;
 
 			AdvanceCalculation(_latestDepthMap, _latestColorFrame);
-			_colorFrameReady = false;
-			_depthFrameReady = false;
 		}
 
 		private ObjectVolumeData CalculateVolume(DepthMap depthMap, ImageData image, long measuredDistance, bool applyPerspective, 
@@ -228,7 +227,9 @@ namespace FrameProcessor
 		private void OnTimerElapsed(object sender, ElapsedEventArgs e)
 		{
 			_logger.LogInfo($"Timeout timer elapsed (samplesLeft={_samplesLeft}), aborting calculation...");
-			CalculationFinished?.Invoke(null, CalculationStatus.TimedOut);
+
+			CleanUp();
+			CalculationFinished?.Invoke(null, CalculationStatus.TimedOut, _latestColorFrame);
 		}
 
 		private void SaveDebugData()

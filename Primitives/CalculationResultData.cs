@@ -6,10 +6,13 @@
 
 		public CalculationStatus Status { get; }
 
-		public CalculationResultData(CalculationResult result, CalculationStatus status)
+		public ImageData ObjectPhoto { get; }
+
+		public CalculationResultData(CalculationResult result, CalculationStatus status, ImageData objectPhoto)
 		{
 			Result = result;
 			Status = status;
+			ObjectPhoto = objectPhoto;
 		}
 	}
 }

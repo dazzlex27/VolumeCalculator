@@ -3,7 +3,7 @@ using System.Data;
 using System.Data.SqlClient;
 using Primitives;
 using Primitives.Logging;
-using Primitives.Settings;
+using Primitives.Settings.Integration;
 
 namespace ExtIntegration.RequestSenders
 {
@@ -32,7 +32,9 @@ namespace ExtIntegration.RequestSenders
 
 		public void Dispose()
 		{
-			Disconnect();
+			_logger.LogInfo($"Disconnecting from {_connection.ConnectionString}...");
+			_connection.Close();
+			_logger.LogInfo($"Disconnected from {_connection.ConnectionString}");
 		}
 
 		public void Connect()
@@ -80,13 +82,6 @@ namespace ExtIntegration.RequestSenders
 				_logger.LogException($"Failed to send an SQL request ({_connection.ConnectionString})", ex);
 				return false;
 			}
-		}
-
-		public void Disconnect()
-		{
-			_logger.LogInfo($"Disconnecting from {_connection.ConnectionString}...");
-			_connection.Close();
-			_logger.LogInfo($"Disconnected from {_connection.ConnectionString}");
 		}
 	}
 }

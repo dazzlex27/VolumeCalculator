@@ -8,7 +8,5 @@ namespace ExtIntegration.RequestSenders
 		void Connect();
 
 		bool Send(CalculationResultData resultData);
-
-		void Disconnect();
 	}
 }

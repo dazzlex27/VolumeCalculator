@@ -1,6 +1,6 @@
 ﻿namespace FrameProcessor
 {
-	public class TestCaseBasicInfo
+	public class TestCaseInfo
 	{
 		public string Casename { get; }
 
@@ -16,7 +16,7 @@
 
 		public int TimesToSave { get; }
 
-		public TestCaseBasicInfo(string casename, string description, string savingDirectory, int objLength,
+		public TestCaseInfo(string casename, string description, string savingDirectory, int objLength,
 			int objWidth,
 			int objHeight, int timesToSave)
 		{

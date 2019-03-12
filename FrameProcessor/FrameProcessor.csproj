@@ -51,8 +51,7 @@
     <Compile Include="Native\ObjDimDescription.cs" />
     <Compile Include="ObjectVolumeData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestCaseBasicInfo.cs" />
-    <Compile Include="TestCaseData.cs" />
+    <Compile Include="TestCaseInfo.cs" />
     <Compile Include="TestDataGenerator.cs" />
     <Compile Include="TypeConverter.cs" />
     <Compile Include="VolumeCalculator.cs" />

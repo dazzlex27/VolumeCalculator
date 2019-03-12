@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace Primitives.Settings
+namespace Primitives.Settings.Integration
 {
 	public class IntegrationSettings
 	{
@@ -12,13 +12,16 @@ namespace Primitives.Settings
 
 		public SqlRequestSettings SqlRequestSettings { get; set; }
 
+		public FtpRequestSettings FtpRequestSettings { get; set; }
+
 		public IntegrationSettings(WebSocketHandlerSettings webSocketHandlerSettings, HttpHandlerSettings httpHandlerSettings,
-			HttpRequestSettings httpRequestSettings, SqlRequestSettings sqlRequestSettings)
+			HttpRequestSettings httpRequestSettings, SqlRequestSettings sqlRequestSettings, FtpRequestSettings ftpRequestSettings)
 		{
 			WebSocketHandlerSettings = webSocketHandlerSettings;
 			HttpHandlerSettings = httpHandlerSettings;
 			HttpRequestSettings = httpRequestSettings;
 			SqlRequestSettings = sqlRequestSettings;
+			FtpRequestSettings = ftpRequestSettings;
 		}
 
 		public static IntegrationSettings GetDefaultSettings()
@@ -27,8 +30,10 @@ namespace Primitives.Settings
 			var httpHandlerSettings = HttpHandlerSettings.GetDefaultSettings();
 			var httpRequestSettings = HttpRequestSettings.GetDefaultSettings();
 			var sqlRequestSettings = SqlRequestSettings.GetDefaultSettings();
+			var ftpRequestSettings = FtpRequestSettings.GetDefaultSettings();
 
-			return new IntegrationSettings(webSocketHandlerSettings, httpHandlerSettings, httpRequestSettings, sqlRequestSettings);
+			return new IntegrationSettings(webSocketHandlerSettings, httpHandlerSettings, httpRequestSettings,
+				sqlRequestSettings, ftpRequestSettings);
 		}
 
 		[OnDeserialized]
@@ -45,6 +50,9 @@ namespace Primitives.Settings
 
 			if (HttpRequestSettings == null)
 				HttpRequestSettings = HttpRequestSettings.GetDefaultSettings();
+
+			if (FtpRequestSettings == null)
+				FtpRequestSettings = FtpRequestSettings.GetDefaultSettings();
 		}
 	}
 }

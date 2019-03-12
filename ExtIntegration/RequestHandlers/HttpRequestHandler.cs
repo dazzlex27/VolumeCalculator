@@ -6,6 +6,7 @@ using System.Timers;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
+using Primitives.Settings.Integration;
 
 namespace ExtIntegration.RequestHandlers
 {

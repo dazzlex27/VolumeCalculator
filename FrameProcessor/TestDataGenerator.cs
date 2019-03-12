@@ -1,67 +1,135 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text;
+using System.Timers;
 using FrameProviders;
 using Primitives;
+using Primitives.Logging;
+using Primitives.Settings;
 
 namespace FrameProcessor
 {
 	public class TestDataGenerator
 	{
-		private readonly TestCaseBasicInfo _basicCaseInfo;
+		public event Action<bool> FinishedSaving;
+
+		private readonly ILogger _logger;
+
+		private readonly TestCaseInfo _basicCaseInfo;
+		private readonly FrameProvider _frameProvider;
+		private readonly AlgorithmSettings _settings;
+
+		private readonly string _imageSavingPath;
 		private readonly string _mapSavingPath;
-		private readonly TestCaseData _testCaseData;
 		private readonly string _testCaseDirectory;
-		private int _remainingTimesToSave;
 
-		public TestDataGenerator(TestCaseData testCaseData)
+		private readonly Timer _timer;
+
+		private bool _colorFrameReady;
+		private bool _depthFrameReady;
+
+		private ImageData _latestColorFrame;
+		private DepthMap _latestDepthMap;
+
+		private int _samplesLeft;
+
+		public bool IsRunning { get; private set; }
+
+		private bool HasCompletedFirstRun => _samplesLeft != _basicCaseInfo.TimesToSave;
+
+		public TestDataGenerator(ILogger logger, TestCaseInfo testCaseBasicInfo, FrameProvider frameProvider, AlgorithmSettings settings)
 		{
-			_testCaseData = testCaseData;
-			_basicCaseInfo = _testCaseData.BasicInfo;
+			_logger = logger;
+			_frameProvider = frameProvider;
+			_basicCaseInfo = testCaseBasicInfo;
+			_settings = settings;
 
-			_remainingTimesToSave = _basicCaseInfo.TimesToSave;
+			_samplesLeft = _basicCaseInfo.TimesToSave;
 
-			_testCaseDirectory =
-				Path.Combine(_testCaseData.BasicInfo.SavingDirectory, _testCaseData.BasicInfo.Casename);
-			_mapSavingPath = Path.Combine(_testCaseDirectory, "maps");
+			_testCaseDirectory = Path.Combine(_basicCaseInfo.SavingDirectory, _basicCaseInfo.Casename);
+			_imageSavingPath = Path.Combine(_testCaseDirectory, "color");
+			_mapSavingPath = Path.Combine(_testCaseDirectory, "depth");
 
-			if (Directory.Exists(_testCaseDirectory))
-				Directory.Delete(_testCaseDirectory, true);
-			Directory.CreateDirectory(_testCaseDirectory);
-			SaveInitialData();
+			_frameProvider.UnrestrictedColorFrameReady += OnColorFrameReady;
+			_frameProvider.UnrestrictedDepthFrameReady += OnDepthFrameReady;
 
-			IsActive = true;
+			_timer = new Timer(3000) { AutoReset = false };
+			_timer.Elapsed += OnTimerElapsed;
+			_timer.Start();
+
+			IsRunning = true;
 		}
 
-		public bool IsActive { get; private set; }
-
-		public event Action FinishedSaving;
-
-		public void AdvanceDataSaving(DepthMap map)
+		private void CleanUp()
 		{
-			Directory.CreateDirectory(_mapSavingPath);
-			var mapIndex = _basicCaseInfo.TimesToSave - _remainingTimesToSave;
-			var fullMapPath = Path.Combine(_mapSavingPath, $"{mapIndex}.dm");
+			_timer.Stop();
+			_frameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
+			_frameProvider.UnrestrictedDepthFrameReady -= OnDepthFrameReady;
+			IsRunning = false;
+		}
 
+		private void AdvanceDataSaving(ImageData image, DepthMap map)
+		{
+			_timer.Stop();
+
+			if (!HasCompletedFirstRun)
+				SaveInitialData();
+
+			var itemIndex = _basicCaseInfo.TimesToSave - _samplesLeft;
+
+
+			var fullImagePath = Path.Combine(_imageSavingPath, $"{itemIndex}.png");
+			ImageUtils.SaveImageDataToFile(image, fullImagePath);
+
+			var fullMapPath = Path.Combine(_mapSavingPath, $"{itemIndex}.dm");
 			DepthMapUtils.SaveDepthMapToRawFile(map, fullMapPath);
 
-			_remainingTimesToSave--;
+			_samplesLeft--;
 
-			if (_remainingTimesToSave != 0)
+			if (_samplesLeft != 0)
+			{
+				_colorFrameReady = false;
+				_depthFrameReady = false;
+				_timer.Start();
+
+				return;
+			}
+
+			CleanUp();
+			FinishedSaving?.Invoke(true);
+		}
+
+		private void OnColorFrameReady(ImageData image)
+		{
+			_latestColorFrame = image;
+
+			_colorFrameReady = true;
+
+			if (!_depthFrameReady)
 				return;
 
-			IsActive = false;
-			FinishedSaving?.Invoke();
+			AdvanceDataSaving(_latestColorFrame, _latestDepthMap);
+		}
+
+		private void OnDepthFrameReady(DepthMap depthMap)
+		{
+			_latestDepthMap = depthMap;
+
+			_depthFrameReady = true;
+
+			if (!_colorFrameReady)
+				return;
+
+			AdvanceDataSaving(_latestColorFrame, _latestDepthMap);
 		}
 
 		private void SaveInitialData()
 		{
-			ImageUtils.SaveImageDataToFile(_testCaseData.Image, Path.Combine(_testCaseDirectory, "rgb.png"));
-
-			DepthMapUtils.SaveDepthMapImageToFile(_testCaseData.Map, Path.Combine(_testCaseDirectory, "depth.png"),
-				_testCaseData.DepthCameraParams.MinDepth, _testCaseData.DepthCameraParams.MaxDepth,
-				_testCaseData.DepthCameraParams.MaxDepth);
+			if (Directory.Exists(_testCaseDirectory))
+				Directory.Delete(_testCaseDirectory, true);
+			Directory.CreateDirectory(_testCaseDirectory);
+			Directory.CreateDirectory(_imageSavingPath);
+			Directory.CreateDirectory(_mapSavingPath);
 
 			var testCaseDataFilePath = Path.Combine(_testCaseDirectory, "testdata.txt");
 
@@ -78,11 +146,19 @@ namespace FrameProcessor
 				file.WriteLine(largerDimension);
 				file.WriteLine(smallerDimension);
 				file.WriteLine(_basicCaseInfo.ObjHeight);
-				file.WriteLine(_testCaseData.Settings.AlgorithmSettings.FloorDepth);
-				file.Write(_testCaseData.Settings.AlgorithmSettings.MinObjectHeight);
+				file.WriteLine(_settings.FloorDepth);
+				file.Write(_settings.MinObjectHeight);
 			}
 
 			File.WriteAllText(Path.Combine(_testCaseDirectory, "description.txt"), _basicCaseInfo.Description);
+		}
+
+		private void OnTimerElapsed(object sender, ElapsedEventArgs e)
+		{
+			_logger.LogInfo($"Timeout timer elapsed (samplesLeft={_samplesLeft}), aborting calculation...");
+
+			CleanUp();
+			FinishedSaving?.Invoke(false);
 		}
 
 		public static string GetF2()

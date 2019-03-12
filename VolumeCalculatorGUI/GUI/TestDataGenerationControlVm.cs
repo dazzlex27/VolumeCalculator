@@ -2,7 +2,7 @@
 using System.Windows.Input;
 using FrameProcessor;
 using FrameProviders;
-using Primitives;
+using Primitives.Logging;
 using Primitives.Settings;
 using VolumeCalculatorGUI.GUI.Utils;
 
@@ -10,9 +10,10 @@ namespace VolumeCalculatorGUI.GUI
 {
     internal class TestDataGenerationControlVm : BaseViewModel
     {
+	    private readonly ILogger _logger;
+	    private readonly FrameProvider _frameProvider;
+
 	    private TestDataGenerator _testDataGenerator;
-	    private ColorCameraParams _colorCameraParams;
-	    private DepthCameraParams _depthCameraParams;
 	    private ApplicationSettings _applicationSettings;
 
 		private string _testCaseName;
@@ -24,9 +25,6 @@ namespace VolumeCalculatorGUI.GUI
 	    private byte _timesToSave;
 	    private bool _showControl;
 	    private bool _generationInProgress;
-
-	    private ImageData _latestColorFrame;
-		private DepthMap _latestDepthMap;
 
 	    public ICommand RunTestDataGenerationCommand { get; }
 
@@ -165,10 +163,11 @@ namespace VolumeCalculatorGUI.GUI
 		    }
 	    }
 
-	    public TestDataGenerationControlVm(ApplicationSettings settings, DepthCameraParams deptCameraParams)
+	    public TestDataGenerationControlVm(ILogger logger, ApplicationSettings settings, FrameProvider frameProvider)
 	    {
+		    _logger = logger;
 		    _applicationSettings = settings;
-		    _depthCameraParams = deptCameraParams;
+		    _frameProvider = frameProvider;
 
 			TestCaseName = "obj1";
 		    Description = "";
@@ -181,42 +180,44 @@ namespace VolumeCalculatorGUI.GUI
 		    RunTestDataGenerationCommand = new CommandHandler(RunTestDataGeneration, !GenerationInProgress);
 	    }
 
-	    public void ColorFrameUpdated(ImageData image)
-	    {
-		    _latestColorFrame = image;
-	    }
-
-		public void DepthFrameUpdated(DepthMap depthMap)
-		{
-			_latestDepthMap = depthMap;
-
-			if (_testDataGenerator != null && _testDataGenerator.IsActive)
-				_testDataGenerator.AdvanceDataSaving(depthMap);
-			else
-				GenerationInProgress = false;
-		}
-
 	    public void ApplicationSettingsUpdated(ApplicationSettings settings)
 	    {
 		    _applicationSettings = settings;
 	    }
 
-	    public void DeviceParamsUpdated(ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
-	    {
-		    _colorCameraParams = colorCameraParams;
-		    _depthCameraParams = depthCameraParams;
-	    }
-
 	    private void RunTestDataGeneration()
 	    {
-		    GenerationInProgress = true;
+		    try
+		    {
+			    GenerationInProgress = true;
 
-			var basicTestInfo = new TestCaseBasicInfo(TestCaseName, Description, TestCaseFolderPath, ObjLength,
-			    ObjWidth, ObjHeight, TimesToSave);
+			    _logger.LogInfo("Saving test case data...");
 
-		    var testCaseData = new TestCaseData(basicTestInfo, _latestColorFrame, _latestDepthMap, _depthCameraParams, _applicationSettings);
+			    var basicTestInfo = new TestCaseInfo(TestCaseName, Description, TestCaseFolderPath, ObjLength,
+				    ObjWidth, ObjHeight, TimesToSave);
 
-		    _testDataGenerator = new TestDataGenerator(testCaseData);
+			    _testDataGenerator = new TestDataGenerator(_logger, basicTestInfo, _frameProvider, _applicationSettings.AlgorithmSettings);
+			    _testDataGenerator.FinishedSaving += OnSavingFinished;
+		    }
+		    catch (Exception ex)
+		    {
+			    _logger.LogException("Failed to start saving test case data", ex);
+		    }
 	    }
+
+	    private void OnSavingFinished(bool success)
+		{
+			try
+			{
+				_logger.LogInfo($"Finished saving test case data, success={success}");
+
+				_testDataGenerator.FinishedSaving -= OnSavingFinished;
+				_testDataGenerator = null;
+			}
+			finally
+			{
+				GenerationInProgress = false;
+			}
+		}
 	}
 }

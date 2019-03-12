@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using Primitives.Settings.Integration;
 
 namespace Primitives.Settings
 {

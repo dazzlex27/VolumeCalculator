@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using Primitives;
 using Primitives.Logging;
-using Primitives.Settings;
+using Primitives.Settings.Integration;
 
 namespace ExtIntegration.RequestSenders
 {
@@ -30,10 +30,6 @@ namespace ExtIntegration.RequestSenders
 		}
 
 		public void Connect()
-		{
-		}
-
-		public void Disconnect()
 		{
 		}
 

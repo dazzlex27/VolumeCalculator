@@ -7,7 +7,7 @@ using ExtIntegration.RequestHandlers;
 using ExtIntegration.RequestSenders;
 using Primitives;
 using Primitives.Logging;
-using Primitives.Settings;
+using Primitives.Settings.Integration;
 
 namespace ExtIntegration
 {
@@ -42,6 +42,9 @@ namespace ExtIntegration
 
 			if (settings.HttpRequestSettings.EnableRequests)
 				_requestSenders.Add(new HttpRequestSender(_logger, settings.HttpRequestSettings));
+
+			if (settings.FtpRequestSettings.EnableRequests)
+				_requestSenders.Add(new FtpRequestSender(_logger, settings.FtpRequestSettings));
 
 			foreach (var sender in _requestSenders)
 			{

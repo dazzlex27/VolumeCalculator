@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace Primitives.Settings
+namespace Primitives.Settings.Integration
 {
 	public class HttpRequestSettings
 	{
