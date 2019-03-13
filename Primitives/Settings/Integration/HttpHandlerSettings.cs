@@ -17,7 +17,7 @@
 
 		public static HttpHandlerSettings GetDefaultSettings()
 		{
-			return new HttpHandlerSettings(false, "localhost", 8080);
+			return new HttpHandlerSettings(true, "+", 8080);
 		}
 	}
 }

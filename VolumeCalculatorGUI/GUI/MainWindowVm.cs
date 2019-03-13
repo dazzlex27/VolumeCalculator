@@ -19,7 +19,7 @@ namespace VolumeCalculatorGUI.GUI
 {
 	internal class MainWindowVm : BaseViewModel
 	{
-		public event Action CalculationStartRequested;
+		public event Action<CalculationRequestData> CalculationStartRequested;
 		private event Action<ApplicationSettings> ApplicationSettingsChanged;
 
 		private readonly ILogger _logger;
@@ -277,9 +277,9 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		private void OnCalculationStartRequested()
+		private void OnCalculationStartRequested(CalculationRequestData data)
 		{
-			CalculationStartRequested?.Invoke();
+			CalculationStartRequested?.Invoke(data);
 		}
 
 		private void InitializeSubViewModels()
@@ -295,6 +295,7 @@ namespace VolumeCalculatorGUI.GUI
 				_calculationDashboardControlVm =
 					new CalculationDashboardControlVm(_logger, _settings, _deviceSet, _dmProcessor);
 				_calculationDashboardControlVm.CalculationFinished += OnCalculationFinished;
+				_calculationDashboardControlVm.CalculationStatusChanged += OnCalculationStatusChanged;
 				CalculationStartRequested += _calculationDashboardControlVm.StartCalculation;
 				if (_usingMasks)
 					_calculationDashboardControlVm.ToggleMaskMode();
@@ -313,6 +314,11 @@ namespace VolumeCalculatorGUI.GUI
 				_fatalErrorMessages.Add(message);
 				throw;
 			}
+		}
+
+		private void OnCalculationStatusChanged(CalculationStatus status)
+		{
+			_requestProcessor.UpdateCalculationStatus(status);
 		}
 
 		private void OnCalculationFinished(CalculationResultData resultData)

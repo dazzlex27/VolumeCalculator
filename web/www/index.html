@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en" class="h-100" xmlns="http://www.w3.org/1999/html">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <title>IS</title>
+    <link rel="canonical" href="https://getbootstrap.com/docs/4.3/examples/sticky-footer/">
+
+    <!-- Bootstrap core CSS -->
+	<link rel="stylesheet" href="bootstrap.min.css">
+    <script src="ws.js"></script>
+    <script src="main.js"></script>
+    <!-- Custom styles for this template -->
+    <link href="main.css" rel="stylesheet">
+  </head>
+  <body class="d-flex flex-column h-100">
+    <!-- Begin page content -->
+<main role="main" class="flex-shrink-0">
+  <div class="container mb-1 mt-3" id="logo">
+    <div class="text-center">
+      <img src="logo.png" class="rounded" alt="...">
+    </div>
+  </div>
+  <div class="container">
+    <div>
+      <div class="form-group ml-5 mr-5">
+        <div class="col text-center mb-3 mt-3">
+          <h6 class="mx-auto text-uppercase"><small id="status-text">Инициализация</small><span class="align-middle dot" id="status-light"></span></h6>
+        </div>
+        <div class="col text-center">
+          <h5 class="mx-auto text-uppercase">Штрихкод</h5>
+        </div>
+        <input type="text" class="form-control form-rounded text-center text-uppercase" id="barcode" onchange="sendInputs()" placeholder="Введите штриход">
+      </div>
+      <div class="form-group ml-5 mr-5">
+        <div class="col text-center">
+          <h5 class="mx-auto text-uppercase">Разряд</h5>
+        </div>
+        <input type="number" class="form-control form-rounded text-center text-uppercase" id="rank" onchange="sendInputs()" placeholder="Введите кол-во единиц">
+      </div>
+      <div class="form-group ml-5 mr-5">
+        <div class="col text-center">
+          <h5 class="mx-auto text-uppercase">Дополнение</h5>
+        </div>
+        <textarea class="form-control form-rounded" id="comment" rows="1" onchange="sendInputs()" placeholder="Оставьте комментарий"></textarea>
+      </div>
+      <div class="form-group mt-3 ml-5 mr-5">
+        <div class="col text-center">
+          <button class="btn btn-warning btn-block form-rounded text-uppercase" onclick="sendStart()">Измерить объект</button>
+        </div>
+      </div>
+      <div class="form-group mt-4">
+        <div class="col text-center">
+          <h5 class="mx-auto text-uppercase">ВЕС; ШВГ</h5>
+          <h6 class="mx-auto text-uppercase text-white" id="measure">0,00 кг / 0,00 см / 0,00 см / 0,00 см</h6>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer mt-auto" id="footer">
+  <div class="col text-center mb-3">
+    V 1.45P
+  </div>
+</footer>
+</body>
+</html>

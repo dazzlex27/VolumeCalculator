@@ -1,0 +1,47 @@
+/* Custom page CSS
+-------------------------------------------------- */
+/* Not required for template or sticky footer method. */
+
+.container {
+  width: auto;
+  max-width: 680px;
+  padding: 0 10px;
+}
+
+.footer {
+  background-color: #272B30;
+}
+
+.form-rounded {
+border-radius: 1rem;
+}
+
+.btn-warning {
+    color: #000;
+}
+
+.dotted {
+    border-bottom-style: dotted;
+}
+
+.borderless td, .borderless th {
+    border: none;
+}
+
+.borderless tr {
+    border-bottom: dashed;
+    border-bottom-width: 1px;
+}
+
+.borderless th {
+    color: black;
+}
+
+.dot {
+    height: 10px;
+    width: 10px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 10px;
+}

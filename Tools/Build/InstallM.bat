@@ -1,10 +1,14 @@
 @echo off
 
 set appDir=C:\VCalc\
+set webDir=C:\web\
 
 if exist %appDir% @rd %appDir% /s /q >> log.txt
 mkdir %appDir% >> log.txt
+if exist %webDir% @rd %webDir% /s /q >> log.txt
+mkdir %webDir% >> log.txt
 move "app\*" %appDir% >> log.txt
+move "web\*" %webDir% >> log.txt
 if not %ERRORLEVEL%==0 goto appCopyFailed 
 
 call MReader.exe g >> log.txt

@@ -17,6 +17,7 @@ namespace VolumeCalculatorGUI.GUI
 	internal class CalculationDashboardControlVm : BaseViewModel, IDisposable
 	{
 		public event Action<CalculationResultData> CalculationFinished;
+		public event Action<CalculationStatus> CalculationStatusChanged;
 
 		private event Action CalculationStartRequested;
 
@@ -47,6 +48,12 @@ namespace VolumeCalculatorGUI.GUI
 		private bool _commentBoxFocused;
 
 		private bool _maskMode;
+
+		private DateTime _calculationTime;
+		private string _lastBarcode;
+		private double _lastWeight;
+		private uint _lastUnitCount;
+		private string _lastComment;
 
 		public ICommand RunVolumeCalculationCommand { get; }
 
@@ -322,6 +329,11 @@ namespace VolumeCalculatorGUI.GUI
 
 			ApplyValuesFromSettings(settings);
 
+			_calculationTime = DateTime.Now;
+			_lastBarcode = "";
+			_lastWeight = 0.0;
+			_lastComment = "";
+
 			RunVolumeCalculationCommand = new CommandHandler(OnCalculationStartRequested, !CalculationInProgress);
 			ResetWeightCommand = new CommandHandler(ResetWeight, !CalculationInProgress);
 			OpenResultsFileCommand = new CommandHandler(OpenResultsFile, !CalculationInProgress);
@@ -329,9 +341,16 @@ namespace VolumeCalculatorGUI.GUI
 			CancelPendingCalculationCommand = new CommandHandler(_dashStatusUpdater.CancelPendingCalculation, !CalculationInProgress);
 		}
 
-		public void StartCalculation()
+		public void StartCalculation(CalculationRequestData requestData)
 		{
-			OnCalculationStartRequested();
+			if (requestData != null)
+			{
+				ObjectCode = requestData.Barcode;
+				UnitCount = requestData.UnitCount;
+				Comment = requestData.Comment;
+			}
+
+			RunVolumeCalculation();
 		}
 
 		private void OnCalculationStartRequested()
@@ -464,11 +483,18 @@ namespace VolumeCalculatorGUI.GUI
 			try
 			{
 				_dashStatusUpdater.DashStatus = DashboardStatus.InProgress;
+				CalculationStatusChanged?.Invoke(CalculationStatus.Running);
+				_calculationTime = DateTime.Now;
+				_lastBarcode = ObjectCode;
+				_lastWeight = ObjectWeight;
+				_lastUnitCount = UnitCount;
+				_lastComment = Comment;
 
 				var canRunCalculation = CheckIfPreConditionsAreSatisfied();
 				if (!canRunCalculation)
 				{
 					_dashStatusUpdater.DashStatus = DashboardStatus.Ready;
+					CalculationStatusChanged?.Invoke(CalculationStatus.BarcodeNotEntered);
 					CalculationFinished?.Invoke(new CalculationResultData(null, CalculationStatus.BarcodeNotEntered, null));
 					return;
 				}
@@ -497,6 +523,7 @@ namespace VolumeCalculatorGUI.GUI
 				AutoClosingMessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка");
 
 				_dashStatusUpdater.DashStatus = DashboardStatus.Error;
+				CalculationStatusChanged?.Invoke(CalculationStatus.Error);
 			}
 		}
 
@@ -523,11 +550,13 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			_logger.LogInfo("Calculation finished, processing results...");
 
-			var calculationResult = new CalculationResult(DateTime.Now, ObjectCode, ObjectWeight, UnitCount,
-				result.Length, result.Width, result.Height, ObjectVolume, Comment);
+			var calculationResult = new CalculationResult(_calculationTime, _lastBarcode, _lastWeight, _lastUnitCount,
+				result.Length, result.Width, result.Height, ObjectVolume, _lastComment);
 			var calculationResultData = new CalculationResultData(calculationResult, status, objectPhoto);
 
 			ObjectCode = "";
+			UnitCount = 0;
+			Comment = "";
 
 			DisposeVolumeCalculator();
 
@@ -573,6 +602,7 @@ namespace VolumeCalculatorGUI.GUI
 			try
 			{
 				var calculationResult = resultData.Result;
+				CalculationStatusChanged?.Invoke(resultData.Status);
 
 				if (resultData.Status == CalculationStatus.Sucessful)
 				{

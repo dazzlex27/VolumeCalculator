@@ -71,32 +71,24 @@ namespace ExtIntegration.RequestSenders
 
 					var result = resultData.Result;
 
-					const string textFileName = "info.txt";
+					const string textFileName = "result.txt";
 					var resultFilePath = Path.Combine(folderName, textFileName);
 					using (var resultFile = File.AppendText(resultFilePath))
 					{
-						resultFile.WriteLine(result.ObjectCode);
-						resultFile.WriteLine(result.ObjectWeightKg);
-						resultFile.WriteLine(result.ObjectLengthMm);
-						resultFile.WriteLine(result.ObjectWidthMm);
-						resultFile.WriteLine(result.ObjectHeightMm);
+						resultFile.WriteLine($"barcode={result.ObjectCode}");
+						resultFile.WriteLine($"weightKg={result.ObjectWeightKg}");
+						resultFile.WriteLine($"lengthMm={result.ObjectLengthMm}");
+						resultFile.WriteLine($"widthMm={result.ObjectWidthMm}");
+						resultFile.WriteLine($"heightMm={result.ObjectHeightMm}");
 					}
 
-					_logger.LogInfo("Uploading ");
-					var transferResult1 = session.PutFiles($"{ojectPhotoPath}", $"{_baseDirectory}/{ojectPhotoPath}", false,
-						transferOptions);
+					_logger.LogInfo("Uploading...");
+					var photoRemoteName = $"{_baseDirectory}/{folderName}/{objectPhotoName}";
+					var transferResult1 = session.PutFiles($"{ojectPhotoPath}", photoRemoteName, false, transferOptions);
 					transferResult1.Check();
-					var transferResult2 = session.PutFiles($"{resultFilePath}", $"{_baseDirectory}/{textFileName}",
-						false, transferOptions);
+					var infoRemoteName = $"{_baseDirectory}/{folderName}/{textFileName}";
+					var transferResult2 = session.PutFiles($"{resultFilePath}", infoRemoteName, false, transferOptions);
 					transferResult2.Check();
-
-					Directory.Delete(folderName, true);
-
-					foreach (TransferEventArgs transfer in transferResult1.Transfers)
-						Console.WriteLine("Upload of {0} succeeded", transfer.FileName);
-
-					foreach (TransferEventArgs transfer in transferResult2.Transfers)
-						Console.WriteLine("Upload of {0} succeeded", transfer.FileName);
 				}
 
 				_logger.LogInfo($"Sent files via FTP to {_sessionOptions.HostName}");

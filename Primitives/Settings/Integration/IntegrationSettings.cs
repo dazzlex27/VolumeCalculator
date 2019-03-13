@@ -4,7 +4,7 @@ namespace Primitives.Settings.Integration
 {
 	public class IntegrationSettings
 	{
-		public WebSocketHandlerSettings WebSocketHandlerSettings { get; set; }
+		public WebClientHandlerSettings WebClientHandlerSettings { get; set; }
 
 		public HttpHandlerSettings HttpHandlerSettings { get; set; }
 
@@ -14,10 +14,10 @@ namespace Primitives.Settings.Integration
 
 		public FtpRequestSettings FtpRequestSettings { get; set; }
 
-		public IntegrationSettings(WebSocketHandlerSettings webSocketHandlerSettings, HttpHandlerSettings httpHandlerSettings,
+		public IntegrationSettings(WebClientHandlerSettings webSocketHandlerSettings, HttpHandlerSettings httpHandlerSettings,
 			HttpRequestSettings httpRequestSettings, SqlRequestSettings sqlRequestSettings, FtpRequestSettings ftpRequestSettings)
 		{
-			WebSocketHandlerSettings = webSocketHandlerSettings;
+			WebClientHandlerSettings = webSocketHandlerSettings;
 			HttpHandlerSettings = httpHandlerSettings;
 			HttpRequestSettings = httpRequestSettings;
 			SqlRequestSettings = sqlRequestSettings;
@@ -26,7 +26,7 @@ namespace Primitives.Settings.Integration
 
 		public static IntegrationSettings GetDefaultSettings()
 		{
-			var webSocketHandlerSettings = WebSocketHandlerSettings.GetDefaultSettings();
+			var webSocketHandlerSettings = WebClientHandlerSettings.GetDefaultSettings();
 			var httpHandlerSettings = HttpHandlerSettings.GetDefaultSettings();
 			var httpRequestSettings = HttpRequestSettings.GetDefaultSettings();
 			var sqlRequestSettings = SqlRequestSettings.GetDefaultSettings();
@@ -39,8 +39,8 @@ namespace Primitives.Settings.Integration
 		[OnDeserialized]
 		private void OnDeserialized(StreamingContext context)
 		{
-			if (WebSocketHandlerSettings == null)
-				WebSocketHandlerSettings = WebSocketHandlerSettings.GetDefaultSettings();
+			if (WebClientHandlerSettings == null)
+				WebClientHandlerSettings = WebClientHandlerSettings.GetDefaultSettings();
 
 			if (HttpRequestSettings == null)
 				HttpHandlerSettings = HttpHandlerSettings.GetDefaultSettings();

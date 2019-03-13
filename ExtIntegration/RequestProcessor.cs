@@ -13,9 +13,10 @@ namespace ExtIntegration
 {
 	public class RequestProcessor : IDisposable
 	{
-		public event Action StartRequestReceived;
+		public event Action<CalculationRequestData> StartRequestReceived;
 
 		private readonly ILogger _logger;
+		private readonly WebClientHandler _webClientHandler;
 		private readonly HttpRequestHandler _httpRequestHandler;
 		private readonly Queue<HttpListenerContext> _activeHttpRequests;
 		private readonly List<IRequestSender> _requestSenders;
@@ -33,6 +34,12 @@ namespace ExtIntegration
 				_httpRequestHandler = new HttpRequestHandler(_logger, settings.HttpHandlerSettings);
 				_httpRequestHandler.CalculationStartRequested += OnHttpStartRequestReceived;
 				_httpRequestHandler.CalculationStartRequestTimedOut += OnHttpRequestHandlerTimedOut;
+			}
+
+			if (settings.WebClientHandlerSettings.EnableRequests)
+			{
+				_webClientHandler = new WebClientHandler(_logger, settings.WebClientHandlerSettings);
+				_webClientHandler.CalculationStartRequested += OnStartRequestReceived;
 			}
 
 			_requestSenders = new List<IRequestSender>();
@@ -68,6 +75,12 @@ namespace ExtIntegration
 				_httpRequestHandler.Dispose();
 			}
 
+			if (_webClientHandler != null)
+			{
+				_webClientHandler.CalculationStartRequested -= OnStartRequestReceived;
+				_webClientHandler.Dispose();
+			}
+
 			foreach (var sender in _requestSenders)
 				sender?.Dispose();
 		}
@@ -82,6 +95,8 @@ namespace ExtIntegration
 					_httpRequestHandler.SendResponse(httpContext, resultData);
 				}
 			}
+
+			_webClientHandler?.UpdateCalculationResult(resultData);
 
 			foreach (var sender in _requestSenders)
 			{
@@ -100,6 +115,12 @@ namespace ExtIntegration
 			}
 		}
 
+
+		public void UpdateCalculationStatus(CalculationStatus status)
+		{
+			_webClientHandler?.UpdateCalculationStatus(status);
+		}
+
 		public void ResetRequest(HttpListenerContext context, string message)
 		{
 			_httpRequestHandler.Reset(context, message);
@@ -114,7 +135,12 @@ namespace ExtIntegration
 		private void OnHttpStartRequestReceived(HttpListenerContext obj)
 		{
 			_activeHttpRequests.Enqueue(obj);
-			StartRequestReceived?.Invoke();
+			StartRequestReceived?.Invoke(null);
+		}
+
+		private void OnStartRequestReceived(CalculationRequestData obj)
+		{
+			StartRequestReceived?.Invoke(obj);
 		}
 	}
 }

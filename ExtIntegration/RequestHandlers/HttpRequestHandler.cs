@@ -5,12 +5,11 @@ using System.Threading.Tasks;
 using System.Timers;
 using Primitives;
 using Primitives.Logging;
-using Primitives.Settings;
 using Primitives.Settings.Integration;
 
 namespace ExtIntegration.RequestHandlers
 {
-	public class HttpRequestHandler
+	public class HttpRequestHandler : IDisposable
 	{
 		public event Action<HttpListenerContext> CalculationStartRequested;
 		public event Action CalculationStartRequestTimedOut;

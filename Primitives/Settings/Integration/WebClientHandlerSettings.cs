@@ -1,6 +1,6 @@
 ﻿namespace Primitives.Settings.Integration
 {
-	public class WebSocketHandlerSettings
+	public class WebClientHandlerSettings
 	{
 		public bool EnableRequests { get; set; }
 
@@ -8,16 +8,16 @@
 
 		public int Port { get; set; }
 
-		public WebSocketHandlerSettings(bool enableRequests, string address, int port)
+		public WebClientHandlerSettings(bool enableRequests, string address, int port)
 		{
 			EnableRequests = enableRequests;
 			Address = address;
 			Port = port;
 		}
 
-		public static WebSocketHandlerSettings GetDefaultSettings()
+		public static WebClientHandlerSettings GetDefaultSettings()
 		{
-			return new WebSocketHandlerSettings(true, "0.0.0.0", 8081);
+			return new WebClientHandlerSettings(true, "0.0.0.0", 8081);
 		}
 	}
 }
