@@ -22,6 +22,7 @@ namespace VolumeCalculatorGUI.GUI
 		private void OnContentRendered(object sender, EventArgs e)
 		{
 			Focus();
+			Activate();
 		}
 	}
 }
