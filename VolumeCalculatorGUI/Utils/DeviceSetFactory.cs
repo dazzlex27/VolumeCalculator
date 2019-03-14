@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Management;
 using System.Text;
-using System.Windows;
-using System.Windows.Input;
 using DeviceIntegration;
 using DeviceIntegration.IoCircuits;
 using DeviceIntegration.RangeMeters;
@@ -36,21 +34,11 @@ namespace VolumeCalculatorGUI.Utils
 			{
 				logger.LogInfo($"Creating scanner \"{entry.Name}\"...");
 
-				if (entry.Name == "keyboard")
-				{
-					var keyboardListener = new GenericKeyboardBarcodeScanner(logger);
-					barcodeScanners.Add(keyboardListener);
-					var keyEventHandler = new KeyEventHandler(keyboardListener.AddKey);
-					EventManager.RegisterClassHandler(typeof(Window), Keyboard.KeyUpEvent, keyEventHandler, true);
-				}
-				else
-				{
-					if (entry.Port == string.Empty)
-						continue;
+				if (entry.Port == string.Empty && entry.Name != "keyboard")
+					continue;
 
-					var scanner = DeviceIntegrationCommon.CreateRequestedScanner(entry.Name, logger, entry.Port);
-					barcodeScanners.Add(scanner);
-				}
+				var scanner = DeviceIntegrationCommon.CreateRequestedScanner(entry.Name, logger, entry.Port);
+				barcodeScanners.Add(scanner);
 			}
 
 			var scalesName = settings.ActiveScalesName;
