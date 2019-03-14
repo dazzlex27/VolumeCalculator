@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -480,51 +481,57 @@ namespace VolumeCalculatorGUI.GUI
 				return;
 			}
 
-			try
+			Task.Run(() =>
 			{
-				_dashStatusUpdater.DashStatus = DashboardStatus.InProgress;
-				CalculationStatusChanged?.Invoke(CalculationStatus.Running);
-				_calculationTime = DateTime.Now;
-				_lastBarcode = ObjectCode;
-				_lastWeight = ObjectWeight;
-				_lastUnitCount = UnitCount;
-				_lastComment = Comment;
-
-				var canRunCalculation = CheckIfPreConditionsAreSatisfied();
-				if (!canRunCalculation)
+				try
 				{
-					_dashStatusUpdater.DashStatus = DashboardStatus.Ready;
-					CalculationStatusChanged?.Invoke(CalculationStatus.BarcodeNotEntered);
-					CalculationFinished?.Invoke(new CalculationResultData(null, CalculationStatus.BarcodeNotEntered, null));
-					return;
+					_dashStatusUpdater.DashStatus = DashboardStatus.InProgress;
+					CalculationStatusChanged?.Invoke(CalculationStatus.Running);
+					_calculationTime = DateTime.Now;
+					_lastBarcode = ObjectCode;
+					_lastWeight = ObjectWeight;
+					_lastUnitCount = UnitCount;
+					_lastComment = Comment;
+
+					var canRunCalculation = CheckIfPreConditionsAreSatisfied();
+					if (!canRunCalculation)
+					{
+						_dashStatusUpdater.DashStatus = DashboardStatus.Ready;
+						CalculationStatusChanged?.Invoke(CalculationStatus.BarcodeNotEntered);
+						CalculationFinished?.Invoke(new CalculationResultData(null, CalculationStatus.BarcodeNotEntered,
+							null));
+						return;
+					}
+
+					var dm1Enabled = _settings.AlgorithmSettings.EnableDmAlgorithm;
+					var dm2Enabled = _settings.AlgorithmSettings.EnablePerspectiveDmAlgorithm;
+					var rgbEnabled = _settings.AlgorithmSettings.EnableRgbAlgorithm;
+					_logger.LogInfo($"Starting a volume check... dm={dm1Enabled} dm2={dm2Enabled} rgb={rgbEnabled}");
+
+					long measuredDistanse = 0;
+					if (_deviceSet?.RangeMeter != null)
+					{
+						measuredDistanse = _deviceSet.RangeMeter.GetReading();
+						_logger.LogInfo($"Measured distance - {measuredDistanse}");
+						if (measuredDistanse <= 0)
+							_logger.LogError("Failed to get range reading, will use depth calculation...");
+					}
+
+					_volumeCalculator = new VolumeCalculator(_logger, _deviceSet?.FrameProvider, _processor, _settings,
+						measuredDistanse,
+						_maskMode);
+					_volumeCalculator.CalculationFinished += OnCalculationFinished;
 				}
-
-				var dm1Enabled = _settings.AlgorithmSettings.EnableDmAlgorithm;
-				var dm2Enabled = _settings.AlgorithmSettings.EnablePerspectiveDmAlgorithm;
-				var rgbEnabled = _settings.AlgorithmSettings.EnableRgbAlgorithm;
-				_logger.LogInfo($"Starting a volume check... dm={dm1Enabled} dm2={dm2Enabled} rgb={rgbEnabled}");
-
-				long measuredDistanse = 0;
-				if (_deviceSet?.RangeMeter != null)
+				catch (Exception ex)
 				{
-					measuredDistanse = _deviceSet.RangeMeter.GetReading();
-					_logger.LogInfo($"Measured distance - {measuredDistanse}");
-					if (measuredDistanse <= 0)
-						_logger.LogError("Failed to get range reading, will use depth calculation...");
+					_logger.LogException("Failed to start volume calculation", ex);
+					AutoClosingMessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал",
+						"Ошибка");
+
+					_dashStatusUpdater.DashStatus = DashboardStatus.Error;
+					CalculationStatusChanged?.Invoke(CalculationStatus.Error);
 				}
-
-				_volumeCalculator = new VolumeCalculator(_logger, _deviceSet?.FrameProvider, _processor, _settings, measuredDistanse, 
-					_maskMode);
-				_volumeCalculator.CalculationFinished += OnCalculationFinished;
-			}
-			catch (Exception ex)
-			{
-				_logger.LogException("Failed to start volume calculation", ex);
-				AutoClosingMessageBox.Show("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка");
-
-				_dashStatusUpdater.DashStatus = DashboardStatus.Error;
-				CalculationStatusChanged?.Invoke(CalculationStatus.Error);
-			}
+			});
 		}
 
 		private bool CheckIfPreConditionsAreSatisfied()
