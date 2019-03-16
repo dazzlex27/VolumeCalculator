@@ -19,6 +19,7 @@ xcopy "%binariesFolder%\libD435FrameProvider.dll" "%appFolder%" /s /y
 xcopy "%binariesFolder%\libDepthMapProcessor.dll" "%appFolder%" /s /y
 xcopy "%binariesFolder%\opencv_world310.dll" "%appFolder%" /s /y
 xcopy "%binariesFolder%\realsense2.dll" "%appFolder%" /s /y
+xcopy "\..\..\packages\NOTICE.txt" "%appFolder%" /s /y
 xcopy "%binariesFolder%\MReader.exe" "%outputFolder%\" /s /y
 xcopy InstallM.bat "%outputFolder%" /s /y
 xcopy "\..\..\web\*" "%webFolder%" /s /y /e

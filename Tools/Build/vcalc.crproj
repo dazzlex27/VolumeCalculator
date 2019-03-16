@@ -2,7 +2,6 @@
   <module path="GodSharp.SerialPort.dll"/>
   <module path="Newtonsoft.Json.dll"/>
   <module path="Primitives.dll"/>
-  <module path="VCConfigurator.exe"/>
   <module path="DeviceIntegration.dll">
     <rule pattern="true" preset="aggressive" inherit="false">
       <protection id="rename" />
