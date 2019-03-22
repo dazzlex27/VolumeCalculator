@@ -173,7 +173,7 @@ namespace VCConfigurator
 
 		public MainWindowVm()
 		{
-			ScalesNames = new ObservableCollection<string> {"", "massak", "casm", "fakescales"};
+			ScalesNames = new ObservableCollection<string> {"", "massak", "casm", "fakescales", "ci2001a"};
 			IoCircuitNames = new ObservableCollection<string> {"", "keusb24r"};
 			RangeMeterNames = new ObservableCollection<string> {"", "custom"};
 			CameraNames = new ObservableCollection<string> {"kinectv2", "d435", "local"};

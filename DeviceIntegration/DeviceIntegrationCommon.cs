@@ -19,6 +19,8 @@ namespace DeviceIntegration
 					return new MassaKScales(logger, port);
 				case "casm":
 					return new CasMScales(logger, port);
+				case "ci2001a":
+					return new Ci2001AScales(logger, port);
 				default:
 					logger.LogError($"Failed to create scales by the name \"{name}\"");
 					throw new NotSupportedException();

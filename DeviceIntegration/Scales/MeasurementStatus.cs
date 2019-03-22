@@ -6,6 +6,7 @@
 		Ready = 1,
 		Measuring = 2,
 		Measured = 3,
-		Invalid = 4
+		Invalid = 4,
+		Overload = 5
 	}
 }
