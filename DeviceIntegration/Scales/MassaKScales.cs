@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
 using GodSharp.SerialPort;
@@ -36,7 +37,7 @@ namespace DeviceIntegration.Scales
 			_pollMessage = BitConverter.GetBytes(0x4A);
 			_resetMessage = BitConverter.GetBytes(0x0E);
 
-			_serialPort = new GodSerialPort(port, 4800, "even", 8, "1", "0");
+			_serialPort = new GodSerialPort(port, 4800, Parity.Even, 8, StopBits.One);
 			_serialPort.UseDataReceived(true, (sp, bytes) =>
 			{
 				ReadData(bytes);
