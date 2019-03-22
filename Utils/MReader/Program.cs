@@ -48,11 +48,16 @@ namespace MReader
 			{
 				var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
 
+				var drives = searcher.Get();
+				if (drives.Count < 1)
+					throw new ArgumentException();
+
 				foreach (var o in searcher.Get())
 				{
 					var wmiHd = (ManagementObject) o;
 
 					serial = wmiHd["SerialNumber"].ToString();
+					break;
 				}
 			}
 			catch (Exception ex)

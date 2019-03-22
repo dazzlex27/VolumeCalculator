@@ -6,7 +6,7 @@ namespace Primitives.Settings.Integration
 	{
 		public WebClientHandlerSettings WebClientHandlerSettings { get; set; }
 
-		public HttpHandlerSettings HttpHandlerSettings { get; set; }
+		public HttpApiSettings HttpApiSettings { get; set; }
 
 		public HttpRequestSettings HttpRequestSettings { get; set; }
 
@@ -14,11 +14,11 @@ namespace Primitives.Settings.Integration
 
 		public FtpRequestSettings FtpRequestSettings { get; set; }
 
-		public IntegrationSettings(WebClientHandlerSettings webSocketHandlerSettings, HttpHandlerSettings httpHandlerSettings,
+		public IntegrationSettings(WebClientHandlerSettings webSocketHandlerSettings, HttpApiSettings httpApiSettings,
 			HttpRequestSettings httpRequestSettings, SqlRequestSettings sqlRequestSettings, FtpRequestSettings ftpRequestSettings)
 		{
 			WebClientHandlerSettings = webSocketHandlerSettings;
-			HttpHandlerSettings = httpHandlerSettings;
+			HttpApiSettings = httpApiSettings;
 			HttpRequestSettings = httpRequestSettings;
 			SqlRequestSettings = sqlRequestSettings;
 			FtpRequestSettings = ftpRequestSettings;
@@ -26,13 +26,13 @@ namespace Primitives.Settings.Integration
 
 		public static IntegrationSettings GetDefaultSettings()
 		{
-			var webSocketHandlerSettings = WebClientHandlerSettings.GetDefaultSettings();
-			var httpHandlerSettings = HttpHandlerSettings.GetDefaultSettings();
+			var webClientHandlerSettings = WebClientHandlerSettings.GetDefaultSettings();
+			var httpApiSettings = HttpApiSettings.GetDefaultSettings();
 			var httpRequestSettings = HttpRequestSettings.GetDefaultSettings();
 			var sqlRequestSettings = SqlRequestSettings.GetDefaultSettings();
 			var ftpRequestSettings = FtpRequestSettings.GetDefaultSettings();
 
-			return new IntegrationSettings(webSocketHandlerSettings, httpHandlerSettings, httpRequestSettings,
+			return new IntegrationSettings(webClientHandlerSettings, httpApiSettings, httpRequestSettings,
 				sqlRequestSettings, ftpRequestSettings);
 		}
 
@@ -42,8 +42,8 @@ namespace Primitives.Settings.Integration
 			if (WebClientHandlerSettings == null)
 				WebClientHandlerSettings = WebClientHandlerSettings.GetDefaultSettings();
 
-			if (HttpRequestSettings == null)
-				HttpHandlerSettings = HttpHandlerSettings.GetDefaultSettings();
+			if (HttpApiSettings == null)
+				HttpApiSettings = HttpApiSettings.GetDefaultSettings();
 
 			if (SqlRequestSettings == null)
 				SqlRequestSettings = SqlRequestSettings.GetDefaultSettings();

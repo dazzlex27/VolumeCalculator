@@ -286,7 +286,7 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
-				_logger.LogInfo("Initializing sub view models...");
+				_logger.LogInfo("Initializing GUI handlers...");
 
 				var frameProvider = _deviceSet.FrameProvider;
 
@@ -304,7 +304,7 @@ namespace VolumeCalculatorGUI.GUI
 
 				ApplicationSettingsChanged += OnApplicationSettingsChanged;
 
-				_logger.LogInfo("Sub view models - ok");
+				_logger.LogInfo("GUI handlers - ok");
 			}
 			catch (Exception ex)
 			{

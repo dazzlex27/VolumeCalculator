@@ -33,7 +33,7 @@
 
 		public static FtpRequestSettings GetDefaultSettings()
 		{
-			return new FtpRequestSettings(false, "localhost", 10021, "is", "", true, "", "is");
+			return new FtpRequestSettings(false, "localhost", 21, "is", "", false, "", "is");
 		}
 	}
 }

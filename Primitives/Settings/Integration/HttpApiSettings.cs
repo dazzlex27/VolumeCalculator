@@ -1,6 +1,6 @@
 ﻿namespace Primitives.Settings.Integration
 {
-	public class HttpHandlerSettings
+	public class HttpApiSettings
 	{
 		public bool EnableRequests { get; set; }
 
@@ -8,16 +8,16 @@
 
 		public int Port { get; set; }
 
-		public HttpHandlerSettings(bool enableRequests, string address, int port)
+		public HttpApiSettings(bool enableRequests, string address, int port)
 		{
 			EnableRequests = enableRequests;
 			Address = address;
 			Port = port;
 		}
 
-		public static HttpHandlerSettings GetDefaultSettings()
+		public static HttpApiSettings GetDefaultSettings()
 		{
-			return new HttpHandlerSettings(true, "+", 8080);
+			return new HttpApiSettings(true, "+", 8080);
 		}
 	}
 }

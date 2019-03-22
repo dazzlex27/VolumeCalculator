@@ -18,7 +18,7 @@ namespace Primitives
 		public CalculationResultFileProcessor(ILogger logger, string outputFolderPath)
 		{
 			_logger = logger;
-			FullOutputPath = Path.Combine(outputFolderPath, Constants.ResultFileName);
+			FullOutputPath = Path.Combine(outputFolderPath, GlobalConstants.ResultFileName);
 
 			_fileWriteLock = new object();
 
@@ -68,16 +68,16 @@ namespace Primitives
 				{
 					var resultString = new StringBuilder();
 					resultString.Append("#");
-					resultString.Append($@"{Constants.CsvSeparator}date local");
-					resultString.Append($@"{Constants.CsvSeparator}time local");
-					resultString.Append($@"{Constants.CsvSeparator}code");
-					resultString.Append($@"{Constants.CsvSeparator}weight (kg)");
-					resultString.Append($@"{Constants.CsvSeparator}unitCount (p)");
-					resultString.Append($@"{Constants.CsvSeparator}length (mm)");
-					resultString.Append($@"{Constants.CsvSeparator}width (mm)");
-					resultString.Append($@"{Constants.CsvSeparator}height (mm)");
-					resultString.Append($@"{Constants.CsvSeparator}volume (cm^3)");
-					resultString.Append($@"{Constants.CsvSeparator}comment");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}date local");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}time local");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}code");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}weight (kg)");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}unitCount (p)");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}length (mm)");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}width (mm)");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}height (mm)");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}volume (cm^3)");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}comment");
 					resultFile.WriteLine(resultString);
 					resultFile.Flush();
 				}
@@ -101,13 +101,13 @@ namespace Primitives
 
 					var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter();
 					IoUtils.IncrementUniversalObjectCounter();
-					_logger.LogInfo($"Global object ID incremented to {calculationIndex}");
+					_logger.LogInfo($"Global object ID incremented to {calculationIndex + 1}");
 
 					var safeName = result.ObjectCode;
 					if (!string.IsNullOrEmpty(safeName))
 					{
 						var nameWithoutReturns = result.ObjectCode.Replace(Environment.NewLine, " ");
-						safeName = nameWithoutReturns.Replace(Constants.CsvSeparator, " ");
+						safeName = nameWithoutReturns.Replace(GlobalConstants.CsvSeparator, " ");
 					}
 
 					var safeWeight = result.ObjectWeightKg.ToString(CultureInfo.InvariantCulture);
@@ -117,16 +117,16 @@ namespace Primitives
 					{
 						var resultString = new StringBuilder();
 						resultString.Append(calculationIndex);
-						resultString.Append($@"{Constants.CsvSeparator}{result.CalculationTime.ToShortDateString()}");
-						resultString.Append($@"{Constants.CsvSeparator}{result.CalculationTime.ToShortTimeString()}");
-						resultString.Append($@"{Constants.CsvSeparator}{safeName}");
-						resultString.Append($@"{Constants.CsvSeparator}{safeWeight}");
-						resultString.Append($@"{Constants.CsvSeparator}{result.UnitCount}");
-						resultString.Append($@"{Constants.CsvSeparator}{result.ObjectLengthMm}");
-						resultString.Append($@"{Constants.CsvSeparator}{result.ObjectWidthMm}");
-						resultString.Append($@"{Constants.CsvSeparator}{result.ObjectHeightMm}");
-						resultString.Append($@"{Constants.CsvSeparator}{result.ObjectVolumeMm}");
-						resultString.Append($@"{Constants.CsvSeparator}{result.CalculationComment}");
+						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.CalculationTime.ToShortDateString()}");
+						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.CalculationTime.ToShortTimeString()}");
+						resultString.Append($@"{GlobalConstants.CsvSeparator}{safeName}");
+						resultString.Append($@"{GlobalConstants.CsvSeparator}{safeWeight}");
+						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.UnitCount}");
+						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.ObjectLengthMm}");
+						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.ObjectWidthMm}");
+						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.ObjectHeightMm}");
+						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.ObjectVolumeMm}");
+						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.CalculationComment}");
 						resultFile.WriteLine(resultString);
 						resultFile.Flush();
 					}

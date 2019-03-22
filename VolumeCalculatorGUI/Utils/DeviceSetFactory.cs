@@ -9,6 +9,7 @@ using DeviceIntegration.RangeMeters;
 using DeviceIntegration.Scales;
 using DeviceIntegration.Scanners;
 using FrameProviders;
+using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 
@@ -73,7 +74,8 @@ namespace VolumeCalculatorGUI.Utils
 			var serial = "";
 			try
 			{
-				var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
+				var requestBytesString = Encoding.ASCII.GetString(IoUtils.GetHwBytes());
+				var searcher = new ManagementObjectSearcher(requestBytesString);
 
 				foreach (var o in searcher.Get())
 				{

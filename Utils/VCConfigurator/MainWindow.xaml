@@ -11,101 +11,30 @@
         WindowStartupLocation="CenterScreen"
         SizeToContent="WidthAndHeight"
         ResizeMode="NoResize">
-	<Grid Margin="3">
+	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition/>
 			<RowDefinition/>
-			<RowDefinition/>
-			<RowDefinition/>
-			<RowDefinition/>
 		</Grid.RowDefinitions>
-		<StackPanel Margin="5" 
-		            Orientation="Horizontal">
-			<TextBlock Text="Весы:" 
-			           MinWidth="80" 
-			           Margin="3" 
-			           VerticalAlignment="Center"/>
-			<ComboBox MinWidth="150"
-			          SelectedItem="{Binding ActiveScalesName, Mode=TwoWay}" 
-			          Margin="3" 
-			          MaxWidth="150" 
-			          ItemsSource="{Binding ScalesNames}" 
-			          VerticalAlignment="Center"/>
-			<TextBlock Text="Порт:" 
-			           Margin="3" 
-			           VerticalAlignment="Center"/>
-			<TextBox Margin="3" 
-			         MinWidth="40"
-			         Text="{Binding ScalesPort, Mode=TwoWay}" 
-			         VerticalAlignment="Center"/>
-		</StackPanel>
+		<TabControl>
+			<TabItem Header="Устройства">
+				<local:DeviceSettingsControl DataContext="{Binding DeviceSettingsVm}"/>
+			</TabItem>
+			<TabItem Header="Интеграции">
+				<local:IntergrationSettingsControl DataContext="{Binding IntegrationSettingsVm}"/>
+			</TabItem>
+		</TabControl>
 		<StackPanel Grid.Row="1" 
-		            Margin="5" 
-		            Orientation="Horizontal">
-			<TextBlock Text="Плата:" 
-			           MinWidth="80" 
-			           Margin="3" 
-			           VerticalAlignment="Center"/>
-			<ComboBox MinWidth="150" 
-			          Margin="3" 
-			          SelectedItem="{Binding ActiveIoCircuitName, Mode=TwoWay}" 
-			          MaxWidth="150" 
-			          ItemsSource="{Binding IoCircuitNames}" 
-			          VerticalAlignment="Center"/>
-			<TextBlock Text="Порт:" 
-			           Margin="3" 
-			           VerticalAlignment="Center"/>
-			<TextBox Margin="3" 
-			         MinWidth="40" 
-			         Text="{Binding IoCircuitPort, Mode=TwoWay}" 
-			         VerticalAlignment="Center"/>
-		</StackPanel>
-		<StackPanel Grid.Row="2" 
-		            Margin="5" 
-		            Orientation="Horizontal">
-			<TextBlock Text="Дальномер:" 
-			           MinWidth="80" 
-			           Margin="3" 
-			           VerticalAlignment="Center"/>
-			<ComboBox MinWidth="150" 
-			          Margin="3" 
-			          SelectedItem="{Binding ActiveRangeMeterName, Mode=TwoWay}" 
-			          MaxWidth="150" 
-			          ItemsSource="{Binding RangeMeterNames}" 
-			          VerticalAlignment="Center"/>
-			<TextBlock Text="Порт:" 
-			           Margin="3" 
-			           VerticalAlignment="Center"/>
-			<TextBox Margin="3" 
-			         MinWidth="40"
-			         Text="{Binding RangeMeterPort, Mode=TwoWay}" 
-			         VerticalAlignment="Center"/>
-		</StackPanel>
-		<StackPanel Grid.Row="3" 
-		            Margin="5" 
-		            Orientation="Horizontal">
-			<TextBlock Text="Камера:" 
-			           MinWidth="80" 
-			           Margin="3" 
-			           VerticalAlignment="Center"/>
-			<ComboBox MinWidth="150" 
-			          Margin="3" 
-			          SelectedItem="{Binding ActiveCameraName, Mode=TwoWay}" 
-			          MaxWidth="150" 
-			          ItemsSource="{Binding CameraNames}" 
-			          VerticalAlignment="Center"/>
-		</StackPanel>
-		<StackPanel Grid.Row="4" 
-		            Orientation="Horizontal" 
-		            HorizontalAlignment="Center">
+	            Orientation="Horizontal" 
+	            HorizontalAlignment="Center">
 			<Button Margin="5" 
-			        Width="130" 
-			        Content="Сохранить и закрыть" 
-			        Command="{Binding ApplySettingsAndCloseCommand}"/>
+		        Width="130" 
+		        Content="Сохранить и закрыть" 
+		        Command="{Binding ApplySettingsAndCloseCommand}"/>
 			<Button Margin="5" 
-			        Width="70" 
-			        Content="Сохранить" 
-			        Command="{Binding ApplySettingsCommand}"/>
+		        Width="70" 
+		        Content="Сохранить" 
+		        Command="{Binding ApplySettingsCommand}"/>
 		</StackPanel>
 	</Grid>
 </Window>

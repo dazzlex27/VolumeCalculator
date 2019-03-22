@@ -54,7 +54,6 @@
     <Compile Include="CalculationResult.cs" />
     <Compile Include="CalculationResultFileProcessor.cs" />
     <Compile Include="ColorFrame.cs" />
-    <Compile Include="Constants.cs" />
     <Compile Include="DepthFrame.cs" />
     <Compile Include="DepthMap.cs" />
     <Compile Include="DepthMapUtils.cs" />
@@ -70,7 +69,7 @@
     <Compile Include="Settings\Integration\IntegrationSettings.cs" />
     <Compile Include="Settings\IoSettings.cs" />
     <Compile Include="Settings\Integration\SqlRequestSettings.cs" />
-    <Compile Include="Settings\Integration\HttpHandlerSettings.cs" />
+    <Compile Include="Settings\Integration\HttpApiSettings.cs" />
     <Compile Include="Settings\Integration\WebClientHandlerSettings.cs" />
   </ItemGroup>
   <ItemGroup>

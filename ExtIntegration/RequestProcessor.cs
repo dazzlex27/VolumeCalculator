@@ -29,9 +29,9 @@ namespace ExtIntegration
 
 			_logger.LogInfo("Creating request processor...");
 
-			if (settings.HttpHandlerSettings.EnableRequests)
+			if (settings.HttpApiSettings.EnableRequests)
 			{
-				_httpRequestHandler = new HttpRequestHandler(_logger, settings.HttpHandlerSettings);
+				_httpRequestHandler = new HttpRequestHandler(_logger, settings.HttpApiSettings);
 				_httpRequestHandler.CalculationStartRequested += OnHttpStartRequestReceived;
 				_httpRequestHandler.CalculationStartRequestTimedOut += OnHttpRequestHandlerTimedOut;
 			}

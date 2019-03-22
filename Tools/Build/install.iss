@@ -1,8 +1,8 @@
 #define private VendorName "IS"
 #define private ApplicationName "VolumeCalculator"
-#define private ApplicationVersion "1.29"
-#define private ApplicationEdition={param:edition|standard}
+#define private ApplicationVersion "1.31"
 #define private BinPath "..\..\!!bin\"
+#define private ApplicationEdition "Standard"
 #define private SourcePath = BinPath + "x64\Release\"
 #define private ObfuscatedPath SourcePath + "Confused"
 #define private OutputPath BinPath + "Installers"

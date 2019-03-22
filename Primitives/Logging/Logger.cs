@@ -18,13 +18,11 @@ namespace Primitives.Logging
 		{
 			_writeLock = new object();
 
-			var commonFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-			var appName = Process.GetCurrentProcess().ProcessName;
 			var currentInstanceFolder = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
-			var folderPath = Path.Combine(commonFolderPath, appName, currentInstanceFolder);
-			Directory.CreateDirectory(folderPath);
-			_filePath = Path.Combine(folderPath, LogFileName);
-			_archiveFilePath = Path.Combine(folderPath, AchivedLogFileName);
+			var logDirectory = Path.Combine(GlobalConstants.AppLogsPath, currentInstanceFolder);
+			Directory.CreateDirectory(logDirectory);
+			_filePath = Path.Combine(logDirectory, LogFileName);
+			_archiveFilePath = Path.Combine(logDirectory, AchivedLogFileName);
 		}
 
 		public void LogInfo(string message)

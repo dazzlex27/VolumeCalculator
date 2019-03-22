@@ -11,16 +11,18 @@ namespace Primitives
 	{
 		public static void SerializeSettings(ApplicationSettings settings)
 		{
+			Directory.CreateDirectory(GlobalConstants.AppConfigPath);
 			if (settings == null)
 				return;
 
 			var settingsText = JsonConvert.SerializeObject(settings);
-			File.WriteAllText(Constants.ConfigFileName, settingsText);
+			File.WriteAllText(GlobalConstants.ConfigFileName, settingsText);
 		}
 
 		public static ApplicationSettings DeserializeSettings()
 		{
-			var configFile = Constants.ConfigFileName;
+			Directory.CreateDirectory(GlobalConstants.AppConfigPath);
+			var configFile = GlobalConstants.ConfigFileName;
 			if (!File.Exists(configFile))
 				return null;
 
@@ -30,13 +32,13 @@ namespace Primitives
 
 		public static int GetCurrentUniversalObjectCounter()
 		{
-			if (!File.Exists(Constants.CountersFileName))
+			if (!File.Exists(GlobalConstants.CountersFileName))
 			{
-				File.WriteAllText(Constants.CountersFileName, 0.ToString());
+				File.WriteAllText(GlobalConstants.CountersFileName, 0.ToString());
 				return 0;
 			}
 
-			var fileContents = File.ReadAllText(Constants.CountersFileName);
+			var fileContents = File.ReadAllText(GlobalConstants.CountersFileName);
 			var previousCounter = int.Parse(fileContents);
 
 			return previousCounter;
@@ -44,17 +46,17 @@ namespace Primitives
 
 		public static void IncrementUniversalObjectCounter()
 		{
-			if (!File.Exists(Constants.CountersFileName))
+			if (!File.Exists(GlobalConstants.CountersFileName))
 			{
-				File.WriteAllText(Constants.CountersFileName, 1.ToString());
+				File.WriteAllText(GlobalConstants.CountersFileName, 1.ToString());
 				return ;
 			}
 
-			var fileContents = File.ReadAllText(Constants.CountersFileName);
+			var fileContents = File.ReadAllText(GlobalConstants.CountersFileName);
 			var previousCounter = int.Parse(fileContents);
 
 			var nextCounter = previousCounter + 1;
-			File.WriteAllText(Constants.CountersFileName, nextCounter.ToString());
+			File.WriteAllText(GlobalConstants.CountersFileName, nextCounter.ToString());
 		}
 
 		public static void OpenFile(string filepath)
@@ -94,6 +96,16 @@ namespace Primitives
 		public static bool NeedScalesDebugMode()
 		{
 			return File.Exists("SCDEBUG");
+		}
+
+		public static byte[] GetHwBytes()
+		{
+			return new byte[]
+			{
+				83, 69, 76, 69, 67, 84, 32, 42, 32, 70, 82, 79, 77, 32, 87, 105, 110, 51, 50, 95, 68, 105, 115, 107, 68,
+				114, 105, 118, 101, 32, 87, 72, 69, 82, 69, 32, 73, 110, 116, 101, 114, 102, 97, 99, 101, 84, 121, 112,
+				101, 61, 39, 73, 68, 69, 39
+			};
 		}
 	}
 }

@@ -25,7 +25,7 @@ namespace ExtIntegration.RequestHandlers
 		private bool _running;
 		private bool _sessionInProgress;
 
-		public HttpRequestHandler(ILogger logger, HttpHandlerSettings settings)
+		public HttpRequestHandler(ILogger logger, HttpApiSettings settings)
 		{
 			_logger = logger;
 			_address = $"http://{settings.Address}:{settings.Port}/";
@@ -157,7 +157,7 @@ namespace ExtIntegration.RequestHandlers
 				if (_sessionInProgress)
 					Thread.Sleep(ThreadIdleTimeSpan);
 
-				_logger.LogInfo($"Listening for HTTP requests from {_address}...");
+				_logger.LogInfo($"Awaiting HTTP requests from {_address}...");
 				var context = _listener.GetContext();
 				var request = context.Request;
 				var url = request.RawUrl;

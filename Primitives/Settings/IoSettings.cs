@@ -26,9 +26,9 @@ namespace Primitives.Settings
 
 		public bool ShutDownPcByDefault { get; set; }
 
-		public string ResultsFilePath => Path.Combine(OutputPath, Constants.ResultsFileName);
+		public string ResultsFilePath => Path.Combine(OutputPath, GlobalConstants.ResultsFileName);
 
-		public string PhotosDirectoryPath => Path.Combine(OutputPath, Constants.ResultPhotosFolder);
+		public string PhotosDirectoryPath => Path.Combine(OutputPath, GlobalConstants.ResultPhotosFolder);
 
 		public IoSettings(string activeCameraName, string activeScalesName, string scalesPort, IoEntry[] activeScanners,
 			string activeIoCircuitName, string ioCircuitPort, string activeRangeMeterName, string rangeMeterPort,
@@ -51,7 +51,13 @@ namespace Primitives.Settings
 		{
 			var defaultScanners = new[] {new IoEntry("keyboard", "")};
 
-			return new IoSettings("kinectv2", "massak", "", defaultScanners, "keusb24r", "", "custom", "", 0,
+			if (GlobalConstants.ProEdition)
+			{
+				return new IoSettings("kinectv2", "casm", "COM1", defaultScanners, "keusb24r", "", "custom", "", 0,
+					"MeasurementResults", false);
+			}
+			else
+			return new IoSettings("kinectv2", "massak", "COM1", defaultScanners, "keusb24r", "", "custom", "", 0,
 				"MeasurementResults", false);
 		}
 	}

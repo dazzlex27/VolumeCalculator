@@ -6,10 +6,10 @@ namespace Primitives.Settings
 {
 	public class AlgorithmSettings
 	{
-		private const int DefaultFloorDepthMm = 1000;
-		private const int DefaultTimerValueMs = 3000;
+		private const int DefaultFloorDepthMm = 1805;
+		private const int DefaultTimerValueMs = 1000;
 		private const int DefaultSampleCount = 10;
-		private const int DefaultMinObjHeightMm = 10;
+		private const int DefaultMinObjHeightMm = 15;
 
 		public short FloorDepth { get; set; }
 
@@ -59,7 +59,7 @@ namespace Primitives.Settings
 		public static AlgorithmSettings GetDefaultSettings()
 		{
 			return new AlgorithmSettings(DefaultFloorDepthMm, DefaultMinObjHeightMm, DefaultSampleCount, false,
-				GetDefaultAreaContour(), false, GetDefaultAreaContour(), true, DefaultTimerValueMs, true);
+				GetDefaultAreaContour(), true, GetDefaultAreaContour(), true, DefaultTimerValueMs, true);
 		}
 
 		public override string ToString()
