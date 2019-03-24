@@ -4,9 +4,170 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:VCConfigurator"
+			 d:DataContext="{d:DesignInstance local:IntegrationSettingsVm}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-            
-    </Grid>
+	<WrapPanel Margin="3" MaxWidth="500">
+		<GroupBox Margin="3">
+			<GroupBox.Header>
+				<CheckBox Margin="3"
+						  Content="HTTP API"
+				          IsChecked="{Binding EnableHttpApi, Mode=TwoWay}"/>
+			</GroupBox.Header>
+			<StackPanel IsEnabled="{Binding EnableHttpApi}">
+				<StackPanel Margin="3" 
+		            Orientation="Horizontal">
+					<TextBlock Margin="3"
+			           Text="Порт для HTTP API: "/>
+					<TextBox Margin="3"
+							Text="{Binding HttpApiPort, Mode=TwoWay}"
+							MaxLength="5"
+					        Width="40"/>
+				</StackPanel>
+			</StackPanel>
+		</GroupBox>
+		<GroupBox Margin="3">
+			<GroupBox.Header>
+				<CheckBox Margin="3"
+				          Content="Отправка GET-запросов"
+				          IsChecked="{Binding EnableHttpRequests, Mode=TwoWay}"/>
+			</GroupBox.Header>
+			<StackPanel IsEnabled="{Binding EnableHttpRequests}">
+				<StackPanel Margin="3" 
+					            Orientation="Horizontal">
+					<TextBlock Margin="3"
+						           Text="Порт для запросов: "/>
+					<TextBox Margin="3"
+						         Text="{Binding HttpRequestPort, Mode=TwoWay}"
+						         MaxLength="5"
+						         Width="40"/>
+				</StackPanel>
+				<StackPanel Margin="3">
+					<StackPanel Margin="3" 
+						            Orientation="Horizontal">
+						<TextBlock Margin="3"
+							           Text="URL для запросов: "/>
+						<TextBox Margin="3"
+							         Text="{Binding HttpRequestUrl, Mode=TwoWay}"
+							         MaxLength="5"
+							         Width="40"/>
+					</StackPanel>
+				</StackPanel>
+			</StackPanel>
+		</GroupBox>
+		<GroupBox Margin="3">
+			<GroupBox.Header>
+				<CheckBox Margin="3"
+				          Content="Отправка SQL-запросов"
+				          IsChecked="{Binding EnableSqlRequests, Mode=TwoWay}"/>
+			</GroupBox.Header>
+			<StackPanel IsEnabled="{Binding EnableSqlRequests}">
+				<StackPanel Margin="3" 
+			            Orientation="Horizontal">
+					<TextBlock Margin="3"
+				           Text="IP базы данных: "/>
+					<TextBox Margin="3"
+				         Text="{Binding SqlRequestHostName, Mode=TwoWay}"
+				         Width="100"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
+			            Orientation="Horizontal">
+					<TextBlock Margin="3"
+				           Text="Имя пользователя: "/>
+					<TextBox Margin="3"
+				         Text="{Binding SqlRequestUsername, Mode=TwoWay}"
+				         Width="100"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<TextBlock Margin="3"
+					           Text="Пароль: "/>
+					<TextBox Margin="3"
+					         Text="{Binding SqlRequestPassword, Mode=TwoWay}"
+					         Width="100"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<TextBlock Margin="3"
+					           Text="Имя БД: "/>
+					<TextBox Margin="3"
+					         Text="{Binding SqlRequestDbName, Mode=TwoWay}"
+					         Width="100"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<TextBlock Margin="3"
+					           Text="Имя таблицы: "/>
+					<TextBox Margin="3"
+					         Text="{Binding SqlRequestTableName, Mode=TwoWay}"
+					         Width="100"/>
+				</StackPanel>
+			</StackPanel>
+		</GroupBox>
+		<GroupBox Margin="3">
+			<GroupBox.Header>
+				<CheckBox Margin="3"
+				          Content="Отправка FTP-запросов"
+				          IsChecked="{Binding EnableFtpRequests, Mode=TwoWay}"/>
+			</GroupBox.Header>
+			<StackPanel IsEnabled="{Binding EnableFtpRequests}">
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<TextBlock Margin="3"
+					           Text="IP FTP-сервера: "/>
+					<TextBox Margin="3"
+					         Text="{Binding FtpRequestHostName, Mode=TwoWay}"
+					         Width="100"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<TextBlock Margin="3"
+					           Text="Порт для FTP-соединения: "/>
+					<TextBox Margin="3"
+					         Text="{Binding FtpRequestPort, Mode=TwoWay}"
+							 MaxLength="5"
+					         Width="40"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<TextBlock Margin="3"
+					           Text="Логин: "/>
+					<TextBox Margin="3"
+					         Text="{Binding FtpRequestLogin, Mode=TwoWay}"
+					         Width="100"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<TextBlock Margin="3"
+					           Text="Пароль: "/>
+					<TextBox Margin="3"
+					         Text="{Binding FtpRequestPassword, Mode=TwoWay}"
+					         Width="100"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<TextBlock Margin="3"
+					           Text="Базовая папка: "/>
+					<TextBox Margin="3"
+					         Text="{Binding FtpRequestBaseFolderName, Mode=TwoWay}"
+					         Width="100"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<CheckBox Margin="3"
+					         IsChecked="{Binding FtpRequestIsSecure, Mode=TwoWay}"
+							  Content="Шифрование"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal"
+				            IsEnabled="{Binding FtpRequestIsSecure}">
+					<TextBlock Margin="3"
+					           Text="Ключ шифрования: "/>
+					<TextBox Margin="3"
+					         Text="{Binding FtpRequestHostCertificateFingerPrint, Mode=TwoWay}"
+					         Width="100"/>
+				</StackPanel>
+			</StackPanel>
+		</GroupBox>
+	</WrapPanel>
 </UserControl>

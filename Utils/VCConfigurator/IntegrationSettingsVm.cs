@@ -312,6 +312,7 @@ namespace VCConfigurator
 
 			var ftpRequestSettings = settings.FtpRequestSettings;
 			EnableFtpRequests = ftpRequestSettings.EnableRequests;
+			FtpRequestPort = ftpRequestSettings.Port;
 			FtpRequestHostName = ftpRequestSettings.Host;
 			FtpRequestLogin = ftpRequestSettings.Login;
 			FtpRequestPassword = ftpRequestSettings.Password;

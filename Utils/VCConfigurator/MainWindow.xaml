@@ -5,7 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VCConfigurator"
         mc:Ignorable="d"
-        Title="Настройка VolumeCalculator" MinHeight="100" MinWidth="200" x:ClassModifier="internal"
+        x:ClassModifier="internal"
+        Title="Настройка VolumeCalculator" 
+        Height="300" 
+        MinWidth="400" 
         ShowInTaskbar="False"
         d:DataContext="{d:DesignInstance local:MainWindowVm}"
         WindowStartupLocation="CenterScreen"
@@ -13,8 +16,8 @@
         ResizeMode="NoResize">
 	<Grid>
 		<Grid.RowDefinitions>
-			<RowDefinition/>
-			<RowDefinition/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
 		<TabControl>
 			<TabItem Header="Устройства">
