@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
@@ -21,6 +22,8 @@ namespace ExtIntegration.RequestHandlers
 		private readonly ILogger _logger;
 		private readonly HttpListener _listener;
 		private readonly string _address;
+		private readonly string _login;
+		private readonly string _password;
 
 		private bool _running;
 		private bool _sessionInProgress;
@@ -29,6 +32,9 @@ namespace ExtIntegration.RequestHandlers
 		{
 			_logger = logger;
 			_address = $"http://{settings.Address}:{settings.Port}/";
+
+			_login = settings.Login;
+			_password = settings.Password;
 
 			_logger.LogInfo($"Creating http listener for {_address} ...");
 
@@ -72,7 +78,7 @@ namespace ExtIntegration.RequestHandlers
 				_logger.LogInfo($"Response text is the following: {Environment.NewLine}{responseString}");
 
 				var response = context.Response;
-				var buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+				var buffer = Encoding.UTF8.GetBytes(responseString);
 
 				response.ContentLength64 = buffer.Length;
 				var output = response.OutputStream;
@@ -160,6 +166,13 @@ namespace ExtIntegration.RequestHandlers
 				_logger.LogInfo($"Awaiting HTTP requests from {_address}...");
 				var context = _listener.GetContext();
 				var request = context.Request;
+				var credentialsAreOk = CheckCredentials(request);
+				if (!credentialsAreOk)
+				{
+					_logger.LogError($"Credentials from {_address} were incorrect, will not process the request");
+					continue;
+				}
+
 				var url = request.RawUrl;
 				var command = url.Contains("?")
 					? url.Substring(1, url.IndexOf("?", StringComparison.Ordinal))
@@ -189,6 +202,41 @@ namespace ExtIntegration.RequestHandlers
 			_logger.LogError($"HTTP request handling for {_address} timed out, aborting request...");
 			CalculationStartRequestTimedOut?.Invoke();
 			_sessionInProgress = false;
+		}
+
+		private bool CheckCredentials(HttpListenerRequest request)
+		{
+			if (string.IsNullOrEmpty(_login))
+				return true;
+
+			var authHeader = request.Headers["Authorization"];
+			var headerCorrect = authHeader != null && authHeader.StartsWith("Basic");
+			if (!headerCorrect)
+				return false;
+
+			var encodedUsernamePassword = authHeader.Substring("Basic ".Length).Trim();
+			var encoding = Encoding.GetEncoding("iso-8859-1");
+			var usernamePassword = encoding.GetString(Convert.FromBase64String(encodedUsernamePassword));
+			var seperatorIndex = usernamePassword.IndexOf(':');
+
+			var login = usernamePassword.Substring(0, seperatorIndex);
+			var password = usernamePassword.Substring(seperatorIndex + 1);
+
+			var loginIsOk = _login == login;
+			if (!loginIsOk)
+			{
+				_logger.LogError($"HTTP Basic authentication failed for {_address}, the login was incorrect");
+				return false;
+			}
+
+			var passwordIsOk = _password == password;
+			if (!passwordIsOk)
+			{
+				_logger.LogError($"HTTP Basic authentication failed for {_address}, the password was incorrect");
+				return false;
+			}
+
+			return true;
 		}
 	}
 }

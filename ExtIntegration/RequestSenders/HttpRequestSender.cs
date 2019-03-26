@@ -11,6 +11,8 @@ namespace ExtIntegration.RequestSenders
 	{
 		private readonly ILogger _logger;
 		private readonly List<string> _destinationAddresses;
+		private readonly string _login;
+		private readonly string _password;
 
 		public HttpRequestSender(ILogger logger, HttpRequestSettings settings)
 		{
@@ -23,6 +25,9 @@ namespace ExtIntegration.RequestSenders
 				_destinationAddresses.Add(address);
 				_logger.LogInfo($"Creating GET request sender for {address}");
 			}
+
+			_login = settings.Login;
+			_password = settings.Password;
 		}
 
 		public void Dispose()
@@ -56,15 +61,34 @@ namespace ExtIntegration.RequestSenders
 					{
 						_logger.LogInfo($"Sending GET request to {address}...");
 
-						var webClient = new WebClient();
-						webClient.QueryString.Add("bar", result.ObjectCode);
-						webClient.QueryString.Add("wt", ((int)(result.ObjectWeightKg * 1000)).ToString());
-						webClient.QueryString.Add("l", result.ObjectLengthMm.ToString());
-						webClient.QueryString.Add("w", result.ObjectWidthMm.ToString());
-						webClient.QueryString.Add("h", result.ObjectHeightMm.ToString());
-						var response = webClient.DownloadString(address);
+						var uri = new Uri(address);
 
-						_logger.LogInfo($"Sent GET request to {address}, response was {response}");
+						using (var webClient = new WebClient())
+						{
+							var authenticationRequired = !string.IsNullOrEmpty(_login);
+							if (authenticationRequired)
+							{
+								var credentialCache = new CredentialCache
+								{
+									{
+										new Uri(uri.GetLeftPart(UriPartial.Authority)), "Basic",
+										new NetworkCredential(_login, _password)
+									}
+								};
+
+								webClient.UseDefaultCredentials = true;
+								webClient.Credentials = credentialCache;
+							}
+
+							webClient.QueryString.Add("bar", result.ObjectCode);
+							webClient.QueryString.Add("wt", ((int) (result.ObjectWeightKg * 1000)).ToString());
+							webClient.QueryString.Add("l", result.ObjectLengthMm.ToString());
+							webClient.QueryString.Add("w", result.ObjectWidthMm.ToString());
+							webClient.QueryString.Add("h", result.ObjectHeightMm.ToString());
+							var response = webClient.DownloadString(address);
+
+							_logger.LogInfo($"Sent GET request to {address}, response was {response}");
+						}
 					}
 					catch (Exception ex)
 					{
