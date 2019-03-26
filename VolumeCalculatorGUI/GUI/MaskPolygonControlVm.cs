@@ -26,53 +26,25 @@ namespace VolumeCalculatorGUI.GUI
 		public PointCollection PolygonPoints
 		{
 			get => _polygonPoints;
-			set
-			{
-				if (ReferenceEquals(_polygonPoints, value))
-					return;
-
-				_polygonPoints = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _polygonPoints, value, nameof(PolygonPoints));
 		}
 
 		public bool CanEditPolygon
 		{
 			get => _canEditPolygon;
-			set
-			{
-				if (_canEditPolygon == value)
-					return;
-
-				_canEditPolygon = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _canEditPolygon, value, nameof(CanEditPolygon));
 		}
 
 		public double CanvasWidth
 		{
 			get => _canvasWidth;
-			set
-			{
-				if (Math.Abs(_canvasWidth - value) < 0.001)
-					return;
-
-				_canvasWidth = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _canvasWidth, value, nameof(CanvasWidth));
 		}
 
 		public double CanvasHeight
 		{
 			get => _canvasHeight;
-			set
-			{
-				if (Math.Abs(_canvasHeight - value) < 0.001)
-					return;
-
-				_canvasHeight = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _canvasHeight, value, nameof(CanvasHeight));
 		}
 
 		public MaskPolygonControlVm(IReadOnlyList<Point> points)

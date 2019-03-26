@@ -44,40 +44,19 @@ namespace VolumeCalculatorGUI.GUI
 		public StreamViewControlVm StreamViewControlVm
 		{
 			get => _streamViewControlVm;
-			set
-			{
-				if (Equals(_streamViewControlVm, value))
-					return;
-
-				_streamViewControlVm = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _streamViewControlVm, value, nameof(StreamViewControlVm));
 		}
 
 		public CalculationDashboardControlVm CalculationDashboardControlVm
 		{
 			get => _calculationDashboardControlVm;
-			set
-			{
-				if (ReferenceEquals(_calculationDashboardControlVm, value))
-					return;
-
-				_calculationDashboardControlVm = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _calculationDashboardControlVm, value, nameof(CalculationDashboardControlVm));
 		}
 
 		public TestDataGenerationControlVm TestDataGenerationControlVm
 		{
 			get => _testDataGenerationControlVm;
-			set
-			{
-				if (ReferenceEquals(_testDataGenerationControlVm, value))
-					return;
-
-				_testDataGenerationControlVm = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _testDataGenerationControlVm, value, nameof(TestDataGenerationControlVm));
 		}
 
 		private ApplicationSettings Settings

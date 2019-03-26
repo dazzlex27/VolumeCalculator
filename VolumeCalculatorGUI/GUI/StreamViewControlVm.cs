@@ -15,9 +15,6 @@ namespace VolumeCalculatorGUI.GUI
 {
 	internal class StreamViewControlVm : BaseViewModel, IDisposable
 	{
-		public event Action<bool> UseColorStreamChanged;
-		public event Action<bool> UseDepthStreamChanged;
-
 		private readonly FrameProvider _frameProvider;
 		private readonly ILogger _logger;
 
@@ -31,116 +28,43 @@ namespace VolumeCalculatorGUI.GUI
 		private MaskPolygonControlVm _colorMaskPolygonControlVm;
 		private MaskPolygonControlVm _depthMaskPolygonControlVm;
 
-		private bool _useColorStream;
-		private bool _useDepthStream;
-
 		private bool _useColorMask;
 		private bool _useDepthMask;
 
 		public WriteableBitmap ColorImageBitmap
 		{
 			get => _colorImageBitmap;
-			set
-			{
-				if (Equals(_colorImageBitmap, value))
-					return;
-
-				_colorImageBitmap = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _colorImageBitmap, value, nameof(ColorImageBitmap));
 		}
 
 		public WriteableBitmap DepthImageBitmap
 		{
 			get => _depthImageBitmap;
-			set
-			{
-				if (Equals(_depthImageBitmap, value))
-					return;
-
-				_depthImageBitmap = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public bool UseColorStream
-		{
-			get => _useColorStream;
-			set
-			{
-				if (_useColorStream == value)
-					return;
-
-				_useColorStream = value;
-				OnPropertyChanged();
-				UseColorStreamChanged?.Invoke(value);
-			}
-		}
-
-		public bool UseDepthStream
-		{
-			get => _useDepthStream;
-			set
-			{
-				if (_useDepthStream == value)
-					return;
-
-				_useDepthStream = value;
-				OnPropertyChanged();
-				UseDepthStreamChanged?.Invoke(value);
-			}
+			set => SetField(ref _depthImageBitmap, value, nameof(DepthImageBitmap));
 		}
 
 		public bool UseColorMask
 		{
-			get => _useColorMask && GlobalConstants.ProEdition;
-			set
-			{
-				if (_useColorMask == value)
-					return;
-
-				_useColorMask = value;
-				OnPropertyChanged();
-			}
+			get => _useColorMask;
+			set => SetField(ref _useColorMask, value, nameof(UseColorMask));
 		}
 
 		public bool UseDepthMask
 		{
 			get => _useDepthMask;
-			set
-			{
-				if (_useDepthMask == value)
-					return;
-
-				_useDepthMask = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _useDepthMask, value, nameof(UseDepthMask));
 		}
 
 		public MaskPolygonControlVm ColorMaskPolygonControlVm
 		{
 			get => _colorMaskPolygonControlVm;
-			set
-			{
-				if (ReferenceEquals(_colorMaskPolygonControlVm, value))
-					return;
-
-				_colorMaskPolygonControlVm = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _colorMaskPolygonControlVm, value, nameof(ColorMaskPolygonControlVm));
 		}
 
 		public MaskPolygonControlVm DepthMaskPolygonControlVm
 		{
 			get => _depthMaskPolygonControlVm;
-			set
-			{
-				if (ReferenceEquals(_depthMaskPolygonControlVm, value))
-					return;
-
-				_depthMaskPolygonControlVm = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _depthMaskPolygonControlVm, value, nameof(DepthMaskPolygonControlVm));
 		}
 
 		public StreamViewControlVm(ILogger logger, ApplicationSettings settings, FrameProvider frameProvider)
@@ -148,9 +72,6 @@ namespace VolumeCalculatorGUI.GUI
 			_logger = logger;
 			_applicationSettings = settings;
 			_frameProvider = frameProvider;
-
-			_useColorStream = true;
-			_useDepthStream = true;
 
 			_frameProvider.ColorFrameReady += ColorImageUpdated;
 			_frameProvider.DepthFrameReady += DepthImageUpdated;

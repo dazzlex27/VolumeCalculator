@@ -17,7 +17,6 @@
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
-			<!--<CheckBox Grid.Row="0" Margin="0,5" Content="Поток камеры" IsChecked="{Binding UseColorStream, Mode=TwoWay}" Focusable="False"/>-->
 			<Grid Grid.Row="1">
 				<Canvas 
 					Name="CvColor"
@@ -29,8 +28,7 @@
 					       Width="{Binding Path=ActualWidth, ElementName=CvColor}"
 					       Height="{Binding Path=ActualHeight, ElementName=CvColor}"
 					       HorizontalAlignment="Stretch"
-					       VerticalAlignment="Stretch" 
-					       Visibility="{Binding UseColorStream, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+					       VerticalAlignment="Stretch"/>
 					<Line StrokeThickness="3"
 					      X1="0" 
 					      X2="{Binding Path=ActualWidth, ElementName=CvColor}" 
@@ -45,13 +43,8 @@
 					      Stroke="Red"/>
 				</Canvas>
 				<Grid HorizontalAlignment="Center"
-				      VerticalAlignment="Center">
-					<Grid.Visibility>
-						<MultiBinding Converter="{StaticResource ConjunctionToVisibilityMultiConverter}">
-							<Binding Path="UseColorMask" />
-							<Binding Path="UseColorStream"/>
-						</MultiBinding>
-					</Grid.Visibility>
+				      VerticalAlignment="Center"
+				      Visibility="{Binding UseColorMask, Converter={StaticResource BooleanToVisibilityConverter}}">
 					<gui:MaskPolygonControl
 						DataContext="{Binding ColorMaskPolygonControlVm}"
 						Width="{Binding Path=ActualWidth, ElementName=ImColor}"
@@ -67,7 +60,6 @@
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
-			<!--<CheckBox Grid.Row="0" Margin="0,5" Content="Поток 3D-сенсора" IsChecked="{Binding UseDepthStream, Mode=TwoWay}" Focusable="False"/>-->
 			<Grid Grid.Row="1">
 				<Canvas 
 			        Name="CvDepth"
@@ -79,8 +71,7 @@
 				       Width="{Binding Path=ActualWidth, ElementName=CvDepth}"
 				       Height="{Binding Path=ActualHeight, ElementName=CvDepth}"
 				       HorizontalAlignment="Stretch"
-				       VerticalAlignment="Stretch" 
-					   Visibility="{Binding UseDepthStream, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+				       VerticalAlignment="Stretch"/>
 					<Line StrokeThickness="3"
 					      X1="0" 
 					      X2="{Binding Path=ActualWidth, ElementName=CvColor}" 
@@ -95,13 +86,8 @@
 					      Stroke="Red"/>
 				</Canvas>
 				<Grid HorizontalAlignment="Center"
-				      VerticalAlignment="Center">
-					<Grid.Visibility>
-						<MultiBinding Converter="{StaticResource ConjunctionToVisibilityMultiConverter}">
-							<Binding Path="UseDepthMask" />
-							<Binding Path="UseDepthStream"/>
-						</MultiBinding> 
-					</Grid.Visibility>
+				      VerticalAlignment="Center"
+				      Visibility="{Binding UseDepthMask, Converter={StaticResource BooleanToVisibilityConverter}}">
 					<gui:MaskPolygonControl
 						DataContext="{Binding DepthMaskPolygonControlVm}"
 						Width="{Binding Path=ActualWidth, ElementName=ImDepth}"

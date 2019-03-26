@@ -28,7 +28,7 @@ namespace VolumeCalculatorGUI.GUI
 		private MaskPolygonControlVm _depthMaskPolygonControlVm;
 		private short _maxDepth;
 		private short _minDepth;
-		private short _distanceToFloor;
+		private short _floorDepth;
 		private short _minObjHeight;
 		private byte _sampleCount;
 		private bool _requireBarcode;
@@ -44,248 +44,115 @@ namespace VolumeCalculatorGUI.GUI
 		public WriteableBitmap ColorImageBitmap
 		{
 			get => _colorImageBitmap;
-			set
-			{
-				if (Equals(_colorImageBitmap, value))
-					return;
-
-				_colorImageBitmap = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _colorImageBitmap, value, nameof (ColorImageBitmap));
 		}
 
 		public WriteableBitmap DepthImageBitmap
 		{
 			get => _depthImageBitmap;
-			set
-			{
-				if (Equals(_depthImageBitmap, value))
-					return;
-
-				_depthImageBitmap = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _depthImageBitmap, value, nameof(DepthImageBitmap));
 		}
 
 		public bool UseColorMask
 		{
 			get => _useColorMask;
-			set
-			{
-				if (_useColorMask == value)
-					return;
-
-				_useColorMask = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _useColorMask, value, nameof(UseColorMask));
 		}
 
 		public MaskPolygonControlVm ColorMaskRectangleControlVm
 		{
 			get => _colorMaskRectangleControlVm;
-			set
-			{
-				if (ReferenceEquals(_colorMaskRectangleControlVm, value))
-					return;
-
-				_colorMaskRectangleControlVm = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _colorMaskRectangleControlVm, value, nameof(ColorMaskRectangleControlVm));
 		}
 
 		public bool UseDepthMask
 		{
 			get => _useDepthMask;
-			set
-			{
-				if (_useDepthMask == value)
-					return;
-
-				_useDepthMask = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _useDepthMask, value, nameof(UseDepthMask));
 		}
 
 		public MaskPolygonControlVm DepthMaskPolygonControlVm
 		{
 			get => _depthMaskPolygonControlVm;
-			set
-			{
-				if (ReferenceEquals(_depthMaskPolygonControlVm, value))
-					return;
-
-				_depthMaskPolygonControlVm = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _depthMaskPolygonControlVm, value, nameof(DepthMaskPolygonControlVm));
 		}
 
 		public short MinDepth
 		{
 			get => _minDepth;
-			set
-			{
-				if (_minDepth == value)
-					return;
-
-				_minDepth = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _minDepth, value, nameof(MinDepth));
 		}
 
 		public short MaxDepth
 		{
 			get => _maxDepth;
-			set
-			{
-				if (_maxDepth == value)
-					return;
-
-				_maxDepth = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _maxDepth, value, nameof(MaxDepth));
 		}
 
 		public short FloorDepth
 		{
-			get => _distanceToFloor;
-			set
-			{
-				if (_distanceToFloor == value)
-					return;
-
-				_distanceToFloor = value;
-				OnPropertyChanged();
-			}
+			get => _floorDepth;
+			set => SetField(ref _floorDepth, value, nameof(FloorDepth));
 		}
 
 		public short MinObjHeight
 		{
 			get => _minObjHeight;
-			set
-			{
-				if (_minObjHeight == value)
-					return;
-
-				_minObjHeight = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _minObjHeight, value, nameof(MinObjHeight));
 		}
 
 		public byte SampleCount
 		{
 			get => _sampleCount;
-			set
-			{
-				if (value == _sampleCount)
-					return;
-
-				_sampleCount = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _sampleCount, value, nameof(SampleCount));
 		}
 
 		public bool RequireBarcode
 		{
 			get => _requireBarcode;
-			set
-			{
-				if (value == _requireBarcode)
-					return;
-
-				_requireBarcode = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _requireBarcode, value, nameof(RequireBarcode));
 		}
 
 		public string OutputPath
 		{
 			get => _outputPath;
-			set
-			{
-				if (_outputPath == value)
-					return;
-
-				_outputPath = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _outputPath, value, nameof(OutputPath));
 		}
 
 		public long TimeToStartMeasurementMs
 		{
 			get => _timeToStartMeasurementMs;
-			set
-			{
-				if (_timeToStartMeasurementMs == value)
-					return;
-
-				_timeToStartMeasurementMs = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _timeToStartMeasurementMs, value, nameof(TimeToStartMeasurementMs));
 		}
 
 		public bool EnableAutoTimer
 		{
 			get => _enableAutoTimer;
-			set
-			{
-				if (_enableAutoTimer == value)
-					return;
-
-				_enableAutoTimer = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _enableAutoTimer, value, nameof(EnableAutoTimer));
 		}
 
 		public int RangeMeterSubtractionValue
 		{
 			get => _rangeMeterSubtractionValue;
-			set
-			{
-				if (_rangeMeterSubtractionValue == value)
-					return;
-
-				_rangeMeterSubtractionValue = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _rangeMeterSubtractionValue, value, nameof(RangeMeterSubtractionValue));
 		}
 
 		public bool HasReceivedAColorImage
 		{
 			get => _hasReceivedAColorImage;
-			set
-			{
-				if (_hasReceivedAColorImage == value)
-					return;
-
-				_hasReceivedAColorImage = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _hasReceivedAColorImage, value, nameof(HasReceivedAColorImage));
 		}
 
 		public bool HasReceivedADepthMap
 		{
 			get => _hasReceivedDepthMap;
-			set
-			{
-				if (_hasReceivedDepthMap == value)
-					return;
-
-				_hasReceivedDepthMap = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _hasReceivedDepthMap, value, nameof(HasReceivedADepthMap));
 		}
 
 		public bool RangeMeterAvailable
 		{
 			get => _rangeMeterAvailable;
-			set
-			{
-				if (_rangeMeterAvailable == value)
-					return;
-
-				_rangeMeterAvailable = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _rangeMeterAvailable, value, nameof(RangeMeterAvailable));
 		}
 
 		public ICommand CalculateFloorDepthCommand { get; }

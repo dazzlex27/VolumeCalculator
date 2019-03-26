@@ -73,14 +73,10 @@ namespace VolumeCalculatorGUI.GUI
 			get => _objectCode;
 			set
 			{
-				if (_objectCode == value)
-					return;
+				SetField(ref _objectCode, value, nameof(ObjectCode));
 
-				_objectCode = value;
 				if (CodeReady)
 					ResetMeasurementValues();
-
-				OnPropertyChanged();
 			}
 		}
 
@@ -100,183 +96,85 @@ namespace VolumeCalculatorGUI.GUI
 		public uint UnitCount
 		{
 			get => _unitCount;
-			set
-			{
-				if (_unitCount == value)
-					return;
-
-				_unitCount = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _unitCount, value, nameof(UnitCount));
 		}
 
 		public int ObjectLength
 		{
 			get => _objectLength;
-			set
-			{
-				if (_objectLength == value)
-					return;
-
-				_objectLength = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _objectLength, value, nameof(ObjectLength));
 		}
 
 		public int ObjectWidth
 		{
 			get => _objectWidth;
-			set
-			{
-				if (_objectWidth == value)
-					return;
-
-				_objectWidth = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _objectWidth, value, nameof(ObjectWidth));
 		}
 
 		public int ObjectHeight
 		{
 			get => _objectHeight;
-			set
-			{
-				if (_objectHeight == value)
-					return;
-
-				_objectHeight = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _objectHeight, value, nameof(ObjectHeight));
 		}
 
 		public double ObjectVolume
 		{
 			get => _objectVolume;
-			set
-			{
-				if (Math.Abs(_objectVolume - value) < 0.0001)
-					return;
-
-				_objectVolume = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _objectVolume, value, nameof(ObjectVolume));
 		}
 
 		public string Comment
 		{
 			get => _comment;
-			set
-			{
-				if (_comment == value)
-					return;
-
-				_comment = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _comment, value, nameof(Comment));
 		}
 
 		public bool CalculationInProgress
 		{
 			get => _calculationInProgress;
-			set
-			{
-				if (_calculationInProgress == value)
-					return;
-
-				_calculationInProgress = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _calculationInProgress, value, nameof(CalculationInProgress));
 		}
 
 		public bool UsingManualCodeInput
 		{
 			get => _usingManualCodeInput;
-			set
-			{
-				if (_usingManualCodeInput == value)
-					return;
-
-				_usingManualCodeInput = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _usingManualCodeInput, value, nameof(UsingManualCodeInput));
 		}
 
 		public SolidColorBrush StatusBrush
 		{
 			get => _statusBrush;
-			set
-			{
-				if (Equals(_statusBrush, value))
-					return;
-
-				_statusBrush = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _statusBrush, value, nameof(StatusBrush));
 		}
 
 		public string StatusText
 		{
 			get => _statusText;
-			set
-			{
-				if (_statusText == value)
-					return;
-
-				_statusText = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _statusText, value, nameof(StatusText));
 		}
 
 		public bool CodeBoxFocused
 		{
 			get => _codeBoxFocused;
-			set
-			{
-				if (_codeBoxFocused == value)
-					return;
-
-				_codeBoxFocused = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _codeBoxFocused, value, nameof(CodeBoxFocused));
 		}
 
 		public bool UnitCountBoxFocused
 		{
 			get => _unitCountBoxFocused;
-			set
-			{
-				if (_unitCountBoxFocused == value)
-					return;
-
-				_unitCountBoxFocused = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _unitCountBoxFocused, value, nameof(UnitCountBoxFocused));
 		}
 
 		public bool CommentBoxFocused
 		{
 			get => _commentBoxFocused;
-			set
-			{
-				if (_commentBoxFocused == value)
-					return;
-
-				_commentBoxFocused = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _commentBoxFocused, value, nameof(CommentBoxFocused));
 		}
 
 		public bool CalculationPending
 		{
 			get => _calculationPending;
-			set
-			{
-				if (_calculationPending == value)
-					return;
-
-				_calculationPending = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _calculationPending, value, nameof(CalculationPending));
 		}
 
 		private bool CanAcceptBarcodes

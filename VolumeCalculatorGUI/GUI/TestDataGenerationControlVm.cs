@@ -63,14 +63,7 @@ namespace VolumeCalculatorGUI.GUI
 	    public string Description
 	    {
 		    get => _description;
-		    set
-		    {
-			    if (_description == value)
-				    return;
-
-			    _description = value;
-			    OnPropertyChanged();
-		    }
+		    set => SetField(ref _description, value, nameof(Description));
 		}
 
 	    public int ObjLength
@@ -140,28 +133,14 @@ namespace VolumeCalculatorGUI.GUI
 	    public bool ShowControl
 	    {
 		    get => _showControl;
-		    set
-		    {
-			    if (_showControl == value)
-				    return;
-
-			    _showControl = value;
-				OnPropertyChanged();
-		    }
-	    }
+		    set => SetField(ref _showControl, value, nameof(ShowControl));
+		}
 
 	    public bool GenerationInProgress
 	    {
 		    get => _generationInProgress;
-		    set
-		    {
-			    if (_generationInProgress == value)
-				    return;
-
-			    _generationInProgress = value;
-				OnPropertyChanged();
-		    }
-	    }
+		    set => SetField(ref _generationInProgress, value, nameof(GenerationInProgress));
+		}
 
 	    public TestDataGenerationControlVm(ILogger logger, ApplicationSettings settings, FrameProvider frameProvider)
 	    {
