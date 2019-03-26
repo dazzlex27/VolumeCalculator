@@ -30,6 +30,16 @@ namespace DeviceIntegration.Scales
 			_serialPort.Open();
 		}
 
+		public void Dispose()
+		{
+			_logger.LogInfo($"Disposing Ci2001A scales on port {_port}...");
+			_serialPort.Close();
+		}
+
+		public void ResetWeight()
+		{
+		}
+
 		private void ReadMessage(byte[] messageBytes)
 		{
 			if (messageBytes.Length < 20)
@@ -42,7 +52,7 @@ namespace DeviceIntegration.Scales
 
 			var status = GetStatusFromMessage(messageTokens[0]);
 			var weight = GetWeightFromMessage(messageTokens[3]);
-			if (weight < 0.001)
+			if (weight < 1)
 			{
 				status = MeasurementStatus.Ready;
 				weight = 0;
@@ -52,34 +62,30 @@ namespace DeviceIntegration.Scales
 			MeasurementReady?.Invoke(measurementData);
 		}
 
-		public void Dispose()
-		{
-			_logger.LogInfo($"Disposing Ci2001A scales on port {_port}...");
-			_serialPort.Close();
-		}
-
-		public void ResetWeight()
-		{
-		}
-
-		private double GetWeightFromMessage(string messageToken)
+		private int GetWeightFromMessage(string messageToken)
 		{
 			var trimmedMessageToken = messageToken.Replace("\r\n", "").Trim();
 			var weightMessageTokens = trimmedMessageToken.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-			var multiplier = 1.0;
+			double multiplier;
 			var weight = double.Parse(weightMessageTokens[0]);
 
 			switch (weightMessageTokens[1])
 			{
 				case "kg":
+					multiplier = 1000;
 					break;
 				case "lb":
-					multiplier = 0.45359237;
+					multiplier = 453.59237;
 					break;
+				default:
+				{
+					_logger.LogError("CasMScales: failed to parse multiplier");
+					return 0;
+				}
 			}
 
-			return weight * multiplier;
+			return (int) Math.Floor(weight * multiplier);
 		}
 
 		private MeasurementStatus GetStatusFromMessage(string firstMessageToken)

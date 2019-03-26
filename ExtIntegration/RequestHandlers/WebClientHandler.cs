@@ -184,7 +184,7 @@ namespace ExtIntegration.RequestHandlers
 				{"barcode", _lastCalculationResult.ObjectCode},
 				{"rank", _lastRequestData.UnitCount},
 				{"comment", _lastRequestData.Comment},
-				{"weight", _lastCalculationResult.ObjectWeightKg},
+				{"weight", _lastCalculationResult.ObjectWeightGr},
 				{"length", _lastCalculationResult.ObjectLengthMm},
 				{"width", _lastCalculationResult.ObjectWidthMm},
 				{"height", _lastCalculationResult.ObjectHeightMm}

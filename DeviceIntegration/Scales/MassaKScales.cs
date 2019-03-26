@@ -151,36 +151,36 @@ namespace DeviceIntegration.Scales
 			}
 		}
 
-		private double GetWeightFromMessage(IReadOnlyList<byte> messageBytes)
+		private int GetWeightFromMessage(IReadOnlyList<byte> messageBytes)
 		{
-			var rawWeight = messageBytes[2] + messageBytes[3] * 256 + (char)messageBytes[4] * 256 * 256;
+			var weight = messageBytes[2] + messageBytes[3] * 256 + (char)messageBytes[4] * 256 * 256;
 
-			var multipler = 1.0;
+			var multiplier = 1.0;
 			var lastBitActive = (messageBytes[4] & (1 << 7)) != 0;
 			if (lastBitActive)
-				multipler *= -1;
+				multiplier *= -1;
 
 			switch (messageBytes[1])
 			{
 				case 0:
-					multipler *= 0.001;
+					multiplier *= 0.001;
 					break;
 				case 1:
-					multipler *= 0.0001;
+					multiplier *= 0.0001;
 					break;
 				case 4:
-					multipler *= 0.01;
+					multiplier *= 0.01;
 					break;
 				case 5:
-					multipler *= 0.1;
+					multiplier *= 0.1;
 					break;
 				default:
-					multipler = 0;
+					multiplier = 0;
 					_logger.LogError($"Failed to read scale multiplier data, the value was {messageBytes[1]}");
 					break;
 			}
 
-			return rawWeight * multipler;
+			return (int) Math.Floor(weight * multiplier * 1000);
 		}
 	}
 }

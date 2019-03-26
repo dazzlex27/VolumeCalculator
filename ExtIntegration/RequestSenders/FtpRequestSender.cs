@@ -78,7 +78,7 @@ namespace ExtIntegration.RequestSenders
 					using (var resultFile = File.AppendText(resultFilePath))
 					{
 						resultFile.WriteLine($"barcode={result.ObjectCode}");
-						resultFile.WriteLine($"weightKg={result.ObjectWeightKg}");
+						resultFile.WriteLine($"weightGr={result.ObjectWeightGr}");
 						resultFile.WriteLine($"lengthMm={result.ObjectLengthMm}");
 						resultFile.WriteLine($"widthMm={result.ObjectWidthMm}");
 						resultFile.WriteLine($"heightMm={result.ObjectHeightMm}");

@@ -31,7 +31,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		private VolumeCalculator _volumeCalculator;
 		private string _objectCode;
-		private double _objectWeight;
+		private int _objectWeight;
 		private uint _unitCount;
 		private int _objectWidth;
 		private int _objectHeight;
@@ -52,7 +52,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		private DateTime _calculationTime;
 		private string _lastBarcode;
-		private double _lastWeight;
+		private int _lastWeight;
 		private uint _lastUnitCount;
 		private string _lastComment;
 
@@ -80,17 +80,10 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public double ObjectWeight
+		public int ObjectWeight
 		{
 			get => _objectWeight;
-			set
-			{
-				if (Math.Abs(_objectWeight - value) < 0.001)
-					return;
-				_objectWeight = value;
-
-				OnPropertyChanged();
-			}
+			set => SetField(ref _objectWeight, value, nameof(ObjectWeight));
 		}
 
 		public uint UnitCount
@@ -230,7 +223,7 @@ namespace VolumeCalculatorGUI.GUI
 
 			_calculationTime = DateTime.Now;
 			_lastBarcode = "";
-			_lastWeight = 0.0;
+			_lastWeight = 0;
 			_lastComment = "";
 
 			RunVolumeCalculationCommand = new CommandHandler(OnCalculationStartRequested, !CalculationInProgress);
@@ -324,7 +317,7 @@ namespace VolumeCalculatorGUI.GUI
 
 			Dispatcher.Invoke(() =>
 			{
-				ObjectWeight = data.WeightKg;
+				ObjectWeight = data.WeightGr;
 				CurrentWeighingStatus = data.Status;
 			});
 		}

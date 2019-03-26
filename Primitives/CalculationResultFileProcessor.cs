@@ -71,7 +71,7 @@ namespace Primitives
 					resultString.Append($@"{GlobalConstants.CsvSeparator}date local");
 					resultString.Append($@"{GlobalConstants.CsvSeparator}time local");
 					resultString.Append($@"{GlobalConstants.CsvSeparator}code");
-					resultString.Append($@"{GlobalConstants.CsvSeparator}weight (kg)");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}weight (gr)");
 					resultString.Append($@"{GlobalConstants.CsvSeparator}unitCount (p)");
 					resultString.Append($@"{GlobalConstants.CsvSeparator}length (mm)");
 					resultString.Append($@"{GlobalConstants.CsvSeparator}width (mm)");
@@ -110,7 +110,7 @@ namespace Primitives
 						safeName = nameWithoutReturns.Replace(GlobalConstants.CsvSeparator, " ");
 					}
 
-					var safeWeight = result.ObjectWeightKg.ToString(CultureInfo.InvariantCulture);
+					var safeWeight = result.ObjectWeightGr.ToString(CultureInfo.InvariantCulture);
 
 					Directory.CreateDirectory(_outputFolderPath);
 					using (var resultFile = new StreamWriter(FullOutputPath, true, Encoding.Default))

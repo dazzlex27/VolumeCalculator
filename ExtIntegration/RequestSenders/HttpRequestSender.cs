@@ -81,7 +81,7 @@ namespace ExtIntegration.RequestSenders
 							}
 
 							webClient.QueryString.Add("bar", result.ObjectCode);
-							webClient.QueryString.Add("wt", ((int) (result.ObjectWeightKg * 1000)).ToString());
+							webClient.QueryString.Add("wt", result.ObjectWeightGr.ToString());
 							webClient.QueryString.Add("l", result.ObjectLengthMm.ToString());
 							webClient.QueryString.Add("w", result.ObjectWidthMm.ToString());
 							webClient.QueryString.Add("h", result.ObjectHeightMm.ToString());

@@ -4,12 +4,12 @@
 	{
 		public MeasurementStatus Status { get; }
 
-		public double WeightKg { get; }
+		public int WeightGr { get; }
 
-		public ScaleMeasurementData(MeasurementStatus status, double weightKg)
+		public ScaleMeasurementData(MeasurementStatus status, int weightGr)
 		{
 			Status = status;
-			WeightKg = weightKg;
+			WeightGr = weightGr;
 		}
 	}
 }

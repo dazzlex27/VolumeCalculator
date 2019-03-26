@@ -66,7 +66,7 @@ namespace ExtIntegration.RequestSenders
 
 				using (var command = new SqlCommand(_insertionSqlRequest, _connection))
 				{
-					command.Parameters.AddWithValue("@weight", (int) (result.ObjectWeightKg * 1000));
+					command.Parameters.AddWithValue("@weight", result.ObjectWeightGr);
 					command.Parameters.AddWithValue("@length", result.ObjectLengthMm);
 					command.Parameters.AddWithValue("@width", result.ObjectWidthMm);
 					command.Parameters.AddWithValue("@height", result.ObjectHeightMm);

@@ -27,8 +27,8 @@ namespace DeviceIntegration.Scales
 					while (!_tokenSource.IsCancellationRequested)
 					{
 						var data = _applyPayload
-							? new ScaleMeasurementData(MeasurementStatus.Measured, 0.7)
-							: new ScaleMeasurementData(MeasurementStatus.Ready, 0.0);
+							? new ScaleMeasurementData(MeasurementStatus.Measured, 700)
+							: new ScaleMeasurementData(MeasurementStatus.Ready, 0);
 
 						MeasurementReady?.Invoke(data);
 						await Task.Delay(1000);

@@ -48,7 +48,7 @@ namespace DeviceIntegration.Scales
 			var status = GetStatusFromMessage(messageBytes);
 			var signMultipler = GetSignMultiplierFromMessage(messageBytes);
 			var weight = GetWeightFromMessage(messageBytes);
-			if (weight < 0.001)
+			if (weight < 1)
 			{
 				status = MeasurementStatus.Ready;
 				weight = 0;
@@ -94,30 +94,35 @@ namespace DeviceIntegration.Scales
 			}
 		}
 
-		private static double GetWeightFromMessage(IReadOnlyCollection<byte> messageBytes)
+		private int GetWeightFromMessage(IReadOnlyCollection<byte> messageBytes)
 		{
 			if (messageBytes == null || messageBytes.Count < 12)
 				throw new ArgumentException("MasC scales: message is too short");
 
 			var weightArray = messageBytes.Skip(4).Take(6).ToArray();
 			var weightString = Encoding.ASCII.GetString(weightArray);
-			var rawWeight = double.Parse(weightString, CultureInfo.InvariantCulture);
+			var weight = double.Parse(weightString, CultureInfo.InvariantCulture);
 
 			var unitsArray = messageBytes.Skip(10).Take(2).ToArray();
 			var unitsString = Encoding.ASCII.GetString(unitsArray);
 
-			var multiplier = 1.0;
+			double multiplier;
 
 			switch (unitsString)
 			{
 				case "kg":
+					multiplier = 1000;
 					break;
 				case "lb":
-					multiplier = 0.45359237;
+					multiplier = 453.59237;
+					break;
+				default:
+					_logger.LogError($"CasM scales: failed to find weight multiplier \"{unitsString}\"");
+					multiplier = 0;
 					break;
 			}
 
-			return rawWeight * multiplier;
+			return (int)Math.Floor(weight * multiplier);
 		}
 	}
 }

@@ -8,7 +8,7 @@ namespace Primitives
 
 		public string ObjectCode { get; }
 
-		public double ObjectWeightKg { get; }
+		public int ObjectWeightGr { get; }
 
 		public uint UnitCount { get; }
 
@@ -22,13 +22,12 @@ namespace Primitives
 
 		public string CalculationComment { get; }
 
-		public CalculationResult(DateTime calculationTime, string objectCode,
-			double objectWeightKg, uint unitCount, int objectLengthMm, int objectWidthMm, int objectHeightMm,
-			double objectVolumeMm, string calculationComment)
+		public CalculationResult(DateTime calculationTime, string objectCode, int objectWeightGr, uint unitCount, 
+			int objectLengthMm, int objectWidthMm, int objectHeightMm, double objectVolumeMm, string calculationComment)
 		{
 			CalculationTime = calculationTime;
 			ObjectCode = objectCode;
-			ObjectWeightKg = objectWeightKg;
+			ObjectWeightGr= objectWeightGr;
 			UnitCount = unitCount;
 			ObjectLengthMm = objectLengthMm;
 			ObjectWidthMm = objectWidthMm;
