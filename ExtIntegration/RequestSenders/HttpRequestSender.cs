@@ -80,7 +80,7 @@ namespace ExtIntegration.RequestSenders
 								webClient.Credentials = credentialCache;
 							}
 
-							webClient.QueryString.Add("bar", result.ObjectCode);
+							webClient.QueryString.Add("bar", result.Barcode);
 							webClient.QueryString.Add("wt", result.ObjectWeightGr.ToString());
 							webClient.QueryString.Add("l", result.ObjectLengthMm.ToString());
 							webClient.QueryString.Add("w", result.ObjectWidthMm.ToString());

@@ -70,7 +70,7 @@ namespace ExtIntegration.RequestSenders
 					command.Parameters.AddWithValue("@length", result.ObjectLengthMm);
 					command.Parameters.AddWithValue("@width", result.ObjectWidthMm);
 					command.Parameters.AddWithValue("@height", result.ObjectHeightMm);
-					command.Parameters.AddWithValue("@barcode", result.ObjectCode);
+					command.Parameters.AddWithValue("@barcode", result.Barcode);
 					var affectedRowsCount = command.ExecuteNonQuery();
 					_logger.LogInfo($"Sent SQL request to {_connection.ConnectionString}, {affectedRowsCount} rows affected");
 				}

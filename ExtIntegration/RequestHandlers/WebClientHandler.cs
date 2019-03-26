@@ -181,7 +181,7 @@ namespace ExtIntegration.RequestHandlers
 			var statusDict = new Dictionary<string, object>
 			{
 				{"status", _lastStatus},
-				{"barcode", _lastCalculationResult.ObjectCode},
+				{"barcode", _lastCalculationResult.Barcode},
 				{"rank", _lastRequestData.UnitCount},
 				{"comment", _lastRequestData.Comment},
 				{"weight", _lastCalculationResult.ObjectWeightGr},

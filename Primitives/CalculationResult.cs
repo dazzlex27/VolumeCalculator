@@ -6,7 +6,7 @@ namespace Primitives
 	{
 		public DateTime CalculationTime { get; }
 
-		public string ObjectCode { get; }
+		public string Barcode { get; }
 
 		public int ObjectWeightGr { get; }
 
@@ -26,7 +26,7 @@ namespace Primitives
 			int objectLengthMm, int objectWidthMm, int objectHeightMm, double objectVolumeMm, string calculationComment)
 		{
 			CalculationTime = calculationTime;
-			ObjectCode = objectCode;
+			Barcode = objectCode;
 			ObjectWeightGr= objectWeightGr;
 			UnitCount = unitCount;
 			ObjectLengthMm = objectLengthMm;

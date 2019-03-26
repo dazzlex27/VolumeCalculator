@@ -103,10 +103,10 @@ namespace Primitives
 					IoUtils.IncrementUniversalObjectCounter();
 					_logger.LogInfo($"Global object ID incremented to {calculationIndex + 1}");
 
-					var safeName = result.ObjectCode;
+					var safeName = result.Barcode;
 					if (!string.IsNullOrEmpty(safeName))
 					{
-						var nameWithoutReturns = result.ObjectCode.Replace(Environment.NewLine, " ");
+						var nameWithoutReturns = result.Barcode.Replace(Environment.NewLine, " ");
 						safeName = nameWithoutReturns.Replace(GlobalConstants.CsvSeparator, " ");
 					}
 

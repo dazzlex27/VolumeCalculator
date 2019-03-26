@@ -12,11 +12,13 @@ namespace ExtIntegration.RequestSenders
 		private readonly ILogger _logger;
 		private readonly string _baseDirectory;
 		private readonly SessionOptions _sessionOptions;
+		private readonly bool _includeObjectPhoto;
 
 		public FtpRequestSender(ILogger logger, FtpRequestSettings settings)
 		{
 			_logger = logger;
 			_baseDirectory = settings.BaseDirectory;
+			_includeObjectPhoto = settings.IncludeObjectPhotos;
 
 			_sessionOptions = new SessionOptions
 			{
@@ -49,7 +51,11 @@ namespace ExtIntegration.RequestSenders
 				return false;
 			}
 
-			var folderName = DateTime.Now.Ticks.ToString();
+			var result = resultData.Result;
+			var timeString = result.CalculationTime.ToString("yyyyMMddHHmmss");
+			string fileName = $"{result.Barcode}_{timeString}";
+			var infoFileName = $"{fileName}.txt";
+			var photoFileName = $"{fileName}.png";
 
 			try
 			{
@@ -65,19 +71,9 @@ namespace ExtIntegration.RequestSenders
 						PreserveTimestamp = true
 					};
 
-					Directory.CreateDirectory(folderName);
-
-					const string objectPhotoName = "object.png";
-					var ojectPhotoPath = Path.Combine(folderName, objectPhotoName);
-					ImageUtils.SaveImageDataToFile(resultData.ObjectPhoto, ojectPhotoPath);
-
-					var result = resultData.Result;
-
-					const string textFileName = "result.txt";
-					var resultFilePath = Path.Combine(folderName, textFileName);
-					using (var resultFile = File.AppendText(resultFilePath))
+					using (var resultFile = File.AppendText(infoFileName))
 					{
-						resultFile.WriteLine($"barcode={result.ObjectCode}");
+						resultFile.WriteLine($"barcode={result.Barcode}");
 						resultFile.WriteLine($"weightGr={result.ObjectWeightGr}");
 						resultFile.WriteLine($"lengthMm={result.ObjectLengthMm}");
 						resultFile.WriteLine($"widthMm={result.ObjectWidthMm}");
@@ -85,12 +81,21 @@ namespace ExtIntegration.RequestSenders
 					}
 
 					_logger.LogInfo("Uploading...");
-					var photoRemoteName = $"{_baseDirectory}/{folderName}/{objectPhotoName}";
-					var transferResult1 = session.PutFiles($"{ojectPhotoPath}", photoRemoteName, false, transferOptions);
-					transferResult1.Check();
-					var infoRemoteName = $"{_baseDirectory}/{folderName}/{textFileName}";
-					var transferResult2 = session.PutFiles($"{resultFilePath}", infoRemoteName, false, transferOptions);
-					transferResult2.Check();
+					var infoRemoteName = string.IsNullOrEmpty(_baseDirectory) 
+						? infoFileName 
+						: $"{_baseDirectory}/{infoFileName}";
+					var transferResult = session.PutFiles($"{infoFileName}", infoRemoteName, false, transferOptions);
+					transferResult.Check();
+
+					if (_includeObjectPhoto)
+					{
+						ImageUtils.SaveImageDataToFile(resultData.ObjectPhoto, photoFileName);
+						var photoRemoteName = string.IsNullOrEmpty(_baseDirectory)
+							? photoFileName
+							: $"{_baseDirectory}/{photoFileName}";
+						var transferResult1 = session.PutFiles($"{photoFileName}", photoRemoteName, false, transferOptions);
+						transferResult1.Check();
+					}
 				}
 
 				_logger.LogInfo($"Sent files via FTP to {_sessionOptions.HostName}");
@@ -106,8 +111,11 @@ namespace ExtIntegration.RequestSenders
 			{
 				try
 				{
-					if (Directory.Exists(folderName))
-						Directory.Delete(folderName, true);
+					if (File.Exists(infoFileName))
+						File.Delete(infoFileName);
+
+					if (File.Exists(photoFileName))
+						File.Delete(photoFileName);
 				}
 				catch (Exception)
 				{
