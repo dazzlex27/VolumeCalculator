@@ -20,144 +20,67 @@ namespace VCConfigurator
 		public ObservableCollection<string> ScalesNames
 		{
 			get => _scalesNames;
-			set
-			{
-				if (_scalesNames == value)
-					return;
-
-				_scalesNames = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _scalesNames, value, nameof(ScalesNames));
 		}
 
 		public ObservableCollection<string> IoCircuitNames
 		{
 			get => _ioCircuitNames;
-			set
-			{
-				if (_ioCircuitNames == value)
-					return;
-
-				_ioCircuitNames = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _ioCircuitNames, value, nameof(IoCircuitNames));
 		}
 
 		public ObservableCollection<string> RangeMeterNames
 		{
 			get => _rangeMeterNames;
-			set
-			{
-				if (_rangeMeterNames == value)
-					return;
-
-				_rangeMeterNames = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _rangeMeterNames, value, nameof(RangeMeterNames));
 		}
 
 		public ObservableCollection<string> CameraNames
 		{
 			get => _cameraNames;
-			set
-			{
-				if (_cameraNames == value)
-					return;
-
-				_cameraNames = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _cameraNames, value, nameof(CameraNames));
 		}
 
 		public string ActiveScalesName
 		{
 			get => _activeScalesName;
-			set
-			{
-				if (_activeScalesName == value)
-					return;
-
-				_activeScalesName = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _activeScalesName, value, nameof(ActiveScalesName));
 		}
 
 		public string ActiveIoCircuitName
 		{
 			get => _activeIoCircuitName;
-			set
-			{
-				if (_activeIoCircuitName == value)
-					return;
-
-				_activeIoCircuitName = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _activeIoCircuitName, value, nameof(ActiveIoCircuitName));
 		}
 
 		public string ActiveRangeMeterName
 		{
 			get => _activeRangeMeterName;
-			set
-			{
-				if (_activeRangeMeterName == value)
-					return;
-
-				_activeRangeMeterName = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _activeRangeMeterName, value, nameof(ActiveRangeMeterName));
 		}
 
 		public string ActiveCameraName
 		{
 			get => _activeCameraName;
-			set
-			{
-				if (_activeCameraName == value)
-					return;
-
-				_activeCameraName = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _activeCameraName, value, nameof(ActiveCameraName));
 		}
 
 		public string ScalesPort
 		{
 			get => _scalesPort;
-			set
-			{
-				if (_scalesPort == value)
-					return;
-
-				_scalesPort = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _scalesPort, value, nameof(ScalesPort));
 		}
 
 		public string IoCircuitPort
 		{
 			get => _ioCircuitPort;
-			set
-			{
-				if (_ioCircuitPort == value)
-					return;
-
-				_ioCircuitPort = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _ioCircuitPort, value, nameof(IoCircuitPort));
 		}
 
 		public string RangeMeterPort
 		{
 			get => _rangeMeterPort;
-			set
-			{
-				if (_rangeMeterPort == value)
-					return;
-
-				_rangeMeterPort = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _rangeMeterPort, value, nameof(RangeMeterPort));
 		}
 
 		public DeviceSettingsVm()

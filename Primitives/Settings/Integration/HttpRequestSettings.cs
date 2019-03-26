@@ -12,19 +12,25 @@ namespace Primitives.Settings.Integration
 
 		public string Url { get; set; }
 
-		public HttpRequestSettings(bool enableRequests, string[] destinationIps, int port, string url)
+		public string Login { get; set; }
+
+		public string Password { get; set; }
+
+		public HttpRequestSettings(bool enableRequests, string[] destinationIps, int port, string url, string login, string password)
 		{
 			EnableRequests = enableRequests;
 			DestinationIps = destinationIps;
 			Port = port;
 			Url = url;
+			Login = login;
+			Password = password;
 		}
 
 		public static HttpRequestSettings GetDefaultSettings()
 		{
 			var defaultAddresses = new[] {"localhost"};
 
-			return new HttpRequestSettings(false, defaultAddresses, 8888, "");
+			return new HttpRequestSettings(false, defaultAddresses, 8888, "", "", "");
 		}
 
 		[OnDeserialized]
@@ -32,7 +38,12 @@ namespace Primitives.Settings.Integration
 		{
 			if (DestinationIps == null)
 				DestinationIps = new[] {"localhost"};
-		}
 
+			if (Login == null)
+				Login = "";
+
+			if (Password == null)
+				Password = "";
+		}
 	}
 }

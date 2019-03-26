@@ -15,27 +15,13 @@ namespace VCConfigurator
 		public DeviceSettingsVm DeviceSettingsVm
 		{
 			get => _deviceSetingsVm;
-			set
-			{
-				if (_deviceSetingsVm == value)
-					return;
-
-				_deviceSetingsVm = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _deviceSetingsVm, value, nameof(DeviceSettingsVm));
 		}
 
 		public IntegrationSettingsVm IntegrationSettingsVm
 		{
 			get => _integrationSettingsVm;
-			set
-			{
-				if (_integrationSettingsVm == value)
-					return;
-
-				_integrationSettingsVm = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _integrationSettingsVm, value, nameof(IntegrationSettingsVm));
 		}
 
 		public ICommand ApplySettingsAndCloseCommand { get; set; }

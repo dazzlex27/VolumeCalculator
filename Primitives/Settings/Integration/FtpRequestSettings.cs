@@ -18,8 +18,10 @@
 
 		public string BaseDirectory { get; set; }
 
-		public FtpRequestSettings(bool enableRequests, string host, int port, string login, string password, bool isSecure,
-			string hostCertificateFingerprint, string baseDirectory)
+		public bool IncludeObjectPhotos { get; set; }
+
+		public FtpRequestSettings(bool enableRequests, string host, int port, string login, string password,
+			bool isSecure, string hostCertificateFingerprint, string baseDirectory, bool includeObjectPhotos)
 		{
 			EnableRequests = enableRequests;
 			Host = host;
@@ -29,11 +31,12 @@
 			IsSecure = isSecure;
 			HostCertificateFingerprint = hostCertificateFingerprint;
 			BaseDirectory = baseDirectory;
+			IncludeObjectPhotos = includeObjectPhotos;
 		}
 
 		public static FtpRequestSettings GetDefaultSettings()
 		{
-			return new FtpRequestSettings(false, "localhost", 21, "is", "", false, "", "is");
+			return new FtpRequestSettings(false, "localhost", 21, "is", "", false, "", "is", false);
 		}
 	}
 }

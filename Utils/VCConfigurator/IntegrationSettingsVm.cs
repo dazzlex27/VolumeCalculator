@@ -8,11 +8,19 @@ namespace VCConfigurator
 	{
 		private bool _enableHttpApi;
 		private int _httpApiPort;
+		private string _httpApiLogin;
+		private string _httpApiPassword;
+
+		private bool _enableWebClientHandler;
+		private string _webClientHandlerAddress;
+		private int _webClientHandlerPort;
 
 		private bool _enableHttpRequests;
-		private ObservableCollection<string> _httpDestinationIps;
+		private string _httpRequestAddress;
 		private int _httpRequestPort;
 		private string _httpRequestUrl;
+		private string _httpRequestLogin;
+		private string _httpRequestPassword;
 
 		private bool _enableSqlRequests;
 		private string _sqlRequestHostName;
@@ -29,265 +37,174 @@ namespace VCConfigurator
 		private bool _ftpRequestIsSecure;
 		private string _ftpRequestHostCertificateFingerPrint;
 		private string _ftpRequestBaseFolderName;
+		private bool _ftpRequestIncludeObjectPhotos;
 
 		public bool EnableHttpApi
 		{
 			get => _enableHttpApi;
-			set
-			{
-				if (_enableHttpApi == value)
-					return;
-
-				_enableHttpApi = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _enableHttpApi, value, nameof(EnableHttpApi));
 		}
 
 		public int HttpApiPort
 		{
 			get => _httpApiPort;
-			set
-			{
-				if (_httpApiPort == value)
-					return;
+			set => SetField(ref _httpApiPort, value, nameof(HttpApiPort));
+		}
 
-				_httpApiPort = value;
-				OnPropertyChanged();
-			}
+		public string HttpApiLogin
+		{
+			get => _httpApiLogin;
+			set => SetField(ref _httpApiLogin, value, nameof(HttpApiLogin));
+		}
+
+		public string HttpApiPassword
+		{
+			get => _httpApiPassword;
+			set => SetField(ref _httpApiPassword, value, nameof(HttpApiPassword));
+		}
+
+		public bool EnableWebClientHandler
+		{
+			get => _enableWebClientHandler;
+			set => SetField(ref _enableWebClientHandler, value, nameof(EnableWebClientHandler));
+		}
+
+		public string WebClientHandlerAddress
+		{
+			get => _webClientHandlerAddress;
+			set => SetField(ref _webClientHandlerAddress, value, nameof(WebClientHandlerAddress));
+		}
+
+		public int WebClientHandlerPort
+		{
+			get => _webClientHandlerPort;
+			set => SetField(ref _webClientHandlerPort, value, nameof(WebClientHandlerPort));
 		}
 
 		public bool EnableHttpRequests
 		{
 			get => _enableHttpRequests;
-			set
-			{
-				if (_enableHttpRequests == value)
-					return;
-
-				_enableHttpRequests = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _enableHttpRequests, value, nameof(EnableHttpRequests));
 		}
 
-		public ObservableCollection<string> HttpDestinationIps
+		public string HttpRequestAddress
 		{
-			get => _httpDestinationIps;
-			set
-			{
-				if (_httpDestinationIps == value)
-					return;
-
-				_httpDestinationIps = value;
-				OnPropertyChanged();
-			}
+			get => _httpRequestAddress;
+			set => SetField(ref _httpRequestAddress, value, nameof(HttpRequestAddress));
 		}
 
 		public int HttpRequestPort
 		{
 			get => _httpRequestPort;
-			set
-			{
-				if (_httpRequestPort == value)
-					return;
-
-				_httpRequestPort = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _httpRequestPort, value, nameof(HttpRequestPort));
 		}
 
 		public string HttpRequestUrl
 		{
 			get => _httpRequestUrl;
-			set
-			{
-				if (_httpRequestUrl == value)
-					return;
+			set => SetField(ref _httpRequestUrl, value, nameof(HttpRequestUrl));
+		}
 
-				_httpRequestUrl = value;
-				OnPropertyChanged();
-			}
+		public string HttpRequestLogin
+		{
+			get => _httpRequestLogin;
+			set => SetField(ref _httpRequestLogin, value, nameof(HttpRequestLogin));
+		}
+
+		public string HttpRequestPassword
+		{
+			get => _httpRequestPassword;
+			set => SetField(ref _httpRequestPassword, value, nameof(_httpRequestPassword));
 		}
 
 		public bool EnableSqlRequests
 		{
 			get => _enableSqlRequests;
-			set
-			{
-				if (_enableSqlRequests == value)
-					return;
-
-				_enableSqlRequests = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _enableSqlRequests, value, nameof(EnableSqlRequests));
 		}
 
 		public string SqlRequestHostName
 		{
 			get => _sqlRequestHostName;
-			set
-			{
-				if (_sqlRequestHostName == value)
-					return;
-
-				_sqlRequestHostName = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _sqlRequestHostName, value, nameof(SqlRequestHostName));
 		}
 
 		public string SqlRequestUsername
 		{
 			get => _sqlRequestUsername;
-			set
-			{
-				if (_sqlRequestUsername == value)
-					return;
-
-				_sqlRequestUsername = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _sqlRequestUsername, value, nameof(SqlRequestUsername));
 		}
 
 		public string SqlRequestPassword
 		{
 			get => _sqlRequestPassword;
-			set
-			{
-				if (_sqlRequestPassword == value)
-					return;
-
-				_sqlRequestPassword = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _sqlRequestPassword, value, nameof(SqlRequestPassword));
 		}
 
 		public string SqlRequestDbName
 		{
 			get => _sqlRequestDbName;
-			set
-			{
-				if (_sqlRequestDbName == value)
-					return;
-
-				_sqlRequestDbName = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _sqlRequestDbName, value, nameof(SqlRequestDbName));
 		}
 
 		public string SqlRequestTableName
 		{
 			get => _sqlRequestTableName;
-			set
-			{
-				if (_sqlRequestTableName == value)
-					return;
-
-				_sqlRequestTableName = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _sqlRequestTableName, value, nameof(SqlRequestTableName));
 		}
 
 		public bool EnableFtpRequests
 		{
 			get => _enableFtpRequests;
-			set
-			{
-				if (_enableFtpRequests == value)
-					return;
-
-				_enableFtpRequests = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _enableFtpRequests, value, nameof(EnableFtpRequests));
 		}
 
 		public string FtpRequestHostName
 		{
 			get => _ftpRequestHostName;
-			set
-			{
-				if (_ftpRequestHostName == value)
-					return;
-
-				_ftpRequestHostName = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _ftpRequestHostName, value, nameof(FtpRequestHostName));
 		}
 
 		public int FtpRequestPort
 		{
 			get => _ftpRequestPort;
-			set
-			{
-				if (_ftpRequestPort == value)
-					return;
-
-				_ftpRequestPort = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _ftpRequestPort, value, nameof(FtpRequestPort));
 		}
 
 		public string FtpRequestLogin
 		{
 			get => _ftpRequestLogin;
-			set
-			{
-				if (_ftpRequestLogin == value)
-					return;
-
-				_ftpRequestLogin = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _ftpRequestLogin, value, nameof(FtpRequestLogin));
 		}
 
 		public string FtpRequestPassword
 		{
 			get => _ftpRequestPassword;
-			set
-			{
-				if (_ftpRequestPassword == value)
-					return;
-
-				_ftpRequestPassword = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _ftpRequestPassword, value, nameof(FtpRequestPassword));
 		}
 
 		public bool FtpRequestIsSecure
 		{
 			get => _ftpRequestIsSecure;
-			set
-			{
-				if (_ftpRequestIsSecure == value)
-					return;
-
-				_ftpRequestIsSecure = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _ftpRequestIsSecure, value, nameof(FtpRequestIsSecure));
 		}
 
 		public string FtpRequestHostCertificateFingerPrint
 		{
 			get => _ftpRequestHostCertificateFingerPrint;
-			set
-			{
-				if (_ftpRequestHostCertificateFingerPrint == value)
-					return;
-
-				_ftpRequestHostCertificateFingerPrint = value;
-				OnPropertyChanged();
-			}
+			set => SetField(ref _ftpRequestHostCertificateFingerPrint, value, nameof(FtpRequestHostCertificateFingerPrint));
 		}
 
 		public string FtpRequestBaseFolderName
 		{
 			get => _ftpRequestBaseFolderName;
-			set
-			{
-				if (_ftpRequestBaseFolderName == value)
-					return;
+			set => SetField(ref _ftpRequestBaseFolderName, value, nameof(FtpRequestBaseFolderName));
+		}
 
-				_ftpRequestBaseFolderName = value;
-				OnPropertyChanged();
-			}
+		public bool FtpRequestIncludeObjectPhotos
+		{
+			get => _ftpRequestIncludeObjectPhotos;
+			set => SetField(ref _ftpRequestIncludeObjectPhotos, value, nameof(FtpRequestIncludeObjectPhotos));
 		}
 
 		public void FillValuesFromSettings(IntegrationSettings settings)
@@ -295,12 +212,23 @@ namespace VCConfigurator
 			var httpApiSettings = settings.HttpApiSettings;
 			EnableHttpApi = httpApiSettings.EnableRequests;
 			HttpApiPort = httpApiSettings.Port;
+			HttpApiLogin = httpApiSettings.Login;
+			HttpApiPassword = httpApiSettings.Password;
+
+			var webClientHandlerSettings = settings.WebClientHandlerSettings;
+			EnableWebClientHandler = webClientHandlerSettings.EnableRequests;
+			WebClientHandlerAddress = webClientHandlerSettings.Address;
+			WebClientHandlerPort = webClientHandlerSettings.Port;
 
 			var httpRequestSettings = settings.HttpRequestSettings;
 			EnableHttpRequests = httpRequestSettings.EnableRequests;
-			HttpDestinationIps = new ObservableCollection<string>(httpRequestSettings.DestinationIps);
+			HttpRequestAddress = httpRequestSettings.DestinationIps.Length > 0
+				? httpRequestSettings.DestinationIps[0]
+				: "127.0.0.1";
 			HttpRequestPort = httpRequestSettings.Port;
 			HttpRequestUrl = httpRequestSettings.Url;
+			HttpRequestLogin = httpRequestSettings.Login;
+			HttpRequestPassword = httpRequestSettings.Password;
 
 			var sqlRequestSettings = settings.SqlRequestSettings;
 			EnableSqlRequests = sqlRequestSettings.EnableRequests;
@@ -319,6 +247,7 @@ namespace VCConfigurator
 			FtpRequestIsSecure = ftpRequestSettings.IsSecure;
 			FtpRequestHostCertificateFingerPrint = ftpRequestSettings.HostCertificateFingerprint;
 			FtpRequestBaseFolderName = ftpRequestSettings.BaseDirectory;
+			FtpRequestIncludeObjectPhotos = ftpRequestSettings.IncludeObjectPhotos;
 		}
 
 		public void FillSettingsFromValues(IntegrationSettings settings)
@@ -326,12 +255,21 @@ namespace VCConfigurator
 			var httpApiSettings = settings.HttpApiSettings;
 			httpApiSettings.EnableRequests = EnableHttpApi;
 			httpApiSettings.Port = HttpApiPort;
+			httpApiSettings.Login = HttpRequestLogin;
+			httpApiSettings.Password = HttpRequestPassword;
+
+			var webClientHandlerSettings = settings.WebClientHandlerSettings;
+			webClientHandlerSettings.EnableRequests = EnableWebClientHandler;
+			webClientHandlerSettings.Address = WebClientHandlerAddress;
+			webClientHandlerSettings.Port = WebClientHandlerPort;
 
 			var httpRequestSettings = settings.HttpRequestSettings;
 			httpRequestSettings.EnableRequests = EnableHttpRequests;
-			httpRequestSettings.DestinationIps = HttpDestinationIps.ToArray();
+			httpRequestSettings.DestinationIps = new[] {HttpRequestAddress};
 			httpRequestSettings.Port = HttpRequestPort;
 			httpRequestSettings.Url = HttpRequestUrl;
+			httpRequestSettings.Login = HttpRequestLogin;
+			httpRequestSettings.Password = HttpRequestPassword;
 
 			var sqlRequestSettings = settings.SqlRequestSettings;
 			sqlRequestSettings.EnableRequests = EnableSqlRequests;
@@ -349,6 +287,7 @@ namespace VCConfigurator
 			ftpRequestSettings.IsSecure = FtpRequestIsSecure;
 			ftpRequestSettings.HostCertificateFingerprint = FtpRequestHostCertificateFingerPrint;
 			ftpRequestSettings.BaseDirectory = FtpRequestBaseFolderName;
+			ftpRequestSettings.IncludeObjectPhotos = FtpRequestIncludeObjectPhotos;
 		}
 	}
 }

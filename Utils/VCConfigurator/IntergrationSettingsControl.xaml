@@ -7,7 +7,7 @@
 			 d:DataContext="{d:DesignInstance local:IntegrationSettingsVm}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-	<WrapPanel Margin="3" MaxWidth="500">
+	<WrapPanel Margin="3" MaxWidth="600">
 		<GroupBox Margin="3">
 			<GroupBox.Header>
 				<CheckBox Margin="3"
@@ -18,40 +18,110 @@
 				<StackPanel Margin="3" 
 		            Orientation="Horizontal">
 					<TextBlock Margin="3"
-			           Text="Порт для HTTP API: "/>
+								Text="Порт: "/>
 					<TextBox Margin="3"
 							Text="{Binding HttpApiPort, Mode=TwoWay}"
 							MaxLength="5"
 					        Width="40"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<TextBlock Margin="3"
+					           Text="Логин: "/>
+					<TextBox Margin="3"
+					         Text="{Binding HttpApiLogin, Mode=TwoWay}"
+					         MaxLength="5"
+					         Width="40"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<TextBlock Margin="3"
+					           Text="Пароль: "/>
+					<TextBox Margin="3"
+					         Text="{Binding HttpApiPassword, Mode=TwoWay}"
+					         MaxLength="5"
+					         Width="40"/>
 				</StackPanel>
 			</StackPanel>
 		</GroupBox>
 		<GroupBox Margin="3">
 			<GroupBox.Header>
 				<CheckBox Margin="3"
-				          Content="Отправка GET-запросов"
+				          Content="Управление с Web-клиентов"
+				          IsChecked="{Binding EnableWebClientHandler, Mode=TwoWay}"/>
+			</GroupBox.Header>
+			<StackPanel IsEnabled="{Binding EnableWebClientHandler}">
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<TextBlock Margin="3"
+					           Text="Входящие адреса: "/>
+					<TextBox Margin="3"
+					         Text="{Binding WebClientHandlerAddress, Mode=TwoWay}"
+					         MaxLength="15"
+					         Width="100"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<TextBlock Margin="3"
+					           Text="Порт: "/>
+					<TextBox Margin="3"
+					         Text="{Binding WebClientHandlerPort, Mode=TwoWay}"
+					         MaxLength="5"
+					         Width="40"/>
+				</StackPanel>
+			</StackPanel>
+		</GroupBox>
+		<GroupBox Margin="3">
+			<GroupBox.Header>
+				<CheckBox Margin="3"
+				          Content="Отправка HTTP-запросов"
 				          IsChecked="{Binding EnableHttpRequests, Mode=TwoWay}"/>
 			</GroupBox.Header>
 			<StackPanel IsEnabled="{Binding EnableHttpRequests}">
 				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<TextBlock Margin="3"
+					           Text="Адрес: "/>
+					<TextBox Margin="3"
+					         Text="{Binding HttpRequestAddress, Mode=TwoWay}"
+					         MaxLength="15"
+					         Width="100"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
 					            Orientation="Horizontal">
 					<TextBlock Margin="3"
-						           Text="Порт для запросов: "/>
+						           Text="Порт: "/>
 					<TextBox Margin="3"
 						         Text="{Binding HttpRequestPort, Mode=TwoWay}"
 						         MaxLength="5"
 						         Width="40"/>
 				</StackPanel>
-				<StackPanel Margin="3">
-					<StackPanel Margin="3" 
+				<StackPanel Margin="3" 
 						            Orientation="Horizontal">
-						<TextBlock Margin="3"
-							           Text="URL для запросов: "/>
-						<TextBox Margin="3"
+					<TextBlock Margin="3"
+							           Text="URL: "/>
+					<TextBox Margin="3"
 							         Text="{Binding HttpRequestUrl, Mode=TwoWay}"
 							         MaxLength="5"
 							         Width="40"/>
-					</StackPanel>
+				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<TextBlock Margin="3"
+					           Text="Логин: "/>
+					<TextBox Margin="3"
+					         Text="{Binding HttpRequestLogin, Mode=TwoWay}"
+					         MaxLength="5"
+					         Width="40"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<TextBlock Margin="3"
+					           Text="Логин: "/>
+					<TextBox Margin="3"
+					         Text="{Binding HttpRequestPassword, Mode=TwoWay}"
+					         MaxLength="5"
+					         Width="40"/>
 				</StackPanel>
 			</StackPanel>
 		</GroupBox>
@@ -166,6 +236,21 @@
 					<TextBox Margin="3"
 					         Text="{Binding FtpRequestHostCertificateFingerPrint, Mode=TwoWay}"
 					         Width="100"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal"
+				            IsEnabled="{Binding FtpRequestIsSecure}">
+					<TextBlock Margin="3"
+					           Text="Ключ шифрования: "/>
+					<TextBox Margin="3"
+					         Text="{Binding FtpRequestHostCertificateFingerPrint, Mode=TwoWay}"
+					         Width="100"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<CheckBox Margin="3"
+					          IsChecked="{Binding FtpRequestIncludeObjectPhotos, Mode=TwoWay}"
+					          Content="Отправлять фото"/>
 				</StackPanel>
 			</StackPanel>
 		</GroupBox>
