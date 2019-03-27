@@ -84,8 +84,9 @@
 					           Text="Адрес: "/>
 					<TextBox Margin="3"
 					         Text="{Binding HttpRequestAddress, Mode=TwoWay}"
-					         MaxLength="15"
-					         Width="100"/>
+					         MaxLength="256"
+					         Width="100"
+					         MaxWidth="100"/>
 				</StackPanel>
 				<StackPanel Margin="3" 
 					            Orientation="Horizontal">
@@ -93,7 +94,7 @@
 						           Text="Порт: "/>
 					<TextBox Margin="3"
 						         Text="{Binding HttpRequestPort, Mode=TwoWay}"
-						         MaxLength="5"
+								MaxLength="5"
 						         Width="40"/>
 				</StackPanel>
 				<StackPanel Margin="3" 
@@ -102,8 +103,9 @@
 							           Text="URL: "/>
 					<TextBox Margin="3"
 							         Text="{Binding HttpRequestUrl, Mode=TwoWay}"
-							         MaxLength="5"
-							         Width="40"/>
+					         MaxLength="256"
+					         Width="100"
+					         MaxWidth="100"/>
 				</StackPanel>
 				<StackPanel Margin="3" 
 				            Orientation="Horizontal">
@@ -111,17 +113,19 @@
 					           Text="Логин: "/>
 					<TextBox Margin="3"
 					         Text="{Binding HttpRequestLogin, Mode=TwoWay}"
-					         MaxLength="5"
-					         Width="40"/>
+					         MaxLength="256"
+					         Width="100"
+					         MaxWidth="100"/>
 				</StackPanel>
 				<StackPanel Margin="3" 
 				            Orientation="Horizontal">
 					<TextBlock Margin="3"
-					           Text="Логин: "/>
+					           Text="Пароль: "/>
 					<TextBox Margin="3"
 					         Text="{Binding HttpRequestPassword, Mode=TwoWay}"
-					         MaxLength="5"
-					         Width="40"/>
+					         MaxLength="256"
+					         Width="100"
+					         MaxWidth="100"/>
 				</StackPanel>
 			</StackPanel>
 		</GroupBox>

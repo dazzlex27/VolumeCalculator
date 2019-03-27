@@ -61,8 +61,6 @@ namespace ExtIntegration.RequestSenders
 					{
 						_logger.LogInfo($"Sending GET request to {address}...");
 
-						var uri = new Uri(address);
-
 						using (var webClient = new WebClient())
 						{
 							var authenticationRequired = !string.IsNullOrEmpty(_login);
@@ -71,8 +69,7 @@ namespace ExtIntegration.RequestSenders
 								var credentialCache = new CredentialCache
 								{
 									{
-										new Uri(uri.GetLeftPart(UriPartial.Authority)), "Basic",
-										new NetworkCredential(_login, _password)
+										new Uri(address), "Basic", new NetworkCredential(_login, _password)
 									}
 								};
 
