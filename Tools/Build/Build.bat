@@ -4,7 +4,7 @@ set rootFolder=..\..
 set devenvPath=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE
 set inputFolder=%rootFolder%\!!bin
 set binariesFolder=%inputFolder%\x64\Release
-set buildFolder=%inputFolder%\Build
+set buildFolder=%inputFolder%\Installers
 
 if exist logs @rd logs /s /q
 mkdir logs
@@ -37,14 +37,8 @@ echo Obfuscating...
 call ..\ConfuserEx\Confuser.CLI.exe vcalc.crproj > logs\confuser.log
 if not %ERRORLEVEL%==0 goto failed
 
-echo Copying libs to temp output folder...
-call CopyFiles.bat %~1 > logs\copyFiles.log
-if not %ERRORLEVEL%==0 goto failed
-
-echo Archiving...
-set archiveName="%outputFolder%\..\%appversion%.7z"
-if exist %archiveName% del %archiveName%
-call "C:\Program Files\7-zip\7z.exe" a %archiveName% "%outputFolder%\" -pinSize321 -mhe+ -sdel > logs\zip.log
+echo Building installer...
+call "C:\Program Files (x86)\Inno Setup 5\iscc.exe" install.iss > logs\innosetup.log
 if not %ERRORLEVEL%==0 goto failed
 
 if exist "%outputFolder%" @rd "%outputFolder%" /s /q

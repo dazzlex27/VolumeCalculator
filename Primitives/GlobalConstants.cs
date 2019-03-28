@@ -30,7 +30,7 @@ namespace Primitives
 
 		public static readonly string ResultFileName = "results.csv";
 
-		public static readonly string CountersFileName = Path.Combine(AppDataPath, "counters");
+		public static readonly string CountersFileName = Path.Combine(AppConfigPath, "counters");
 
 		public static string CsvSeparator = CultureInfo.CurrentCulture.TextInfo.ListSeparator;
 
