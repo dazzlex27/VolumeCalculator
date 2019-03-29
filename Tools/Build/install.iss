@@ -42,7 +42,7 @@ Source: "..\..\Externals\vc_redist.x64.exe"; DestDir: {tmp}; Flags: dontcopy
 
 [Icons]
 Name: {group}\{#ApplicationName}; Filename: {app}\{#ApplicationName}.exe
-Name: {desktop}\{#ApplicationName}; Filename: {app}\{#ApplicationName}.exe
+Name: {commondesktop}\{#ApplicationName}; Filename: {app}\{#ApplicationName}.exe
 
 [Run]
 Filename: "schtasks"; Parameters: "/Create /f /rl highest /sc onlogon /tr ""'{app}\{#ApplicationName}.exe'"" /tn ""RunVCalc""";
