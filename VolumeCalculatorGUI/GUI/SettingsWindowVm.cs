@@ -40,11 +40,12 @@ namespace VolumeCalculatorGUI.GUI
 		private bool _hasReceivedDepthMap;
 		private int _rangeMeterSubtractionValue;
 		private bool _rangeMeterAvailable;
+		private WeightUnits _selectedWeightUnits;
 
 		public WriteableBitmap ColorImageBitmap
 		{
 			get => _colorImageBitmap;
-			set => SetField(ref _colorImageBitmap, value, nameof (ColorImageBitmap));
+			set => SetField(ref _colorImageBitmap, value, nameof(ColorImageBitmap));
 		}
 
 		public WriteableBitmap DepthImageBitmap
@@ -131,6 +132,12 @@ namespace VolumeCalculatorGUI.GUI
 			set => SetField(ref _enableAutoTimer, value, nameof(EnableAutoTimer));
 		}
 
+		public WeightUnits SelectedWeightUnits
+		{
+			get => _selectedWeightUnits;
+			set => SetField(ref _selectedWeightUnits, value, nameof(SelectedWeightUnits));
+		}
+
 		public int RangeMeterSubtractionValue
 		{
 			get => _rangeMeterSubtractionValue;
@@ -159,7 +166,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		public ICommand ResetSettingsCommand { get; }
 
-		public SettingsWindowVm(ILogger logger, ApplicationSettings settings, DepthCameraParams depthCameraParams, 
+		public SettingsWindowVm(ILogger logger, ApplicationSettings settings, DepthCameraParams depthCameraParams,
 			DepthMapProcessor volumeCalculator)
 		{
 			_oldSettings = settings;
@@ -183,11 +190,12 @@ namespace VolumeCalculatorGUI.GUI
 			var oldIoSettings = _oldSettings.IoSettings;
 			var newIoSettings = new IoSettings(oldIoSettings.ActiveCameraName, oldIoSettings.ActiveScalesName,
 				oldIoSettings.ScalesPort, oldIoSettings.ActiveScanners, oldIoSettings.ActiveIoCircuitName,
-				oldIoSettings.IoCircuitPort, oldIoSettings.ActiveRangeMeterName, oldIoSettings.RangeMeterPort, 
+				oldIoSettings.IoCircuitPort, oldIoSettings.ActiveRangeMeterName, oldIoSettings.RangeMeterPort,
 				RangeMeterSubtractionValue, OutputPath, oldIoSettings.ShutDownPcByDefault);
 
 			var newAlgorithmSettings = new AlgorithmSettings(FloorDepth, MinObjHeight, SampleCount, UseColorMask,
-				colorMaskPoints, UseDepthMask, depthMaskPoints, EnableAutoTimer, TimeToStartMeasurementMs, RequireBarcode);
+				colorMaskPoints, UseDepthMask, depthMaskPoints, EnableAutoTimer, TimeToStartMeasurementMs,
+				RequireBarcode, SelectedWeightUnits);
 
 			return new ApplicationSettings(newIoSettings, newAlgorithmSettings, _oldSettings.IntegrationSettings);
 		}
@@ -207,7 +215,7 @@ namespace VolumeCalculatorGUI.GUI
 			_latestDepthMap = depthMap;
 
 			var mapCopy = new DepthMap(depthMap);
-			var cutOffDepth = (short)(FloorDepth - MinObjHeight);
+			var cutOffDepth = (short) (FloorDepth - MinObjHeight);
 			DepthMapUtils.FilterDepthMapByDepthtLimit(mapCopy, cutOffDepth);
 
 			var depthMapData = DepthMapUtils.GetColorizedDepthMapData(mapCopy, MinDepth, FloorDepth);
@@ -239,7 +247,8 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				_logger.LogException("Failed to calculate floor depth!", ex);
 
-				AutoClosingMessageBox.Show("Во время вычисления произошла ошибка, автоматический расчёт не был выполнен", 
+				AutoClosingMessageBox.Show(
+					"Во время вычисления произошла ошибка, автоматический расчёт не был выполнен",
 					"Ошибка");
 			}
 		}
@@ -268,6 +277,7 @@ namespace VolumeCalculatorGUI.GUI
 			RequireBarcode = settings.AlgorithmSettings.RequireBarcode;
 			RangeMeterAvailable = settings.IoSettings.RangeMeterPort != "";
 			RangeMeterSubtractionValue = settings.IoSettings.RangeMeterSubtractionValueMm;
+			SelectedWeightUnits = settings.AlgorithmSettings.SelectedWeightUnits;
 		}
 	}
 }

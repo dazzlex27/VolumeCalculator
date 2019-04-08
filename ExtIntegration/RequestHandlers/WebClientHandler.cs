@@ -29,7 +29,7 @@ namespace ExtIntegration.RequestHandlers
 
 			_activeConnections = new List<IWebSocketConnection>();
 			_lastRequestData = new CalculationRequestData("", 0, "");
-			_lastCalculationResult = new CalculationResult(DateTime.Now, "", 0, 0, 0, 0, 0, 0, "");
+			_lastCalculationResult = new CalculationResult(DateTime.Now, "", 0, WeightUnits.Gr, 0, 0, 0, 0, 0, "");
 
 			_logger.LogInfo("Starting a web client handler...");
 
@@ -184,7 +184,7 @@ namespace ExtIntegration.RequestHandlers
 				{"barcode", _lastCalculationResult.Barcode},
 				{"rank", _lastRequestData.UnitCount},
 				{"comment", _lastRequestData.Comment},
-				{"weight", _lastCalculationResult.ObjectWeightGr},
+				{"weight", _lastCalculationResult.ObjectWeight},
 				{"length", _lastCalculationResult.ObjectLengthMm},
 				{"width", _lastCalculationResult.ObjectWidthMm},
 				{"height", _lastCalculationResult.ObjectHeightMm}

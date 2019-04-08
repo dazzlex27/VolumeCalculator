@@ -25,7 +25,7 @@ namespace ExtIntegration.RequestSenders
 				InitialCatalog = requestSettings.DbName
 			};
 
-			_insertionSqlRequest = $"INSERT {requestSettings.TableName} (WEIGHT, LENGHT, WIDTH, HEIGHT, BARCODE) VALUES (@weight, @length, @width, @height, @barcode);";
+			_insertionSqlRequest = $"INSERT {requestSettings.TableName} (WEIGHT, LENGTH, WIDTH, HEIGHT, BARCODE) VALUES (@weight, @length, @width, @height, @barcode);";
 
 			_connection = new SqlConnection(builder.ConnectionString);
 		}
@@ -66,7 +66,7 @@ namespace ExtIntegration.RequestSenders
 
 				using (var command = new SqlCommand(_insertionSqlRequest, _connection))
 				{
-					command.Parameters.AddWithValue("@weight", result.ObjectWeightGr);
+					command.Parameters.AddWithValue("@weight", result.ObjectWeight);
 					command.Parameters.AddWithValue("@length", result.ObjectLengthMm);
 					command.Parameters.AddWithValue("@width", result.ObjectWidthMm);
 					command.Parameters.AddWithValue("@height", result.ObjectHeightMm);

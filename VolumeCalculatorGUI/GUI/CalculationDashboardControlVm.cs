@@ -31,7 +31,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		private VolumeCalculator _volumeCalculator;
 		private string _objectCode;
-		private int _objectWeight;
+		private double _objectWeight;
 		private uint _unitCount;
 		private int _objectWidth;
 		private int _objectHeight;
@@ -44,6 +44,8 @@ namespace VolumeCalculatorGUI.GUI
 		private string _statusText;
 		private bool _calculationPending;
 
+		private string _weightLabelText;
+
 		private bool _codeBoxFocused;
 		private bool _unitCountBoxFocused;
 		private bool _commentBoxFocused;
@@ -52,7 +54,7 @@ namespace VolumeCalculatorGUI.GUI
 
 		private DateTime _calculationTime;
 		private string _lastBarcode;
-		private int _lastWeight;
+		private double _lastWeight;
 		private uint _lastUnitCount;
 		private string _lastComment;
 
@@ -80,10 +82,18 @@ namespace VolumeCalculatorGUI.GUI
 			}
 		}
 
-		public int ObjectWeight
+		public double ObjectWeight
 		{
 			get => _objectWeight;
-			set => SetField(ref _objectWeight, value, nameof(ObjectWeight));
+			set
+			{
+				if (Math.Abs(_objectWeight - value) < 0.001)
+					return;
+
+				_objectWeight = value;
+
+				OnPropertyChanged();
+			}
 		}
 
 		public uint UnitCount
@@ -168,6 +178,12 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			get => _calculationPending;
 			set => SetField(ref _calculationPending, value, nameof(CalculationPending));
+		}
+
+		public string WeightLabelText
+		{
+			get => _weightLabelText;
+			set => SetField(ref _weightLabelText, value, nameof(WeightLabelText));
 		}
 
 		private bool CanAcceptBarcodes
@@ -284,6 +300,22 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			_deviceSet?.RangeMeter?.SetSubtractionValueMm(settings.IoSettings.RangeMeterSubtractionValueMm);
 			CreateAutoStartTimer(settings.AlgorithmSettings.EnableAutoTimer, settings.AlgorithmSettings.TimeToStartMeasurementMs);
+
+			Dispatcher.Invoke(() =>
+			{
+				switch (settings.AlgorithmSettings.SelectedWeightUnits)
+				{
+					case WeightUnits.Gr:
+						WeightLabelText = "гр";
+						break;
+					case WeightUnits.Kg:
+						WeightLabelText = "кг";
+						break;
+					default:
+						WeightLabelText = "";
+						break;
+				}
+			});
 		}
 
 		private void CreateAutoStartTimer(bool timerEnabled, long intervalMs)
@@ -297,9 +329,7 @@ namespace VolumeCalculatorGUI.GUI
 				_dashStatusUpdater.PendingTimer.Elapsed += OnMeasurementTimerElapsed;
 			}
 			else
-			{
 				_dashStatusUpdater.PendingTimer = null;
-			}
 		}
 
 		private void OnBarcodeReady(string code)
@@ -317,7 +347,19 @@ namespace VolumeCalculatorGUI.GUI
 
 			Dispatcher.Invoke(() =>
 			{
-				ObjectWeight = data.WeightGr;
+				switch (_settings.AlgorithmSettings.SelectedWeightUnits)
+				{
+					case WeightUnits.Gr:
+						ObjectWeight = data.WeightGr;
+						break;
+					case WeightUnits.Kg:
+						ObjectWeight = data.WeightGr / 1000.0;
+						break;
+					default:
+						ObjectWeight = double.NaN;
+						break;
+				}
+
 				CurrentWeighingStatus = data.Status;
 			});
 		}
@@ -448,8 +490,9 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			_logger.LogInfo("Calculation finished, processing results...");
 
-			var calculationResult = new CalculationResult(_calculationTime, _lastBarcode, _lastWeight, _lastUnitCount,
-				result.Length, result.Width, result.Height, ObjectVolume, _lastComment);
+			var weightUnits = _settings.AlgorithmSettings.SelectedWeightUnits;
+			var calculationResult = new CalculationResult(_calculationTime, _lastBarcode, _lastWeight, weightUnits, 
+				_lastUnitCount, result.Length, result.Width, result.Height, ObjectVolume, _lastComment);
 			var calculationResultData = new CalculationResultData(calculationResult, status, objectPhoto);
 
 			ObjectCode = "";

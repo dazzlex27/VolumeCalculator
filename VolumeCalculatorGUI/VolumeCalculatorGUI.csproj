@@ -94,6 +94,7 @@
     <Compile Include="GUI\Utils\CommandHandler.cs" />
     <Compile Include="GUI\Utils\ConjunctionToVisibilityMultiConverter.cs" />
     <Compile Include="GUI\Utils\DashStatusUpdater.cs" />
+    <Compile Include="GUI\Utils\EnumDescriptionConverter.cs" />
     <Compile Include="GUI\Utils\HalfMeasureConverter.cs" />
     <Compile Include="GUI\Utils\InverseBooleanConverter.cs" />
     <Compile Include="GUI\MainWindowVm.cs" />

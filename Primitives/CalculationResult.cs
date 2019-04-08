@@ -8,7 +8,9 @@ namespace Primitives
 
 		public string Barcode { get; }
 
-		public int ObjectWeightGr { get; }
+		public double ObjectWeight { get; }
+
+		public WeightUnits WeightUnits { get; }
 
 		public uint UnitCount { get; }
 
@@ -22,12 +24,13 @@ namespace Primitives
 
 		public string CalculationComment { get; }
 
-		public CalculationResult(DateTime calculationTime, string objectCode, int objectWeightGr, uint unitCount, 
-			int objectLengthMm, int objectWidthMm, int objectHeightMm, double objectVolumeMm, string calculationComment)
+		public CalculationResult(DateTime calculationTime, string objectCode, double objectWeight, WeightUnits weightUnits, 
+			uint unitCount, int objectLengthMm, int objectWidthMm, int objectHeightMm, double objectVolumeMm, string calculationComment)
 		{
 			CalculationTime = calculationTime;
 			Barcode = objectCode;
-			ObjectWeightGr= objectWeightGr;
+			ObjectWeight = objectWeight;
+			WeightUnits = weightUnits;
 			UnitCount = unitCount;
 			ObjectLengthMm = objectLengthMm;
 			ObjectWidthMm = objectWidthMm;

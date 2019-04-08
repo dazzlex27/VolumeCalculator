@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Windows;
 
 namespace Primitives.Settings
@@ -37,9 +38,11 @@ namespace Primitives.Settings
 
 		public bool RequireBarcode { get; set; }
 
+		public WeightUnits SelectedWeightUnits { get; set; }
+
 		public AlgorithmSettings(short floorDepth, short minObjectHeight, byte sampleDepthMapCount, bool useColorMask,
 			IEnumerable<Point> colorMaskContour, bool useDepthMask, IEnumerable<Point> depthMaskContour,
-			bool enableAutoTimer, long timeToStartMeasurementMs, bool requireBarcode)
+			bool enableAutoTimer, long timeToStartMeasurementMs, bool requireBarcode, WeightUnits selectedWeightUnits)
 		{
 			FloorDepth = floorDepth;
 			MinObjectHeight = minObjectHeight;
@@ -54,17 +57,29 @@ namespace Primitives.Settings
 			EnablePerspectiveDmAlgorithm = true;
 			EnableRgbAlgorithm = GlobalConstants.ProEdition;
 			RequireBarcode = requireBarcode;
+			SelectedWeightUnits = selectedWeightUnits;
 		}
 
 		public static AlgorithmSettings GetDefaultSettings()
 		{
 			return new AlgorithmSettings(DefaultFloorDepthMm, DefaultMinObjHeightMm, DefaultSampleCount, false,
-				GetDefaultAreaContour(), true, GetDefaultAreaContour(), true, DefaultTimerValueMs, true);
+				GetDefaultAreaContour(), true, GetDefaultAreaContour(), true, DefaultTimerValueMs, true, WeightUnits.Gr);
 		}
 
 		public override string ToString()
 		{
-			return $"floorDepth={FloorDepth} useColorMask={UseColorMask} useDepthMask={UseDepthMask} minObjHeight={MinObjectHeight} sampleCount={SampleDepthMapCount}";
+			var builder = new StringBuilder("Alg setings:");
+			builder.AppendLine($"floorDepth={FloorDepth}");
+			builder.AppendLine($"useColorMask={UseColorMask}");
+			builder.AppendLine($"useDepthMask={UseDepthMask}");
+			builder.AppendLine($"minObjHeight={MinObjectHeight}");
+			builder.AppendLine($"sampleCount={SampleDepthMapCount}");
+			builder.AppendLine($"enableAutTimer={EnableAutoTimer}");
+			builder.AppendLine($"timeToStartMeasurementMs={TimeToStartMeasurementMs}");
+			builder.AppendLine($"requireBarcode={RequireBarcode}");
+			builder.AppendLine($"selectedWeightUnits={SelectedWeightUnits}");
+
+			return builder.ToString();
 		}
 
 		[OnDeserialized]

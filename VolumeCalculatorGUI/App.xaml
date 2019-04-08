@@ -13,6 +13,7 @@
 			<utils:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
 			<utils:ConjunctionToVisibilityMultiConverter x:Key="ConjunctionToVisibilityMultiConverter"/>
 			<utils:HalfMeasureConverter x:Key="HalfMeasureConverter"/>
+			<utils:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 			<SolidColorBrush x:Key="BackgroundKey" Color="#FFFFFF" />
 		</ResourceDictionary>
 	</Application.Resources>

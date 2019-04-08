@@ -71,10 +71,21 @@ namespace ExtIntegration.RequestSenders
 						PreserveTimestamp = true
 					};
 
+					var weightUnitsString = "";
+					switch (result.WeightUnits)
+					{
+						case WeightUnits.Gr:
+							weightUnitsString = "Gr";
+							break;
+						case WeightUnits.Kg:
+							weightUnitsString = "Kg";
+							break;
+					}
+
 					using (var resultFile = File.AppendText(infoFileName))
 					{
 						resultFile.WriteLine($"barcode={result.Barcode}");
-						resultFile.WriteLine($"weightGr={result.ObjectWeightGr}");
+						resultFile.WriteLine($"weight{weightUnitsString}={result.ObjectWeight}");
 						resultFile.WriteLine($"lengthMm={result.ObjectLengthMm}");
 						resultFile.WriteLine($"widthMm={result.ObjectWidthMm}");
 						resultFile.WriteLine($"heightMm={result.ObjectHeightMm}");

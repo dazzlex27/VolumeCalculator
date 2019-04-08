@@ -110,7 +110,7 @@ namespace Primitives
 						safeName = nameWithoutReturns.Replace(GlobalConstants.CsvSeparator, " ");
 					}
 
-					var safeWeight = result.ObjectWeightGr.ToString(CultureInfo.InvariantCulture);
+					var safeWeight = result.ObjectWeight.ToString(CultureInfo.InvariantCulture);
 
 					Directory.CreateDirectory(_outputFolderPath);
 					using (var resultFile = new StreamWriter(FullOutputPath, true, Encoding.Default))

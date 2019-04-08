@@ -16,7 +16,7 @@ namespace ExtIntegration
 				case CalculationStatus.Sucessful:
 					content = new XElement("calculationResult",
 							new XElement("barcode", result.Barcode),
-							new XElement("weight", $"{result.ObjectWeightGr}"),
+							new XElement("weight", $"{result.ObjectWeight}"),
 							new XElement("length", result.ObjectLengthMm),
 							new XElement("width", result.ObjectWidthMm),
 							new XElement("height", result.ObjectHeightMm),

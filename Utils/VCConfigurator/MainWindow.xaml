@@ -9,7 +9,6 @@
         Title="Настройка VolumeCalculator" 
         Height="300" 
         MinWidth="400" 
-        ShowInTaskbar="False"
         d:DataContext="{d:DesignInstance local:MainWindowVm}"
         WindowStartupLocation="CenterScreen"
         SizeToContent="WidthAndHeight"

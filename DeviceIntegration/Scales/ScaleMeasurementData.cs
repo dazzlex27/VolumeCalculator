@@ -4,9 +4,9 @@
 	{
 		public MeasurementStatus Status { get; }
 
-		public int WeightGr { get; }
+		public long WeightGr { get; }
 
-		public ScaleMeasurementData(MeasurementStatus status, int weightGr)
+		public ScaleMeasurementData(MeasurementStatus status, long weightGr)
 		{
 			Status = status;
 			WeightGr = weightGr;
