@@ -12,7 +12,7 @@ namespace ExtIntegration.RequestHandlers
 {
 	public class HttpRequestHandler : IDisposable
 	{
-		public event Action<HttpListenerContext> CalculationStartRequested;
+		public event Action<HttpRequestData> CalculationStartRequested;
 		public event Action CalculationStartRequestTimedOut;
 
 		private const int RequestTimeoutMs = 15000;
@@ -64,7 +64,7 @@ namespace ExtIntegration.RequestHandlers
 			_running = false;
 		}
 
-		public void SendResponse(HttpListenerContext context, CalculationResultData resultData)
+		public void SendResponse(HttpRequestData data, CalculationResultData resultData)
 		{
 			try
 			{
@@ -74,10 +74,10 @@ namespace ExtIntegration.RequestHandlers
 				_requesthandlingTimeoutTimer.Stop();
 
 				_logger.LogInfo($"Generating HTTP response for {_address}...");
-				var responseString = GetResponseFromStatus(resultData);
+				var responseString = GetResponseFromStatus(resultData, data.SendPhoto);
 				_logger.LogInfo($"Response text is the following: {Environment.NewLine}{responseString}");
 
-				var response = context.Response;
+				var response = data.Context.Response;
 				var buffer = Encoding.UTF8.GetBytes(responseString);
 
 				response.ContentLength64 = buffer.Length;
@@ -98,7 +98,7 @@ namespace ExtIntegration.RequestHandlers
 			}
 		}
 
-		private static string GetResponseFromStatus(CalculationResultData resultData)
+		private static string GetResponseFromStatus(CalculationResultData resultData, bool includePhoto)
 		{
 			var responseString = "";
 
@@ -108,7 +108,7 @@ namespace ExtIntegration.RequestHandlers
 					responseString = "Unknown error";
 					break;
 				case CalculationStatus.Sucessful:
-					responseString = RequestUtils.GenerateXmlResponseText(resultData.Result, resultData.Status);
+					responseString = RequestUtils.GenerateXmlResponseText(resultData, includePhoto);
 					break;
 				case CalculationStatus.BarcodeNotEntered:
 					responseString = "Barcode not entered";
@@ -130,13 +130,13 @@ namespace ExtIntegration.RequestHandlers
 			return responseString;
 		}
 
-		public void Reset(HttpListenerContext context, string text)
+		public void Reset(HttpRequestData data, string text)
 		{
 			try
 			{
 				_logger.LogInfo($"Sending an HTTP reset message to {_address}, the message is \"{text}\"");
-				var response = context.Response;
-				var buffer = System.Text.Encoding.UTF8.GetBytes(text);
+				var response = data.Context.Response;
+				var buffer = Encoding.UTF8.GetBytes(text);
 
 				response.ContentLength64 = buffer.Length;
 				var output = response.OutputStream;
@@ -180,19 +180,31 @@ namespace ExtIntegration.RequestHandlers
 				var method = request.HttpMethod;
 				_logger.LogInfo($"HTTP request accepted from {_address} containing {url}, the method is {method}");
 
-				if (command != "calculate")
-					continue;
 
-				_logger.LogInfo($"Received a calculate command from {_address}...");
-				RaiseCalculationStartRequestedEvent(context);
+				switch (command)
+				{
+					case "calculate":
+						_logger.LogInfo($"Received a \"{command}\" command from {_address}...");
+						RaiseCalculationStartRequestedEvent(context, false);
+						break;
+					case "calculate_ph":
+						_logger.LogInfo($"Received a \"{command}\" command from {_address}...");
+						RaiseCalculationStartRequestedEvent(context, true);
+						break;
+					default:
+						_logger.LogInfo($"Received an unknown command \"{command}\"");
+						break;
+				}
 			}
 
 			_listener.Stop();
 		}
 
-		private void RaiseCalculationStartRequestedEvent(HttpListenerContext context)
+		private void RaiseCalculationStartRequestedEvent(HttpListenerContext context, bool sendPhoto)
 		{
-			CalculationStartRequested?.Invoke(context);
+			var requestData = new HttpRequestData(context, sendPhoto);
+
+			CalculationStartRequested?.Invoke(requestData);
 			_sessionInProgress = true;
 			_requesthandlingTimeoutTimer.Start();
 		}

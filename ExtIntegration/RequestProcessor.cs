@@ -18,14 +18,14 @@ namespace ExtIntegration
 		private readonly ILogger _logger;
 		private readonly WebClientHandler _webClientHandler;
 		private readonly HttpRequestHandler _httpRequestHandler;
-		private readonly Queue<HttpListenerContext> _activeHttpRequests;
+		private readonly Queue<HttpRequestData> _activeHttpRequests;
 		private readonly List<IRequestSender> _requestSenders;
 
 		public RequestProcessor(ILogger logger, IntegrationSettings settings)
 		{
 			_logger = logger;
 			_requestSenders = new List<IRequestSender>();
-			_activeHttpRequests = new Queue<HttpListenerContext>(1);
+			_activeHttpRequests = new Queue<HttpRequestData>(1);
 
 			_logger.LogInfo("Creating request processor...");
 
@@ -121,9 +121,9 @@ namespace ExtIntegration
 			_webClientHandler?.UpdateCalculationStatus(status);
 		}
 
-		public void ResetRequest(HttpListenerContext context, string message)
+		public void ResetRequest(HttpRequestData data, string message)
 		{
-			_httpRequestHandler.Reset(context, message);
+			_httpRequestHandler.Reset(data, message);
 		}
 
 		private void OnHttpRequestHandlerTimedOut()
@@ -132,9 +132,9 @@ namespace ExtIntegration
 				_httpRequestHandler.Reset(_activeHttpRequests.Dequeue(), "Request timed out");
 		}
 
-		private void OnHttpStartRequestReceived(HttpListenerContext obj)
+		private void OnHttpStartRequestReceived(HttpRequestData data)
 		{
-			_activeHttpRequests.Enqueue(obj);
+			_activeHttpRequests.Enqueue(data);
 			StartRequestReceived?.Invoke(null);
 		}
 

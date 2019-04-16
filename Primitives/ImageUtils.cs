@@ -1,5 +1,7 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace Primitives
@@ -10,6 +12,60 @@ namespace Primitives
 		{
 			var bitmap = new Bitmap(filepath);
 
+			return GetImageDataFromBitmap(bitmap);
+		}
+
+		public static void SaveImageDataToFile(ImageData image, string filepath)
+		{
+			var bitmap = GetBitmapFromImageData(image);
+
+			bitmap.Save(filepath);
+		}
+
+		public static string GetBase64StringFromImageData(ImageData image)
+		{
+			if (image == null)
+				return string.Empty;
+
+			var bitmap = GetBitmapFromImageData(image);
+
+			var stream = new MemoryStream();
+			bitmap.Save(stream, ImageFormat.Jpeg);
+			var bytes = stream.ToArray();
+
+			return Convert.ToBase64String(bytes);
+		}
+
+		public static ImageData GetImageDataFromBase64String(string base64String)
+		{
+			if (string.IsNullOrWhiteSpace(base64String))
+				return null;
+
+			var bytes = Convert.FromBase64String(base64String);
+			var stream = new MemoryStream(bytes);
+			var bmp = (Bitmap)Image.FromStream(stream);
+
+			return GetImageDataFromBitmap(bmp);
+		}
+
+		public static Bitmap GetBitmapFromImageData(ImageData image)
+		{
+			var format = GetPixelFormatFromBpp(image.BytesPerPixel);
+
+			var bitmap = new Bitmap(image.Width, image.Height, format);
+
+			var fullRect = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
+			var bmpData = bitmap.LockBits(fullRect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
+
+			Marshal.Copy(image.Data, 0, bmpData.Scan0, image.Data.Length);
+
+			bitmap.UnlockBits(bmpData);
+
+			return bitmap;
+		}
+
+		public static ImageData GetImageDataFromBitmap(Bitmap bitmap)
+		{
 			byte bytesPerPixel = 1;
 			switch (bitmap.PixelFormat)
 			{
@@ -32,22 +88,6 @@ namespace Primitives
 			bitmap.UnlockBits(bmpData);
 
 			return image;
-		}
-
-		public static void SaveImageDataToFile(ImageData image, string filepath)
-		{
-			var format = GetPixelFormatFromBpp(image.BytesPerPixel);
-
-			var bitmap = new Bitmap(image.Width, image.Height, format);
-
-			var fullRect = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
-			var bmpData = bitmap.LockBits(fullRect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
-
-			Marshal.Copy(image.Data, 0, bmpData.Scan0, image.Data.Length);
-
-			bitmap.UnlockBits(bmpData);
-
-			bitmap.Save(filepath);
 		}
 
 		private static PixelFormat GetPixelFormatFromBpp(int bytesPerPixel)

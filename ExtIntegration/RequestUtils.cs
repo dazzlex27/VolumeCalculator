@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Primitives;
 
@@ -7,9 +8,12 @@ namespace ExtIntegration
 {
 	public static class RequestUtils
 	{
-		public static string GenerateXmlResponseText(CalculationResult result, CalculationStatus status)
+		public static string GenerateXmlResponseText(CalculationResultData resultData, bool includePhoto)
 		{
 			XElement content;
+
+			var result = resultData.Result;
+			var status = resultData.Status;
 
 			switch (status)
 			{
@@ -22,6 +26,12 @@ namespace ExtIntegration
 							new XElement("height", result.ObjectHeightMm),
 							new XElement("units", result.UnitCount),
 							new XElement("comment", result.CalculationComment));
+
+					if (includePhoto)
+					{
+						var photo = ImageUtils.GetBase64StringFromImageData(resultData.ObjectPhoto);
+						content.Add(new XElement("photo", photo));
+					}
 					break;
 				case CalculationStatus.Error:
 					content = new XElement("calculationResult", "calculation error");
