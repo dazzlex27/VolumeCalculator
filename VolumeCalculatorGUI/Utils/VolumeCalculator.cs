@@ -3,27 +3,28 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Timers;
-using FrameProviders;
+using FrameProcessor;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 
-namespace FrameProcessor
+namespace VolumeCalculatorGUI.Utils
 {
-	public class VolumeCalculator
+	internal class VolumeCalculator
 	{
 		public event Action<ObjectVolumeData, CalculationStatus, ImageData> CalculationFinished;
 
 		private readonly ILogger _logger;
-		private readonly FrameProvider _frameProvider;
+		private readonly DeviceSet _deviceSet;
 		private readonly DepthMapProcessor _processor;
 		private readonly ApplicationSettings _settings;
 
-		private bool _applyPerspective;
-		private bool _useColorData;
-
 		private readonly Timer _timer;
 		private readonly List<ObjectVolumeData> _results;
+
+		private long _measuredDistance;
+		private bool _applyPerspective;
+		private bool _useColorData;
 
 		private bool _colorFrameReady;
 		private bool _depthFrameReady;
@@ -35,23 +36,21 @@ namespace FrameProcessor
 
 		private AlgorithmSelectionResult _selectedAlgorithm;
 
-		private readonly long _measuredDistance;
 		private readonly bool _maskMode;
 
 		public bool IsRunning { get; private set; }
 
 		private bool HasCompletedFirstRun => _samplesLeft != _settings.AlgorithmSettings.SampleDepthMapCount;
 
-		public VolumeCalculator(ILogger logger, FrameProvider frameProvider, DepthMapProcessor processor, ApplicationSettings settings, 
-			long measuredDistance, bool maskMode)
+		public VolumeCalculator(ILogger logger, DeviceSet deviceSet, DepthMapProcessor processor, ApplicationSettings settings, 
+			bool maskMode)
 		{
 			_logger = logger;
-			_frameProvider = frameProvider ?? throw new ArgumentNullException(nameof(frameProvider));
+			_deviceSet = deviceSet ?? throw new ArgumentException(nameof(deviceSet));
 			_processor = processor ?? throw new ArgumentException(nameof(processor));
 			_settings = settings ?? throw new ArgumentException(nameof(settings));
 			_samplesLeft = settings.AlgorithmSettings.SampleDepthMapCount;
 
-			_measuredDistance = measuredDistance;
 			_maskMode = maskMode;
 
 			_applyPerspective = false;
@@ -59,8 +58,8 @@ namespace FrameProcessor
 
 			_results = new List<ObjectVolumeData>();
 
-			_frameProvider.UnrestrictedDepthFrameReady += OnDepthFrameReady;
-			_frameProvider.UnrestrictedColorFrameReady += OnColorFrameReady;
+			_deviceSet.FrameProvider.UnrestrictedDepthFrameReady += OnDepthFrameReady;
+			_deviceSet.FrameProvider.UnrestrictedColorFrameReady += OnColorFrameReady;
 
 			_timer = new Timer(3000) {AutoReset = false};
 			_timer.Elapsed += OnTimerElapsed;
@@ -77,8 +76,8 @@ namespace FrameProcessor
 		private void CleanUp()
 		{
 			_timer.Stop();
-			_frameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
-			_frameProvider.UnrestrictedDepthFrameReady -= OnDepthFrameReady;
+			_deviceSet.FrameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
+			_deviceSet.FrameProvider.UnrestrictedDepthFrameReady -= OnDepthFrameReady;
 			IsRunning = false;
 		}
 
@@ -94,6 +93,14 @@ namespace FrameProcessor
 
 			if (!HasCompletedFirstRun)
 			{
+				if (_deviceSet?.RangeMeter != null)
+				{
+					_measuredDistance = _deviceSet.RangeMeter.GetReading();
+					_logger.LogInfo($"Measured distance - {_measuredDistance}");
+					if (_measuredDistance <= 0)
+						_logger.LogError("Failed to get range reading, will use depth calculation...");
+				}
+
 				SelectAlgorithm();
 				SaveDebugData();
 			}
@@ -180,7 +187,7 @@ namespace FrameProcessor
 			AdvanceCalculation(_latestDepthMap, _latestColorFrame);
 
 			if (!_useColorData)
-				_frameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
+				_deviceSet.FrameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
 		}
 
 		private void OnDepthFrameReady(DepthMap depthMap)
@@ -249,7 +256,7 @@ namespace FrameProcessor
 				if (_latestDepthMap == null)
 					return;
 
-				var depthCameraParams = _frameProvider.GetDepthCameraParams();
+				var depthCameraParams = _deviceSet.FrameProvider.GetDepthCameraParams();
 
 				var depthFrameFileName = Path.Combine(_settings.IoSettings.PhotosDirectoryPath, $"{calculationIndex}_depth.png");
 

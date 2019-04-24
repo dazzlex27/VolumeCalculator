@@ -54,7 +54,6 @@
     <Compile Include="TestCaseInfo.cs" />
     <Compile Include="TestDataGenerator.cs" />
     <Compile Include="TypeConverter.cs" />
-    <Compile Include="VolumeCalculator.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FrameProviders\FrameProviders.csproj">

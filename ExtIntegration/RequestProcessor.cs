@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using ExtIntegration.RequestHandlers;
 using ExtIntegration.RequestSenders;
@@ -114,7 +113,6 @@ namespace ExtIntegration
 				});
 			}
 		}
-
 
 		public void UpdateCalculationStatus(CalculationStatus status)
 		{
