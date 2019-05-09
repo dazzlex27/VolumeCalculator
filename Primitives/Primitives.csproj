@@ -35,9 +35,6 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -52,16 +49,12 @@
     <Compile Include="Settings\AlgorithmSettings.cs" />
     <Compile Include="Settings\ApplicationSettings.cs" />
     <Compile Include="CalculationResult.cs" />
-    <Compile Include="CalculationResultFileProcessor.cs" />
-    <Compile Include="ColorFrame.cs" />
-    <Compile Include="DepthFrame.cs" />
+    <Compile Include="Native\ColorFrame.cs" />
+    <Compile Include="Native\DepthFrame.cs" />
     <Compile Include="DepthMap.cs" />
-    <Compile Include="DepthMapUtils.cs" />
     <Compile Include="Logging\DummyLogger.cs" />
     <Compile Include="Logging\ILogger.cs" />
     <Compile Include="ImageData.cs" />
-    <Compile Include="ImageUtils.cs" />
-    <Compile Include="IoUtils.cs" />
     <Compile Include="Logging\Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings\Integration\FtpRequestSettings.cs" />
@@ -72,9 +65,6 @@
     <Compile Include="Settings\Integration\HttpApiSettings.cs" />
     <Compile Include="Settings\Integration\WebClientHandlerSettings.cs" />
     <Compile Include="WeightUnits.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

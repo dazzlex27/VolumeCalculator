@@ -39,15 +39,16 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="WinSCPnet, Version=1.5.7.9278, Culture=neutral, PublicKeyToken=2271ec4a3c56d0bf, processorArchitecture=MSIL">
       <HintPath>..\packages\WinSCP.5.13.8\lib\net\WinSCPnet.dll</HintPath>
     </Reference>
@@ -68,6 +69,12 @@
     <ProjectReference Include="..\Primitives\Primitives.csproj">
       <Project>{90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B}</Project>
       <Name>Primitives</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\ProcessingUtils\ProcessingUtils.csproj">
+      <Project>{7f073083-eec1-4ab9-8b4b-e68c944715a3}</Project>
+      <Name>ProcessingUtils</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

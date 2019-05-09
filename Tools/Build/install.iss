@@ -1,9 +1,9 @@
 #define private VendorName "IS"
 #define private ApplicationName "VolumeCalculator"
-#define private ApplicationVersion "1.38"
+#define private ApplicationVersion "1.39"
 #define private BinPath "..\..\!!bin\"
-#define private ApplicationEdition "Standard"
 #define private SourcePath = BinPath + "x64\Release\"
+#define private RootPath = "..\..\"
 #define private ObfuscatedPath SourcePath + "Confused"
 #define private OutputPath BinPath + "Installers"
 
@@ -11,13 +11,13 @@
 InstallingRedist =Installing Visual C++ Redistributable 2015...
 
 [Setup]
-AppName={#ApplicationName} {#ApplicationEdition}
+AppName={#ApplicationName}
 AppPublisher={#VendorName}
 AppVersion={#ApplicationVersion}
 DefaultDirName={pf}\{#ApplicationName}
-DefaultGroupName={#VendorName} {#ApplicationName} {#ApplicationEdition}
+DefaultGroupName={#VendorName} {#ApplicationName}
 UninstallDisplayIcon={app}\{#ApplicationName}.exe
-OutputBaseFilename={#ApplicationName}_{#ApplicationVersion}_{#ApplicationEdition}_Setup
+OutputBaseFilename={#ApplicationName}_{#ApplicationVersion}_Setup
 Compression=lzma2
 SolidCompression=yes
 OutputDir={#OutputPath}
@@ -36,9 +36,11 @@ Source: {#SourcePath}libD435FrameProvider.dll; DestDir: "{app}"
 Source: {#SourcePath}libDepthMapProcessor.dll; DestDir: "{app}"
 Source: {#SourcePath}opencv_world310.dll; DestDir: "{app}"
 Source: {#SourcePath}realsense2.dll; DestDir: "{app}"
+Source: {#RootPath}packages\NOTICE.txt; DestDir: "{app}"
+Source: {#RootPath}web\*; DestDir: "C:\web\*"; Flags: recursesubdirs
 
 ; VC++ redistributable runtime. Extracted by VC2017RedistNeedsInstall(), if needed.
-Source: "..\..\Externals\vc_redist.x64.exe"; DestDir: {tmp}; Flags: dontcopy
+Source: {#RootPath}Externals\vc_redist.x64.exe; DestDir: {tmp}; Flags: dontcopy
 
 [Icons]
 Name: {group}\{#ApplicationName}; Filename: {app}\{#ApplicationName}.exe
@@ -46,10 +48,13 @@ Name: {commondesktop}\{#ApplicationName}; Filename: {app}\{#ApplicationName}.exe
 
 [Run]
 Filename: "schtasks"; Parameters: "/Create /f /rl highest /sc onlogon /tr ""'{app}\{#ApplicationName}.exe'"" /tn ""RunVCalc""";
+Filename: "schtasks"; Parameters: "/Create /f /rl highest /sc onlogon /tr ""'C:\web\nginx-1.15.8\nginx.exe'"" /tn ""RunVCalcWeb""";
 Filename: "{tmp}\vc_redist.x64.exe"; StatusMsg: "{cm:InstallingRedist}"; Parameters: "/quiet"; Check: VC2017RedistNeedsInstall ; Flags: waituntilterminated
+Filename: "C:\web\1.15.8\nginx.exe"
 
 [UninstallRun]
 Filename: "schtasks"; Parameters: "/Delete /f /tn ""RunVCalc""";
+Filename: "schtasks"; Parameters: "/Delete /f /tn ""RunVCalcWeb""";
 
 [Code]
 function VC2017RedistNeedsInstall: Boolean;

@@ -40,6 +40,7 @@
   <ItemGroup>
     <Reference Include="nunit.framework, Version=3.10.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\..\packages\NUnit.3.10.1\lib\net45\nunit.framework.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -58,18 +59,22 @@
     <ProjectReference Include="..\..\FrameProcessor\FrameProcessor.csproj">
       <Project>{B824300E-8FF0-4DD7-BD9D-1483E86025D4}</Project>
       <Name>FrameProcessor</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\Primitives\Primitives.csproj">
       <Project>{90c0cc4f-e7d1-4a68-801b-fa4bdfc4a55b}</Project>
       <Name>Primitives</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\FrameProviders\FrameProviders.csproj">
       <Project>{f9973dc5-0d7c-4805-a622-e99492cd3714}</Project>
       <Name>FrameProviders</Name>
+      <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\VolumeCalculatorGUI\VolumeCalculatorGUI.csproj">
-      <Project>{08b98c3a-c054-464c-9594-f4eb7f7b2333}</Project>
-      <Name>VolumeCalculatorGUI</Name>
+    <ProjectReference Include="..\..\ProcessingUtils\ProcessingUtils.csproj">
+      <Project>{7f073083-eec1-4ab9-8b4b-e68c944715a3}</Project>
+      <Name>ProcessingUtils</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -12,11 +12,7 @@ namespace Primitives
 
 		public static readonly string CommonFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
 
-		public static readonly bool ProEdition = false;
-
-		public static readonly string Edition = ProEdition ? "Pro" : "Standard";
-
-		public static readonly string AppVersion = $"v1.38 {Edition}";
+		public static readonly string AppVersion = $"v1.39";
 
 		public static readonly string AppHeaderString = $@"{ManufacturerName} {AppTitle} {AppVersion}";
 

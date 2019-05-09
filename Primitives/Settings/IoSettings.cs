@@ -51,12 +51,6 @@ namespace Primitives.Settings
 		{
 			var defaultScanners = new[] {new IoEntry("keyboard", "")};
 
-			if (GlobalConstants.ProEdition)
-			{
-				return new IoSettings("kinectv2", "casm", "COM1", defaultScanners, "keusb24r", "", "custom", "", 0,
-					"MeasurementResults", false);
-			}
-			else
 			return new IoSettings("kinectv2", "massak", "COM1", defaultScanners, "keusb24r", "", "custom", "", 0,
 				"MeasurementResults", false);
 		}

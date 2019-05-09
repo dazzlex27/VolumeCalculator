@@ -2,6 +2,7 @@
 /ext
 /.vs
 /Primitives/obj
+/ProcessingUtils/obj
 /DepthMapProcessor/obj
 /DepthMapProcessor/libDepthMapProcessor.vcxproj.user
 /FrameProcessor/obj

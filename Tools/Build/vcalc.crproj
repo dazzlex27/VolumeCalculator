@@ -2,6 +2,12 @@
   <module path="GodSharp.SerialPort.dll"/>
   <module path="Newtonsoft.Json.dll"/>
   <module path="Primitives.dll"/>
+    <module path="ProcessingUtils.dll">
+    <rule pattern="true" preset="aggressive" inherit="false">
+      <protection id="rename" />
+      <protection id="constants" />
+    </rule>
+  </module>
   <module path="DeviceIntegration.dll">
     <rule pattern="true" preset="aggressive" inherit="false">
       <protection id="rename" />

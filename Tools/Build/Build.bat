@@ -12,15 +12,6 @@ mkdir logs
 echo Removing output folders...
 if exist %binariesFolder% @rd %binariesFolder% /s /q
 
-if not "%~1"=="pro" goto main
-echo Switching to Pro...
-call "%devenvPath%\devenv.exe" %rootFolder%\VolumeCalculator.sln /Build "Release|x64" /Project "Utils\ProBuilder\ProBuilder.csproj" /Out "logs\version-build.log"
-if not %ERRORLEVEL%==0 goto failed
-call %binariesfolder%\ProBuilder.exe s
-if not %ERRORLEVEL%==0 goto failed
-
-:main
-
 echo Building solution...
 call "%devenvPath%\devenv.exe" %rootFolder%\VolumeCalculator.sln /Build "Release|x64" /Out "logs\vcbuild.log"
 if not %ERRORLEVEL%==0 goto failed
@@ -42,13 +33,6 @@ call "C:\Program Files (x86)\Inno Setup 5\iscc.exe" install.iss > logs\innosetup
 if not %ERRORLEVEL%==0 goto failed
 
 if exist "%outputFolder%" @rd "%outputFolder%" /s /q
-
-if not "%~1"=="pro" goto main2
-echo Restoring edition...
-call %binariesfolder%\ProBuilder.exe r
-if not %ERRORLEVEL%==0 goto failed
-
-:main2
 
 echo Build succeeded!
 exit 0

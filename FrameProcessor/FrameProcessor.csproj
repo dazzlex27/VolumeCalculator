@@ -66,6 +66,10 @@
       <Name>Primitives</Name>
       <Private>False</Private>
     </ProjectReference>
+    <ProjectReference Include="..\ProcessingUtils\ProcessingUtils.csproj">
+      <Project>{7f073083-eec1-4ab9-8b4b-e68c944715a3}</Project>
+      <Name>ProcessingUtils</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

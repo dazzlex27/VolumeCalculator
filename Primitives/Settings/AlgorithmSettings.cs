@@ -55,7 +55,7 @@ namespace Primitives.Settings
 			TimeToStartMeasurementMs = timeToStartMeasurementMs;
 			EnableDmAlgorithm = true;
 			EnablePerspectiveDmAlgorithm = true;
-			EnableRgbAlgorithm = GlobalConstants.ProEdition;
+			EnableRgbAlgorithm = false;
 			RequireBarcode = requireBarcode;
 			SelectedWeightUnits = selectedWeightUnits;
 		}
@@ -102,9 +102,6 @@ namespace Primitives.Settings
 
 			if (TimeToStartMeasurementMs <= 0)
 				TimeToStartMeasurementMs = DefaultTimerValueMs;
-
-			if (!GlobalConstants.ProEdition)
-				EnableRgbAlgorithm = false;
 		}
 
 		private static List<Point> GetDefaultAreaContour()
