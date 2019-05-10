@@ -82,6 +82,8 @@ namespace ExtIntegration.RequestSenders
 							webClient.QueryString.Add("l", result.ObjectLengthMm.ToString());
 							webClient.QueryString.Add("w", result.ObjectWidthMm.ToString());
 							webClient.QueryString.Add("h", result.ObjectHeightMm.ToString());
+							webClient.QueryString.Add("u", result.UnitCount.ToString());
+							webClient.QueryString.Add("c", result.CalculationComment.ToString());
 							var response = webClient.DownloadString(address);
 
 							_logger.LogInfo($"Sent GET request to {address}, response was {response}");
