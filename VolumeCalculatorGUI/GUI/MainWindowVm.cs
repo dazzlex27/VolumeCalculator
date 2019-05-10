@@ -92,6 +92,8 @@ namespace VolumeCalculatorGUI.GUI
 
 		public ICommand OpenSettingsCommand { get; }
 
+		public ICommand OpenConfiguratorCommand { get; }
+
 		public ICommand ShutDownCommand { get; }
 
 		public MainWindowVm()
@@ -111,6 +113,7 @@ namespace VolumeCalculatorGUI.GUI
 				InitializeSubViewModels();
 
 				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
+				OpenConfiguratorCommand = new CommandHandler(OpenConfigurator, true);
 				ShutDownCommand = new CommandHandler(() => { ShutDown(true, false); }, true);
 
 				_logger.LogInfo("Application is initalized");
@@ -133,6 +136,7 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				if (force)
 				{
+					DisposeSubSystems();
 					Process.GetCurrentProcess().Kill();
 					return true;
 				}
@@ -354,6 +358,24 @@ namespace VolumeCalculatorGUI.GUI
 
 			if (_usingMasks)
 				throw new AbandonedMutexException();
+		}
+
+		private void OpenConfigurator()
+		{
+			try
+			{
+				var message = "Данное действие приведёт к закрытию текущего приложения и открытию приложения настройки, вы хотите продолжить?";
+
+				if (MessageBox.Show(message, "Открытие Конфигуратора", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
+					return;
+
+				IoUtils.StartProcess("VCConfigurator.exe", true);
+				ShutDown(false, true);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to launch configurator", ex);
+			}
 		}
 
 		private void DisposeSubViewModels()

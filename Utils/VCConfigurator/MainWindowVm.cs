@@ -24,7 +24,7 @@ namespace VCConfigurator
 			set => SetField(ref _integrationSettingsVm, value, nameof(IntegrationSettingsVm));
 		}
 
-		public ICommand ApplySettingsAndCloseCommand { get; set; }
+		public ICommand ApplySettingsAndRunVCalcCommand { get; set; }
 
 		public ICommand ApplySettingsCommand { get; set; }
 
@@ -36,7 +36,7 @@ namespace VCConfigurator
 			_settings = ReadSettingsFromFile();
 			FillValuesFromSettings(_settings);
 
-			ApplySettingsAndCloseCommand = new CommandHandler(() => ApplySettings(true), true);
+			ApplySettingsAndRunVCalcCommand = new CommandHandler(() => ApplySettings(true), true);
 			ApplySettingsCommand = new CommandHandler(() => ApplySettings(false), true);
 		}
 
@@ -72,7 +72,10 @@ namespace VCConfigurator
 			IoUtils.SerializeSettings(_settings);
 
 			if (closeApplication)
+			{
+				IoUtils.StartProcess("VolumeCalculator.exe", true);
 				Process.GetCurrentProcess().Kill();
+			}
 		}
 	}
 }

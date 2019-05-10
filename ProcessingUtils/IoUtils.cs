@@ -107,5 +107,16 @@ namespace Primitives
 				101, 61, 39, 73, 68, 69, 39
 			};
 		}
+
+		public static void StartProcess(string processPath, bool asAdmin)
+		{
+			var process = new ProcessStartInfo(processPath)
+			{
+				UseShellExecute = true,
+				Verb = asAdmin ? "runas" : ""
+			};
+
+			Process.Start(process);
+		}
 	}
 }

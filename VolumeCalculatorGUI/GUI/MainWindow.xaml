@@ -30,8 +30,9 @@
 				</Style>
 			</Menu.Resources>
 			<MenuItem Header="Действия">
-				<MenuItem Name="MiOpenSettings" Header="Открыть настройки" Command="{Binding OpenSettingsCommand}"/>
-				<MenuItem Name="MiExitApp" Header="Завершить работу" Command="{Binding ShutDownCommand}"/>
+				<MenuItem Header="Открыть настройки " Command="{Binding OpenSettingsCommand}"/>
+				<MenuItem Header="Запустить Конфигуратор" Command="{Binding OpenConfiguratorCommand}"/>
+				<MenuItem Header="Завершить работу" Command="{Binding ShutDownCommand}"/>
 			</MenuItem>
 			<MenuItem Header="Инструменты">
 				<MenuItem Header="Сохранение тестовых данных" 
