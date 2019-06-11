@@ -20,7 +20,7 @@ namespace MReader
 				return 3;
 			}
 
-			var idBytes = GetAddr();
+			var idBytes = GetMaskBytes();
 
 			switch (args[0])
 			{
@@ -41,23 +41,19 @@ namespace MReader
 			}
 		}
 
-		public static byte[] GetAddr()
+		public static byte[] GetMaskBytes()
 		{
 			var serial = "";
 			try
 			{
-				var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
-
-				var drives = searcher.Get();
-				if (drives.Count < 1)
-					throw new ArgumentException();
+				var requestBytesString = Encoding.ASCII.GetString(GetHwBytes());
+				var searcher = new ManagementObjectSearcher(requestBytesString);
 
 				foreach (var o in searcher.Get())
 				{
-					var wmiHd = (ManagementObject) o;
+					var wmiHd = (ManagementObject)o;
 
 					serial = wmiHd["SerialNumber"].ToString();
-					break;
 				}
 			}
 			catch (Exception ex)
@@ -72,6 +68,16 @@ namespace MReader
 			}
 
 			return string.IsNullOrEmpty(serial) ? new byte[] { 0 } : Encoding.ASCII.GetBytes(serial);
+		}
+
+		public static byte[] GetHwBytes()
+		{
+			return new byte[]
+			{
+				83, 69, 76, 69, 67, 84, 32, 42, 32, 70, 82, 79, 77, 32, 87, 105, 110, 51, 50, 95, 68, 105, 115, 107, 68,
+				114, 105, 118, 101, 32, 87, 72, 69, 82, 69, 32, 73, 110, 116, 101, 114, 102, 97, 99, 101, 84, 121, 112,
+				101, 61, 39, 73, 68, 69, 39
+			};
 		}
 
 		public static bool CheckIfOk(byte[] message)

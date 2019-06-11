@@ -25,7 +25,7 @@ ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 
 [Files]
-Source: {#ObfuscatedPath}\*; DestDir: "{app}";
+Source: {#ObfuscatedPath}\*; DestDir: "{app}";  Flags: ignoreversion; BeforeInstall: TaskKill('VolumeCalculator.exe')
 Source: {#SourcePath}Microsoft.Kinect.dll; DestDir: "{app}"
 Source: {#SourcePath}WinSCP.exe; DestDir: "{app}"
 Source: {#SourcePath}WinSCPnet.dll; DestDir: "{app}"
@@ -37,7 +37,7 @@ Source: {#SourcePath}libDepthMapProcessor.dll; DestDir: "{app}"
 Source: {#SourcePath}opencv_world310.dll; DestDir: "{app}"
 Source: {#SourcePath}realsense2.dll; DestDir: "{app}"
 Source: {#RootPath}packages\NOTICE.txt; DestDir: "{app}"
-Source: {#RootPath}web\*; DestDir: "C:\web\*"; Flags: recursesubdirs
+Source: {#RootPath}web\*; DestDir: "C:\web\"; Flags: recursesubdirs ignoreversion; BeforeInstall: TaskKill('nginx.exe')
 
 ; VC++ redistributable runtime. Extracted by VC2017RedistNeedsInstall(), if needed.
 Source: {#RootPath}Externals\vc_redist.x64.exe; DestDir: {tmp}; Flags: dontcopy
@@ -50,11 +50,13 @@ Name: {commondesktop}\{#ApplicationName}; Filename: {app}\{#ApplicationName}.exe
 Filename: "schtasks"; Parameters: "/Create /f /rl highest /sc onlogon /tr ""'{app}\{#ApplicationName}.exe'"" /tn ""RunVCalc""";
 Filename: "schtasks"; Parameters: "/Create /f /rl highest /sc onlogon /tr ""'C:\web\nginx-1.15.8\nginx.exe'"" /tn ""RunVCalcWeb""";
 Filename: "{tmp}\vc_redist.x64.exe"; StatusMsg: "{cm:InstallingRedist}"; Parameters: "/quiet"; Check: VC2017RedistNeedsInstall ; Flags: waituntilterminated
-Filename: "C:\web\1.15.8\nginx.exe"
+Filename: "C:\web\nginx-1.15.8\nginx.exe"; Flags: nowait
 
 [UninstallRun]
 Filename: "schtasks"; Parameters: "/Delete /f /tn ""RunVCalc""";
 Filename: "schtasks"; Parameters: "/Delete /f /tn ""RunVCalcWeb""";
+Filename: "taskkill"; Parameters: "/im ""VolumeCalculator.exe"" /f"; Flags: runhidden
+Filename: "taskkill"; Parameters: "/im ""nginx.exe"" /f"; Flags: runhidden
 
 [Code]
 function VC2017RedistNeedsInstall: Boolean;
@@ -76,6 +78,14 @@ begin
   begin
     ExtractTemporaryFile('vc_redist.x64.exe');
   end;
+end;
+
+procedure TaskKill(FileName: String);
+var
+  ResultCode: Integer;
+begin
+    Exec(ExpandConstant('taskkill.exe'), '/f /im ' + '"' + FileName + '"', '', SW_HIDE,
+     ewWaitUntilTerminated, ResultCode);
 end;
 
 
