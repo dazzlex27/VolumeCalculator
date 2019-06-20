@@ -22,8 +22,8 @@
 /Utils/ComTestApp/bin
 /Utils/HttpListenerApp/obj
 /Utils/HttpListenerApp/bin
-/Utils/HttpSenderApp/obj
-/Utils/HttpSenderApp/bin
+/Utils/WebSocketHandler/obj
+/Utils/WebSocketHandler/bin
 /Utils/HttpSender/obj
 /Utils/HttpSender/bin
 /Utils/HttpService/obj
