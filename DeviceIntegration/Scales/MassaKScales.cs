@@ -14,10 +14,6 @@ namespace DeviceIntegration.Scales
 	{
 		public event Action<ScaleMeasurementData> MeasurementReady;
 
-		private const int PollingRateMs = 1000;
-		private const int ErrorTimeOutMs = 500;
-
-		private readonly byte[] _pollMessage;
 		private readonly byte[] _resetMessage;
 
 		private readonly ILogger _logger;
@@ -34,16 +30,24 @@ namespace DeviceIntegration.Scales
 
 			_logger.LogInfo($"Starting MassaKScales on port {_port}...");
 
-			_pollMessage = BitConverter.GetBytes(0x4A);
 			_resetMessage = BitConverter.GetBytes(0x0E);
 
 			_serialPort = new GodSerialPort(port, 4800, Parity.Even, 8, StopBits.One);
 			_serialPort.UseDataReceived(true, (sp, bytes) =>
 			{
-				ReadData(bytes);
+				try
+				{
+					ReadMessage(bytes);
+				}
+				catch (Exception ex)
+				{
+					_logger.LogException("Failed to read MassaKScales message", ex);
+				}
 			});
 
 			_debugModeOn = IoUtils.NeedScalesDebugMode();
+
+			_serialPort.Open();
 
 			Task.Run(async () =>
 			{
@@ -73,25 +77,28 @@ namespace DeviceIntegration.Scales
 
 		private async Task PollScales()
 		{
-			_serialPort.Open();
+			const int pollingRateMs = 1000;
+			const int errorTimeOutMs = 500;
+
+			var pollMessage = BitConverter.GetBytes(0x4A);
 
 			while (!_tokenSource.IsCancellationRequested)
 			{
 				try
 				{
-					_serialPort.Write(_pollMessage, 0, 1);
+					_serialPort.Write(pollMessage, 0, 1);
 
-					await Task.Delay(PollingRateMs);
+					await Task.Delay(pollingRateMs);
 				}
 				catch (Exception ex)
 				{
 					_logger.LogException("Failed to poll data from MassaKScales", ex);
-					await Task.Delay(ErrorTimeOutMs);
+					await Task.Delay(errorTimeOutMs);
 				}
 			}
 		}
 
-		private void ReadData(IReadOnlyList<byte> messageBytes)
+		private void ReadMessage(IReadOnlyList<byte> messageBytes)
 		{
 			try
 			{

@@ -85,7 +85,7 @@ namespace VCConfigurator
 
 		public DeviceSettingsVm()
 		{
-			ScalesNames = new ObservableCollection<string> { "", "massak", "casm", "fakescales", "ci2001a" };
+			ScalesNames = new ObservableCollection<string> { "", "massak", "casm", "fakescales", "ci2001a", "oka" };
 			IoCircuitNames = new ObservableCollection<string> { "", "keusb24r" };
 			RangeMeterNames = new ObservableCollection<string> { "", "custom" };
 			CameraNames = new ObservableCollection<string> { "kinectv2", "d435", "local" };

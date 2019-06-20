@@ -1,6 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Linq;
-using Primitives.Settings.Integration;
+﻿using Primitives.Settings.Integration;
 
 namespace VCConfigurator
 {

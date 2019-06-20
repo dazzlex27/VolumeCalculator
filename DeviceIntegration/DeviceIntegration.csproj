@@ -49,6 +49,7 @@
     <Compile Include="IoCircuits\KeUsb24RCircuit.cs" />
     <Compile Include="RangeMeters\TeslaM70RangeMeter.cs" />
     <Compile Include="RangeMeters\IRangeMeter.cs" />
+    <Compile Include="Scales\OkaScales.cs" />
     <Compile Include="Scales\CasMScales.cs" />
     <Compile Include="Scales\Ci2001AScales.cs" />
     <Compile Include="Scales\FakeScales.cs" />
