@@ -12,7 +12,7 @@ private:
 
 public:
 	const Contour ExtractContourFromBinaryImage(const cv::Mat& image, const bool saveDebugData) const;
-	const Contour ExtractContourFromColorImage(const cv::Mat& image, const bool saveDebugData) const;
+	const Contour ExtractContourFromColorImage(const cv::Mat& image, const bool saveDebugData, const int measurementNumber) const;
 	void SetDebugPath(const std::string& path);
 
 private:

@@ -20,11 +20,11 @@ namespace FrameProcessor.Native
 
 		[DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
 	    public static extern unsafe ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depthMap, long measuredDistance, 
-			bool applyPerspective, bool saveDebugData, bool maskMode);
+			bool applyPerspective, bool saveDebugData, bool maskMode, int measurementNumber);
 
 	    [DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
 	    public static extern unsafe ObjDimDescription* CalculateObjectVolumeAlt(void* handle, DepthMap depthMap, ColorImage image,
-		    long measuredDistance, bool applyPerspective, bool saveDebugData, bool maskMode);
+		    long measuredDistance, bool applyPerspective, bool saveDebugData, bool maskMode, int measurementNumber);
 
 	    [DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
 	    public static extern unsafe int SelectAlgorithm(void* handle, DepthMap depthMap, ColorImage colorImage, long measuredDistance,

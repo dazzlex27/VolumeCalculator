@@ -55,7 +55,7 @@ namespace Primitives.Settings
 			TimeToStartMeasurementMs = timeToStartMeasurementMs;
 			EnableDmAlgorithm = true;
 			EnablePerspectiveDmAlgorithm = true;
-			EnableRgbAlgorithm = false;
+			EnableRgbAlgorithm = true;
 			RequireBarcode = requireBarcode;
 			SelectedWeightUnits = selectedWeightUnits;
 		}

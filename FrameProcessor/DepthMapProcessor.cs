@@ -30,7 +30,7 @@ namespace FrameProcessor
 		}
 
 		public ObjectVolumeData CalculateVolumeDepth(DepthMap depthMap, long measuredDistance, bool applyPerspective, 
-			bool needToSaveDebugData = false, bool maskMode = false)
+			bool needToSaveDebugData, bool maskMode, int measurementNumber)
 		{
 			unsafe
 			{
@@ -39,14 +39,14 @@ namespace FrameProcessor
 					var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
 
 					var res = DepthMapProcessorDll.CalculateObjectVolume(_nativeHandle.ToPointer(), nativeDepthMap, measuredDistance,
-						applyPerspective, needToSaveDebugData, maskMode);
+						applyPerspective, needToSaveDebugData, maskMode, measurementNumber);
 					return res == null ? null : new ObjectVolumeData(res->Length, res->Width, res->Height);
 				}
 			}
 		}
 
 		public ObjectVolumeData CalculateObjectVolumeRgb(DepthMap depthMap, ImageData colorFrame, long measuredDistance, 
-			bool applyPerspective, bool needToSaveDebugData = false, bool maskMode = false)
+			bool applyPerspective, bool needToSaveDebugData, bool maskMode, int measurementNumber)
 		{
 			unsafe
 			{
@@ -64,7 +64,7 @@ namespace FrameProcessor
 					};
 
 					var res = DepthMapProcessorDll.CalculateObjectVolumeAlt(_nativeHandle.ToPointer(), nativeDepthMap, 
-						nativeColorImage, measuredDistance, applyPerspective, needToSaveDebugData, maskMode);
+						nativeColorImage, measuredDistance, applyPerspective, needToSaveDebugData, maskMode, measurementNumber);
 					return res == null ? null : new ObjectVolumeData(res->Length, res->Width, res->Height);
 				}
 			}

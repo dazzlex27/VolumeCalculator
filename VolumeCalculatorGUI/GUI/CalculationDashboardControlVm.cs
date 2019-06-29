@@ -442,7 +442,9 @@ namespace VolumeCalculatorGUI.GUI
 					var rgbEnabled = _settings.AlgorithmSettings.EnableRgbAlgorithm;
 					_logger.LogInfo($"Starting a volume check... dm={dm1Enabled} dm2={dm2Enabled} rgb={rgbEnabled}");
 
-					_volumeCalculator = new VolumeCalculator(_logger, _deviceSet, _processor, _settings, _maskMode);
+					var measurementNumber = IoUtils.GetCurrentUniversalObjectCounter();
+
+					_volumeCalculator = new VolumeCalculator(_logger, _deviceSet, _processor, _settings, _maskMode, measurementNumber);
 					_volumeCalculator.CalculationFinished += OnCalculationFinished;
 				}
 				catch (Exception ex)

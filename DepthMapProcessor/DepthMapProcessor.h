@@ -51,22 +51,22 @@ public:
 		const bool dm1Enabled, const bool dm2Enabled, const bool rgbEnabled);
 
 	ObjDimDescription* CalculateObjectVolume(const DepthMap& depthMap, const long distance, const bool applyPerspective, 
-		const bool saveDebugData, bool maskMode);
+		const bool saveDebugData, bool maskMode, int measurementNumber);
 	ObjDimDescription* CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image, const long distance, 
-		const bool applyPerspective, const bool saveDebugData, bool maskMode);
+		const bool applyPerspective, const bool saveDebugData, bool maskMode, int measurementNumber);
 	const short CalculateFloorDepth(const DepthMap& depthMap);
 
 private:
 	void FillColorBufferFromImage(const ColorImage& image);
 	void FillDepthBufferFromDepthMap(const DepthMap& depthMap);
 	const Contour GetTargetContourFromDepthMap(const bool saveDebugData) const;
-	const Contour GetTargetContourFromColorImage(const bool saveDebugData) const;
+	const Contour GetTargetContourFromColorImage(const bool saveDebugData, const int measurementNumber) const;
 	const ObjDimDescription CalculateContourDimensions(const Contour& contour, const long distance, const bool applyPerspective, 
-		const bool saveDebugData) const;
+		const bool saveDebugData, const int measurementNumber) const;
 	const cv::RotatedRect CalculateObjectBoundingRect(const Contour& depthObjectContour, const short contourTopPlaneDepth,
-		const bool applyPerspective, const bool saveDebugData) const;
+		const bool applyPerspective, const bool saveDebugData, const int measurementNumber) const;
 	const ObjDimDescription CalculateContourDimensionsAlt(const Contour& objectContour, const Contour& colorObjectContour,
-		const long distance, const bool applyPerspective, const bool saveDebugData) const;
+		const long distance, const bool applyPerspective, const bool saveDebugData, const int measurementNumber) const;
 	const ContourPlanes GetDepthContourPlanes(const Contour& contour) const;
 	const TwoDimDescription GetTwoDimDescription(const cv::RotatedRect& contourBoundingRect,
 		const short contourTopPlaneDepth, const float fx, const float fy, const float ppx, const float ppy) const;

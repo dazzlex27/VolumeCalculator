@@ -181,7 +181,7 @@ const short DmUtils::FindModeInSortedArray(const short * const array, const int 
 }
 
 void DmUtils::DrawTargetContour(const Contour& contour, const int width, const int height, const std::string& debugPath, 
-	const std::string& contourLabel)
+	const std::string& contourLabel, const int measurementNumber)
 {
 	cv::RotatedRect rect = cv::minAreaRect(cv::Mat(contour));
 	cv::Point2f points[4];
@@ -205,27 +205,9 @@ void DmUtils::DrawTargetContour(const Contour& contour, const int width, const i
 	for (auto i = 0; i < contoursToDraw.size(); i++)
 		cv::drawContours(img2, contoursToDraw, i, colors[i]);
 
-	const std::string& index = GetCurrentCalculationIndex();
+	const std::string& index = std::to_string(measurementNumber);
 
 	cv::imwrite(debugPath + "/" + index + "_" + contourLabel + ".png", img2);
-}
-
-std::string DmUtils::GetCurrentCalculationIndex()
-{
-	std::string index;
-
-	std::ifstream countersFile;
-	countersFile.open("counters");
-	if (!countersFile.good())
-		return "0";
-
-	bool isEmpty = countersFile.peek() == std::ifstream::traits_type::eof();
-	if (isEmpty)
-		return "0";
-
-	countersFile >> index;
-
-	return index;
 }
 
 bool DmUtils::IsPointInZone(const DepthValue& worldPoint, const MeasurementVolume& volume)

@@ -8,12 +8,20 @@ namespace ComTestApp
 	{
 		private static void Main()
 		{
+			TestOkaScales();
 			//TestLaser();
 			//TestCasM();
 			SaveRawData();
 			//TestMassaK();
 			//TestCi2001A();
 			Console.ReadKey();
+		}
+
+		private static void TestOkaScales()
+		{
+			Console.WriteLine("Port:");
+			var port = Console.ReadLine();
+			var scales = new OkaScales(port);
 		}
 
 		private static void TestLaser()

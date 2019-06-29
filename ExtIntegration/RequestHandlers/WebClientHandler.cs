@@ -162,6 +162,9 @@ namespace ExtIntegration.RequestHandlers
 		{
 			try
 			{
+				if (_activeConnections.Count == 0)
+					return;
+
 				var message = CreateStatusMessage();
 
 				var allSocketsButTheExcludedOne = excludeSocket == null

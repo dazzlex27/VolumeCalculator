@@ -21,8 +21,7 @@ public:
 	static const int GetCvChannelsCodeFromBytesPerPixel(const int bytesPerPixel);
 	static const short FindModeInSortedArray(const short*const array, const int count);
 	static void DrawTargetContour(const Contour& contour, const int width, const int height, const std::string& debugPath, 
-		const std::string& contourLabel);
-	static std::string GetCurrentCalculationIndex();
+		const std::string& contourLabel, const int measurementNumber);
 	static bool IsPointInZone(const DepthValue& worldPoint, const MeasurementVolume& volume);
 	bool IsPointInsidePolygon(const std::vector<cv::Point>& polygon, int x, int y);
 };

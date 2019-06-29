@@ -1,18 +1,15 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
 using GodSharp.SerialPort;
-using Primitives.Logging;
 using Timer = System.Timers.Timer;
 
-namespace DeviceIntegration.Scales
+namespace ComTestApp
 {
-	internal class OkaScales : IScales
+	internal class OkaScales
 	{
-		public event Action<ScaleMeasurementData> MeasurementReady;
-
-		private readonly ILogger _logger;
 		private readonly string _port;
 		private readonly GodSerialPort _serialPort;
 		private readonly CancellationTokenSource _tokenSource;
@@ -21,16 +18,15 @@ namespace DeviceIntegration.Scales
 
 		private volatile bool _readFinished;
 
-		public OkaScales(ILogger logger, string port)
+		public OkaScales(string port)
 		{
-			_logger = logger;
 			_port = port;
 			_tokenSource = new CancellationTokenSource();
 
-			_logger.LogInfo($"Creating OkaScales scales on port {port}...");
-
 			_requestTimer = new Timer() { AutoReset = false, Interval = 3000 };
 			_requestTimer.Elapsed += OnRequestTimerElapsed;
+
+			//_logger.LogInfo($"Creating OkaScales scales on port {port}...");
 
 			_serialPort = new GodSerialPort(port, 4800, Parity.Even, 8, StopBits.Two);
 			_serialPort.UseDataReceived(true, (sp, bytes) =>
@@ -41,7 +37,7 @@ namespace DeviceIntegration.Scales
 				}
 				catch (Exception ex)
 				{
-					_logger.LogException("Failed to read OkaScales message", ex);
+					Console.WriteLine("Failed to read OkaScales message: " + ex);
 				}
 			});
 
@@ -57,14 +53,19 @@ namespace DeviceIntegration.Scales
 				}
 				catch (Exception ex)
 				{
-					_logger.LogException("Exception in OkaScales polling loop", ex);
+					Console.WriteLine("Exception in OkaScales polling loop: " + ex);
 				}
 			});
 		}
 
+		private void OnRequestTimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
+		{
+			_readFinished = true;
+		}
+
 		public void Dispose()
 		{
-			_logger.LogInfo($"Disposing OkaScales scales on port {_port}...");
+			Console.WriteLine($"Disposing OkaScales scales on port {_port}...");
 			_serialPort.Close();
 		}
 
@@ -79,7 +80,10 @@ namespace DeviceIntegration.Scales
 
 			try
 			{
-				if (messageBytes== null || messageBytes.Length == 0)
+				var messageConcat = string.Join(" ", messageBytes);
+				//Console.WriteLine($"message: {messageConcat}");
+
+				if (messageBytes.Length == 0)
 					return;
 
 				var weight = GetWeightFromMessage(messageBytes);
@@ -91,15 +95,16 @@ namespace DeviceIntegration.Scales
 				}
 
 				var measurementData = new ScaleMeasurementData(status, weight);
-				MeasurementReady?.Invoke(measurementData);
+				Console.WriteLine($"result: {weight}");
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException("Failed to read data from OkaScales", ex);
+				Console.WriteLine("Failed to read data from OkaScales: " + ex);
 			}
 			finally
 			{
 				_readFinished = true;
+			//	Console.WriteLine("read finished = true");
 			}
 		}
 
@@ -122,7 +127,7 @@ namespace DeviceIntegration.Scales
 			catch (Exception ex)
 			{
 				var messageBytesString = string.Join(" ", messageBytes);
-				_logger.LogException($"Failed to parse OkaScalesMessage: {messageBytesString}", ex);
+				Console.WriteLine($"Failed to parse OkaScalesMessage: {messageBytesString}: " +  ex);
 
 				return -1;
 			}
@@ -147,12 +152,14 @@ namespace DeviceIntegration.Scales
 							_requestTimer.Start();
 
 						await Task.Delay(50);
+					//	Console.WriteLine("waiting to finish reading...");
 						continue;
 					}
 
 					_requestTimer.Stop();
 
 					_readFinished = false;
+				//	Console.WriteLine("read finished = false");
 
 					_serialPort.Write(pollWeightMessageArray);
 
@@ -160,15 +167,10 @@ namespace DeviceIntegration.Scales
 				}
 				catch (Exception ex)
 				{
-					_logger.LogException("Failed to poll data from OkaScales", ex);
+					Console.WriteLine("Failed to poll data from OkaScales: " + ex);
 					await Task.Delay(errorTimeOutMs);
 				}
 			}
-		}
-
-		private void OnRequestTimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
-		{
-			_readFinished = true;
 		}
 	}
 }

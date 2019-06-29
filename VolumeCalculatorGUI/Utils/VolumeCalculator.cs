@@ -19,6 +19,8 @@ namespace VolumeCalculatorGUI.Utils
 		private readonly DepthMapProcessor _processor;
 		private readonly ApplicationSettings _settings;
 
+		private readonly int _measurementNumber;
+
 		private readonly Timer _timer;
 		private readonly List<ObjectVolumeData> _results;
 
@@ -43,13 +45,15 @@ namespace VolumeCalculatorGUI.Utils
 		private bool HasCompletedFirstRun => _samplesLeft != _settings.AlgorithmSettings.SampleDepthMapCount;
 
 		public VolumeCalculator(ILogger logger, DeviceSet deviceSet, DepthMapProcessor processor, ApplicationSettings settings, 
-			bool maskMode)
+			bool maskMode, int measurementNumber)
 		{
 			_logger = logger;
 			_deviceSet = deviceSet ?? throw new ArgumentException(nameof(deviceSet));
 			_processor = processor ?? throw new ArgumentException(nameof(processor));
 			_settings = settings ?? throw new ArgumentException(nameof(settings));
 			_samplesLeft = settings.AlgorithmSettings.SampleDepthMapCount;
+
+			_measurementNumber = measurementNumber;
 
 			_maskMode = maskMode;
 
@@ -105,7 +109,7 @@ namespace VolumeCalculatorGUI.Utils
 				SaveDebugData();
 			}
 
-			var currentResult = CalculateVolume(depthMap, image, _measuredDistance, _applyPerspective, !HasCompletedFirstRun);
+			var currentResult = CalculateVolume(depthMap, image, _measuredDistance, _applyPerspective, !HasCompletedFirstRun, _measurementNumber);
 
 			_results.Add(currentResult);
 			_samplesLeft--;
@@ -202,12 +206,12 @@ namespace VolumeCalculatorGUI.Utils
 			AdvanceCalculation(_latestDepthMap, _latestColorFrame);
 		}
 
-		private ObjectVolumeData CalculateVolume(DepthMap depthMap, ImageData image, long measuredDistance, bool applyPerspective, 
-			bool needToSavePics)
+		private ObjectVolumeData CalculateVolume(DepthMap depthMap, ImageData image, long measuredDistance, bool applyPerspective,
+			bool needToSavePics, int measurementNumber)
 		{
 			return _useColorData
-				? _processor.CalculateObjectVolumeRgb(depthMap, image, measuredDistance, applyPerspective, needToSavePics, _maskMode)
-				: _processor.CalculateVolumeDepth(depthMap, measuredDistance, applyPerspective, needToSavePics, _maskMode);
+				? _processor.CalculateObjectVolumeRgb(depthMap, image, measuredDistance, applyPerspective, needToSavePics, _maskMode, measurementNumber)
+				: _processor.CalculateVolumeDepth(depthMap, measuredDistance, applyPerspective, needToSavePics, _maskMode, measurementNumber);
 		}
 
 		private ObjectVolumeData AggregateCalculationsData()
@@ -243,7 +247,6 @@ namespace VolumeCalculatorGUI.Utils
 		{
 			try
 			{
-				Directory.CreateDirectory(Constants.DebugDataDirectoryName);
 				var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter();
 				_logger.LogInfo($"Global object ID = {calculationIndex}");
 

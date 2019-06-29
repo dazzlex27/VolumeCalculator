@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Ci2001AScales.cs" />
+    <Compile Include="OkaScales.cs" />
     <Compile Include="TeslaM70RangeMeter.cs" />
     <Compile Include="IRangeMeter.cs" />
     <Compile Include="IScales.cs" />

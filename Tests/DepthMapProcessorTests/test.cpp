@@ -32,9 +32,6 @@ void FindFilteringDepth(const char* path)
 					binaryMask[index] = 255;
 			}
 		}
-
-		cv::Mat tempMat(mapHeight, mapWidth, CV_8UC1, binaryMask);
-		cv::imwrite("out/depthTest/" + std::to_string(i) + ".png", tempMat);
 	}
 
 	delete depthMap;

@@ -14,7 +14,7 @@ const Contour ContourExtractor::ExtractContourFromBinaryImage(const cv::Mat& ima
 	return GetContourClosestToCenter(validContours, image.cols, image.rows);
 }
 
-const Contour ContourExtractor::ExtractContourFromColorImage(const cv::Mat& image, const bool saveDebugData) const
+const Contour ContourExtractor::ExtractContourFromColorImage(const cv::Mat& image, const bool saveDebugData, const int measurementNumber) const
 {
 	const bool imageIsValid = image.cols > 0 && image.rows > 0 && image.data != nullptr;
 	if (!imageIsValid)
@@ -35,7 +35,7 @@ const Contour ContourExtractor::ExtractContourFromColorImage(const cv::Mat& imag
 
 	if (saveDebugData)
 	{
-		const std::string& index = DmUtils::GetCurrentCalculationIndex();
+		const std::string& index = std::to_string(measurementNumber);
 		cv::imwrite(_debugPath + "/" + index + "_cannied.png", cannied);
 	}
 
