@@ -17,6 +17,8 @@ namespace DeviceIntegration.Scales
 		private readonly string _port;
 		private readonly GodSerialPort _serialPort;
 
+		private bool _paused;
+
 		public CasMScales(ILogger logger, string port)
 		{
 			_logger = logger;
@@ -43,8 +45,16 @@ namespace DeviceIntegration.Scales
 			_logger.LogError("CasMScales: ResetWeight() is not implemented");
 		}
 
-		public void ReadMessage(byte[] messageBytes)
+		public void TogglePause(bool pause)
 		{
+			_paused = pause;
+		}
+
+		private void ReadMessage(byte[] messageBytes)
+		{
+			if (_paused)
+				return;
+
 			var status = GetStatusFromMessage(messageBytes);
 			var signMultipler = GetSignMultiplierFromMessage(messageBytes);
 			var weight = GetWeightFromMessage(messageBytes);

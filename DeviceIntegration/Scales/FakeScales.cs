@@ -13,6 +13,8 @@ namespace DeviceIntegration.Scales
 
 		private volatile bool _applyPayload;
 
+		private bool _paused;
+
 		public FakeScales(ILogger logger)
 		{
 			_tokenSource = new CancellationTokenSource();
@@ -26,11 +28,14 @@ namespace DeviceIntegration.Scales
 
 					while (!_tokenSource.IsCancellationRequested)
 					{
-						var data = _applyPayload
-							? new ScaleMeasurementData(MeasurementStatus.Measured, 700)
-							: new ScaleMeasurementData(MeasurementStatus.Ready, 0);
+						if (!_paused)
+						{
+							var data = _applyPayload
+								? new ScaleMeasurementData(MeasurementStatus.Measured, 700)
+								: new ScaleMeasurementData(MeasurementStatus.Ready, 0);
 
-						MeasurementReady?.Invoke(data);
+							MeasurementReady?.Invoke(data);
+						}
 						await Task.Delay(1000);
 					}
 				}
@@ -48,6 +53,11 @@ namespace DeviceIntegration.Scales
 		public void ResetWeight()
 		{
 			_applyPayload = false;
+		}
+
+		public void TogglePause(bool pause)
+		{
+			_paused = pause;
 		}
 
 		private void OnstatusSwitchTimerElapsed(object sender, System.Timers.ElapsedEventArgs e)

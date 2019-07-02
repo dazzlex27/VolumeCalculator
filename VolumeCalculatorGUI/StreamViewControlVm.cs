@@ -11,11 +11,11 @@ using Primitives.Settings;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
 
-namespace VolumeCalculatorGUI.GUI
+namespace VolumeCalculatorGUI
 {
 	internal class StreamViewControlVm : BaseViewModel, IDisposable
 	{
-		private readonly FrameProvider _frameProvider;
+		private readonly IFrameProvider _frameProvider;
 		private readonly ILogger _logger;
 
 		private readonly short _minDepth;
@@ -67,7 +67,7 @@ namespace VolumeCalculatorGUI.GUI
 			set => SetField(ref _depthMaskPolygonControlVm, value, nameof(DepthMaskPolygonControlVm));
 		}
 
-		public StreamViewControlVm(ILogger logger, ApplicationSettings settings, FrameProvider frameProvider)
+		public StreamViewControlVm(ILogger logger, ApplicationSettings settings, IFrameProvider frameProvider)
 		{
 			_logger = logger;
 			_applicationSettings = settings;
@@ -111,7 +111,7 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				var maxDepth = _applicationSettings.AlgorithmSettings.FloorDepth;
 				var maskedMap = new DepthMap(depthMap);
-				var cutOffDepth = (short) (maxDepth - _applicationSettings.AlgorithmSettings.MinObjectHeight);
+				var cutOffDepth = (short)(maxDepth - _applicationSettings.AlgorithmSettings.MinObjectHeight);
 				DepthMapUtils.FilterDepthMapByDepthtLimit(maskedMap, cutOffDepth);
 				var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, _minDepth, maxDepth);
 				var depthMapImage = new ImageData(maskedMap.Width, maskedMap.Height, depthMapData, 1);

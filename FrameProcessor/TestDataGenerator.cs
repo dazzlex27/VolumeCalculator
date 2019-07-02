@@ -16,7 +16,7 @@ namespace FrameProcessor
 		private readonly ILogger _logger;
 
 		private readonly TestCaseInfo _basicCaseInfo;
-		private readonly FrameProvider _frameProvider;
+		private readonly IFrameProvider _frameProvider;
 		private readonly AlgorithmSettings _settings;
 
 		private readonly string _imageSavingPath;
@@ -37,7 +37,7 @@ namespace FrameProcessor
 
 		private bool HasCompletedFirstRun => _samplesLeft != _basicCaseInfo.TimesToSave;
 
-		public TestDataGenerator(ILogger logger, TestCaseInfo testCaseBasicInfo, FrameProvider frameProvider, AlgorithmSettings settings)
+		public TestDataGenerator(ILogger logger, TestCaseInfo testCaseBasicInfo, IFrameProvider frameProvider, AlgorithmSettings settings)
 		{
 			_logger = logger;
 			_frameProvider = frameProvider;

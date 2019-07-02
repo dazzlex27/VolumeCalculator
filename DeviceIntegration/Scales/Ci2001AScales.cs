@@ -14,6 +14,8 @@ namespace DeviceIntegration.Scales
 		private readonly string _port;
 		private readonly GodSerialPort _serialPort;
 
+		private bool _paused;
+
 		public Ci2001AScales(ILogger logger, string port)
 		{
 			_logger = logger;
@@ -40,8 +42,16 @@ namespace DeviceIntegration.Scales
 		{
 		}
 
+		public void TogglePause(bool pause)
+		{
+			_paused = pause;
+		}
+
 		private void ReadMessage(byte[] messageBytes)
 		{
+			if (_paused)
+				return;
+
 			if (messageBytes.Length < 20)
 				return;
 

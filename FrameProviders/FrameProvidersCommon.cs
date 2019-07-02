@@ -8,7 +8,7 @@ namespace FrameProviders
 {
 	public class FrameProvidersCommon
 	{
-		public static FrameProvider CreateRequestedFrameProvider(string deviceName, ILogger logger)
+		public static IFrameProvider CreateRequestedFrameProvider(string deviceName, ILogger logger)
 		{
 			switch (deviceName)
 			{

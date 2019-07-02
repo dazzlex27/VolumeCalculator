@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using DeviceIntegration.IoCircuits;
 using DeviceIntegration.RangeMeters;
 using DeviceIntegration.Scales;
@@ -7,9 +8,9 @@ using FrameProviders;
 
 namespace VolumeCalculatorGUI.Utils
 {
-	internal class DeviceSet
+	internal class DeviceSet : IDisposable
 	{
-		public FrameProvider FrameProvider { get; }
+		public IFrameProvider FrameProvider { get; }
 
 		public IScales Scales { get; }
 
@@ -19,7 +20,7 @@ namespace VolumeCalculatorGUI.Utils
 
 		public IRangeMeter RangeMeter { get; }
 
-		public DeviceSet(FrameProvider frameProvider, IScales scales, IEnumerable<IBarcodeScanner> scanners,
+		public DeviceSet(IFrameProvider frameProvider, IScales scales, IEnumerable<IBarcodeScanner> scanners,
 			IIoCircuit ioCircuit, IRangeMeter rangeMeter)
 		{
 			FrameProvider = frameProvider;
@@ -27,6 +28,32 @@ namespace VolumeCalculatorGUI.Utils
 			Scanners = new List<IBarcodeScanner>(scanners);
 			IoCircuit = ioCircuit;
 			RangeMeter = rangeMeter;
+		}
+
+		public void Dispose()
+		{
+			FrameProvider?.Dispose();
+			Scales?.Dispose();
+
+			if (Scanners != null && Scanners.Count > 0)
+			{
+				foreach (var scanner in Scanners)
+					scanner?.Dispose();
+			}
+
+			IoCircuit?.Dispose();
+			RangeMeter?.Dispose();
+		}
+
+		public void TogglePause(bool pause)
+		{
+			Scales?.TogglePause(pause);
+
+			if (Scanners != null && Scanners.Count > 0)
+			{
+				foreach (var scanner in Scanners)
+					scanner?.TogglePause(pause);
+			}
 		}
 	}
 }

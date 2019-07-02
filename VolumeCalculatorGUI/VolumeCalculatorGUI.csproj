@@ -66,6 +66,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Management" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
@@ -85,8 +86,8 @@
     <Compile Include="GUI\MaskPolygonControl.xaml.cs">
       <DependentUpon>MaskPolygonControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="GUI\MaskPolygonControlVm.cs" />
-    <Compile Include="GUI\StatusWindowVm.cs" />
+    <Compile Include="MaskPolygonControlVm.cs" />
+    <Compile Include="StatusWindowVm.cs" />
     <Compile Include="GUI\StatusWindow.xaml.cs">
       <DependentUpon>StatusWindow.xaml</DependentUpon>
     </Compile>
@@ -101,16 +102,16 @@
     <Compile Include="GUI\Utils\EnumDescriptionConverter.cs" />
     <Compile Include="GUI\Utils\HalfMeasureConverter.cs" />
     <Compile Include="GUI\Utils\InverseBooleanConverter.cs" />
-    <Compile Include="GUI\MainWindowVm.cs" />
-    <Compile Include="GUI\SettingsWindowVm.cs" />
+    <Compile Include="MainWindowVm.cs" />
+    <Compile Include="SettingsWindowVm.cs" />
     <Compile Include="GUI\StreamViewControl.xaml.cs">
       <DependentUpon>StreamViewControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="GUI\StreamViewControlVm.cs" />
+    <Compile Include="StreamViewControlVm.cs" />
     <Compile Include="GUI\TestDataGenerationControl.xaml.cs">
       <DependentUpon>TestDataGenerationControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="GUI\TestDataGenerationControlVm.cs" />
+    <Compile Include="TestDataGenerationControlVm.cs" />
     <Compile Include="GUI\Utils\PathValidationRule.cs" />
     <Compile Include="Utils\DashboardStatus.cs" />
     <Compile Include="Utils\Constants.cs" />

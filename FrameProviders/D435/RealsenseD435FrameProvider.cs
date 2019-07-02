@@ -5,7 +5,7 @@ using Primitives.Logging;
 
 namespace FrameProviders.D435
 {
-	public class RealsenseD435FrameProvider : FrameProvider
+	internal class RealsenseD435FrameProvider : FrameProvider
 	{
 		private readonly ILogger _logger;
 		private readonly DllWrapper.ColorFrameCallback _colorFrameCallback;

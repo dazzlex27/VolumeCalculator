@@ -8,7 +8,7 @@ using Primitives.Logging;
 
 namespace FrameProviders.LocalFiles
 {
-	public class LocalFileFrameProvider : FrameProvider
+	internal class LocalFileFrameProvider : FrameProvider
 	{
 		private static readonly string ColorFramesPath = Path.Combine("localFrameProvider", "color");
 		private static readonly string DepthFramesPath = Path.Combine("localFrameProvider", "depth");

@@ -34,6 +34,8 @@ namespace DeviceIntegration.Scanners
 
 		private bool _onTimeOut;
 
+		private bool _paused;
+
 		public GenericKeyboardBarcodeScanner(ILogger logger)
 		{
 			_logger = logger;
@@ -58,6 +60,11 @@ namespace DeviceIntegration.Scanners
 		{
 			_logger.LogInfo("Disposing a generic keyboard scanner...");
 			UnhookWindowsHookEx(_hookId);
+		}
+
+		public void TogglePause(bool pause)
+		{
+			_paused = pause;
 		}
 
 		private void AddKey(Keys key)
@@ -87,7 +94,9 @@ namespace DeviceIntegration.Scanners
 		{
 			_onTimeOut = true;
 			_timeOutTimer.Start();
-			CharSequenceFormed?.Invoke(_keyCollectionBuilder.ToString());
+
+			if (!_paused)
+				CharSequenceFormed?.Invoke(_keyCollectionBuilder.ToString());
 		}
 
 		private static IntPtr SetHook(LowLevelKeyboardProc proc)

@@ -1,9 +1,12 @@
 ﻿using Primitives.Logging;
 using ProcessingUtils;
 using System;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using VolumeCalculatorGUI.GUI.Utils;
 
-namespace VolumeCalculatorGUI.GUI
+namespace VolumeCalculatorGUI
 {
 	internal class StatusWindowVm : BaseViewModel
 	{
@@ -36,7 +39,7 @@ namespace VolumeCalculatorGUI.GUI
 			set => SetField(ref _webServerIsRunning, value, nameof(WebServerIsRunning));
 		}
 
-		public StatusWindowVm(ILogger logger, bool licenseIsOk)
+		public StatusWindowVm(ILogger logger, HttpClient httpClient, bool licenseIsOk)
 		{
 			try
 			{
@@ -46,7 +49,26 @@ namespace VolumeCalculatorGUI.GUI
 
 				CurrentIp = string.Join(Environment.NewLine, ipAddresses);
 				LicenseIsOk = licenseIsOk;
-				WebServerIsRunning = IoUtils.IsProcessRunning("nginx");
+				WebServerIsRunning = false;
+
+				Task.Run(async () =>
+				{
+					try
+					{
+						var response = await httpClient.GetAsync(@"http://127.0.0.1");
+						if (response.StatusCode == HttpStatusCode.OK)
+						{
+							Dispatcher.Invoke(() =>
+							{
+								WebServerIsRunning = true;
+							});
+						}
+					}
+					catch (Exception ex)
+					{
+						logger.LogException("Web server request for info failed", ex);
+					}
+				});
 
 				logger.LogInfo($"Status has been requested: hostname={HostName}, currentIps={string.Join(";", ipAddresses)}, license={LicenseIsOk}, webserverrunning={WebServerIsRunning}");
 			}

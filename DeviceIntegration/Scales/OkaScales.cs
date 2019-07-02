@@ -21,6 +21,8 @@ namespace DeviceIntegration.Scales
 
 		private volatile bool _readFinished;
 
+		private bool _paused;
+
 		public OkaScales(ILogger logger, string port)
 		{
 			_logger = logger;
@@ -72,8 +74,16 @@ namespace DeviceIntegration.Scales
 		{
 		}
 
+		public void TogglePause(bool pause)
+		{
+			_paused = pause;
+		}
+
 		private void ReadMessage(byte[] messageBytes)
 		{
+			if (_paused)
+				return;
+
 			if (_readFinished)
 				return;
 

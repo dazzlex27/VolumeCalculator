@@ -7,10 +7,11 @@ using FrameProviders;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
+using VolumeCalculatorGUI.GUI;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
 
-namespace VolumeCalculatorGUI.GUI
+namespace VolumeCalculatorGUI
 {
 	internal class SettingsWindowVm : BaseViewModel
 	{
@@ -215,7 +216,7 @@ namespace VolumeCalculatorGUI.GUI
 			_latestDepthMap = depthMap;
 
 			var mapCopy = new DepthMap(depthMap);
-			var cutOffDepth = (short) (FloorDepth - MinObjHeight);
+			var cutOffDepth = (short)(FloorDepth - MinObjHeight);
 			DepthMapUtils.FilterDepthMapByDepthtLimit(mapCopy, cutOffDepth);
 
 			var depthMapData = DepthMapUtils.GetColorizedDepthMapData(mapCopy, MinDepth, FloorDepth);
@@ -256,7 +257,7 @@ namespace VolumeCalculatorGUI.GUI
 		private void ResetSettings()
 		{
 			if (MessageBox.Show("Сбросить настройки?", "Подтверждение", MessageBoxButton.YesNo,
-				    MessageBoxImage.Question) != MessageBoxResult.Yes)
+					MessageBoxImage.Question) != MessageBoxResult.Yes)
 				return;
 
 			FillValuesFromSettings(ApplicationSettings.GetDefaultSettings());

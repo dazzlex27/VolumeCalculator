@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Windows;
@@ -12,11 +13,12 @@ using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 using ProcessingUtils;
+using VolumeCalculatorGUI.GUI;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
 using Application = System.Windows.Application;
 
-namespace VolumeCalculatorGUI.GUI
+namespace VolumeCalculatorGUI
 {
 	internal class MainWindowVm : BaseViewModel
 	{
@@ -36,6 +38,7 @@ namespace VolumeCalculatorGUI.GUI
 		private CalculationDashboardControlVm _calculationDashboardControlVm;
 		private TestDataGenerationControlVm _testDataGenerationControlVm;
 
+		private readonly HttpClient _httpClient;
 		private bool _usingMasks;
 
 		public string WindowTitle => GlobalConstants.AppHeaderString;
@@ -103,6 +106,8 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
+				_httpClient = new HttpClient();
+
 				var maskBytes = DeviceSetFactory.GetMaskBytes();
 
 				_fatalErrorMessages = new List<string>();
@@ -146,7 +151,7 @@ namespace VolumeCalculatorGUI.GUI
 				}
 
 				if (MessageBox.Show("Вы действительно хотите отключить систему?", "Завершение работы",
-					    MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
+						MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
 					return false;
 
 				_logger.LogInfo("Disposing the application...");
@@ -155,6 +160,8 @@ namespace VolumeCalculatorGUI.GUI
 				DisposeSubViewModels();
 				DisposeSubSystems();
 				DisposeIoDevices();
+
+				_httpClient.Dispose();
 
 				_logger.LogInfo("Application stopped");
 
@@ -175,11 +182,6 @@ namespace VolumeCalculatorGUI.GUI
 			{
 				ShutDownInProgress = false;
 			}
-		}
-
-		private void DisposeSubSystems()
-		{
-			_requestProcessor?.Dispose();
 		}
 
 		private void InitializeSettings(byte[] maskBytes)
@@ -324,6 +326,8 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
+				_deviceSet.TogglePause(true);
+
 				var settingsWindowVm = new SettingsWindowVm(_logger, _settings, _deviceSet.FrameProvider.GetDepthCameraParams(),
 					_dmProcessor);
 				_deviceSet.FrameProvider.ColorFrameReady += settingsWindowVm.ColorFrameUpdated;
@@ -350,6 +354,8 @@ namespace VolumeCalculatorGUI.GUI
 				}
 				finally
 				{
+					_deviceSet.TogglePause(false);
+
 					_deviceSet.FrameProvider.ColorFrameReady -= settingsWindowVm.ColorFrameUpdated;
 					_deviceSet.FrameProvider.DepthFrameReady -= settingsWindowVm.DepthFrameUpdated;
 				}
@@ -368,7 +374,7 @@ namespace VolumeCalculatorGUI.GUI
 		{
 			try
 			{
-				var statusWindowVm = new StatusWindowVm(_logger, !_usingMasks);
+				var statusWindowVm = new StatusWindowVm(_logger, _httpClient, !_usingMasks);
 
 				var statusWindow = new StatusWindow
 				{
@@ -411,20 +417,18 @@ namespace VolumeCalculatorGUI.GUI
 			_calculationDashboardControlVm?.Dispose();
 		}
 
+		private void DisposeSubSystems()
+		{
+			_logger.LogInfo("Disposing sub systems...");
+
+			_requestProcessor?.Dispose();
+		}
+
 		private void DisposeIoDevices()
 		{
 			_logger.LogInfo("Disposing io devices...");
 
-			if (_deviceSet == null)
-				return;
-
-			_deviceSet.FrameProvider?.Dispose();
-			_deviceSet.FrameProvider?.Dispose();
-			_deviceSet.Scales?.Dispose();
-			foreach(var scanner in _deviceSet.Scanners)
-				scanner?.Dispose();
-			_deviceSet.IoCircuit?.Dispose();
-			_deviceSet.RangeMeter?.Dispose();
+			_deviceSet?.Dispose();
 		}
 
 		private void OnApplicationSettingsChanged(ApplicationSettings settings)

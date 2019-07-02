@@ -7,7 +7,7 @@ using DepthFrame = Microsoft.Kinect.DepthFrame;
 
 namespace FrameProviders.KinectV2
 {
-	public class KinectV2FrameProvider : FrameProvider
+	internal class KinectV2FrameProvider : FrameProvider
 	{
 		private readonly ILogger _logger;
 		private readonly KinectSensor _kinectSensor;

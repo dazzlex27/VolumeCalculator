@@ -6,7 +6,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using VolumeCalculatorGUI.GUI.Utils;
 
-namespace VolumeCalculatorGUI.GUI
+namespace VolumeCalculatorGUI
 {
 	internal class MaskPolygonControlVm : BaseViewModel
 	{

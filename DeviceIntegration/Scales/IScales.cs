@@ -7,5 +7,7 @@ namespace DeviceIntegration.Scales
 	    event Action<ScaleMeasurementData> MeasurementReady;
 
 	    void ResetWeight();
+
+		void TogglePause(bool pause);
     }
 }

@@ -20,6 +20,8 @@ namespace DeviceIntegration.Scales
 		private readonly string _port;
 		private readonly CancellationTokenSource _tokenSource;
 		private readonly GodSerialPort _serialPort;
+
+		private bool _paused;
 		
 		public MassaKScales(ILogger logger, string port)
 		{
@@ -72,6 +74,11 @@ namespace DeviceIntegration.Scales
 			_serialPort.Write(_resetMessage, 0, 1);
 		}
 
+		public void TogglePause(bool pause)
+		{
+			_paused = pause;
+		}
+
 		private async Task PollScales()
 		{
 			const int pollingRateMs = 1000;
@@ -97,6 +104,9 @@ namespace DeviceIntegration.Scales
 
 		private void ReadMessage(IReadOnlyList<byte> messageBytes)
 		{
+			if (_paused)
+				return;
+
 			try
 			{
 				if (messageBytes.Count % 5 != 0)
@@ -112,22 +122,6 @@ namespace DeviceIntegration.Scales
 			catch (Exception ex)
 			{
 				_logger.LogException($"Failed to read data from MassaKScales on serial port {_port}", ex);
-			}
-		}
-
-		private void LogDebugData(IEnumerable<byte> messageBytes, MeasurementStatus status, double totalWeight)
-		{
-			try
-			{
-				using (var f = File.AppendText("scdebug.txt"))
-				{
-					f.WriteLine(
-						$"{string.Join(" ", messageBytes)}; status={status.ToString()} weight={totalWeight}");
-				}
-			}
-			catch (Exception ex)
-			{
-				_logger.LogException("Failed to write scales debug data", ex);
 			}
 		}
 

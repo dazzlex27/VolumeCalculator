@@ -12,6 +12,8 @@ namespace DeviceIntegration.Scanners
 		private readonly SerialPort _serialPort;
 		private readonly string _port;
 
+		private bool _paused;
+
 		public GenericSerialPortBarcodeScanner(ILogger logger, string port)
 		{
 			_logger = logger;
@@ -40,8 +42,16 @@ namespace DeviceIntegration.Scanners
 			_serialPort.Dispose();
 		}
 
+		public void TogglePause(bool pause)
+		{
+			_paused = pause;
+		}
+
 		private void OnDataReceived(object sender, SerialDataReceivedEventArgs e)
 		{
+			if (_paused)
+				return;
+
 			try
 			{
 				var serialPort = (SerialPort)sender;
