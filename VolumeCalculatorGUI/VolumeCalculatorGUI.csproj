@@ -86,6 +86,10 @@
       <DependentUpon>MaskPolygonControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="GUI\MaskPolygonControlVm.cs" />
+    <Compile Include="GUI\StatusWindowVm.cs" />
+    <Compile Include="GUI\StatusWindow.xaml.cs">
+      <DependentUpon>StatusWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Utils\BaseViewModel.cs" />
     <Compile Include="GUI\CalculationDashboardControl.xaml.cs">
       <DependentUpon>CalculationDashboardControl.xaml</DependentUpon>
@@ -141,6 +145,10 @@
     <Page Include="GUI\MaskPolygonControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GUI\StatusWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="GUI\SettingsWindow.xaml">
       <SubType>Designer</SubType>

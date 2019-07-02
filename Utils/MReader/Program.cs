@@ -12,11 +12,14 @@ namespace MReader
 
 		static int Main(string[] args)
 		{
+			Console.WriteLine("Mreader v1.45");
+
+			if (DateTime.Now > new DateTime(2020, 1, 1))
+				return 0;
+
 			if (args.Length < 1)
 			{
-				Console.WriteLine("usage: MReader.exe command" +
-								  Environment.NewLine + "g - get data" +
-								  Environment.NewLine + "c - check data");
+				Console.WriteLine("key not found");
 				return 3;
 			}
 

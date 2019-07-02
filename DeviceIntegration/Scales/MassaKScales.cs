@@ -5,8 +5,8 @@ using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
 using GodSharp.SerialPort;
-using Primitives;
 using Primitives.Logging;
+using ProcessingUtils;
 
 namespace DeviceIntegration.Scales
 {
@@ -20,7 +20,6 @@ namespace DeviceIntegration.Scales
 		private readonly string _port;
 		private readonly CancellationTokenSource _tokenSource;
 		private readonly GodSerialPort _serialPort;
-		private readonly bool _debugModeOn;
 		
 		public MassaKScales(ILogger logger, string port)
 		{
@@ -44,8 +43,6 @@ namespace DeviceIntegration.Scales
 					_logger.LogException("Failed to read MassaKScales message", ex);
 				}
 			});
-
-			_debugModeOn = IoUtils.NeedScalesDebugMode();
 
 			_serialPort.Open();
 
@@ -111,16 +108,10 @@ namespace DeviceIntegration.Scales
 				var scaleMeasurementData = new ScaleMeasurementData(status, totalWeight);
 
 				MeasurementReady?.Invoke(scaleMeasurementData);
-
-				if (_debugModeOn)
-					LogDebugData(messageBytes, status, totalWeight);
 			}
 			catch (Exception ex)
 			{
 				_logger.LogException($"Failed to read data from MassaKScales on serial port {_port}", ex);
-
-				if (_debugModeOn)
-					LogDebugData(messageBytes, MeasurementStatus.Invalid, -1);
 			}
 		}
 

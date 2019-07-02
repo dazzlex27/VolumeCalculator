@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using Newtonsoft.Json;
+using Primitives;
 using Primitives.Settings;
 
-namespace Primitives
+namespace ProcessingUtils
 {
 	public static class IoUtils
 	{
@@ -49,7 +53,7 @@ namespace Primitives
 			if (!File.Exists(GlobalConstants.CountersFileName))
 			{
 				File.WriteAllText(GlobalConstants.CountersFileName, 1.ToString());
-				return ;
+				return;
 			}
 
 			var fileContents = File.ReadAllText(GlobalConstants.CountersFileName);
@@ -62,6 +66,15 @@ namespace Primitives
 		public static void OpenFile(string filepath)
 		{
 			Process.Start(filepath);
+		}
+
+		public static bool IsProcessRunning(string processName)
+		{
+			var runningProcesses = Process.GetProcesses();
+			var matchingProcesses = runningProcesses
+					.Where(p => p.ProcessName.ToLowerInvariant() == processName.ToLowerInvariant()).ToList();
+
+			return matchingProcesses.Count > 0;
 		}
 
 		public static bool KillProcess(string processName)
@@ -93,9 +106,23 @@ namespace Primitives
 			Process.Start(shutDownProcess);
 		}
 
-		public static bool NeedScalesDebugMode()
+		public static string GetHostName()
 		{
-			return File.Exists("SCDEBUG");
+			return Dns.GetHostName();
+		}
+
+		public static IReadOnlyList<string> GetLocalIpAddresses()
+		{
+			var addresses = new List<string>();
+
+			var localIPs = Dns.GetHostAddresses(Dns.GetHostName());
+			foreach (IPAddress addr in localIPs)
+			{
+				if (addr.AddressFamily == AddressFamily.InterNetwork)
+					addresses.Add(addr.ToString());
+			}
+
+			return addresses;
 		}
 
 		public static byte[] GetHwBytes()

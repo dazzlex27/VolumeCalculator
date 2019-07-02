@@ -9,9 +9,9 @@ using DeviceIntegration.RangeMeters;
 using DeviceIntegration.Scales;
 using DeviceIntegration.Scanners;
 using FrameProviders;
-using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
+using ProcessingUtils;
 
 namespace VolumeCalculatorGUI.Utils
 {

@@ -30,7 +30,8 @@
 				</Style>
 			</Menu.Resources>
 			<MenuItem Header="Действия">
-				<MenuItem Header="Открыть настройки " Command="{Binding OpenSettingsCommand}"/>
+				<MenuItem Header="Открыть настройки" Command="{Binding OpenSettingsCommand}"/>
+				<MenuItem Header="Информация о системе" Command="{Binding OpenStatusCommand}"/>
 				<MenuItem Header="Запустить Конфигуратор" Command="{Binding OpenConfiguratorCommand}"/>
 				<MenuItem Header="Завершить работу" Command="{Binding ShutDownCommand}"/>
 			</MenuItem>

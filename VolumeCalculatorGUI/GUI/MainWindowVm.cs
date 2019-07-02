@@ -11,6 +11,7 @@ using FrameProcessor;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
+using ProcessingUtils;
 using VolumeCalculatorGUI.GUI.Utils;
 using VolumeCalculatorGUI.Utils;
 using Application = System.Windows.Application;
@@ -92,6 +93,8 @@ namespace VolumeCalculatorGUI.GUI
 
 		public ICommand OpenSettingsCommand { get; }
 
+		public ICommand OpenStatusCommand { get; }
+
 		public ICommand OpenConfiguratorCommand { get; }
 
 		public ICommand ShutDownCommand { get; }
@@ -113,6 +116,7 @@ namespace VolumeCalculatorGUI.GUI
 				InitializeSubViewModels();
 
 				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
+				OpenStatusCommand = new CommandHandler(OpenStatus, true);
 				OpenConfiguratorCommand = new CommandHandler(OpenConfigurator, true);
 				ShutDownCommand = new CommandHandler(() => { ShutDown(true, false); }, true);
 
@@ -358,6 +362,26 @@ namespace VolumeCalculatorGUI.GUI
 
 			if (_usingMasks)
 				throw new AbandonedMutexException();
+		}
+
+		private void OpenStatus()
+		{
+			try
+			{
+				var statusWindowVm = new StatusWindowVm(_logger, !_usingMasks);
+
+				var statusWindow = new StatusWindow
+				{
+					Owner = Application.Current.Windows.OfType<Window>().SingleOrDefault(x => x.IsActive),
+					DataContext = statusWindowVm
+				};
+
+				statusWindow.ShowDialog();
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Error occured while reading status", ex);
+			}
 		}
 
 		private void OpenConfigurator()

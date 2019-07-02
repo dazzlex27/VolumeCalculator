@@ -7,6 +7,7 @@ using FrameProcessor;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
+using ProcessingUtils;
 
 namespace VolumeCalculatorGUI.Utils
 {

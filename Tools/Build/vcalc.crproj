@@ -6,36 +6,48 @@
     <rule pattern="true" preset="aggressive" inherit="false">
       <protection id="rename" />
       <protection id="constants" />
+	  <protection id="anti tamper" />
+      <protection id="anti debug" />
     </rule>
   </module>
   <module path="DeviceIntegration.dll">
     <rule pattern="true" preset="aggressive" inherit="false">
       <protection id="rename" />
       <protection id="constants" />
+	  <protection id="anti tamper" />
+      <protection id="anti debug" />
     </rule>
   </module>
   <module path="ExtIntegration.dll">
     <rule pattern="true" preset="aggressive" inherit="false">
       <protection id="rename" />
       <protection id="constants" />
+	  <protection id="anti tamper" />
+      <protection id="anti debug" />
     </rule>
   </module>
   <module path="FrameProcessor.dll">
     <rule pattern="true" preset="aggressive" inherit="false">
       <protection id="rename" />
       <protection id="constants" />
+	  <protection id="anti tamper" />
+      <protection id="anti debug" />
     </rule>
   </module>
   <module path="FrameProviders.dll">
     <rule pattern="true" preset="aggressive" inherit="false">
       <protection id="rename" />
       <protection id="constants" />
+	  <protection id="anti tamper" />
+      <protection id="anti debug" />
     </rule>
   </module>
   <module path="VolumeCalculator.exe">
     <rule pattern="true" preset="aggressive" inherit="false">
       <protection id="rename" />
       <protection id="constants" />
+	  <protection id="anti tamper" />
+      <protection id="anti debug" />
     </rule>
   </module>
 </project>

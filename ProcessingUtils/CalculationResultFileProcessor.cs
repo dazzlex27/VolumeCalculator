@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using Primitives.Logging;
 using Primitives.Settings;
+using ProcessingUtils;
 
 namespace Primitives
 {
