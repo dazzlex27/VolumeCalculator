@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:gui="clr-namespace:VolumeCalculatorGUI.GUI"
+		xmlns:main="clr-namespace:VolumeCalculatorGUI"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         xmlns:primitives="clr-namespace:Primitives;assembly=Primitives"
         mc:Ignorable="d"
@@ -14,7 +15,7 @@
         SizeToContent="WidthAndHeight" 
         WindowStartupLocation="CenterOwner" 
         ResizeMode="NoResize"
-        d:DataContext="{d:DesignInstance gui:StatusWindowVm}">
+        d:DataContext="{d:DesignInstance main:StatusWindowVm}">
 	<Window.Resources>
 		<ObjectDataProvider x:Key="AllWeightUnits"
 		                    MethodName="GetValues"

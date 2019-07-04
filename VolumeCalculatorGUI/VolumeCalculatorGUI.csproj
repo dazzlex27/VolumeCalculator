@@ -95,7 +95,7 @@
     <Compile Include="GUI\CalculationDashboardControl.xaml.cs">
       <DependentUpon>CalculationDashboardControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="GUI\CalculationDashboardControlVm.cs" />
+    <Compile Include="CalculationDashboardControlVm.cs" />
     <Compile Include="GUI\Utils\CommandHandler.cs" />
     <Compile Include="GUI\Utils\ConjunctionToVisibilityMultiConverter.cs" />
     <Compile Include="GUI\Utils\DashStatusUpdater.cs" />

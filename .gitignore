@@ -39,6 +39,8 @@
 /Utils/ProBuilder/obj
 /Utils/VCConfigurator/obj
 /Utils/WmsEmulator/obj
+/Utils/CameraTest/bin
+/Utils/CameraTest/obj
 /Tools/Build/logs
 /Externals
 /VolumeCalculator.sln.DotSettings.user

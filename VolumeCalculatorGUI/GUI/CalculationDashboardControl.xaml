@@ -3,12 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:gui="clr-namespace:VolumeCalculatorGUI.GUI"
+			 xmlns:main="clr-namespace:VolumeCalculatorGUI"
              mc:Ignorable="d"
              d:DesignWidth="800"
              d:DesignHeight="450"
              x:ClassModifier="internal"
-             d:DataContext="{d:DesignInstance gui:CalculationDashboardControlVm}"
+             d:DataContext="{d:DesignInstance main:CalculationDashboardControlVm}"
              DataContextChanged="CalculationDashboardControl_OnDataContextChanged">
 	<Grid IsEnabled="{Binding CalculationInProgress, Converter={StaticResource InverseBooleanConverter}}">
 		<Grid.ColumnDefinitions>
