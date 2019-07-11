@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Management;
+using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using DeviceIntegration;
+using DeviceIntegration.Cameras;
 using DeviceIntegration.IoCircuits;
 using DeviceIntegration.RangeMeters;
 using DeviceIntegration.Scales;
@@ -17,12 +20,13 @@ namespace VolumeCalculatorGUI.Utils
 {
 	internal class DeviceSetFactory
 	{
-		public DeviceSet CreateDeviceSet(ILogger logger, IoSettings settings)
+		public DeviceSet CreateDeviceSet(ILogger logger, HttpClient httpClient, IoSettings settings)
 		{
 			IScales scales = null;
 			var barcodeScanners = new List<IBarcodeScanner>();
 			IIoCircuit ioCircuit = null;
 			IRangeMeter rangeMeter = null;
+			IIpCamera ipCamera = null;
 
 			var frameProviderName = settings.ActiveCameraName;
 			logger.LogInfo($"Creating frame provider \"{frameProviderName}\"...");
@@ -44,7 +48,8 @@ namespace VolumeCalculatorGUI.Utils
 
 			var scalesName = settings.ActiveScalesName;
 			var scalesPort = settings.ScalesPort;
-			if (scalesPort != string.Empty)
+			var scalesDataIsCorrect = !string.IsNullOrEmpty(scalesName) && !string.IsNullOrEmpty(scalesPort);
+			if (scalesDataIsCorrect)
 			{
 				logger.LogInfo($"Creating scales \"{scalesName}\"...");
 				scales = DeviceIntegrationCommon.CreateRequestedScales(scalesName, logger, scalesPort);
@@ -52,7 +57,8 @@ namespace VolumeCalculatorGUI.Utils
 
 			var ioCircuitName = settings.ActiveIoCircuitName;
 			var ioCircuitPort = settings.IoCircuitPort;
-			if (ioCircuitPort != string.Empty)
+			var ioCircuitDataIsCorrect = !string.IsNullOrEmpty(ioCircuitName) && !string.IsNullOrEmpty(ioCircuitPort);
+			if (ioCircuitDataIsCorrect)
 			{
 				logger.LogInfo($"Creating IO circuit \"{ioCircuitName}\"...");
 				ioCircuit = DeviceIntegrationCommon.CreateRequestedIoCircuit(ioCircuitName, logger, ioCircuitPort);
@@ -60,13 +66,24 @@ namespace VolumeCalculatorGUI.Utils
 
 			var rangeMeterName = settings.ActiveRangeMeterName;
 			var rangeMeterPort = settings.RangeMeterPort;
-			if (rangeMeterPort != string.Empty)
+			var rangeMeterDataIsCorrect = !string.IsNullOrEmpty(rangeMeterName) && !string.IsNullOrEmpty(rangeMeterPort);
+			if (rangeMeterDataIsCorrect)
 			{
 				logger.LogInfo($"Creating range meter \"{rangeMeterName}\"");
 				rangeMeter = DeviceIntegrationCommon.CreateRequestedRangeMeter(rangeMeterName, logger, rangeMeterPort);
 			}
 
-			return new DeviceSet(frameProvider, scales, barcodeScanners, ioCircuit, rangeMeter);
+			var cameraSettings = settings.IpCameraSettings;
+			if (!string.IsNullOrEmpty(cameraSettings.CameraName))
+			{
+				logger.LogInfo($"Creating IP camera \"{cameraSettings.CameraName}\"");
+				ipCamera = DeviceIntegrationCommon.CreateRequestedIpCamera(cameraSettings, httpClient, logger);
+				var connected = ipCamera.ConnectAsync().Result;
+				if (connected)
+					Task.Run(() => ipCamera.GoToPresetAsync(settings.IpCameraSettings.ActivePreset));
+			}
+
+			return new DeviceSet(frameProvider, scales, barcodeScanners, ioCircuit, rangeMeter, ipCamera);
 		}
 
 		public static byte[] GetMaskBytes()

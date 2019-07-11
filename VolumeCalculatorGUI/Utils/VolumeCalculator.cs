@@ -267,6 +267,13 @@ namespace VolumeCalculatorGUI.Utils
 				var cutOffDepth = (short) (_settings.AlgorithmSettings.FloorDepth - _settings.AlgorithmSettings.MinObjectHeight);
 				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, depthFrameFileName,
 					depthCameraParams.MinDepth, depthCameraParams.MaxDepth, cutOffDepth);
+
+				if (_deviceSet.IpCamera != null)
+				{
+					var ipCameraImage = _deviceSet.IpCamera.GetSnaphostAsync().Result;
+					var cameraFrameFileName = Path.Combine(_settings.IoSettings.PhotosDirectoryPath, $"{calculationIndex}_camera.png");
+					ImageUtils.SaveImageDataToFile(ipCameraImage, cameraFrameFileName);
+				}
 			}
 			catch (Exception ex)
 			{

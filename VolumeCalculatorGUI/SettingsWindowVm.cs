@@ -192,7 +192,7 @@ namespace VolumeCalculatorGUI
 			var newIoSettings = new IoSettings(oldIoSettings.ActiveCameraName, oldIoSettings.ActiveScalesName,
 				oldIoSettings.ScalesPort, oldIoSettings.ActiveScanners, oldIoSettings.ActiveIoCircuitName,
 				oldIoSettings.IoCircuitPort, oldIoSettings.ActiveRangeMeterName, oldIoSettings.RangeMeterPort,
-				RangeMeterSubtractionValue, OutputPath, oldIoSettings.ShutDownPcByDefault);
+				RangeMeterSubtractionValue, oldIoSettings.IpCameraSettings, OutputPath, oldIoSettings.ShutDownPcByDefault);
 
 			var newAlgorithmSettings = new AlgorithmSettings(FloorDepth, MinObjHeight, SampleCount, UseColorMask,
 				colorMaskPoints, UseDepthMask, depthMaskPoints, EnableAutoTimer, TimeToStartMeasurementMs,

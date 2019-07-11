@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using DeviceIntegration.Cameras;
 using DeviceIntegration.IoCircuits;
 using DeviceIntegration.RangeMeters;
 using DeviceIntegration.Scales;
@@ -20,14 +21,17 @@ namespace VolumeCalculatorGUI.Utils
 
 		public IRangeMeter RangeMeter { get; }
 
+		public IIpCamera IpCamera { get; }
+
 		public DeviceSet(IFrameProvider frameProvider, IScales scales, IEnumerable<IBarcodeScanner> scanners,
-			IIoCircuit ioCircuit, IRangeMeter rangeMeter)
+			IIoCircuit ioCircuit, IRangeMeter rangeMeter, IIpCamera ipCamera)
 		{
 			FrameProvider = frameProvider;
 			Scales = scales;
 			Scanners = new List<IBarcodeScanner>(scanners);
 			IoCircuit = ioCircuit;
 			RangeMeter = rangeMeter;
+			IpCamera = ipCamera;
 		}
 
 		public void Dispose()

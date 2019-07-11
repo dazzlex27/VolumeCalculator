@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Net.Http;
+using DeviceIntegration.Cameras;
 using DeviceIntegration.IoCircuits;
 using DeviceIntegration.RangeMeters;
 using DeviceIntegration.Scales;
 using DeviceIntegration.Scanners;
 using Primitives.Logging;
+using Primitives.Settings;
 
 namespace DeviceIntegration
 {
@@ -63,6 +66,22 @@ namespace DeviceIntegration
 					return new TeslaM70RangeMeter(logger, port);
 				default:
 					logger.LogError($"Failed to create range meter by the name \"{name}\"");
+					throw new NotSupportedException();
+			}
+		}
+
+		public static IIpCamera CreateRequestedIpCamera(IpCameraSettings settings, HttpClient httpClient, ILogger logger)
+		{
+			if (settings == null)
+				return null;
+
+			var name = settings.CameraName;
+			switch (name)
+			{
+				case "proline2520":
+					return new Proline2520Camera(logger, httpClient, settings);
+				default:
+					logger.LogError($"Failed to create ip camera by the name \"{name}\"");
 					throw new NotSupportedException();
 			}
 		}

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using ExtIntegration;
@@ -102,6 +103,8 @@ namespace VolumeCalculatorGUI
 
 		public ICommand ShutDownCommand { get; }
 
+		public ICommand InitializeApplication { get; }
+
 		public MainWindowVm()
 		{
 			try
@@ -120,10 +123,11 @@ namespace VolumeCalculatorGUI
 				InitializeSubSystems();
 				InitializeSubViewModels();
 
-				OpenSettingsCommand = new CommandHandler(OpenSettings, true);
-				OpenStatusCommand = new CommandHandler(OpenStatus, true);
+				OpenSettingsCommand = new CommandHandler(OpenSettingsWindow, true);
+				OpenStatusCommand = new CommandHandler(OpenStatusWindow, true);
 				OpenConfiguratorCommand = new CommandHandler(OpenConfigurator, true);
 				ShutDownCommand = new CommandHandler(() => { ShutDown(true, false); }, true);
+				InitializeApplication = new CommandHandler(async () => await InitializeApplicationAsync(), true);
 
 				_logger.LogInfo("Application is initalized");
 			}
@@ -184,6 +188,11 @@ namespace VolumeCalculatorGUI
 			}
 		}
 
+		private async Task InitializeApplicationAsync()
+		{
+
+		}
+
 		private void InitializeSettings(byte[] maskBytes)
 		{
 			try
@@ -220,7 +229,7 @@ namespace VolumeCalculatorGUI
 				_logger.LogInfo("Initializing IO devices...");
 
 				var deviceSetFaceory = new DeviceSetFactory();
-				_deviceSet = deviceSetFaceory.CreateDeviceSet(_logger, Settings.IoSettings);
+				_deviceSet = deviceSetFaceory.CreateDeviceSet(_logger, _httpClient, Settings.IoSettings);
 
 				_logger.LogInfo("IO devices- ok");
 			}
@@ -322,7 +331,7 @@ namespace VolumeCalculatorGUI
 			IoUtils.SerializeSettings(Settings);
 		}
 
-		private void OpenSettings()
+		private void OpenSettingsWindow()
 		{
 			try
 			{
@@ -370,7 +379,7 @@ namespace VolumeCalculatorGUI
 				throw new AbandonedMutexException();
 		}
 
-		private void OpenStatus()
+		private void OpenStatusWindow()
 		{
 			try
 			{
@@ -386,7 +395,7 @@ namespace VolumeCalculatorGUI
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException("Error occured while reading status", ex);
+				_logger.LogException("Error occured while displaying status window", ex);
 			}
 		}
 

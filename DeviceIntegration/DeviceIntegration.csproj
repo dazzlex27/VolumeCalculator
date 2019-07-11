@@ -40,10 +40,18 @@
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cameras\IIpCamera.cs" />
+    <Compile Include="Cameras\Proline2520Camera.cs" />
+    <Compile Include="Cameras\Proline2520Controller.cs" />
     <Compile Include="DeviceIntegrationCommon.cs" />
     <Compile Include="IoCircuits\IIoCircuit.cs" />
     <Compile Include="IoCircuits\KeUsb24RCircuit.cs" />
@@ -75,7 +83,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="Properties\DataSources\System.Xml.XmlElement.datasource" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

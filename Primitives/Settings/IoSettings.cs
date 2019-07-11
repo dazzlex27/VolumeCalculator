@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Runtime.Serialization;
 
 namespace Primitives.Settings
 {
@@ -22,6 +23,8 @@ namespace Primitives.Settings
 
 		public int RangeMeterSubtractionValueMm { get; set; }
 
+		public IpCameraSettings IpCameraSettings { get; set; }
+
 		public string OutputPath { get; set; }
 
 		public bool ShutDownPcByDefault { get; set; }
@@ -32,7 +35,7 @@ namespace Primitives.Settings
 
 		public IoSettings(string activeCameraName, string activeScalesName, string scalesPort, IoEntry[] activeScanners,
 			string activeIoCircuitName, string ioCircuitPort, string activeRangeMeterName, string rangeMeterPort,
-			int rangeMeterSubtractionValueMm, string outputPath, bool shutDownPcByDefault)
+			int rangeMeterSubtractionValueMm, IpCameraSettings ipCameraSettings, string outputPath, bool shutDownPcByDefault)
 		{
 			ActiveCameraName = activeCameraName;
 			ActiveScalesName = activeScalesName;
@@ -43,16 +46,26 @@ namespace Primitives.Settings
 			ActiveRangeMeterName = activeRangeMeterName;
 			RangeMeterPort = rangeMeterPort;
 			RangeMeterSubtractionValueMm = rangeMeterSubtractionValueMm;
+			IpCameraSettings = ipCameraSettings;
 			OutputPath = outputPath;
 			ShutDownPcByDefault = shutDownPcByDefault;
 		}
 
 		public static IoSettings GetDefaultSettings()
 		{
-			var defaultScanners = new[] {new IoEntry("keyboard", "")};
+			var defaultScanners = new[] { new IoEntry("keyboard", "") };
+			var defaultCameraSettings = IpCameraSettings.GetDefaultSettings();
 
 			return new IoSettings("kinectv2", "massak", "COM1", defaultScanners, "keusb24r", "", "custom", "", 0,
-				"MeasurementResults", false);
+				defaultCameraSettings, "MeasurementResults", false);
+		}
+
+		[OnDeserialized]
+		private void OnDeserialized(StreamingContext context)
+		{
+
+			if (IpCameraSettings == null)
+				IpCameraSettings = IpCameraSettings.GetDefaultSettings();
 		}
 	}
 }

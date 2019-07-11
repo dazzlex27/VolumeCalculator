@@ -13,6 +13,7 @@
 			<RowDefinition/>
 			<RowDefinition/>
 			<RowDefinition/>
+			<RowDefinition/>
 		</Grid.RowDefinitions>
 		<StackPanel Margin="5" 
 		            Orientation="Horizontal">
@@ -89,6 +90,51 @@
 			          MaxWidth="150" 
 			          ItemsSource="{Binding CameraNames}" 
 			          VerticalAlignment="Center"/>
+		</StackPanel>
+		<StackPanel Grid.Row="4" >
+			<StackPanel Margin="5" 
+		            Orientation="Horizontal">
+				<TextBlock Text="IP камера:" 
+			           MinWidth="80" 
+			           Margin="3" 
+			           VerticalAlignment="Center"/>
+				<ComboBox MinWidth="150" 
+			          Margin="3" 
+			          SelectedItem="{Binding ActiveIpCameraName, Mode=TwoWay}" 
+			          MaxWidth="150" 
+			          ItemsSource="{Binding IpCameraNames}" 
+			          VerticalAlignment="Center"/>
+				<TextBlock Text="IP:" 
+			           Margin="3" 
+			           VerticalAlignment="Center"/>
+				<TextBox Margin="3" 
+			         MinWidth="100"
+			         Text="{Binding IpCameraAddress, Mode=TwoWay}" 
+			         VerticalAlignment="Center"/>
+			</StackPanel>
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="Логин:" 
+			           Margin="3" 
+			           VerticalAlignment="Center"/>
+				<TextBox Margin="3" 
+			         MinWidth="100"
+			         Text="{Binding IpCameraLogin, Mode=TwoWay}" 
+			         VerticalAlignment="Center"/>
+				<TextBlock Text="Пароль:" 
+			           Margin="3" 
+			           VerticalAlignment="Center"/>
+				<TextBox Margin="3" 
+			         MinWidth="100"
+			         Text="{Binding IpCameraPassword, Mode=TwoWay}" 
+			         VerticalAlignment="Center"/>
+				<TextBlock Text="Пресет:" 
+			           Margin="3" 
+			           VerticalAlignment="Center"/>
+				<TextBox Margin="3" 
+			         MinWidth="20"
+			         Text="{Binding IpCameraPreset, Mode=TwoWay}" 
+			         VerticalAlignment="Center"/>
+			</StackPanel>
 		</StackPanel>
 	</Grid>
 </UserControl>
