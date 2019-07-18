@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using GodSharp.SerialPort;
 using Primitives.Logging;
-using ProcessingUtils;
 
 namespace DeviceIntegration.Scales
 {
@@ -81,7 +80,7 @@ namespace DeviceIntegration.Scales
 
 		private async Task PollScales()
 		{
-			const int pollingRateMs = 1000;
+			const int pollingRateMs = 200;
 			const int errorTimeOutMs = 500;
 
 			var pollMessage = BitConverter.GetBytes(0x4A);

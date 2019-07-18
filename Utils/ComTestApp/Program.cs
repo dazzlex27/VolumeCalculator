@@ -8,11 +8,11 @@ namespace ComTestApp
 	{
 		private static void Main()
 		{
-			TestOkaScales();
+			//TestOkaScales();
 			//TestLaser();
 			//TestCasM();
-			SaveRawData();
-			//TestMassaK();
+			//SaveRawData();
+			TestMassaK();
 			//TestCi2001A();
 			Console.ReadKey();
 		}
