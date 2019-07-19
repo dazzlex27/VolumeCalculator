@@ -39,16 +39,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlgorithmSelectionResult.cs" />
-    <Compile Include="Native\ColorCameraIntrinsics.cs" />
+    <Compile Include="Native\VolumeCalculationData.cs" />
+    <Compile Include="Native\CameraIntrinsics.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="Native\DepthCameraIntrinsics.cs" />
     <Compile Include="DepthMapProcessor.cs" />
     <Compile Include="Native\ColorImage.cs" />
     <Compile Include="Native\DepthMap.cs" />
     <Compile Include="Native\DepthMapProcessorDll.cs" />
     <Compile Include="Native\RelPoint.cs" />
     <Compile Include="Native\RelRect.cs" />
-    <Compile Include="Native\ObjDimDescription.cs" />
+    <Compile Include="Native\VolumeCalculationResult.cs" />
     <Compile Include="ObjectVolumeData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestCaseInfo.cs" />

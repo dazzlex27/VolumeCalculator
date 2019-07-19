@@ -2,20 +2,20 @@
 {
 	public class ObjectVolumeData
 	{
-		public int Length { get; }
+		public int LengthMm { get; }
 
-		public int Width { get; }
+		public int WidthMm { get; }
 
-		public int Height { get; }
+		public int HeightMm { get; }
 
-		public long Volume { get; }
+		public double VolumeCmCb { get; }
 
-		public ObjectVolumeData(int length, int width, int height)
+		public ObjectVolumeData(int lengthMm, int widthMm, int heightMm, double volumeCmCb)
 		{
-			Length = length;
-			Width = width;
-			Height = height;
-			Volume = width * height * length;
+			LengthMm = lengthMm;
+			WidthMm = widthMm;
+			HeightMm = heightMm;
+			VolumeCmCb = volumeCmCb;
 		}
 	}
 }

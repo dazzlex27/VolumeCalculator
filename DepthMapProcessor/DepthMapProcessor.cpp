@@ -5,14 +5,26 @@
 #include <cstdlib>
 #include <ctime>
 #include "DmUtils.h"
+#include <fstream>
+#include "CalculationUtils.h"
 
-DepthMapProcessor::DepthMapProcessor(ColorCameraIntristics colorIntrinsics, DepthCameraIntristics depthIntrinsics)
+DepthMapProcessor::DepthMapProcessor(CameraIntrinsics colorIntrinsics, CameraIntrinsics depthIntrinsics)
 	: _colorIntrinsics(colorIntrinsics), _depthIntrinsics(depthIntrinsics)
 {
 	_mapWidth = 0;
 	_mapHeight = 0;
 	_mapLength = 0;
 	_mapLengthBytes = 0;
+
+	_colorImageWidth = 0;
+	_colorImageHeight = 0;
+	_colorImageLengthBytes = 0;
+	_colorImageBytesPerPixel = 0;
+
+	_colorRoiRect = RelRect();
+	_floorDepth = 0;
+	_cutOffDepth = 0;
+	_correctPerspective = false;
 
 	_depthMapBuffer = nullptr;
 	_depthMaskBuffer = nullptr;
@@ -102,7 +114,7 @@ const int DepthMapProcessor::SelectAlgorithm(const DepthMap& depthMap, const Col
 		_needToUpdateMeasurementVolume = false;
 	}
 
-	const std::vector<DepthValue> worldDepthValues = GetWorldDepthValuesFromDepthMap();
+	const std::vector<DepthValue> worldDepthValues = CalculationUtils::GetWorldDepthValuesFromDepthMap(_mapWidth, _mapHeight, _depthMapBuffer, _depthIntrinsics);
 	DmUtils::FilterDepthMapByMeasurementVolume(_depthMapBuffer, worldDepthValues, _measurementVolume);
 
 	const Contour& depthObjectContour = GetTargetContourFromDepthMap(false);
@@ -159,12 +171,14 @@ const int DepthMapProcessor::SelectAlgorithm(const DepthMap& depthMap, const Col
 	return 0;
 }
 
-ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& depthMap, const long measuredDistance, 
-	const bool applyPerspective, const bool saveDebugData, bool maskMode, int measurementNumber)
+VolumeCalculationResult* DepthMapProcessor::CalculateObjectVolume(const VolumeCalculationData& calculationData)
 {
-	FillDepthBufferFromDepthMap(depthMap);
+	const DepthMap& depthMap = calculationData.DepthMap == nullptr ? DepthMap() : *calculationData.DepthMap;
+	const ColorImage& colorImage = calculationData.Image == nullptr ? ColorImage() : *calculationData.Image;
 
+	FillDepthBufferFromDepthMap(depthMap);
 	DmUtils::FilterDepthMapByMaxDepth(_mapLength, _depthMapBuffer, _cutOffDepth);
+	FillColorBufferFromImage(colorImage);
 
 	if (_needToUpdateMeasurementVolume)
 	{
@@ -172,83 +186,40 @@ ObjDimDescription* DepthMapProcessor::CalculateObjectVolume(const DepthMap& dept
 		_needToUpdateMeasurementVolume = false;
 	}
 
-	const std::vector<DepthValue> worldDepthValues = GetWorldDepthValuesFromDepthMap();
+	const std::vector<DepthValue> worldDepthValues = CalculationUtils::GetWorldDepthValuesFromDepthMap(_mapWidth, _mapHeight, _depthMapBuffer, _depthIntrinsics);
 	DmUtils::FilterDepthMapByMeasurementVolume(_depthMapBuffer, worldDepthValues, _measurementVolume);
 
-	const Contour& objectContour = GetTargetContourFromDepthMap(saveDebugData);
+	const Contour& depthObjectContour = GetTargetContourFromDepthMap(calculationData.SaveDebugData);
+	const Contour& colorObjectContour = calculationData.SelectedAlgorithm == 2 ? 
+		GetTargetContourFromColorImage(calculationData.SaveDebugData, calculationData.CalculationNumber) : Contour();
 
-	_result = CalculateContourDimensions(objectContour, measuredDistance, applyPerspective, saveDebugData, measurementNumber);
+	const short topPlaneDepth = GetTopPlaneDepth(depthObjectContour, calculationData);
 
-	if (maskMode)
-	{
-		srand((uint)time(NULL));
+	const TwoDimDescription& object2DSize = Calculate2DContourDimensions(depthObjectContour, colorObjectContour, calculationData, topPlaneDepth);
 
-		int r0 = rand() % 100;
+	auto result = new VolumeCalculationResult();
+	result->LengthMm = object2DSize.Length;
+	result->WidthMm = object2DSize.Width;
+	result->HeightMm = _floorDepth - topPlaneDepth;
+	result->VolumeCmCb = (double)result->LengthMm * (double)result->WidthMm * (double)result->HeightMm / 1000.0;
 
-		if (r0 > 50)
-			memset(&_result, 0, sizeof(ObjDimDescription));
-		else
-		{
-			double r1 = (double)(rand() % 100) / 100.0;
-			double r2 = (double)(rand() % 100) / 100.0;
-			double r3 = (double)(rand() % 100) / 100.0;
-			_result.Length *= r1;
-			_result.Width *= r2;
-			_result.Height *= r3;
-		}
+	if (calculationData.MaskMode)
+		Tamper(result);
 
-		if (r0 > 93)
-		{
-			int* ok = nullptr;
-			int okVal = *ok;
-		}
-	}
+	std::ofstream myFile;
+	myFile.open("debug.txt", std::ios::app);
 
-	return &_result;
+	myFile << result->LengthMm << " " << result->WidthMm << " " << result->HeightMm << std::endl;
+
+	myFile.close();
+
+	return result;
 }
 
-ObjDimDescription* DepthMapProcessor::CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image, 
-	const long measuredDistance, const bool applyPerspective, const bool saveDebugData, bool maskMode, int measurementNumber)
+const short DepthMapProcessor::GetTopPlaneDepth(const Contour& depthObjectContour, const VolumeCalculationData& calculationData)
 {
-	FillDepthBufferFromDepthMap(depthMap);
-	FillColorBufferFromImage(image);
-
-	DmUtils::FilterDepthMapByMaxDepth(_mapLength, _depthMapBuffer, _cutOffDepth);
-
-	if (_needToUpdateMeasurementVolume)
-	{
-		UpdateMeasurementVolume(depthMap.Width, depthMap.Height);
-		_needToUpdateMeasurementVolume = false;
-	}
-
-	const std::vector<DepthValue> worldDepthValues = GetWorldDepthValuesFromDepthMap();
-	DmUtils::FilterDepthMapByMeasurementVolume(_depthMapBuffer, worldDepthValues, _measurementVolume);
-
-	const Contour& depthObjectContour = GetTargetContourFromDepthMap(saveDebugData);
-	const Contour& colorObjectContour = GetTargetContourFromColorImage(saveDebugData, measurementNumber);
-
-	_result = CalculateContourDimensionsAlt(depthObjectContour, colorObjectContour, measuredDistance, applyPerspective, saveDebugData,
-		measurementNumber);
-
-	if (maskMode)
-	{
-		srand((uint)time(NULL));
-
-		int r0 = rand() % 100;
-		if (r0 < 30)
-			memset(&_result, 1, sizeof(ObjDimDescription));
-		else
-		{
-			double r1 = (double)(rand() % 100) / 100.0;
-			double r2 = (double)(rand() % 100) / 100.0;
-			double r3 = (double)(rand() % 100) / 100.0;
-			_result.Length *= r1;
-			_result.Width *= r2;
-			_result.Height *= r3;
-		}
-	}
-
-	return &_result;
+	const short measuredDistanceShort = calculationData.RangeMeterDistance > SHRT_MAX ? SHRT_MAX : calculationData.RangeMeterDistance;
+	return measuredDistanceShort > 0 ? measuredDistanceShort : GetDepthContourPlanes(depthObjectContour).Top;
 }
 
 const short DepthMapProcessor::CalculateFloorDepth(const DepthMap& depthMap)
@@ -301,7 +272,6 @@ void DepthMapProcessor::FillDepthBufferFromDepthMap(const DepthMap& depthMap)
 		_depthMaskBuffer = new byte[_mapLength];
 	}
 
-	memset(&_result, 0, sizeof(ObjDimDescription));
 	memcpy(_depthMapBuffer, depthMap.Data, _mapLengthBytes);
 }
 
@@ -324,77 +294,61 @@ const Contour DepthMapProcessor::GetTargetContourFromColorImage(const bool saveD
 	return _contourExtractor.ExtractContourFromColorImage(inputRoi, saveDebugData, measurementNumber);
 }
 
-const ObjDimDescription DepthMapProcessor::CalculateContourDimensions(const Contour& depthObjectContour, const long measuredDistance, 
-	const bool applyPerspective, const bool saveDebugData, const int measurementNumber) const
+const TwoDimDescription DepthMapProcessor::Calculate2DContourDimensions(const Contour& depthObjectContour,
+	const Contour& colorObjectContour, const VolumeCalculationData& calculationData, const short contourTopPlaneDepth) const
 {
 	if (depthObjectContour.size() == 0)
-		return ObjDimDescription();
+		return TwoDimDescription();
 	
-	const short measuredDistanceShort = measuredDistance > SHRT_MAX ? SHRT_MAX : measuredDistance;
-	const short contourTopPlaneDepth = measuredDistanceShort > 0 ? measuredDistanceShort : GetDepthContourPlanes(depthObjectContour).Top;
+	const cv::RotatedRect& boundingRect = CalculateObjectBoundingRect(depthObjectContour, colorObjectContour,
+		calculationData, contourTopPlaneDepth);
 
-	const cv::RotatedRect& boundingRect = CalculateObjectBoundingRect(depthObjectContour, contourTopPlaneDepth, applyPerspective, saveDebugData, measurementNumber);
+	const CameraIntrinsics& selectedInstrinsics = calculationData.SelectedAlgorithm == 2 ? _colorIntrinsics : _depthIntrinsics;
 
-	const TwoDimDescription& twoDimDescription = GetTwoDimDescription(boundingRect, contourTopPlaneDepth,
-		_depthIntrinsics.FocalLengthX, _depthIntrinsics.FocalLengthY,
-		_depthIntrinsics.PrincipalPointX, _depthIntrinsics.PrincipalPointY);
+	const TwoDimDescription& twoDimDescription = GetTwoDimDescription(boundingRect, selectedInstrinsics, contourTopPlaneDepth);
 
-	ObjDimDescription result;
+	TwoDimDescription result;
 	result.Length = twoDimDescription.Length;
 	result.Width = twoDimDescription.Width;
-	result.Height = _floorDepth - contourTopPlaneDepth;
 
 	return result;
 }
 
-const cv::RotatedRect DepthMapProcessor::CalculateObjectBoundingRect(const Contour& depthObjectContour, const short contourTopPlaneDepth, 
-	const bool applyPerspective, const bool saveDebugData, const int measurementNumber) const
+const cv::RotatedRect DepthMapProcessor::CalculateObjectBoundingRect(const Contour& depthObjectContour,
+	const Contour& colorObjectContour, const VolumeCalculationData& calculationData, const short contourTopPlaneDepth) const
 {
-	if (applyPerspective)
+	const int calculationNumber = calculationData.CalculationNumber;
+
+	switch (calculationData.SelectedAlgorithm)
 	{
-		const std::vector<DepthValue>& worldDepthValues = GetWorldDepthValues(depthObjectContour);
-		const Contour& perspectiveCorrectedContour = GetCameraPoints(worldDepthValues, contourTopPlaneDepth);
-		if (saveDebugData)
-			DmUtils::DrawTargetContour(perspectiveCorrectedContour, _mapWidth, _mapHeight, _debugPath, "ctr_depth", measurementNumber);
-		return cv::minAreaRect(perspectiveCorrectedContour);
-	}
-	else
+	case 0:
 	{
-		if (saveDebugData)
-			DmUtils::DrawTargetContour(depthObjectContour, _mapWidth, _mapHeight, _debugPath, "ctr_depth", measurementNumber);
+		if (calculationData.SaveDebugData)
+			DmUtils::DrawTargetContour(depthObjectContour, _mapWidth, _mapHeight, _debugPath, "ctr_depth", calculationNumber);
+
 		return cv::minAreaRect(depthObjectContour);
 	}
-}
-
-const ObjDimDescription DepthMapProcessor::CalculateContourDimensionsAlt(const Contour& depthObjectContour,
-	const Contour& colorObjectContour, const long measuredDistance, const bool applyPerspective, const bool saveDebugData,
-	const int measurementNumber) const
-{
-	if (colorObjectContour.size() == 0)
-		return ObjDimDescription();
-
-	if (saveDebugData)
+	case 1:
 	{
-		DmUtils::DrawTargetContour(depthObjectContour, _mapWidth, _mapHeight, _debugPath, "ctr_depth", measurementNumber);
-		DmUtils::DrawTargetContour(colorObjectContour, _mapWidth, _mapHeight, _debugPath, "ctr_color", measurementNumber);
+		const std::vector<DepthValue>& worldDepthValues = CalculationUtils::GetWorldDepthValues(depthObjectContour, _depthMapBuffer, _mapWidth, _depthIntrinsics);
+		const Contour& perspectiveCorrectedContour = CalculationUtils::GetCameraPoints(worldDepthValues, contourTopPlaneDepth, _depthIntrinsics);
+
+		if (calculationData.SaveDebugData)
+			DmUtils::DrawTargetContour(perspectiveCorrectedContour, _mapWidth, _mapHeight, _debugPath, "ctr_depth", calculationNumber);
+
+		return cv::minAreaRect(perspectiveCorrectedContour);
 	}
+	case 2:
+	{
+		if (calculationData.SaveDebugData)
+		{
+			DmUtils::DrawTargetContour(depthObjectContour, _mapWidth, _mapHeight, _debugPath, "ctr_depth", calculationNumber);
+			DmUtils::DrawTargetContour(colorObjectContour, _mapWidth, _mapHeight, _debugPath, "ctr_color", calculationNumber);
+		}
 
-	const short measuredDistanceShort = measuredDistance > SHRT_MAX ? SHRT_MAX : measuredDistance;
-	const short topPlane = measuredDistanceShort > 0 ? measuredDistanceShort : GetDepthContourPlanes(depthObjectContour).Top;
-	const short contourTopPlaneDepth = topPlane > 0 ? topPlane : (_floorDepth - _minObjHeight);
-	
-	const cv::RotatedRect& colorObjectBoundingRect = cv::minAreaRect(colorObjectContour);
-
-	const TwoDimDescription& twoDimDescription = GetTwoDimDescription(colorObjectBoundingRect, contourTopPlaneDepth,
-		_colorIntrinsics.FocalLengthX, _colorIntrinsics.FocalLengthY, 
-		_colorIntrinsics.PrincipalPointX, _colorIntrinsics.PrincipalPointY);
-
-	ObjDimDescription result;
-	result.Length = twoDimDescription.Length;
-	result.Width = twoDimDescription.Width;
-	result.Height = _floorDepth - contourTopPlaneDepth;
-
-	return result;
+		return cv::minAreaRect(colorObjectContour);
+	}
+	}
 }
 
 const ContourPlanes DepthMapProcessor::GetDepthContourPlanes(const Contour& depthObjectContour) const
@@ -434,8 +388,13 @@ const ContourPlanes DepthMapProcessor::GetDepthContourPlanes(const Contour& dept
 }
 
 const TwoDimDescription DepthMapProcessor::GetTwoDimDescription(const cv::RotatedRect& contourBoundingRect, 
-	const short contourTopPlaneDepth, const float fx, const float fy, const float ppx, const float ppy) const
+	const CameraIntrinsics& intrinsics, const short contourTopPlaneDepth) const
 {
+	const float fx = intrinsics.FocalLengthX;
+	const float fy = intrinsics.FocalLengthY;
+	const float ppx = intrinsics.PrincipalPointX;
+	const float ppy = intrinsics.PrincipalPointY;
+
 	cv::Point2f points[4];
 	contourBoundingRect.points(points);
 
@@ -455,133 +414,6 @@ const TwoDimDescription DepthMapProcessor::GetTwoDimDescription(const cv::Rotate
 	twoDimDescription.Width = objectWidth < objectHeight ? objectWidth : objectHeight;
 
 	return twoDimDescription;
-}
-
-const std::vector<DepthValue> DepthMapProcessor::GetWorldDepthValues(const Contour& objectContour) const
-{
-	const double PI = 3.14159265359;
-
-	std::vector<DepthValue> depthValues;
-	depthValues.reserve(objectContour.size());
-
-	const cv::Moments& m = cv::moments(objectContour);
-	const int cx = (int)(m.m10 / m.m00);
-	const int cy = (int)(m.m01 / m.m00);
-
-	for (int i = 0; i < objectContour.size(); i++)
-	{
-		const int contourPointX = objectContour[i].x;
-		const int contourPointY = objectContour[i].y;
-
-		const int deltaX = contourPointX - cx;
-		const int deltaY = contourPointY - cy;
-
-		const double pointAngle = atan2(-deltaY, deltaX) * 180 / PI;
-
-		int offsetX = 0;
-		int offsetY = 0;
-
-		if (pointAngle >= -20 && pointAngle < 20)
-		{
-			offsetX = -1;
-			offsetY = 0;
-		} 
-		else if (pointAngle >= 20 && pointAngle < 70)
-		{
-			offsetX = -1;
-			offsetY = -1;
-		}
-		else if (pointAngle >= 70 && pointAngle < 110)
-		{
-			offsetX = 0;
-			offsetY = 1;
-		}
-		else if (pointAngle >= 110 && pointAngle <= 160)
-		{
-			offsetX = 1;
-			offsetY = 1;
-		}
-		else if (pointAngle < -20 && pointAngle >= -70)
-		{
-			offsetX = -1;
-			offsetY = 0;
-		}
-		else if (pointAngle < -70 && pointAngle >= 110)
-		{
-			offsetX = 1;
-			offsetY = -1;
-		}
-		else if (pointAngle < 110 && pointAngle >= -160)
-		{
-			offsetX = 0;
-			offsetY = -1;
-		}
-		else // [160,180] || [-160, -180]
-		{
-			offsetX = 1;
-			offsetY = 0;
-		}
-
-		const int depthBufferIndex = contourPointY * _mapWidth + contourPointX;
-		const short pointDepth = _depthMapBuffer[depthBufferIndex];
-
-		std::vector<short> borderDepthValues;
-		int tempX = contourPointX;
-		int tempY = contourPointY;
-
-		for (int j = 0; j < 5; j++)
-		{
-			tempX += offsetX;
-			tempY += offsetY;
-
-			const int offsetIndex = tempY * _mapWidth + tempX;
-			const short offsetDepthValue = _depthMapBuffer[offsetIndex];
-			if (offsetDepthValue < pointDepth)
-				borderDepthValues.emplace_back(offsetDepthValue);
-		}
-
-		int elementSum = 0;
-		const uint borderValuesCount = (const uint)borderDepthValues.size();
-		for (uint j = 0; j < borderValuesCount; j++)
-			elementSum += borderDepthValues[j];
-		elementSum = borderValuesCount > 0 ? elementSum / borderValuesCount : 0;
-
-		const short contourModeValue = elementSum > 0 ? elementSum : pointDepth;
-
-		const int xWorld = (int)((contourPointX + 1 - _depthIntrinsics.PrincipalPointX) * contourModeValue / _depthIntrinsics.FocalLengthX);
-		const int yWorld = (int)(-(contourPointY + 1 - _depthIntrinsics.PrincipalPointY) * contourModeValue / _depthIntrinsics.FocalLengthY);
-
-		DepthValue depthValue;
-		depthValue.XWorld = xWorld;
-		depthValue.YWorld = yWorld;
-		depthValue.Value = contourModeValue;
-
-		depthValues.emplace_back(depthValue);
-	}
-
-	return depthValues;
-}
-
-const std::vector<cv::Point> DepthMapProcessor::GetCameraPoints(const std::vector<DepthValue>& depthValues, const short targetDepth) const
-{
-	std::vector<cv::Point> cameraPoints;
-	cameraPoints.reserve(depthValues.size());
-
-	for (int i = 0; i < depthValues.size(); i++)
-	{
-		const int xWorld = depthValues[i].XWorld;
-		const int yWorld = depthValues[i].YWorld;
-
-		const int contourPointX = (int)(xWorld * _depthIntrinsics.FocalLengthX / targetDepth + _depthIntrinsics.PrincipalPointX - 1);
-		const int contourPointY = (int)(-(yWorld * _depthIntrinsics.FocalLengthY / targetDepth) + _depthIntrinsics.PrincipalPointY - 1);
-
-		cv::Point cameraPoint;
-		cameraPoint.x = contourPointX;
-		cameraPoint.y = contourPointY;
-		cameraPoints.emplace_back(cameraPoint);
-	}
-
-	return cameraPoints;
 }
 
 const bool DepthMapProcessor::IsObjectInZone(const std::vector<DepthValue>& contour) const
@@ -615,25 +447,28 @@ void DepthMapProcessor::UpdateMeasurementVolume(const int mapWidth, const int ma
 	const int height = abs(_measurementVolume.Points[0].y - _measurementVolume.Points[1].y);
 }
 
-const std::vector<DepthValue> DepthMapProcessor::GetWorldDepthValuesFromDepthMap()
+void DepthMapProcessor::Tamper(VolumeCalculationResult* result) const
 {
-	std::vector<DepthValue> depthValues;
+	srand((uint)time(NULL));
 
-	for (int j = 0; j < _mapHeight; j++)
+	int r0 = rand() % 100;
+
+	if (r0 > 50)
+		memset(result, 0, sizeof(VolumeCalculationResult));
+	else
 	{
-		for (int i = 0; i < _mapWidth; i++)
-		{
-			const short depth = _depthMapBuffer[j*_mapWidth + i];
-			const int xWorld = (int)((i + 1 - _depthIntrinsics.PrincipalPointX) * depth / _depthIntrinsics.FocalLengthX);
-			const int yWorld = (int)(-(j + 1 - _depthIntrinsics.PrincipalPointY) * depth / _depthIntrinsics.FocalLengthY);
-
-			DepthValue depthValue;
-			depthValue.Value = depth;
-			depthValue.XWorld = xWorld;
-			depthValue.YWorld = yWorld;
-			depthValues.emplace_back(depthValue);
-		}
+		double r1 = (double)(rand() % 100) / 100.0;
+		double r2 = (double)(rand() % 100) / 100.0;
+		double r3 = (double)(rand() % 100) / 100.0;
+		result->LengthMm *= r1;
+		result->WidthMm *= r2;
+		result->HeightMm *= r3;
+		result->VolumeCmCb = r1 + 125.5873 - sqrt(r2) * pow(r3, 3);
 	}
 
-	return depthValues;
+	if (r0 > 93)
+	{
+		int* ok = nullptr;
+		int okVal = *ok;
+	}
 }

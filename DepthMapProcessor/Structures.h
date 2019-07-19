@@ -6,11 +6,12 @@
 typedef unsigned char byte;
 typedef unsigned int uint;
 
-struct ObjDimDescription
+struct VolumeCalculationResult
 {
-	int Length;
-	int Width;
-	int Height;
+	int LengthMm;
+	int WidthMm;
+	int HeightMm;
+	double VolumeCmCb;
 };
 
 struct TwoDimDescription
@@ -63,7 +64,7 @@ struct RotRelRect
 	float AngleDeg;
 };
 
-struct ColorCameraIntristics
+struct CameraIntrinsics
 {
 	float FovX;
 	float FovY;
@@ -71,18 +72,6 @@ struct ColorCameraIntristics
 	float FocalLengthY;
 	float PrincipalPointX;
 	float PrincipalPointY;
-};
-
-struct DepthCameraIntristics
-{
-	float FovX;
-	float FovY;
-	float FocalLengthX;
-	float FocalLengthY;
-	float PrincipalPointX;
-	float PrincipalPointY;
-	short MinDepth;
-	short MaxDepth;
 };
 
 struct ColorImage
@@ -124,4 +113,15 @@ struct ContourPlanes
 {
 	short Top;
 	short Bottom;
+};
+
+struct VolumeCalculationData
+{
+	DepthMap* DepthMap;
+	ColorImage* Image;
+	int SelectedAlgorithm;
+	long long RangeMeterDistance;
+	bool SaveDebugData;
+	int CalculationNumber;
+	bool MaskMode;
 };

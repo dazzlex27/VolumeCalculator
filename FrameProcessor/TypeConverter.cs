@@ -5,12 +5,12 @@ namespace FrameProcessor
 {
 	internal static class TypeConverter
 	{
-		public static ColorCameraIntrinsics ColorParamsToIntrinsics(ColorCameraParams colorCameraParams)
+		public static CameraIntrinsics ColorParamsToIntrinsics(ColorCameraParams colorCameraParams)
 		{
 			if (colorCameraParams == null)
-				return new ColorCameraIntrinsics();
+				return new CameraIntrinsics();
 
-			return new ColorCameraIntrinsics
+			return new CameraIntrinsics
 			{
 				FovX = colorCameraParams.FovX,
 				FovY = colorCameraParams.FovY,
@@ -21,21 +21,19 @@ namespace FrameProcessor
 			};
 		}
 
-		public static DepthCameraIntrinsics DepthParamsToIntrinsics(DepthCameraParams depthCameraParams)
+		public static CameraIntrinsics DepthParamsToIntrinsics(DepthCameraParams depthCameraParams)
 		{
 			if (depthCameraParams == null)
-				return new DepthCameraIntrinsics();
+				return new CameraIntrinsics();
 
-			return new DepthCameraIntrinsics
+			return new CameraIntrinsics
 			{
 				FovX = depthCameraParams.FovX,
 				FovY = depthCameraParams.FovY,
 				FocalLengthX = depthCameraParams.FocalLengthX,
 				FocalLengthY = depthCameraParams.FocalLengthY,
 				PrincipalPointX = depthCameraParams.PrincipalPointX,
-				PrincipalPointY = depthCameraParams.PrincipalPointY,
-				MinDepth = depthCameraParams.MinDepth,
-				MaxDepth = depthCameraParams.MaxDepth
+				PrincipalPointY = depthCameraParams.PrincipalPointY
 			};
 		}
 	}

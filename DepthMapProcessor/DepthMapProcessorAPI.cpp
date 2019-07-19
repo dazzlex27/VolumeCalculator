@@ -1,90 +1,74 @@
 #include "DepthMapProcessorAPI.h"
 #include "DepthMapProcessor.h"
+#include <fstream>
 
-DLL_EXPORT void* CreateDepthMapProcessor(ColorCameraIntristics colorIntrinsics, DepthCameraIntristics depthIntrinsics)
+DepthMapProcessor* Processor;
+
+DLL_EXPORT void CreateDepthMapProcessor(CameraIntrinsics colorIntrinsics, CameraIntrinsics depthIntrinsics)
 {
-	return new DepthMapProcessor(colorIntrinsics, depthIntrinsics);
+	std::ofstream myFile;
+	myFile.open("debug.txt");
+
+	myFile << std::endl;
+
+	myFile.close();
+
+	Processor = new DepthMapProcessor(colorIntrinsics, depthIntrinsics);
 }
 
-DLL_EXPORT void SetAlgorithmSettings(void* handle, short floorDepth, short cutOffDepth, RelPoint* polygonPoints, int polygonPointCount, 
+DLL_EXPORT void SetAlgorithmSettings(short floorDepth, short cutOffDepth, RelPoint* polygonPoints, int polygonPointCount, 
 	RelRect colorRoiRect)
 {
-	auto processor = (DepthMapProcessor*)handle;
-	if (processor == nullptr)
-		return;
-
-	processor->SetAlgorithmSettings(floorDepth, cutOffDepth, polygonPoints, polygonPointCount, colorRoiRect);
+	Processor->SetAlgorithmSettings(floorDepth, cutOffDepth, polygonPoints, polygonPointCount, colorRoiRect);
 }
 
-DLL_EXPORT void SetDebugPath(void* handle, const char* path)
+DLL_EXPORT void SetDebugPath(const char* path)
 {
-	auto processor = (DepthMapProcessor*)handle;
-	if (processor == nullptr)
-		return;
-
-	processor->SetDebugPath(path);
+	Processor->SetDebugPath(path);
 }
 
-DLL_EXPORT ObjDimDescription* CalculateObjectVolume(void* handle, DepthMap depthMap, long measuredDistance, bool applyPerspective, 
-	bool saveDebugData, bool maskMode, int measurementNumber)
+DLL_EXPORT VolumeCalculationResult* CalculateObjectVolume(VolumeCalculationData calculationData)
 {
-	auto processor = (DepthMapProcessor*)handle;
-	if (processor == nullptr)
-		return nullptr;
+	VolumeCalculationResult* volume = Processor->CalculateObjectVolume(calculationData);
+	   
+	std::ofstream myFile;
+	myFile.open("debug.txt", std::ios::app);
 
-	if (depthMap.Data == nullptr)
-		return nullptr;
+	myFile << volume->LengthMm << " " << volume->WidthMm << " " << volume->HeightMm << std::endl;
 
-	return processor->CalculateObjectVolume(depthMap, measuredDistance, applyPerspective, saveDebugData, maskMode, measurementNumber);
+	myFile.close();
+
+	return volume;
 }
 
-DLL_EXPORT ObjDimDescription* CalculateObjectVolumeAlt(void* handle, DepthMap depthMap, ColorImage image, long measuredDistance,
-	bool applyPerspective, bool saveDebugData, bool maskMode, int measurementNumber)
+void DisposeCalculationResult(VolumeCalculationResult* result)
 {
-	auto processor = (DepthMapProcessor*)handle;
-	if (processor == nullptr)
-		return nullptr;
-
-	if (image.Data == nullptr)
-		return nullptr;
-
-	if (depthMap.Data == nullptr)
-		return nullptr;
-
-	return processor->CalculateObjectVolumeAlt(depthMap, image, measuredDistance, applyPerspective, saveDebugData, maskMode, measurementNumber);
+	if (result)
+	{
+		delete result;
+		result = 0;
+	}
 }
 
-DLL_EXPORT short CalculateFloorDepth(void* handle, DepthMap depthMap)
+DLL_EXPORT short CalculateFloorDepth(DepthMap depthMap)
 {
-	auto processor = (DepthMapProcessor*)handle;
-	if (processor == nullptr)
-		return -1;
-
 	if (depthMap.Data == nullptr)
 		return -1;
 
-	return processor->CalculateFloorDepth(depthMap);
+	return Processor->CalculateFloorDepth(depthMap);
 }
 
-DLL_EXPORT int SelectAlgorithm(void* handle, DepthMap depthMap, ColorImage colorImage, const long measuredDistance,
+DLL_EXPORT int SelectAlgorithm(DepthMap depthMap, ColorImage colorImage, const long measuredDistance,
 	bool dm1Enabled, bool dm2Enabled, bool rgbEnabled)
 {
-	auto processor = (DepthMapProcessor*)handle;
-	if (processor == nullptr)
-		return -1;
-
 	if (depthMap.Data == nullptr)
 		return -1;
 
-	return processor->SelectAlgorithm(depthMap, colorImage, measuredDistance, dm1Enabled, dm2Enabled, rgbEnabled);
+	return Processor->SelectAlgorithm(depthMap, colorImage, measuredDistance, dm1Enabled, dm2Enabled, rgbEnabled);
 }
 
-DLL_EXPORT void DestroyDepthMapProcessor(void* handle)
+DLL_EXPORT void DestroyDepthMapProcessor()
 {
-	auto processor = (DepthMapProcessor*)handle;
-	if (processor == nullptr)
-		return;
-
-	delete processor;
-	processor = nullptr;
+	delete Processor;
+	Processor = nullptr;
 }

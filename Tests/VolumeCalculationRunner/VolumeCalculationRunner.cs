@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using FrameProcessor;
 using FrameProviders;
-using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 
@@ -95,14 +94,13 @@ namespace VolumeCalculationRunner
 
 			foreach (var map in testCaseData.DepthMaps)
 			{
-				var objectDimData = processor.CalculateVolumeDepth(map, 0, false, false, false, 0);
-				var result = new ObjectVolumeData(objectDimData.Length, objectDimData.Width, objectDimData.Height);
-				results.Add(result);
+				var objectDimData = processor.CalculateVolume(map, null, 0, 0, false, false, 0);
+				results.Add(objectDimData);
 			}
 
-			var lengths = results.Select(r => r.Length).ToArray();
-			var widths = results.Select(r => r.Width).ToArray();
-			var heights = results.Select(r => r.Height).ToArray();
+			var lengths = results.Select(r => r.LengthMm).ToArray();
+			var widths = results.Select(r => r.WidthMm).ToArray();
+			var heights = results.Select(r => r.HeightMm).ToArray();
 
 			var modeLength = lengths.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key;
 			var modeWidth = widths.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key;

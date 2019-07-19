@@ -26,7 +26,6 @@ namespace VolumeCalculatorGUI.Utils
 		private readonly List<ObjectVolumeData> _results;
 
 		private long _measuredDistance;
-		private bool _applyPerspective;
 		private bool _useColorData;
 
 		private bool _colorFrameReady;
@@ -58,7 +57,6 @@ namespace VolumeCalculatorGUI.Utils
 
 			_maskMode = maskMode;
 
-			_applyPerspective = false;
 			_useColorData = true;
 
 			_results = new List<ObjectVolumeData>();
@@ -89,7 +87,7 @@ namespace VolumeCalculatorGUI.Utils
 		private void AbortInternal(CalculationStatus status)
 		{
 			CleanUp();
-			CalculationFinished?.Invoke(new ObjectVolumeData(0, 0, 0), status, _latestColorFrame);
+			CalculationFinished?.Invoke(new ObjectVolumeData(0, 0, 0, 0), status, _latestColorFrame);
 		}
 
 		private void AdvanceCalculation(DepthMap depthMap, ImageData image)
@@ -110,7 +108,8 @@ namespace VolumeCalculatorGUI.Utils
 				SaveDebugData();
 			}
 
-			var currentResult = CalculateVolume(depthMap, image, _measuredDistance, _applyPerspective, !HasCompletedFirstRun, _measurementNumber);
+			var currentResult = _processor.CalculateVolume(depthMap, image, _measuredDistance, (int)_selectedAlgorithm, 
+				!HasCompletedFirstRun, _maskMode, _measurementNumber);
 
 			_results.Add(currentResult);
 			_samplesLeft--;
@@ -135,9 +134,9 @@ namespace VolumeCalculatorGUI.Utils
 
 		private void SelectAlgorithm()
 		{
-			var dm1Enabled = _settings.AlgorithmSettings.EnableDmAlgorithm;
-			var dm2Enabled = _settings.AlgorithmSettings.EnablePerspectiveDmAlgorithm;
-			var rgbEnabled = _settings.AlgorithmSettings.EnableRgbAlgorithm;
+			var dm1Enabled = _settings.AlgorithmSettings.EnableDmAlgorithm && _settings.AlgorithmSettings.UseDepthMask;
+			var dm2Enabled = _settings.AlgorithmSettings.EnablePerspectiveDmAlgorithm && _settings.AlgorithmSettings.UseDepthMask;
+			var rgbEnabled = _settings.AlgorithmSettings.EnableRgbAlgorithm && _settings.AlgorithmSettings.UseColorMask;
 
 			_selectedAlgorithm = _processor.SelectAlgorithm(_latestDepthMap, _latestColorFrame, _measuredDistance,
 				dm1Enabled, dm2Enabled, rgbEnabled);
@@ -155,17 +154,14 @@ namespace VolumeCalculatorGUI.Utils
 					break;
 				case AlgorithmSelectionResult.Dm:
 					_useColorData = false;
-					_applyPerspective = false;
 					_logger.LogInfo("Selected algorithm: dm1");
 					break;
 				case AlgorithmSelectionResult.DmPersp:
 					_useColorData = false;
-					_applyPerspective = true;
 					_logger.LogInfo("Selected algorithm: dm2");
 					break;
 				case AlgorithmSelectionResult.Rgb:
 					_useColorData = true;
-					_applyPerspective = false;
 					_logger.LogInfo("Selected algorithm: rgb");
 					break;
 			}
@@ -207,27 +203,25 @@ namespace VolumeCalculatorGUI.Utils
 			AdvanceCalculation(_latestDepthMap, _latestColorFrame);
 		}
 
-		private ObjectVolumeData CalculateVolume(DepthMap depthMap, ImageData image, long measuredDistance, bool applyPerspective,
-			bool needToSavePics, int measurementNumber)
-		{
-			return _useColorData
-				? _processor.CalculateObjectVolumeRgb(depthMap, image, measuredDistance, applyPerspective, needToSavePics, _maskMode, measurementNumber)
-				: _processor.CalculateVolumeDepth(depthMap, measuredDistance, applyPerspective, needToSavePics, _maskMode, measurementNumber);
-		}
-
 		private ObjectVolumeData AggregateCalculationsData()
 		{
 			try
 			{
-				var lengths = _results.Select(r => r.Length).ToArray();
-				var widths = _results.Select(r => r.Width).ToArray();
-				var heights = _results.Select(r => r.Height).ToArray();
+				var lengths = _results.Select(r => r.LengthMm).ToArray();
+				var widths = _results.Select(r => r.WidthMm).ToArray();
+				var heights = _results.Select(r => r.HeightMm).ToArray();
+
+				var joinedLengths = string.Join(",", lengths);
+				var joinedWidths = string.Join(",", widths);
+				var joinedHeights= string.Join(",", heights);
+				_logger.LogInfo($"!!!!: {joinedLengths}; {joinedWidths}; {joinedHeights}");
 
 				var modeLength = lengths.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key;
 				var modeWidth = widths.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key;
 				var modeHeight = heights.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key;
+				var volume = (double)modeLength * modeWidth * modeHeight / 1000;
 
-				return new ObjectVolumeData(modeLength, modeWidth, modeHeight);
+				return new ObjectVolumeData(modeLength, modeWidth, modeHeight, volume);
 			}
 			catch (Exception ex)
 			{

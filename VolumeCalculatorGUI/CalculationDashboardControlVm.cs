@@ -484,11 +484,9 @@ namespace VolumeCalculatorGUI
 		{
 			_logger.LogInfo("Calculation finished, processing results...");
 
-			var volumeCmCb = (result.Length * result.Height * result.Width) / 1000.0;
-
 			var weightUnits = _settings.AlgorithmSettings.SelectedWeightUnits;
 			var calculationResult = new CalculationResult(_calculationTime, _lastBarcode, _lastWeight, weightUnits, 
-				_lastUnitCount, result.Length, result.Width, result.Height, volumeCmCb, _lastComment);
+				_lastUnitCount, result.LengthMm, result.WidthMm, result.HeightMm, result.VolumeCmCb, _lastComment);
 			var calculationResultData = new CalculationResultData(calculationResult, status, objectPhoto);
 
 			ObjectCode = "";

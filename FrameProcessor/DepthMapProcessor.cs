@@ -11,10 +11,12 @@ namespace FrameProcessor
 	public class DepthMapProcessor : IDisposable
 	{
 		private readonly ILogger _logger;
-		private readonly IntPtr _nativeHandle;
+		private object _lock;
 
 		public DepthMapProcessor(ILogger logger, ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
 		{
+			_lock = new object();
+
 			_logger = logger;
 
 			_logger.LogInfo("Creating depth map processor...");
@@ -24,61 +26,67 @@ namespace FrameProcessor
 
 			unsafe
 			{
-				var ptr = DepthMapProcessorDll.CreateDepthMapProcessor(colorIntrinsics, depthIntrinsics);
-				_nativeHandle = new IntPtr(ptr);
+				DepthMapProcessorDll.CreateDepthMapProcessor(colorIntrinsics, depthIntrinsics);
 			}
 		}
 
-		public ObjectVolumeData CalculateVolumeDepth(DepthMap depthMap, long measuredDistance, bool applyPerspective, 
-			bool needToSaveDebugData, bool maskMode, int measurementNumber)
+		public ObjectVolumeData CalculateVolume(DepthMap depthMap, ImageData colorImage,
+			long measuredDistance, int selectedAlgorithm, bool needToSaveDebugData, bool maskMode, int measurementNumber)
 		{
-			unsafe
+			lock (_lock)
 			{
-				fixed (short* depthData = depthMap.Data)
+				unsafe
 				{
-					var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
-
-					var res = DepthMapProcessorDll.CalculateObjectVolume(_nativeHandle.ToPointer(), nativeDepthMap, measuredDistance,
-						applyPerspective, needToSaveDebugData, maskMode, measurementNumber);
-					return res == null ? null : new ObjectVolumeData(res->Length, res->Width, res->Height);
-				}
-			}
-		}
-
-		public ObjectVolumeData CalculateObjectVolumeRgb(DepthMap depthMap, ImageData colorFrame, long measuredDistance, 
-			bool applyPerspective, bool needToSaveDebugData, bool maskMode, int measurementNumber)
-		{
-			unsafe
-			{
-				fixed (short* depthData = depthMap.Data)
-				fixed (byte* colorData = colorFrame.Data)
-				{
-					var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
-
-					var nativeColorImage = new ColorImage
+					fixed (short* depthData = depthMap.Data)
+					fixed (byte* colorData = colorImage.Data)
 					{
-						Width = colorFrame.Width,
-						Height = colorFrame.Height,
-						Data = colorData,
-						BytesPerPixel = colorFrame.BytesPerPixel
-					};
+						var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
 
-					var res = DepthMapProcessorDll.CalculateObjectVolumeAlt(_nativeHandle.ToPointer(), nativeDepthMap, 
-						nativeColorImage, measuredDistance, applyPerspective, needToSaveDebugData, maskMode, measurementNumber);
-					return res == null ? null : new ObjectVolumeData(res->Length, res->Width, res->Height);
+						var nativeColorImage = new ColorImage
+						{
+							Width = colorImage.Width,
+							Height = colorImage.Height,
+							Data = colorData,
+							BytesPerPixel = colorImage.BytesPerPixel
+						};
+
+						var volumeCalculationData = new VolumeCalculationData()
+						{
+							DepthMap = &nativeDepthMap,
+							Image = &nativeColorImage,
+							CalculationNumber = measurementNumber,
+							MaskMode = maskMode,
+							SaveDebugData = needToSaveDebugData,
+							SelectedAlgorithm = selectedAlgorithm,
+							RangeMeterDistance = measuredDistance
+						};
+
+						var nativeResult = DepthMapProcessorDll.CalculateObjectVolume(volumeCalculationData);
+
+						_logger.LogInfo($"native: {nativeResult->LengthMm} {nativeResult->WidthMm} {nativeResult->HeightMm}");
+
+						var result = nativeResult == null ?
+							null : new ObjectVolumeData(nativeResult->LengthMm, nativeResult->WidthMm, nativeResult->HeightMm, nativeResult->VolumeCmCb);
+						DepthMapProcessorDll.DisposeCalculationResult(nativeResult);
+
+						return result;
+					}
 				}
 			}
 		}
 
 		public short CalculateFloorDepth(DepthMap depthMap)
 		{
-			unsafe
+			lock (_lock)
 			{
-				fixed (short* depthData = depthMap.Data)
+				unsafe
 				{
-					var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
+					fixed (short* depthData = depthMap.Data)
+					{
+						var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
 
-					return DepthMapProcessorDll.CalculateFloorDepth(_nativeHandle.ToPointer(), nativeDepthMap);
+						return DepthMapProcessorDll.CalculateFloorDepth(nativeDepthMap);
+					}
 				}
 			}
 		}
@@ -86,57 +94,63 @@ namespace FrameProcessor
 		public AlgorithmSelectionResult SelectAlgorithm(DepthMap depthMap, ImageData colorFrame, long measuredDistance,
 			bool dm1Enabled, bool dm2Enabled, bool rgbEnabled)
 		{
-			var dataIsInvalid = depthMap?.Data == null || colorFrame?.Data == null;
-			if (dataIsInvalid)
-				return AlgorithmSelectionResult.DataIsInvalid;
-
-			var atLeastOneModeIsAvailable = dm1Enabled || dm2Enabled || rgbEnabled;
-			if (!atLeastOneModeIsAvailable)
-				return AlgorithmSelectionResult.NoModesAreAvailable;
-
-			unsafe
+			lock (_lock)
 			{
-				fixed (short* depthData = depthMap.Data)
-				fixed (byte* colorData = colorFrame.Data)
+				var dataIsInvalid = depthMap?.Data == null || colorFrame?.Data == null;
+				if (dataIsInvalid)
+					return AlgorithmSelectionResult.DataIsInvalid;
+
+				var atLeastOneModeIsAvailable = dm1Enabled || dm2Enabled || rgbEnabled;
+				if (!atLeastOneModeIsAvailable)
+					return AlgorithmSelectionResult.NoModesAreAvailable;
+
+				unsafe
 				{
-					var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
-
-					var nativeColorImage = new ColorImage
+					fixed (short* depthData = depthMap.Data)
+					fixed (byte* colorData = colorFrame.Data)
 					{
-						Width = colorFrame.Width,
-						Height = colorFrame.Height,
-						Data = colorData,
-						BytesPerPixel = colorFrame.BytesPerPixel
-					};
+						var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
 
-					return (AlgorithmSelectionResult) DepthMapProcessorDll.SelectAlgorithm(_nativeHandle.ToPointer(),
-						nativeDepthMap, nativeColorImage, measuredDistance, dm1Enabled, dm2Enabled, rgbEnabled);
+						var nativeColorImage = new ColorImage
+						{
+							Width = colorFrame.Width,
+							Height = colorFrame.Height,
+							Data = colorData,
+							BytesPerPixel = colorFrame.BytesPerPixel
+						};
+
+						return (AlgorithmSelectionResult)DepthMapProcessorDll.SelectAlgorithm(
+							nativeDepthMap, nativeColorImage, measuredDistance, dm1Enabled, dm2Enabled, rgbEnabled);
+					}
 				}
 			}
 		}
 
 		public void SetProcessorSettings(ApplicationSettings settings)
 		{
-			var cutOffDepth = (short)(settings.AlgorithmSettings.FloorDepth - settings.AlgorithmSettings.MinObjectHeight);
-			var colorRoiRect = CreateColorRoiRectFromSettings(settings);
-
-			unsafe
+			lock (_lock)
 			{
-				var relPoints = new RelPoint[settings.AlgorithmSettings.DepthMaskContour.Count];
-				for (var i = 0; i < relPoints.Length; i++)
-				{
-					relPoints[i].X = (float)settings.AlgorithmSettings.DepthMaskContour[i].X;
-					relPoints[i].Y = (float)settings.AlgorithmSettings.DepthMaskContour[i].Y;
-				}
+				var cutOffDepth = (short)(settings.AlgorithmSettings.FloorDepth - settings.AlgorithmSettings.MinObjectHeight);
+				var colorRoiRect = CreateColorRoiRectFromSettings(settings);
 
-				fixed (RelPoint* points = relPoints)
+				unsafe
 				{
-					DepthMapProcessorDll.SetAlgorithmSettings(_nativeHandle.ToPointer(), settings.AlgorithmSettings.FloorDepth, cutOffDepth, 
-						points, relPoints.Length, colorRoiRect);
-				}
+					var relPoints = new RelPoint[settings.AlgorithmSettings.DepthMaskContour.Count];
+					for (var i = 0; i < relPoints.Length; i++)
+					{
+						relPoints[i].X = (float)settings.AlgorithmSettings.DepthMaskContour[i].X;
+						relPoints[i].Y = (float)settings.AlgorithmSettings.DepthMaskContour[i].Y;
+					}
 
-				var terminatedPath = settings.IoSettings.PhotosDirectoryPath + "\0";
-				DepthMapProcessorDll.SetDebugPath(_nativeHandle.ToPointer(), terminatedPath);
+					fixed (RelPoint* points = relPoints)
+					{
+						DepthMapProcessorDll.SetAlgorithmSettings(settings.AlgorithmSettings.FloorDepth, cutOffDepth,
+							points, relPoints.Length, colorRoiRect);
+					}
+
+					var terminatedPath = settings.IoSettings.PhotosDirectoryPath + "\0";
+					DepthMapProcessorDll.SetDebugPath(terminatedPath);
+				}
 			}
 		}
 
@@ -145,7 +159,7 @@ namespace FrameProcessor
 			_logger.LogInfo("Disposing depth map processor...");
 			unsafe
 			{
-				DepthMapProcessorDll.DestroyDepthMapProcessor(_nativeHandle.ToPointer());
+				DepthMapProcessorDll.DestroyDepthMapProcessor();
 			}
 		}
 

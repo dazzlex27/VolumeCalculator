@@ -90,18 +90,23 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CaalculationUtils.cpp" />
     <ClCompile Include="ContourExtractor.cpp" />
     <ClCompile Include="DmUtils.cpp" />
     <ClCompile Include="DepthMapProcessor.cpp" />
     <ClCompile Include="DepthMapProcessorAPI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CalculationUtils.h" />
     <ClInclude Include="ContourExtractor.h" />
     <ClInclude Include="DmUtils.h" />
     <ClInclude Include="OpenCVInclude.h" />
     <ClInclude Include="Structures.h" />
     <ClInclude Include="DepthMapProcessor.h" />
     <ClInclude Include="DepthMapProcessorAPI.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

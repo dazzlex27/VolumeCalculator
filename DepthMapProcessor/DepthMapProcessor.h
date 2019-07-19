@@ -7,8 +7,8 @@
 class DepthMapProcessor
 {
 private:
-	const ColorCameraIntristics _colorIntrinsics;
-	const DepthCameraIntristics _depthIntrinsics;
+	const CameraIntrinsics _colorIntrinsics;
+	const CameraIntrinsics _depthIntrinsics;
 
 	const short _minObjHeight = 3; // if no depth object is found, this value will be set for height
 	const short _maxObjHeightForRgb = 300; // 300 and shorter objects are ok for rgb calculation
@@ -31,7 +31,6 @@ private:
 
 	std::string _debugPath;
 
-	ObjDimDescription _result;
 	short* _depthMapBuffer;
 	byte* _depthMaskBuffer;
 	byte* _colorImageBuffer;
@@ -41,19 +40,16 @@ private:
 	bool _needToUpdateMeasurementVolume;
 
 public:
-	DepthMapProcessor(ColorCameraIntristics colorIntrinsics, DepthCameraIntristics depthIntrinsics);
+	DepthMapProcessor(CameraIntrinsics colorIntrinsics, CameraIntrinsics depthIntrinsics);
 	~DepthMapProcessor();
 
 	void SetAlgorithmSettings(const short floorDepth, const short cutOffDepth, 
 		const RelPoint* polygonPoints, const int polygonPointCount, const RelRect& roiRect);
 	void SetDebugPath(const char* path);
+
 	const int SelectAlgorithm(const DepthMap& depthMap, const ColorImage& colorImage, const long measuredDistance,
 		const bool dm1Enabled, const bool dm2Enabled, const bool rgbEnabled);
-
-	ObjDimDescription* CalculateObjectVolume(const DepthMap& depthMap, const long distance, const bool applyPerspective, 
-		const bool saveDebugData, bool maskMode, int measurementNumber);
-	ObjDimDescription* CalculateObjectVolumeAlt(const DepthMap& depthMap, const ColorImage& image, const long distance, 
-		const bool applyPerspective, const bool saveDebugData, bool maskMode, int measurementNumber);
+	VolumeCalculationResult* CalculateObjectVolume(const VolumeCalculationData& calculationData);
 	const short CalculateFloorDepth(const DepthMap& depthMap);
 
 private:
@@ -61,19 +57,16 @@ private:
 	void FillDepthBufferFromDepthMap(const DepthMap& depthMap);
 	const Contour GetTargetContourFromDepthMap(const bool saveDebugData) const;
 	const Contour GetTargetContourFromColorImage(const bool saveDebugData, const int measurementNumber) const;
-	const ObjDimDescription CalculateContourDimensions(const Contour& contour, const long distance, const bool applyPerspective, 
-		const bool saveDebugData, const int measurementNumber) const;
-	const cv::RotatedRect CalculateObjectBoundingRect(const Contour& depthObjectContour, const short contourTopPlaneDepth,
-		const bool applyPerspective, const bool saveDebugData, const int measurementNumber) const;
-	const ObjDimDescription CalculateContourDimensionsAlt(const Contour& objectContour, const Contour& colorObjectContour,
-		const long distance, const bool applyPerspective, const bool saveDebugData, const int measurementNumber) const;
+	const TwoDimDescription Calculate2DContourDimensions(const Contour& depthObjectContour,
+		const Contour& colorObjectContour, const VolumeCalculationData& calculationData, const short contourTopPlaneDepth) const;
+	const cv::RotatedRect CalculateObjectBoundingRect(const Contour& depthObjectContour, const Contour& colorObjectContour,
+		const VolumeCalculationData& calculationData, const short contourTopPlaneDepth) const;
 	const ContourPlanes GetDepthContourPlanes(const Contour& contour) const;
 	const TwoDimDescription GetTwoDimDescription(const cv::RotatedRect& contourBoundingRect,
-		const short contourTopPlaneDepth, const float fx, const float fy, const float ppx, const float ppy) const;
-	const std::vector<DepthValue> GetWorldDepthValues(const Contour& objectContour) const;
-	const std::vector<cv::Point> GetCameraPoints(const std::vector<DepthValue>& depthValues, const short targetDepth) const;
+		const CameraIntrinsics& intristics, const short contourTopPlaneDepth) const;
 	const bool IsObjectInZone(const std::vector<DepthValue>& contour) const;
 	void UpdateMeasurementVolume(const int mapWidth, const int mapHeight);
-	bool IsPointInsidePolygon(const std::vector<cv::Point>& polygon, int x, int y);
-	const std::vector<DepthValue> GetWorldDepthValuesFromDepthMap();
+
+	const short GetTopPlaneDepth(const Contour& depthObjectContour, const VolumeCalculationData& calculationData);
+	void Tamper(VolumeCalculationResult* result) const;
 };
