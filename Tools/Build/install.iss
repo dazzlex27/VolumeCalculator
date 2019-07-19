@@ -1,6 +1,6 @@
 #define private VendorName "IS"
 #define private ApplicationName "VolumeCalculator"
-#define private ApplicationVersion "1.49"
+#define private ApplicationVersion "1.50"
 #define private BinPath "..\..\!!bin\"
 #define private SourcePath = BinPath + "x64\Release\"
 #define private RootPath = "..\..\"

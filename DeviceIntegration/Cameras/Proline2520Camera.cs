@@ -12,8 +12,7 @@ namespace DeviceIntegration.Cameras
 		private readonly ILogger _logger;
 		private readonly IpCameraSettings _settings;
 		private readonly Proline2520Controller _controller;
-
-		public bool Initialized { get; private set; }
+		private bool _initialized;
 
 		public Proline2520Camera(ILogger logger, HttpClient httpClient, IpCameraSettings settings)
 		{
@@ -24,33 +23,38 @@ namespace DeviceIntegration.Cameras
 			_controller = new Proline2520Controller(logger, httpClient);
 		}
 
+		public bool Initialized()
+		{
+			return _initialized;
+		}
+
 		public async Task<bool> ConnectAsync()
 		{
-			if (Initialized)
+			if (_initialized)
 				return true;
 
 			try
 			{
 				_logger.LogInfo($"Connecting to Proline2520 camera on address {_settings.Ip}... ");
 
-				await _controller.ConnectAsync($"{ _settings.Ip}", _settings.Login, _settings.Password);
+				await _controller.ConnectAsync( _settings.Ip, _settings.Login, _settings.Password);
 
 				_logger.LogInfo($"Connected to Proline2520 camera on address {_settings.Ip} ");
-				Initialized = true;
+				_initialized = true;
 			}
 			catch (Exception ex)
 			{
 				_logger.LogException($"Failed to connect to Proline2520 camera on address {_settings.Ip} ", ex);
-				Initialized = false;
+				_initialized = false;
 			}
 
-			return Initialized;
+			return _initialized;
 		}
 
 		public async Task<bool> DisconnectAsync()
 		{
 			_logger.LogInfo($"Disconnecting from Proline2520 camera on address {_settings.Ip}... ");
-			Initialized = false;
+			_initialized = false;
 			return true;
 		}
 

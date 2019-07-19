@@ -78,9 +78,26 @@ namespace VolumeCalculatorGUI.Utils
 			{
 				logger.LogInfo($"Creating IP camera \"{cameraSettings.CameraName}\"");
 				ipCamera = DeviceIntegrationCommon.CreateRequestedIpCamera(cameraSettings, httpClient, logger);
-				var connected = ipCamera.ConnectAsync().Result;
-				if (connected)
-					Task.Run(() => ipCamera.GoToPresetAsync(settings.IpCameraSettings.ActivePreset));
+
+				var cameraFailed = false;
+				Exception cameraEx = null;
+
+				Task.Run(async () =>
+				{
+					try
+					{
+						var connected = await ipCamera.ConnectAsync();
+						await ipCamera.GoToPresetAsync(settings.IpCameraSettings.ActivePreset);
+					}
+					catch (Exception ex)
+					{
+						cameraFailed = true;
+						cameraEx = ex;
+					}
+				});
+
+				if (cameraFailed)
+					throw cameraEx;
 			}
 
 			return new DeviceSet(frameProvider, scales, barcodeScanners, ioCircuit, rangeMeter, ipCamera);

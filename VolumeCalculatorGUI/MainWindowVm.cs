@@ -127,7 +127,6 @@ namespace VolumeCalculatorGUI
 				OpenStatusCommand = new CommandHandler(OpenStatusWindow, true);
 				OpenConfiguratorCommand = new CommandHandler(OpenConfigurator, true);
 				ShutDownCommand = new CommandHandler(() => { ShutDown(true, false); }, true);
-				InitializeApplication = new CommandHandler(async () => await InitializeApplicationAsync(), true);
 
 				_logger.LogInfo("Application is initalized");
 			}
@@ -186,11 +185,6 @@ namespace VolumeCalculatorGUI
 			{
 				ShutDownInProgress = false;
 			}
-		}
-
-		private async Task InitializeApplicationAsync()
-		{
-
 		}
 
 		private void InitializeSettings(byte[] maskBytes)

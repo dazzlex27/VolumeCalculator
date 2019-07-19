@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Timers;
 using FrameProcessor;
 using Primitives;
@@ -262,9 +263,9 @@ namespace VolumeCalculatorGUI.Utils
 				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, depthFrameFileName,
 					depthCameraParams.MinDepth, depthCameraParams.MaxDepth, cutOffDepth);
 
-				if (_deviceSet.IpCamera != null)
+				if (_deviceSet.IpCamera != null && _deviceSet.IpCamera.Initialized())
 				{
-					var ipCameraImage = _deviceSet.IpCamera.GetSnaphostAsync().Result;
+					var ipCameraImage = Task.Run(() => _deviceSet.IpCamera.GetSnaphostAsync()).Result;
 					var cameraFrameFileName = Path.Combine(_settings.IoSettings.PhotosDirectoryPath, $"{calculationIndex}_camera.png");
 					ImageUtils.SaveImageDataToFile(ipCameraImage, cameraFrameFileName);
 				}

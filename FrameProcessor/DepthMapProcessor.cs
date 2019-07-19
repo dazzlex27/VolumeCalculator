@@ -63,8 +63,6 @@ namespace FrameProcessor
 
 						var nativeResult = DepthMapProcessorDll.CalculateObjectVolume(volumeCalculationData);
 
-						_logger.LogInfo($"native: {nativeResult->LengthMm} {nativeResult->WidthMm} {nativeResult->HeightMm}");
-
 						var result = nativeResult == null ?
 							null : new ObjectVolumeData(nativeResult->LengthMm, nativeResult->WidthMm, nativeResult->HeightMm, nativeResult->VolumeCmCb);
 						DepthMapProcessorDll.DisposeCalculationResult(nativeResult);

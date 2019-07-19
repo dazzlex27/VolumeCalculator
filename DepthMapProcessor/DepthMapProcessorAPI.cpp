@@ -6,13 +6,6 @@ DepthMapProcessor* Processor;
 
 DLL_EXPORT void CreateDepthMapProcessor(CameraIntrinsics colorIntrinsics, CameraIntrinsics depthIntrinsics)
 {
-	std::ofstream myFile;
-	myFile.open("debug.txt");
-
-	myFile << std::endl;
-
-	myFile.close();
-
 	Processor = new DepthMapProcessor(colorIntrinsics, depthIntrinsics);
 }
 
@@ -29,16 +22,7 @@ DLL_EXPORT void SetDebugPath(const char* path)
 
 DLL_EXPORT VolumeCalculationResult* CalculateObjectVolume(VolumeCalculationData calculationData)
 {
-	VolumeCalculationResult* volume = Processor->CalculateObjectVolume(calculationData);
-	   
-	std::ofstream myFile;
-	myFile.open("debug.txt", std::ios::app);
-
-	myFile << volume->LengthMm << " " << volume->WidthMm << " " << volume->HeightMm << std::endl;
-
-	myFile.close();
-
-	return volume;
+	return Processor->CalculateObjectVolume(calculationData);
 }
 
 void DisposeCalculationResult(VolumeCalculationResult* result)

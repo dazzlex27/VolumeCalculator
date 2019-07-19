@@ -12,5 +12,7 @@ namespace DeviceIntegration.Cameras
 		Task<bool> GoToPresetAsync(int presetIndex);
 
 		Task<bool> DisconnectAsync();
+
+		bool Initialized();
 	}
 }

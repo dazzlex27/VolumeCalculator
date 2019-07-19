@@ -206,20 +206,15 @@ VolumeCalculationResult* DepthMapProcessor::CalculateObjectVolume(const VolumeCa
 	if (calculationData.MaskMode)
 		Tamper(result);
 
-	std::ofstream myFile;
-	myFile.open("debug.txt", std::ios::app);
-
-	myFile << result->LengthMm << " " << result->WidthMm << " " << result->HeightMm << std::endl;
-
-	myFile.close();
-
 	return result;
 }
 
 const short DepthMapProcessor::GetTopPlaneDepth(const Contour& depthObjectContour, const VolumeCalculationData& calculationData)
 {
+	const short depthMeasuredTopPlane = GetDepthContourPlanes(depthObjectContour).Top;
 	const short measuredDistanceShort = calculationData.RangeMeterDistance > SHRT_MAX ? SHRT_MAX : calculationData.RangeMeterDistance;
-	return measuredDistanceShort > 0 ? measuredDistanceShort : GetDepthContourPlanes(depthObjectContour).Top;
+
+	return measuredDistanceShort > 0 ? std::min(measuredDistanceShort, depthMeasuredTopPlane) : depthMeasuredTopPlane;
 }
 
 const short DepthMapProcessor::CalculateFloorDepth(const DepthMap& depthMap)

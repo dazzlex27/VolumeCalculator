@@ -138,7 +138,8 @@ namespace CameraTest
 				var ip = IpBox.Text;
 				var login = LoginBox.Text;
 				var password = PasswordBox.Text;
-				await _controller.InitializeAsync(ip, login, password);
+				var status = await _controller.InitializeAsync(ip, login, password);
+				MessageBox.Show(status.ToString());
 			}
 			catch(Exception ex)
 			{

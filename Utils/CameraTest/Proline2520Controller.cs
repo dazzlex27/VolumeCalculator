@@ -36,7 +36,7 @@ namespace CameraTest
 				var base64String = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_login}:{_password}"));
 				_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64String);
 
-				var result = await _httpClient.GetAsync(_ip);
+				var result = await _httpClient.GetAsync($"http://{_ip}");
 
 				return result.StatusCode == HttpStatusCode.OK;
 			}
