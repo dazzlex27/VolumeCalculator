@@ -51,8 +51,10 @@ namespace VolumeCalculatorGUI.Utils
 			var scalesDataIsCorrect = !string.IsNullOrEmpty(scalesName) && !string.IsNullOrEmpty(scalesPort);
 			if (scalesDataIsCorrect)
 			{
-				logger.LogInfo($"Creating scales \"{scalesName}\"...");
-				scales = DeviceIntegrationCommon.CreateRequestedScales(scalesName, logger, scalesPort);
+                var minWeight = settings.ScalesMinWeight;
+
+				logger.LogInfo($"Creating scales \"{scalesName}\", minWeight={minWeight}...");
+				scales = DeviceIntegrationCommon.CreateRequestedScales(scalesName, logger, scalesPort, minWeight);
 			}
 
 			var ioCircuitName = settings.ActiveIoCircuitName;

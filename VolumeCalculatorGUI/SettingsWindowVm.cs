@@ -190,7 +190,7 @@ namespace VolumeCalculatorGUI
 
 			var oldIoSettings = _oldSettings.IoSettings;
 			var newIoSettings = new IoSettings(oldIoSettings.ActiveCameraName, oldIoSettings.ActiveScalesName,
-				oldIoSettings.ScalesPort, oldIoSettings.ActiveScanners, oldIoSettings.ActiveIoCircuitName,
+				oldIoSettings.ScalesPort, oldIoSettings.ScalesMinWeight, oldIoSettings.ActiveScanners, oldIoSettings.ActiveIoCircuitName,
 				oldIoSettings.IoCircuitPort, oldIoSettings.ActiveRangeMeterName, oldIoSettings.RangeMeterPort,
 				RangeMeterSubtractionValue, oldIoSettings.IpCameraSettings, OutputPath, oldIoSettings.ShutDownPcByDefault);
 

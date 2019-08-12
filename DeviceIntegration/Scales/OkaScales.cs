@@ -14,6 +14,8 @@ namespace DeviceIntegration.Scales
 
 		private readonly ILogger _logger;
 		private readonly string _port;
+        private readonly int _minWeight;
+
 		private readonly GodSerialPort _serialPort;
 		private readonly CancellationTokenSource _tokenSource;
 
@@ -23,10 +25,12 @@ namespace DeviceIntegration.Scales
 
 		private bool _paused;
 
-		public OkaScales(ILogger logger, string port)
+		public OkaScales(ILogger logger, string port, int minWeight)
 		{
 			_logger = logger;
 			_port = port;
+            _minWeight = minWeight;
+
 			_tokenSource = new CancellationTokenSource();
 
 			_logger.LogInfo($"Creating OkaScales scales on port {port}...");
@@ -94,7 +98,7 @@ namespace DeviceIntegration.Scales
 
 				var weight = GetWeightFromMessage(messageBytes);
 				var status = MeasurementStatus.Measured;
-				if (weight < 1)
+				if (weight < _minWeight)
 				{
 					status = MeasurementStatus.Ready;
 					weight = 0;

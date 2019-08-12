@@ -1,6 +1,6 @@
 #define private VendorName "IS"
 #define private ApplicationName "VolumeCalculator"
-#define private ApplicationVersion "1.50"
+#define private ApplicationVersion "1.51"
 #define private BinPath "..\..\!!bin\"
 #define private SourcePath = BinPath + "x64\Release\"
 #define private RootPath = "..\..\"
@@ -45,7 +45,9 @@ Source: {#RootPath}Externals\vc_redist.x64.exe; DestDir: {tmp}; Flags: dontcopy
 
 [Icons]
 Name: {group}\{#ApplicationName}; Filename: {app}\{#ApplicationName}.exe
-Name: {commondesktop}\{#ApplicationName}; Filename: {app}\{#ApplicationName}.exe
+Name: {group}\VCConfigurator; Filename: {app}\VCConfigurator.exe
+Name: {userdesktop}\{#ApplicationName}; Filename: {app}\{#ApplicationName}.exe
+Name: {userdesktop}\VCConfigurator; Filename: {app}\VCConfigurator.exe
 
 [Run]
 Filename: "schtasks"; Parameters: "/Create /f /rl highest /sc onlogon /tr ""'{app}\{#ApplicationName}.exe'"" /tn ""RunVCalc""";

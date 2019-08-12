@@ -12,20 +12,20 @@ namespace DeviceIntegration
 {
 	public static class DeviceIntegrationCommon
 	{
-		public static IScales CreateRequestedScales(string name, ILogger logger, string port)
+		public static IScales CreateRequestedScales(string name, ILogger logger, string port, int minWeight)
 		{
 			switch (name)
 			{
 				case "fakescales":
 					return new FakeScales(logger);
 				case "massak":
-					return new MassaKScales(logger, port);
+					return new MassaKScales(logger, port, minWeight);
 				case "casm":
-					return new CasMScales(logger, port);
+					return new CasMScales(logger, port, minWeight);
 				case "ci2001a":
-					return new Ci2001AScales(logger, port);
+					return new Ci2001AScales(logger, port, minWeight);
 				case "oka":
-					return new OkaScales(logger, port);
+					return new OkaScales(logger, port, minWeight);
 				default:
 					logger.LogError($"Failed to create scales by the name \"{name}\"");
 					throw new NotSupportedException();

@@ -17,16 +17,20 @@ namespace DeviceIntegration.Scales
 
 		private readonly ILogger _logger;
 		private readonly string _port;
-		private readonly CancellationTokenSource _tokenSource;
+        private readonly int _minWeight;
+
+        private readonly CancellationTokenSource _tokenSource;
 		private readonly GodSerialPort _serialPort;
 
 		private bool _paused;
 		
-		public MassaKScales(ILogger logger, string port)
+		public MassaKScales(ILogger logger, string port, int minWeight)
 		{
 			_logger = logger;
 			_port = port;
-			_tokenSource = new CancellationTokenSource();
+            _minWeight = minWeight;
+
+            _tokenSource = new CancellationTokenSource();
 
 			_logger.LogInfo($"Starting MassaKScales on port {_port}...");
 
@@ -112,12 +116,17 @@ namespace DeviceIntegration.Scales
 					throw new InvalidDataException(
 						$"Incoming data was expected to be 5 bytes long, but was {messageBytes.Count}");
 
-				var status = GetStatusFromMessage(messageBytes);
-				var totalWeight = GetWeightFromMessage(messageBytes);
-				var scaleMeasurementData = new ScaleMeasurementData(status, totalWeight);
+                var status = GetStatusFromMessage(messageBytes);
+                var weight = GetWeightFromMessage(messageBytes);
+                if (weight < _minWeight)
+                {
+                    status = MeasurementStatus.Ready;
+                    weight = 0;
+                }
 
-				MeasurementReady?.Invoke(scaleMeasurementData);
-			}
+                var measurementData = new ScaleMeasurementData(status, weight);
+                MeasurementReady?.Invoke(measurementData);
+            }
 			catch (Exception ex)
 			{
 				_logger.LogException($"Failed to read data from MassaKScales on serial port {_port}", ex);

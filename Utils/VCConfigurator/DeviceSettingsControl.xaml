@@ -7,7 +7,7 @@
              d:DataContext="{d:DesignInstance local:DeviceSettingsVm}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-	<Grid Margin="3">
+	<Grid Margin="3" ShowGridLines="True">
 		<Grid.RowDefinitions>
 			<RowDefinition/>
 			<RowDefinition/>
@@ -15,7 +15,21 @@
 			<RowDefinition/>
 			<RowDefinition/>
 		</Grid.RowDefinitions>
-		<StackPanel Margin="5" 
+        <StackPanel Margin="5" 
+		            Orientation="Horizontal">
+            <TextBlock Text="Камера:" 
+			           MinWidth="80" 
+			           Margin="3" 
+			           VerticalAlignment="Center"/>
+            <ComboBox MinWidth="150" 
+			          Margin="3" 
+			          SelectedItem="{Binding ActiveCameraName, Mode=TwoWay}" 
+			          MaxWidth="150" 
+			          ItemsSource="{Binding CameraNames}" 
+			          VerticalAlignment="Center"/>
+        </StackPanel>
+        <StackPanel Grid.Row="1"
+                    Margin="5" 
 		            Orientation="Horizontal">
 			<TextBlock Text="Весы:" 
 			           MinWidth="80" 
@@ -27,15 +41,27 @@
 			          MaxWidth="150" 
 			          ItemsSource="{Binding ScalesNames}" 
 			          VerticalAlignment="Center"/>
-			<TextBlock Text="Порт:" 
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="Порт" 
 			           Margin="3" 
 			           VerticalAlignment="Center"/>
-			<TextBox Margin="3" 
+                <TextBox Margin="3" 
 			         MinWidth="40"
 			         Text="{Binding ScalesPort, Mode=TwoWay}" 
 			         VerticalAlignment="Center"/>
-		</StackPanel>
-		<StackPanel Grid.Row="1" 
+            </StackPanel>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="Мин. вес" 
+			           Margin="3" 
+			           VerticalAlignment="Center"/>
+                <TextBox Margin="3" 
+			         MinWidth="30"
+                     MaxLength="4"
+			         Text="{Binding ScalesMinWeight, Mode=TwoWay}" 
+			         VerticalAlignment="Center"/>
+            </StackPanel>
+        </StackPanel>
+		<StackPanel Grid.Row="2" 
 		            Margin="5" 
 		            Orientation="Horizontal">
 			<TextBlock Text="Плата:" 
@@ -48,15 +74,17 @@
 			          MaxWidth="150" 
 			          ItemsSource="{Binding IoCircuitNames}" 
 			          VerticalAlignment="Center"/>
-			<TextBlock Text="Порт:" 
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="Порт" 
 			           Margin="3" 
 			           VerticalAlignment="Center"/>
-			<TextBox Margin="3" 
+                <TextBox Margin="3" 
 			         MinWidth="40" 
 			         Text="{Binding IoCircuitPort, Mode=TwoWay}" 
 			         VerticalAlignment="Center"/>
-		</StackPanel>
-		<StackPanel Grid.Row="2" 
+            </StackPanel>
+        </StackPanel>
+		<StackPanel Grid.Row="3" 
 		            Margin="5" 
 		            Orientation="Horizontal">
 			<TextBlock Text="Дальномер:" 
@@ -69,28 +97,16 @@
 			          MaxWidth="150" 
 			          ItemsSource="{Binding RangeMeterNames}" 
 			          VerticalAlignment="Center"/>
-			<TextBlock Text="Порт:" 
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="Порт" 
 			           Margin="3" 
 			           VerticalAlignment="Center"/>
-			<TextBox Margin="3" 
+                <TextBox Margin="3" 
 			         MinWidth="40"
 			         Text="{Binding RangeMeterPort, Mode=TwoWay}" 
 			         VerticalAlignment="Center"/>
-		</StackPanel>
-		<StackPanel Grid.Row="3" 
-		            Margin="5" 
-		            Orientation="Horizontal">
-			<TextBlock Text="Камера:" 
-			           MinWidth="80" 
-			           Margin="3" 
-			           VerticalAlignment="Center"/>
-			<ComboBox MinWidth="150" 
-			          Margin="3" 
-			          SelectedItem="{Binding ActiveCameraName, Mode=TwoWay}" 
-			          MaxWidth="150" 
-			          ItemsSource="{Binding CameraNames}" 
-			          VerticalAlignment="Center"/>
-		</StackPanel>
+            </StackPanel>
+        </StackPanel>
 		<StackPanel Grid.Row="4" >
 			<StackPanel Margin="5" 
 		            Orientation="Horizontal">
@@ -104,37 +120,45 @@
 			          MaxWidth="150" 
 			          ItemsSource="{Binding IpCameraNames}" 
 			          VerticalAlignment="Center"/>
-				<TextBlock Text="IP:" 
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="IP" 
 			           Margin="3" 
 			           VerticalAlignment="Center"/>
-				<TextBox Margin="3" 
+                    <TextBox Margin="3" 
 			         MinWidth="100"
 			         Text="{Binding IpCameraAddress, Mode=TwoWay}" 
 			         VerticalAlignment="Center"/>
-			</StackPanel>
+                </StackPanel>
+            </StackPanel>
 			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Логин:" 
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Логин" 
 			           Margin="3" 
 			           VerticalAlignment="Center"/>
-				<TextBox Margin="3" 
+                    <TextBox Margin="3" 
 			         MinWidth="100"
 			         Text="{Binding IpCameraLogin, Mode=TwoWay}" 
 			         VerticalAlignment="Center"/>
-				<TextBlock Text="Пароль:" 
+                </StackPanel>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Пароль" 
 			           Margin="3" 
 			           VerticalAlignment="Center"/>
-				<TextBox Margin="3" 
+                    <TextBox Margin="3" 
 			         MinWidth="100"
 			         Text="{Binding IpCameraPassword, Mode=TwoWay}" 
 			         VerticalAlignment="Center"/>
-				<TextBlock Text="Пресет:" 
+                </StackPanel>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Пресет" 
 			           Margin="3" 
 			           VerticalAlignment="Center"/>
-				<TextBox Margin="3" 
+                    <TextBox Margin="3" 
 			         MinWidth="20"
 			         Text="{Binding IpCameraPreset, Mode=TwoWay}" 
 			         VerticalAlignment="Center"/>
-			</StackPanel>
+                </StackPanel>
+            </StackPanel>
 		</StackPanel>
 	</Grid>
 </UserControl>

@@ -1,7 +1,7 @@
 @echo off
 
 set rootFolder=..\..
-set devenvPath=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE
+set devenvPath=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE
 set inputFolder=%rootFolder%\!!bin
 set binariesFolder=%inputFolder%\x64\Release
 set buildFolder=%inputFolder%\Installers
@@ -29,7 +29,7 @@ call ..\ConfuserEx\Confuser.CLI.exe vcalc.crproj > logs\confuser.log
 if not %ERRORLEVEL%==0 goto failed
 
 echo Building installer...
-call "C:\Program Files (x86)\Inno Setup 5\iscc.exe" install.iss > logs\innosetup.log
+call "C:\Program Files (x86)\Inno Setup 6\iscc.exe" install.iss > logs\innosetup.log
 if not %ERRORLEVEL%==0 goto failed
 
 if exist "%outputFolder%" @rd "%outputFolder%" /s /q

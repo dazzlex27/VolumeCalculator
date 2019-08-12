@@ -22,6 +22,7 @@ namespace VCConfigurator
 		private string _scalesPort;
 		private string _ioCircuitPort;
 		private string _rangeMeterPort;
+        private int _scalesMinWeight;
 
 		public ObservableCollection<string> ScalesNames
 		{
@@ -125,7 +126,13 @@ namespace VCConfigurator
 			set => SetField(ref _rangeMeterPort, value, nameof(RangeMeterPort));
 		}
 
-		public DeviceSettingsVm()
+        public int ScalesMinWeight
+        {
+            get => _scalesMinWeight;
+            set => SetField(ref _scalesMinWeight, value, nameof(ScalesMinWeight));
+        }
+
+        public DeviceSettingsVm()
 		{
 			ScalesNames = new ObservableCollection<string> { "", "massak", "casm", "fakescales", "ci2001a", "oka" };
 			IoCircuitNames = new ObservableCollection<string> { "", "keusb24r" };
@@ -148,6 +155,7 @@ namespace VCConfigurator
 			ScalesPort = settings.ScalesPort;
 			IoCircuitPort = settings.IoCircuitPort;
 			RangeMeterPort = settings.RangeMeterPort;
+            ScalesMinWeight = settings.ScalesMinWeight;
 		}
 
 		public void FillSettingsFromValues(IoSettings settings)
@@ -164,6 +172,7 @@ namespace VCConfigurator
 			settings.ScalesPort = ScalesPort;
 			settings.IoCircuitPort = IoCircuitPort;
 			settings.RangeMeterPort = RangeMeterPort;
-		}
+            settings.ScalesMinWeight = ScalesMinWeight;
+        }
 	}
 }

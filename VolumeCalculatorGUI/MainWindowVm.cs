@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using ExtIntegration;
@@ -128,7 +127,11 @@ namespace VolumeCalculatorGUI
 				OpenConfiguratorCommand = new CommandHandler(OpenConfigurator, true);
 				ShutDownCommand = new CommandHandler(() => { ShutDown(true, false); }, true);
 
-				_logger.LogInfo("Application is initalized");
+                if (_usingMasks)
+                    MessageBox.Show("Лицензия не установлена. Пожалуйста, установите лицензию.", "Ошибка лицензии",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+
+                _logger.LogInfo("Application is initalized");
 			}
 			catch (Exception ex)
 			{

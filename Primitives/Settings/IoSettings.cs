@@ -11,6 +11,8 @@ namespace Primitives.Settings
 
 		public string ScalesPort { get; set; }
 
+        public int ScalesMinWeight { get; set; }
+
 		public IoEntry[] ActiveScanners { get; set; }
 
 		public string ActiveIoCircuitName { get; set; }
@@ -33,13 +35,15 @@ namespace Primitives.Settings
 
 		public string PhotosDirectoryPath => Path.Combine(OutputPath, GlobalConstants.ResultPhotosFolder);
 
-		public IoSettings(string activeCameraName, string activeScalesName, string scalesPort, IoEntry[] activeScanners,
-			string activeIoCircuitName, string ioCircuitPort, string activeRangeMeterName, string rangeMeterPort,
-			int rangeMeterSubtractionValueMm, IpCameraSettings ipCameraSettings, string outputPath, bool shutDownPcByDefault)
+		public IoSettings(string activeCameraName, string activeScalesName, string scalesPort, int scalesMinWeight, 
+            IoEntry[] activeScanners, string activeIoCircuitName, string ioCircuitPort, string activeRangeMeterName, 
+            string rangeMeterPort, int rangeMeterSubtractionValueMm, IpCameraSettings ipCameraSettings, string outputPath, 
+            bool shutDownPcByDefault)
 		{
 			ActiveCameraName = activeCameraName;
 			ActiveScalesName = activeScalesName;
 			ScalesPort = scalesPort;
+            ScalesMinWeight = scalesMinWeight;
 			ActiveScanners = activeScanners;
 			ActiveIoCircuitName = activeIoCircuitName;
 			IoCircuitPort = ioCircuitPort;
@@ -56,16 +60,18 @@ namespace Primitives.Settings
 			var defaultScanners = new[] { new IoEntry("keyboard", "") };
 			var defaultCameraSettings = IpCameraSettings.GetDefaultSettings();
 
-			return new IoSettings("kinectv2", "massak", "COM1", defaultScanners, "keusb24r", "", "custom", "", 0,
+			return new IoSettings("kinectv2", "massak", "", 5, defaultScanners, "keusb24r", "", "custom", "", 0,
 				defaultCameraSettings, "MeasurementResults", false);
 		}
 
 		[OnDeserialized]
 		private void OnDeserialized(StreamingContext context)
 		{
-
 			if (IpCameraSettings == null)
 				IpCameraSettings = IpCameraSettings.GetDefaultSettings();
+
+            if (ScalesMinWeight < 0)
+                ScalesMinWeight = 1;
 		}
 	}
 }

@@ -12,14 +12,17 @@ namespace DeviceIntegration.Scales
 
 		private readonly ILogger _logger;
 		private readonly string _port;
-		private readonly GodSerialPort _serialPort;
+        private readonly int _minWeight;
+
+        private readonly GodSerialPort _serialPort;
 
 		private bool _paused;
 
-		public Ci2001AScales(ILogger logger, string port)
+		public Ci2001AScales(ILogger logger, string port, int minWeight)
 		{
 			_logger = logger;
 			_port = port;
+            _minWeight = minWeight;
 
 			_logger.LogInfo($"Creating Ci2001A scales on port {port}...");
 
@@ -62,7 +65,7 @@ namespace DeviceIntegration.Scales
 
 			var status = GetStatusFromMessage(messageTokens[0]);
 			var weight = GetWeightFromMessage(messageTokens[3]);
-			if (weight < 1)
+			if (weight < _minWeight)
 			{
 				status = MeasurementStatus.Ready;
 				weight = 0;

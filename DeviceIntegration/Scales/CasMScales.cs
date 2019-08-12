@@ -15,14 +15,17 @@ namespace DeviceIntegration.Scales
 
 		private readonly ILogger _logger;
 		private readonly string _port;
+        private readonly int _minWeight;
+
 		private readonly GodSerialPort _serialPort;
 
 		private bool _paused;
 
-		public CasMScales(ILogger logger, string port)
+		public CasMScales(ILogger logger, string port, int minWeight)
 		{
 			_logger = logger;
 			_port = port;
+            _minWeight = minWeight;
 
 			_serialPort = new GodSerialPort(port, 9600, Parity.None, 8, StopBits.One);
 			_serialPort.UseDataReceived(true, (sp, bytes) =>
@@ -58,7 +61,7 @@ namespace DeviceIntegration.Scales
 			var status = GetStatusFromMessage(messageBytes);
 			var signMultipler = GetSignMultiplierFromMessage(messageBytes);
 			var weight = GetWeightFromMessage(messageBytes);
-			if (weight < 1)
+			if (weight < _minWeight)
 			{
 				status = MeasurementStatus.Ready;
 				weight = 0;
