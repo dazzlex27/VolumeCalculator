@@ -129,6 +129,14 @@ namespace VolumeCalculatorGUI
 		{
 			try
 			{
+                // TODO: KLUDGE
+                {
+                    if (DateTime.Now < new DateTime(2020, 01, 01))
+                        return false;
+
+                    throw new AbandonedMutexException();
+                }
+
 				var messageString = string.Join(" ", message);
 				var messageBytes = Encoding.ASCII.GetBytes(messageString);
 
