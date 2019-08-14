@@ -93,15 +93,7 @@ namespace FrameProviders.KinectV2
 
 		public override DepthCameraParams GetDepthCameraParams()
 		{
-			if (!_kinectSensor.IsAvailable)
-				return GetOfflineDepthCameraParams();
-
-			var frameSource = _kinectSensor.DepthFrameSource;
-			var frameDescription = frameSource.FrameDescription;
-			var intristics = _kinectSensor.CoordinateMapper.GetDepthCameraIntrinsics();
-			return new DepthCameraParams(frameDescription.HorizontalFieldOfView, frameDescription.VerticalFieldOfView,
-				intristics.FocalLengthX, intristics.FocalLengthY, intristics.PrincipalPointX, intristics.PrincipalPointY, 
-				(short) frameSource.DepthMinReliableDistance, (short) frameSource.DepthMaxReliableDistance);
+			return GetOfflineDepthCameraParams();
 		}
 
 		private static DepthCameraParams GetOfflineDepthCameraParams()

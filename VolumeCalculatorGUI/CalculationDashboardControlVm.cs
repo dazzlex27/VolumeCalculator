@@ -208,7 +208,7 @@ namespace VolumeCalculatorGUI
 
 				if (_settings.AlgorithmSettings.RequireBarcode)
 					return !string.IsNullOrEmpty(ObjectCode);
-					
+
 				return true;
 			}
 		}
@@ -217,7 +217,7 @@ namespace VolumeCalculatorGUI
 
 		public MeasurementStatus CurrentWeighingStatus { get; set; }
 
-		public CalculationDashboardControlVm(ILogger logger, ApplicationSettings settings, DeviceSet deviceSet, 
+		public CalculationDashboardControlVm(ILogger logger, ApplicationSettings settings, DeviceSet deviceSet,
 			DepthMapProcessor processor)
 		{
 			_logger = logger;
@@ -327,7 +327,7 @@ namespace VolumeCalculatorGUI
 
 			if (timerEnabled)
 			{
-				_dashStatusUpdater.PendingTimer = new Timer(intervalMs) {AutoReset = false};
+				_dashStatusUpdater.PendingTimer = new Timer(intervalMs) { AutoReset = false };
 				_dashStatusUpdater.PendingTimer.Elapsed += OnMeasurementTimerElapsed;
 			}
 			else
@@ -485,7 +485,7 @@ namespace VolumeCalculatorGUI
 			_logger.LogInfo("Calculation finished, processing results...");
 
 			var weightUnits = _settings.AlgorithmSettings.SelectedWeightUnits;
-			var calculationResult = new CalculationResult(_calculationTime, _lastBarcode, _lastWeight, weightUnits, 
+			var calculationResult = new CalculationResult(_calculationTime, _lastBarcode, _lastWeight, weightUnits,
 				_lastUnitCount, result.LengthMm, result.WidthMm, result.HeightMm, result.VolumeCmCb, _lastComment);
 			var calculationResultData = new CalculationResultData(calculationResult, status, objectPhoto);
 
@@ -504,7 +504,7 @@ namespace VolumeCalculatorGUI
 
 		private void UpdateVolumeData(CalculationResult result)
 		{
-			Dispatcher.Invoke(() => 
+			Dispatcher.Invoke(() =>
 			{
 				ObjectLength = result.ObjectLengthMm;
 				ObjectWidth = result.ObjectWidthMm;
@@ -555,50 +555,50 @@ namespace VolumeCalculatorGUI
 				switch (status)
 				{
 					case CalculationStatus.Error:
-					{
-						_dashStatusUpdater.LastErrorMessage = "ошибка измерения";
-						_dashStatusUpdater.DashStatus = DashboardStatus.Error;
-						_logger.LogError("Volume calculation finished with errors");
-						break;
-					}
+						{
+							_dashStatusUpdater.LastErrorMessage = "ошибка измерения";
+							_dashStatusUpdater.DashStatus = DashboardStatus.Error;
+							_logger.LogError("Volume calculation finished with errors");
+							break;
+						}
 					case CalculationStatus.TimedOut:
-					{
-						_dashStatusUpdater.LastErrorMessage = "нарушена связь с устройством";
-						_dashStatusUpdater.DashStatus = DashboardStatus.Error;
-						_logger.LogError("Failed to acquire enough samples for volume calculation");
-						break;
-					}
+						{
+							_dashStatusUpdater.LastErrorMessage = "нарушена связь с устройством";
+							_dashStatusUpdater.DashStatus = DashboardStatus.Error;
+							_logger.LogError("Failed to acquire enough samples for volume calculation");
+							break;
+						}
 					case CalculationStatus.Undefined:
-					{
-						_dashStatusUpdater.DashStatus = DashboardStatus.Error;
-						_logger.LogError("No object was found during volume calculation");
-						break;
-					}
+						{
+							_dashStatusUpdater.DashStatus = DashboardStatus.Error;
+							_logger.LogError("No object was found during volume calculation");
+							break;
+						}
 					case CalculationStatus.AbortedByUser:
-					{
-						_dashStatusUpdater.LastErrorMessage = "измерение прервано";
-						_dashStatusUpdater.DashStatus = DashboardStatus.Error;
-						_logger.LogError("Volume calculation was aborted");
-						break;
-					}
+						{
+							_dashStatusUpdater.LastErrorMessage = "измерение прервано";
+							_dashStatusUpdater.DashStatus = DashboardStatus.Error;
+							_logger.LogError("Volume calculation was aborted");
+							break;
+						}
 					case CalculationStatus.Sucessful:
-					{
-						_logger.LogInfo(
-							$"Completed a volume check, L={calculationResult.ObjectLengthMm} W={calculationResult.ObjectWidthMm} H={calculationResult.ObjectHeightMm}");
-						break;
-					}
+						{
+							_logger.LogInfo(
+								$"Completed a volume check, L={calculationResult.ObjectLengthMm} W={calculationResult.ObjectWidthMm} H={calculationResult.ObjectHeightMm}");
+							break;
+						}
 					case CalculationStatus.FailedToSelectAlgorithm:
-					{
-						_dashStatusUpdater.LastErrorMessage = "не удалось выбрать алгоритм";
-						_dashStatusUpdater.DashStatus = DashboardStatus.Error;
+						{
+							_dashStatusUpdater.LastErrorMessage = "не удалось выбрать алгоритм";
+							_dashStatusUpdater.DashStatus = DashboardStatus.Error;
 							break;
-					}
+						}
 					case CalculationStatus.ObjectNotFound:
-					{
-						_dashStatusUpdater.LastErrorMessage = "объект не найден";
-						_dashStatusUpdater.DashStatus = DashboardStatus.Error;
+						{
+							_dashStatusUpdater.LastErrorMessage = "объект не найден";
+							_dashStatusUpdater.DashStatus = DashboardStatus.Error;
 							break;
-					}
+						}
 					default:
 						throw new ArgumentOutOfRangeException(nameof(status), status,
 							@"Failed to resolve failed calculation status");

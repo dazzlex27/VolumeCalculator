@@ -70,8 +70,8 @@ namespace Primitives.Settings
 			if (IpCameraSettings == null)
 				IpCameraSettings = IpCameraSettings.GetDefaultSettings();
 
-            if (ScalesMinWeight <= 0)
-                ScalesMinWeight = 1;
+			if (ScalesMinWeight <= 0)
+				ScalesMinWeight = 5;
 		}
 	}
 }

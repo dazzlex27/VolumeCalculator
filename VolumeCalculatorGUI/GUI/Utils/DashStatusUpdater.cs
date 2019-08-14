@@ -206,7 +206,7 @@ namespace VolumeCalculatorGUI.GUI.Utils
 
 			UpdateLaser(true);
 
-			_lightToggler?.ToggleReady();
+			_lightToggler?.ToggleMeasuring();
 		}
 	}
 }
