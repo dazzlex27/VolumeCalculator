@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Text;
 using System.Threading;
 using LibUsbDotNet;
-using LibUsbDotNet.Main;
 using Primitives.Logging;
 
 namespace DeviceIntegration.RangeMeters
 {
-	internal class TeslaM70RangeMeter : IRangeMeter
+	internal class FakeRangeMeter : IRangeMeter
 	{
 		private const int DefaultSubtractionValueMm = 140;
 		private const int Vid = 1155;
@@ -22,13 +20,13 @@ namespace DeviceIntegration.RangeMeters
 		private long _lastDistance;
 		private int _subtractionValueMm;
 
-		public TeslaM70RangeMeter(ILogger logger)
+		public FakeRangeMeter(ILogger logger)
 		{
 			_logger = logger;
-			logger.LogInfo("Creating a TeslaM70 range meter...");
+			logger.LogInfo("Creating a fake range meter...");
 			var deviceOpen = OpenDevice();
 			if (!deviceOpen)
-				throw new ApplicationException("Failed to open TeslaM70 range meter!");
+				throw new ApplicationException("Failed to open a fake range meter!");
 			_lastDistance = 0;
 			_subtractionValueMm = 0;
 		}
@@ -66,41 +64,17 @@ namespace DeviceIntegration.RangeMeters
 
 		private bool OpenDevice()
 		{
-			var usbFinder = new UsbDeviceFinder(Vid, Pid);
-			_teslaM70 = UsbDevice.OpenUsbDevice(usbFinder);
-			if (_teslaM70 == null)
-			{
-				_logger.LogError("Failed to create a device");
-				return false;
-			}
-
-			_teslaM70.Open();
-			if (_teslaM70 is IUsbDevice usbDevice)
-			{
-				usbDevice.SetConfiguration(1);
-				usbDevice.ClaimInterface(0);
-			}
-
-			_writeEndpoint = _teslaM70.OpenEndpointWriter(WriteEndpointID.Ep01);
-			_readEnpoint = _teslaM70.OpenEndpointReader(ReadEndpointID.Ep02);
-
 			return true;
 		}
 
 		private bool SendString(string cmd)
 		{
-			var bytes = Encoding.Default.GetBytes(cmd);
-			var array = new byte[1024];
-			var errorCode = _writeEndpoint.SubmitAsyncTransfer(bytes, 0, bytes.Length, 1000, out _);
-			errorCode = _readEnpoint.Read(array, 3000, out _);
-			if (errorCode != ErrorCode.None || array[2] != 68)
-				return errorCode == ErrorCode.None;
+			if (cmd == "ATK009#")
+				_lastDistance = 0;
+			else
+				_lastDistance = 12500;
 
-			_lastDistance = ((array[3] << 24) | (array[4] << 16) | (array[5] << 8) | array[6]);
-			//lastAngleX = ((array[7] << 24) | (array[8] << 16) | (array[9] << 8) | array[10]);
-			//lastAngleY = ((array[11] << 24) | (array[12] << 16) | (array[13] << 8) | array[14]);
-
-			return errorCode == ErrorCode.None;
+			return true;
 		}
 
 		private void ReadCurrentRecord()

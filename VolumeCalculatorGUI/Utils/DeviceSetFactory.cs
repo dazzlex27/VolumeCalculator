@@ -67,12 +67,11 @@ namespace VolumeCalculatorGUI.Utils
 			}
 
 			var rangeMeterName = settings.ActiveRangeMeterName;
-			var rangeMeterPort = settings.RangeMeterPort;
-			var rangeMeterDataIsCorrect = !string.IsNullOrEmpty(rangeMeterName) && !string.IsNullOrEmpty(rangeMeterPort);
+			var rangeMeterDataIsCorrect = !string.IsNullOrEmpty(rangeMeterName);
 			if (rangeMeterDataIsCorrect)
 			{
 				logger.LogInfo($"Creating range meter \"{rangeMeterName}\"");
-				rangeMeter = DeviceIntegrationCommon.CreateRequestedRangeMeter(rangeMeterName, logger, rangeMeterPort);
+				rangeMeter = DeviceIntegrationCommon.CreateRequestedRangeMeter(rangeMeterName, logger, settings.RangeMeterPort);
 			}
 
 			var cameraSettings = settings.IpCameraSettings;

@@ -276,7 +276,7 @@ namespace VolumeCalculatorGUI
 			EnableAutoTimer = settings.AlgorithmSettings.EnableAutoTimer;
 			TimeToStartMeasurementMs = settings.AlgorithmSettings.TimeToStartMeasurementMs;
 			RequireBarcode = settings.AlgorithmSettings.RequireBarcode;
-			RangeMeterAvailable = settings.IoSettings.RangeMeterPort != "";
+			RangeMeterAvailable = settings.IoSettings.ActiveRangeMeterName != "";
 			RangeMeterSubtractionValue = settings.IoSettings.RangeMeterSubtractionValueMm;
 			SelectedWeightUnits = settings.AlgorithmSettings.SelectedWeightUnits;
 		}

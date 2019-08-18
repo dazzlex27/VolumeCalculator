@@ -84,7 +84,7 @@ namespace DeviceIntegration.Scales
 
 		private async Task PollScales()
 		{
-			const int pollingRateMs = 200;
+			const int pollingRateMs = 300;
 			const int errorTimeOutMs = 500;
 
 			var pollMessage = BitConverter.GetBytes(0x4A);

@@ -136,7 +136,7 @@ namespace VCConfigurator
 		{
 			ScalesNames = new ObservableCollection<string> { "", "massak", "casm", "fakescales", "ci2001a", "oka" };
 			IoCircuitNames = new ObservableCollection<string> { "", "keusb24r" };
-			RangeMeterNames = new ObservableCollection<string> { "", "custom" };
+			RangeMeterNames = new ObservableCollection<string> { "", "custom", "fake" };
 			CameraNames = new ObservableCollection<string> { "kinectv2", "d435", "local" };
 			IpCameraNames = new ObservableCollection<string> { "", "proline2520" };
 		}

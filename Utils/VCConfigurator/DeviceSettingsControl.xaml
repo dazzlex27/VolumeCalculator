@@ -97,7 +97,7 @@
 			          MaxWidth="150" 
 			          ItemsSource="{Binding RangeMeterNames}" 
 			          VerticalAlignment="Center"/>
-            <StackPanel VerticalAlignment="Center">
+            <!--<StackPanel VerticalAlignment="Center">
                 <TextBlock Text="Порт" 
 			           Margin="3" 
 			           VerticalAlignment="Center"/>
@@ -105,7 +105,7 @@
 			         MinWidth="40"
 			         Text="{Binding RangeMeterPort, Mode=TwoWay}" 
 			         VerticalAlignment="Center"/>
-            </StackPanel>
+            </StackPanel>-->
         </StackPanel>
 		<StackPanel Grid.Row="4" >
 			<StackPanel Margin="5" 

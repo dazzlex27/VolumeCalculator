@@ -215,7 +215,7 @@ namespace VolumeCalculatorGUI.Utils
 				var joinedLengths = string.Join(",", lengths);
 				var joinedWidths = string.Join(",", widths);
 				var joinedHeights= string.Join(",", heights);
-				_logger.LogInfo($"!!!!: {joinedLengths}; {joinedWidths}; {joinedHeights}");
+				_logger.LogInfo($"Measured values: {{{joinedLengths}}}; {{{joinedWidths}}}; {{{joinedHeights}}}");
 
 				var modeLength = lengths.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key;
 				var modeWidth = widths.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key;

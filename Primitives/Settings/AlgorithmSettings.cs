@@ -9,7 +9,7 @@ namespace Primitives.Settings
 	{
 		private const int DefaultFloorDepthMm = 1805;
 		private const int DefaultTimerValueMs = 1000;
-		private const int DefaultSampleCount = 10;
+		private const int DefaultSampleCount = 5;
 		private const int DefaultMinObjHeightMm = 15;
 
 		public short FloorDepth { get; set; }

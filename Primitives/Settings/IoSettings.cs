@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Runtime.Serialization;
 
 namespace Primitives.Settings
@@ -59,9 +60,11 @@ namespace Primitives.Settings
 		{
 			var defaultScanners = new[] { new IoEntry("keyboard", "") };
 			var defaultCameraSettings = IpCameraSettings.GetDefaultSettings();
+			var documentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+			var outputPath = Path.Combine(documentsFolder, "VolumeCalculationResults");
 
 			return new IoSettings("kinectv2", "massak", "", 5, defaultScanners, "keusb24r", "", "custom", "", 0,
-				defaultCameraSettings, "MeasurementResults", false);
+				defaultCameraSettings, outputPath, false);
 		}
 
 		[OnDeserialized]

@@ -55,6 +55,7 @@
     <Compile Include="DeviceIntegrationCommon.cs" />
     <Compile Include="IoCircuits\IIoCircuit.cs" />
     <Compile Include="IoCircuits\KeUsb24RCircuit.cs" />
+    <Compile Include="RangeMeters\FakeRangeMater.cs" />
     <Compile Include="RangeMeters\TeslaM70RangeMeter.cs" />
     <Compile Include="RangeMeters\IRangeMeter.cs" />
     <Compile Include="Scales\OkaScales.cs" />
