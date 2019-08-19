@@ -68,16 +68,16 @@ namespace Primitives.Settings
 
 		public override string ToString()
 		{
-			var builder = new StringBuilder("Alg setings:");
-			builder.AppendLine($"floorDepth={FloorDepth}");
-			builder.AppendLine($"useColorMask={UseColorMask}");
-			builder.AppendLine($"useDepthMask={UseDepthMask}");
-			builder.AppendLine($"minObjHeight={MinObjectHeight}");
-			builder.AppendLine($"sampleCount={SampleDepthMapCount}");
-			builder.AppendLine($"enableAutTimer={EnableAutoTimer}");
-			builder.AppendLine($"timeToStartMeasurementMs={TimeToStartMeasurementMs}");
-			builder.AppendLine($"requireBarcode={RequireBarcode}");
-			builder.AppendLine($"selectedWeightUnits={SelectedWeightUnits}");
+			var builder = new StringBuilder("AlgorithmSetings:");
+			builder.Append($"floorDepth={FloorDepth}");
+			builder.Append($",useColorMask={UseColorMask}");
+			builder.Append($",useDepthMask={UseDepthMask}");
+			builder.Append($",minObjHeight={MinObjectHeight}");
+			builder.Append($",sampleCount={SampleDepthMapCount}");
+			builder.Append($",enableAutTimer={EnableAutoTimer}");
+			builder.Append($",timeToStartMeasurementMs={TimeToStartMeasurementMs}");
+			builder.Append($",requireBarcode={RequireBarcode}");
+			builder.Append($",selectedWeightUnits={SelectedWeightUnits}");
 
 			return builder.ToString();
 		}

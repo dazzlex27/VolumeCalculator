@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Text;
 
 namespace Primitives.Settings
 {
@@ -22,8 +23,6 @@ namespace Primitives.Settings
 
 		public string ActiveRangeMeterName { get; set; }
 
-		public string RangeMeterPort { get; set; }
-
 		public int RangeMeterSubtractionValueMm { get; set; }
 
 		public IpCameraSettings IpCameraSettings { get; set; }
@@ -38,7 +37,7 @@ namespace Primitives.Settings
 
 		public IoSettings(string activeCameraName, string activeScalesName, string scalesPort, int scalesMinWeight, 
             IoEntry[] activeScanners, string activeIoCircuitName, string ioCircuitPort, string activeRangeMeterName, 
-            string rangeMeterPort, int rangeMeterSubtractionValueMm, IpCameraSettings ipCameraSettings, string outputPath, 
+            int rangeMeterSubtractionValueMm, IpCameraSettings ipCameraSettings, string outputPath, 
             bool shutDownPcByDefault)
 		{
 			ActiveCameraName = activeCameraName;
@@ -49,11 +48,21 @@ namespace Primitives.Settings
 			ActiveIoCircuitName = activeIoCircuitName;
 			IoCircuitPort = ioCircuitPort;
 			ActiveRangeMeterName = activeRangeMeterName;
-			RangeMeterPort = rangeMeterPort;
 			RangeMeterSubtractionValueMm = rangeMeterSubtractionValueMm;
 			IpCameraSettings = ipCameraSettings;
 			OutputPath = outputPath;
 			ShutDownPcByDefault = shutDownPcByDefault;
+		}
+
+		public override string ToString()
+		{
+			var builder = new StringBuilder("IOSetings:");
+			builder.Append($"minWeight={ScalesMinWeight}");
+			builder.Append($",rangeCorrection={RangeMeterSubtractionValueMm}");
+			builder.Append($",outputPath={OutputPath}");
+			builder.Append($",shuwDown={ShutDownPcByDefault}");
+
+			return builder.ToString();
 		}
 
 		public static IoSettings GetDefaultSettings()
@@ -63,7 +72,7 @@ namespace Primitives.Settings
 			var documentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 			var outputPath = Path.Combine(documentsFolder, "VolumeCalculationResults");
 
-			return new IoSettings("kinectv2", "massak", "", 5, defaultScanners, "keusb24r", "", "custom", "", 0,
+			return new IoSettings("kinectv2", "massak", "", 5, defaultScanners, "keusb24r", "", "custom", 0,
 				defaultCameraSettings, outputPath, false);
 		}
 

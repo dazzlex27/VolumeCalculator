@@ -58,7 +58,7 @@ namespace DeviceIntegration
 			}
 		}
 
-		public static IRangeMeter CreateRequestedRangeMeter(string name, ILogger logger, string port)
+		public static IRangeMeter CreateRequestedRangeMeter(string name, ILogger logger)
 		{
 			switch (name)
 			{

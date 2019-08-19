@@ -100,10 +100,12 @@ namespace VolumeCalculatorGUI.Utils
 				if (_deviceSet?.RangeMeter != null)
 				{
 					_measuredDistance = _deviceSet.RangeMeter.GetReading();
-					_logger.LogInfo($"Measured distance - {_measuredDistance}");
+					_logger.LogInfo($"Range meter reading - {_measuredDistance}");
 					if (_measuredDistance <= 0)
-						_logger.LogError("Failed to get range reading, will use depth calculation...");
+						_logger.LogError("Failed to get range meter reading, will use depth calculation");
 				}
+				else
+					_logger.LogInfo($"Range meter is not enabled - will use depth calculation");
 
 				SelectAlgorithm();
 				SaveDebugData();

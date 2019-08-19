@@ -120,12 +120,6 @@ namespace VCConfigurator
 			set => SetField(ref _ioCircuitPort, value, nameof(IoCircuitPort));
 		}
 
-		public string RangeMeterPort
-		{
-			get => _rangeMeterPort;
-			set => SetField(ref _rangeMeterPort, value, nameof(RangeMeterPort));
-		}
-
         public int ScalesMinWeight
         {
             get => _scalesMinWeight;
@@ -154,7 +148,6 @@ namespace VCConfigurator
 			IpCameraPreset = settings.IpCameraSettings.ActivePreset + 1;
 			ScalesPort = settings.ScalesPort;
 			IoCircuitPort = settings.IoCircuitPort;
-			RangeMeterPort = settings.RangeMeterPort;
             ScalesMinWeight = settings.ScalesMinWeight;
 		}
 
@@ -171,7 +164,6 @@ namespace VCConfigurator
 			settings.IpCameraSettings.ActivePreset = IpCameraPreset - 1;
 			settings.ScalesPort = ScalesPort;
 			settings.IoCircuitPort = IoCircuitPort;
-			settings.RangeMeterPort = RangeMeterPort;
             settings.ScalesMinWeight = ScalesMinWeight;
         }
 	}

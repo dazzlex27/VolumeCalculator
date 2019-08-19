@@ -214,7 +214,8 @@ const short DepthMapProcessor::GetTopPlaneDepth(const Contour& depthObjectContou
 	const short depthMeasuredTopPlane = GetDepthContourPlanes(depthObjectContour).Top;
 	const short measuredDistanceShort = calculationData.RangeMeterDistance > SHRT_MAX ? SHRT_MAX : calculationData.RangeMeterDistance;
 
-	return measuredDistanceShort > 0 ? std::min(measuredDistanceShort, depthMeasuredTopPlane) : depthMeasuredTopPlane;
+	return measuredDistanceShort > 0 ? measuredDistanceShort : depthMeasuredTopPlane;
+	//return measuredDistanceShort > 0 ? std::min(measuredDistanceShort, depthMeasuredTopPlane) : depthMeasuredTopPlane;
 }
 
 const short DepthMapProcessor::CalculateFloorDepth(const DepthMap& depthMap)
