@@ -74,7 +74,7 @@ namespace ExtIntegration.RequestHandlers
 				_requesthandlingTimeoutTimer.Stop();
 
 				_logger.LogInfo($"Generating HTTP response for {_address}...");
-				var responseString = GetResponseFromStatus(resultData, data.SendPhoto);
+				var responseString = RequestUtils.GenerateXmlResponseText(resultData, data.SendPhoto);
 				_logger.LogInfo($"Response text is the following: {Environment.NewLine}{responseString}");
 
 				var response = data.Context.Response;
@@ -96,38 +96,6 @@ namespace ExtIntegration.RequestHandlers
 			{
 				_sessionInProgress = false;
 			}
-		}
-
-		private static string GetResponseFromStatus(CalculationResultData resultData, bool includePhoto)
-		{
-			var responseString = "";
-
-			switch (resultData.Status)
-			{
-				case CalculationStatus.Error:
-					responseString = "Unknown error";
-					break;
-				case CalculationStatus.Sucessful:
-					responseString = RequestUtils.GenerateXmlResponseText(resultData, includePhoto);
-					break;
-				case CalculationStatus.BarcodeNotEntered:
-					responseString = "Barcode not entered";
-					break;
-				case CalculationStatus.AbortedByUser:
-					responseString = "Aborted by user";
-					break;
-				case CalculationStatus.FailedToSelectAlgorithm:
-					responseString = "Failed to start calculation";
-					break;
-				case CalculationStatus.ObjectNotFound:
-					responseString = "Object was not found";
-					break;
-				case CalculationStatus.TimedOut:
-					responseString = "Device connection error";
-					break;
-			}
-
-			return responseString;
 		}
 
 		public void Reset(HttpRequestData data, string text)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Primitives;
 
@@ -34,22 +33,25 @@ namespace ExtIntegration
 					}
 					break;
 				case CalculationStatus.Error:
-					content = new XElement("calculationResult", "calculation error");
+					content = new XElement("calculationResult", "Failed to start calculation");
 					break;
 				case CalculationStatus.AbortedByUser:
-					content = new XElement("calculationResult", "aborted");
+					content = new XElement("calculationResult", "Aborted by user");
 					break;
 				case CalculationStatus.Undefined:
-					content = new XElement("calculationResult", "unknown error");
+					content = new XElement("calculationResult", "Unknown error");
 					break;
 				case CalculationStatus.TimedOut:
-					content = new XElement("calculationResult", "device connection error");
+					content = new XElement("calculationResult", "Device connection error");
 					break;
 				case CalculationStatus.FailedToSelectAlgorithm:
-					content = new XElement("calculationResult", "algorithm error");
+					content = new XElement("calculationResult", "Algorithm error");
 					break;
 				case CalculationStatus.ObjectNotFound:
-					content = new XElement("calculationResult", "object not found");
+					content = new XElement("calculationResult", "Object not found");
+					break;
+				case CalculationStatus.BarcodeNotEntered:
+					content = new XElement("calculationResult", "Barcode not entered");
 					break;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(status), status, null);

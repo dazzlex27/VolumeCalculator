@@ -89,9 +89,11 @@ namespace ExtIntegration.RequestSenders
 						resultFile.WriteLine($"lengthMm={result.ObjectLengthMm}");
 						resultFile.WriteLine($"widthMm={result.ObjectWidthMm}");
 						resultFile.WriteLine($"heightMm={result.ObjectHeightMm}");
+						resultFile.WriteLine($"units={result.UnitCount}");
+						resultFile.WriteLine($"comment={result.CalculationComment}");
 					}
 
-					_logger.LogInfo("Uploading...");
+					_logger.LogInfo($"Uploading file to FTP server at {_sessionOptions.HostName}...");
 					var infoRemoteName = string.IsNullOrEmpty(_baseDirectory) 
 						? infoFileName 
 						: $"{_baseDirectory}/{infoFileName}";
@@ -109,13 +111,13 @@ namespace ExtIntegration.RequestSenders
 					}
 				}
 
-				_logger.LogInfo($"Sent files via FTP to {_sessionOptions.HostName}");
+				_logger.LogInfo($"Uploaded files to FTP server at {_sessionOptions.HostName}");
 
 				return true;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException("Failed to send data to FTP server", ex);
+				_logger.LogException($"Failed to upload data to FTP server at {_sessionOptions.HostName}", ex);
 				return false;
 			}
 			finally
