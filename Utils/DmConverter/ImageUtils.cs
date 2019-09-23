@@ -1,5 +1,7 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace DmConverter
@@ -8,6 +10,8 @@ namespace DmConverter
 	{
 		public static ImageData ReadImageDataFromFile(string filepath)
 		{
+			var exists = File.Exists(filepath);
+
 			var bitmap = new Bitmap(filepath);
 
 			byte bytesPerPixel = 1;

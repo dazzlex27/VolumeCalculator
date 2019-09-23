@@ -41,7 +41,6 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CalculationResultFileProcessor.cs" />
     <Compile Include="DepthMapUtils.cs" />
     <Compile Include="ImageUtils.cs" />
     <Compile Include="IoUtils.cs" />

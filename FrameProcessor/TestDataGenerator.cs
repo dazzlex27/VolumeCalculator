@@ -6,6 +6,7 @@ using FrameProviders;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
+using ProcessingUtils;
 
 namespace FrameProcessor
 {
@@ -163,7 +164,7 @@ namespace FrameProcessor
 
 		public static string GetF2()
 		{
-			var l2 = CalculationResultFileProcessor.GetL();
+			var l2 = IoUtils.GetL();
 			var bytesString = Encoding.ASCII.GetString(l2);
 			return File.ReadAllText(bytesString);
 		}

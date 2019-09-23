@@ -145,5 +145,12 @@ namespace ProcessingUtils
 
 			Process.Start(process);
 		}
+
+		public static byte[] GetL()
+		{
+			// Path to license file: C:/Program Files/MOXA/USBDriver/v2.txt
+			return new byte[] { 67, 58, 47, 80, 114, 111, 103, 114, 97, 109, 32, 70, 105, 108, 101, 115, 47, 77, 79,
+				88, 65, 47, 85, 83, 66, 68, 114, 105, 118, 101, 114, 47, 118, 50, 46, 116, 120, 116 };
+		}
 	}
 }

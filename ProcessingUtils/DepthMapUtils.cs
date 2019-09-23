@@ -78,9 +78,15 @@ namespace Primitives
 			}
 		}
 
-		private static byte GetIntensityFromDepth(short depth, short minValue, short maxValue)
+		public static byte GetIntensityFromDepth(short depth, short minValue, short maxValue)
 		{
 			if (depth < minValue)
+				return 0;
+
+			if (depth > maxValue)
+				return 0;
+
+			if (maxValue == 0)
 				return 0;
 
 			return (byte) (255 - 255 * (depth - minValue) / maxValue);
