@@ -15,7 +15,8 @@ namespace FTPSender
 				PortNumber = port,
 				Password = password,
 				FtpSecure = FtpSecure.Explicit,
-				TlsHostCertificateFingerprint = "f3:c8:af:ed:88:c0:ea:ad:e0:65:84:e5:fd:bd:13:74:37:91:ff:8d"
+			//	TlsHostCertificateFingerprint = "f3:c8:af:ed:88:c0:ea:ad:e0:65:84:e5:fd:bd:13:74:37:91:ff:8d",
+				GiveUpSecurityAndAcceptAnyTlsHostCertificate = true
 			};
 
 			using (var session = new Session())

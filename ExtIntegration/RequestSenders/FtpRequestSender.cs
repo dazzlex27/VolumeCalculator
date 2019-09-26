@@ -27,11 +27,9 @@ namespace ExtIntegration.RequestSenders
 				UserName = settings.Login,
 				PortNumber = settings.Port,
 				Password = settings.Password,
-				FtpSecure = settings.IsSecure ? FtpSecure.Explicit : FtpSecure.None
+				FtpSecure = settings.IsSecure ? FtpSecure.Explicit : FtpSecure.None,
+				GiveUpSecurityAndAcceptAnyTlsHostCertificate = settings.IsSecure
 			};
-
-			if (_sessionOptions.Protocol != Protocol.Ftp)
-				_sessionOptions.TlsHostCertificateFingerprint = settings.HostCertificateFingerprint;
 		}
 
 		public void Dispose()

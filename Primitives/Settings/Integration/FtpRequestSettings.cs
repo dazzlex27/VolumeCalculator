@@ -14,14 +14,12 @@
 
 		public bool IsSecure { get; set; }
 
-		public string HostCertificateFingerprint { get; set; }
-
 		public string BaseDirectory { get; set; }
 
 		public bool IncludeObjectPhotos { get; set; }
 
 		public FtpRequestSettings(bool enableRequests, string host, int port, string login, string password,
-			bool isSecure, string hostCertificateFingerprint, string baseDirectory, bool includeObjectPhotos)
+			bool isSecure, string baseDirectory, bool includeObjectPhotos)
 		{
 			EnableRequests = enableRequests;
 			Host = host;
@@ -29,14 +27,13 @@
 			Login = login;
 			Password = password;
 			IsSecure = isSecure;
-			HostCertificateFingerprint = hostCertificateFingerprint;
 			BaseDirectory = baseDirectory;
 			IncludeObjectPhotos = includeObjectPhotos;
 		}
 
 		public static FtpRequestSettings GetDefaultSettings()
 		{
-			return new FtpRequestSettings(false, "localhost", 21, "is", "", false, "", "is", false);
+			return new FtpRequestSettings(false, "localhost", 21, "is", "", false, "is", false);
 		}
 	}
 }

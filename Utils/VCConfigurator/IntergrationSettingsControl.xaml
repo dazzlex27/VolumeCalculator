@@ -230,25 +230,11 @@
 				            Orientation="Horizontal">
 					<CheckBox Margin="3"
 					         IsChecked="{Binding FtpRequestIsSecure, Mode=TwoWay}"
-							  Content="Шифрование"/>
+							  Content="Включить шифрование"/>
 				</StackPanel>
 				<StackPanel Margin="3" 
 				            Orientation="Horizontal"
 				            IsEnabled="{Binding FtpRequestIsSecure}">
-					<TextBlock Margin="3"
-					           Text="Ключ шифрования: "/>
-					<TextBox Margin="3"
-					         Text="{Binding FtpRequestHostCertificateFingerPrint, Mode=TwoWay}"
-					         Width="100"/>
-				</StackPanel>
-				<StackPanel Margin="3" 
-				            Orientation="Horizontal"
-				            IsEnabled="{Binding FtpRequestIsSecure}">
-					<TextBlock Margin="3"
-					           Text="Ключ шифрования: "/>
-					<TextBox Margin="3"
-					         Text="{Binding FtpRequestHostCertificateFingerPrint, Mode=TwoWay}"
-					         Width="100"/>
 				</StackPanel>
 				<StackPanel Margin="3" 
 				            Orientation="Horizontal">

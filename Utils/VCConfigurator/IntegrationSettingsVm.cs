@@ -33,7 +33,6 @@ namespace VCConfigurator
 		private string _ftpRequestLogin;
 		private string _ftpRequestPassword;
 		private bool _ftpRequestIsSecure;
-		private string _ftpRequestHostCertificateFingerPrint;
 		private string _ftpRequestBaseFolderName;
 		private bool _ftpRequestIncludeObjectPhotos;
 
@@ -187,12 +186,6 @@ namespace VCConfigurator
 			set => SetField(ref _ftpRequestIsSecure, value, nameof(FtpRequestIsSecure));
 		}
 
-		public string FtpRequestHostCertificateFingerPrint
-		{
-			get => _ftpRequestHostCertificateFingerPrint;
-			set => SetField(ref _ftpRequestHostCertificateFingerPrint, value, nameof(FtpRequestHostCertificateFingerPrint));
-		}
-
 		public string FtpRequestBaseFolderName
 		{
 			get => _ftpRequestBaseFolderName;
@@ -243,7 +236,6 @@ namespace VCConfigurator
 			FtpRequestLogin = ftpRequestSettings.Login;
 			FtpRequestPassword = ftpRequestSettings.Password;
 			FtpRequestIsSecure = ftpRequestSettings.IsSecure;
-			FtpRequestHostCertificateFingerPrint = ftpRequestSettings.HostCertificateFingerprint;
 			FtpRequestBaseFolderName = ftpRequestSettings.BaseDirectory;
 			FtpRequestIncludeObjectPhotos = ftpRequestSettings.IncludeObjectPhotos;
 		}
@@ -283,7 +275,6 @@ namespace VCConfigurator
 			ftpRequestSettings.Login = FtpRequestLogin;
 			ftpRequestSettings.Password = FtpRequestPassword;
 			ftpRequestSettings.IsSecure = FtpRequestIsSecure;
-			ftpRequestSettings.HostCertificateFingerprint = FtpRequestHostCertificateFingerPrint;
 			ftpRequestSettings.BaseDirectory = FtpRequestBaseFolderName;
 			ftpRequestSettings.IncludeObjectPhotos = FtpRequestIncludeObjectPhotos;
 		}
