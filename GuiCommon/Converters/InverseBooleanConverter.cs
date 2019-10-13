@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace GuiCommon
+namespace GuiCommon.Converters
 {
 	[ValueConversion(typeof(bool), typeof(bool))]
 	public class InverseBooleanConverter : IValueConverter

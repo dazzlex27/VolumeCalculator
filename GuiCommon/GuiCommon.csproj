@@ -48,12 +48,12 @@
   <ItemGroup>
     <Compile Include="BaseViewModel.cs" />
     <Compile Include="CommandHandler.cs" />
-    <Compile Include="ConjunctionToVisibilityMultiConverter.cs" />
-    <Compile Include="EnumDescriptionConverter.cs" />
+    <Compile Include="Converters\ConjunctionToVisibilityMultiConverter.cs" />
+    <Compile Include="Converters\EnumDescriptionConverter.cs" />
     <Compile Include="GuiConstants.cs" />
     <Compile Include="GraphicsUtils.cs" />
-    <Compile Include="HalfMeasureConverter.cs" />
-    <Compile Include="InverseBooleanConverter.cs" />
+    <Compile Include="Converters\HalfMeasureConverter.cs" />
+    <Compile Include="Converters\InverseBooleanConverter.cs" />
     <Compile Include="PathValidationRule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
 
-namespace GuiCommon
+namespace GuiCommon.Converters
 {
 	public class EnumDescriptionConverter : IValueConverter
 	{
