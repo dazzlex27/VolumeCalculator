@@ -72,6 +72,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProBuilder", "Utils\ProBuil
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CameraTest", "Utils\CameraTest\CameraTest.csproj", "{BED4B3ED-5072-4D4A-B4D5-BEC986101254}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSender", "Utils\SqlSender\SqlSender.csproj", "{456CB7CB-E45D-427F-B072-DDB0BF7FED09}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -182,6 +184,10 @@ Global
 		{BED4B3ED-5072-4D4A-B4D5-BEC986101254}.Debug|x64.Build.0 = Debug|x64
 		{BED4B3ED-5072-4D4A-B4D5-BEC986101254}.Release|x64.ActiveCfg = Release|x64
 		{BED4B3ED-5072-4D4A-B4D5-BEC986101254}.Release|x64.Build.0 = Release|x64
+		{456CB7CB-E45D-427F-B072-DDB0BF7FED09}.Debug|x64.ActiveCfg = Debug|x64
+		{456CB7CB-E45D-427F-B072-DDB0BF7FED09}.Debug|x64.Build.0 = Debug|x64
+		{456CB7CB-E45D-427F-B072-DDB0BF7FED09}.Release|x64.ActiveCfg = Release|x64
+		{456CB7CB-E45D-427F-B072-DDB0BF7FED09}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -203,6 +209,7 @@ Global
 		{284E3272-FF0A-489A-89C1-A762F4E84E0C} = {6662A328-9321-4460-B32A-D8D20A42541C}
 		{CCC5644C-967B-455E-BB05-3F6035E5BB73} = {6662A328-9321-4460-B32A-D8D20A42541C}
 		{BED4B3ED-5072-4D4A-B4D5-BEC986101254} = {6662A328-9321-4460-B32A-D8D20A42541C}
+		{456CB7CB-E45D-427F-B072-DDB0BF7FED09} = {6662A328-9321-4460-B32A-D8D20A42541C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2C1AE4EA-452B-4AFD-A6A6-98D4514E4441}

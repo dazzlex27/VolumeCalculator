@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ExtIntegration.RequestHandlers;
 using ExtIntegration.RequestSenders;
+using ExtIntegration.RequestSenders.SqlSenders;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings.Integration;

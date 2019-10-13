@@ -4,9 +4,20 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:VCConfigurator"
+             xmlns:settings="clr-namespace:Primitives.Settings;assembly=Primitives"
+			 xmlns:system="clr-namespace:System;assembly=mscorlib"
 			 d:DataContext="{d:DesignInstance local:IntegrationSettingsVm}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+	<UserControl.Resources>
+		<ObjectDataProvider x:Key="AllSqlProviders"
+		                    MethodName="GetValues"
+		                    ObjectType="{x:Type system:Enum}">
+			<ObjectDataProvider.MethodParameters>
+				<x:Type TypeName="settings:SqlProvider" />
+			</ObjectDataProvider.MethodParameters>
+		</ObjectDataProvider>
+	</UserControl.Resources>
 	<WrapPanel Margin="3" MaxWidth="600">
 		<GroupBox Margin="3">
 			<GroupBox.Header>
@@ -136,6 +147,19 @@
 				          IsChecked="{Binding EnableSqlRequests, Mode=TwoWay}"/>
 			</GroupBox.Header>
 			<StackPanel IsEnabled="{Binding EnableSqlRequests}">
+				<StackPanel Margin="3" 
+			            Orientation="Horizontal">
+					<TextBlock Margin="3"
+				           Text="Провайдер: "/>
+					<ComboBox ItemsSource="{Binding Source={StaticResource AllSqlProviders}}"
+				          SelectedItem="{Binding SelectedSqlProvider, Mode=TwoWay}">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+				</StackPanel>
 				<StackPanel Margin="3" 
 			            Orientation="Horizontal">
 					<TextBlock Margin="3"

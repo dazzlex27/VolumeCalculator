@@ -61,6 +61,7 @@
       <DependentUpon>DeviceSettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="DeviceSettingsVm.cs" />
+    <Compile Include="EnumDescriptionConverter.cs" />
     <Compile Include="IntegrationSettingsVm.cs" />
     <Compile Include="IntergrationSettingsControl.xaml.cs">
       <DependentUpon>IntergrationSettingsControl.xaml</DependentUpon>

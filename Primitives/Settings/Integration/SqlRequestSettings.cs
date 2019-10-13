@@ -4,6 +4,8 @@
 	{
 		public bool EnableRequests { get; set; }
 
+		public SqlProvider Provider { get; set; }
+
 		public string HostName { get; set; }
 
 		public string Username { get; set; }
@@ -14,10 +16,11 @@
 
 		public string TableName { get; set; }
 
-		public SqlRequestSettings(bool enableRequests, string hostName, string username, string password, string dbName, 
-			string tableName)
+		public SqlRequestSettings(bool enableRequests, SqlProvider provider, string hostName, string username, 
+			string password, string dbName, string tableName)
 		{
 			EnableRequests = enableRequests;
+			Provider = provider;
 			HostName = hostName;
 			Username = username;
 			Password = password;
@@ -27,7 +30,7 @@
 
 		public static SqlRequestSettings GetDefaultSettings()
 		{
-			return new SqlRequestSettings(false, "localhost", "sa", "Password123", "db1", "table1");
+			return new SqlRequestSettings(false, SqlProvider.MsSqlServer, "localhost", "sa", "Password123", "db1", "table1");
 		}
 	}
 }

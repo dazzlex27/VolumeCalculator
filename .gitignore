@@ -34,6 +34,8 @@
 /Utils/DmConverter/bin
 /Utils/FtpSender/obj
 /Utils/FtpSender/bin
+/Utils/SqlSender/obj
+/Utils/SqlSender/bin
 /Utils/VersionWriter/obj
 /Utils/MReader/obj
 /Utils/ProBuilder/obj

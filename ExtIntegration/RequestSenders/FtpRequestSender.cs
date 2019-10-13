@@ -5,7 +5,7 @@ using Primitives.Logging;
 using Primitives.Settings.Integration;
 using WinSCP;
 
-namespace ExtIntegration.RequestSenders
+namespace ExtIntegration.RequestSenders.SqlSenders
 {
 	public class FtpRequestSender : IRequestSender
 	{
@@ -59,6 +59,19 @@ namespace ExtIntegration.RequestSenders
 			{
 				_logger.LogInfo($"Sending files via FTP to {_sessionOptions.HostName}...");
 
+				var weightUnitsString = "";
+
+				using (var resultFile = File.AppendText(infoFileName))
+				{
+					resultFile.WriteLine($"barcode={result.Barcode}");
+					resultFile.WriteLine($"weight{weightUnitsString}={result.ObjectWeight}");
+					resultFile.WriteLine($"lengthMm={result.ObjectLengthMm}");
+					resultFile.WriteLine($"widthMm={result.ObjectWidthMm}");
+					resultFile.WriteLine($"heightMm={result.ObjectHeightMm}");
+					resultFile.WriteLine($"units={result.UnitCount}");
+					resultFile.WriteLine($"comment={result.CalculationComment}");
+				}
+
 				using (var session = new Session())
 				{
 					session.Open(_sessionOptions);
@@ -69,7 +82,7 @@ namespace ExtIntegration.RequestSenders
 						PreserveTimestamp = true
 					};
 
-					var weightUnitsString = "";
+
 					switch (result.WeightUnits)
 					{
 						case WeightUnits.Gr:
@@ -78,17 +91,6 @@ namespace ExtIntegration.RequestSenders
 						case WeightUnits.Kg:
 							weightUnitsString = "Kg";
 							break;
-					}
-
-					using (var resultFile = File.AppendText(infoFileName))
-					{
-						resultFile.WriteLine($"barcode={result.Barcode}");
-						resultFile.WriteLine($"weight{weightUnitsString}={result.ObjectWeight}");
-						resultFile.WriteLine($"lengthMm={result.ObjectLengthMm}");
-						resultFile.WriteLine($"widthMm={result.ObjectWidthMm}");
-						resultFile.WriteLine($"heightMm={result.ObjectHeightMm}");
-						resultFile.WriteLine($"units={result.UnitCount}");
-						resultFile.WriteLine($"comment={result.CalculationComment}");
 					}
 
 					_logger.LogInfo($"Uploading file to FTP server at {_sessionOptions.HostName}...");

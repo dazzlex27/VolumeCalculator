@@ -1,4 +1,5 @@
-﻿using Primitives.Settings.Integration;
+﻿using Primitives.Settings;
+using Primitives.Settings.Integration;
 
 namespace VCConfigurator
 {
@@ -21,6 +22,7 @@ namespace VCConfigurator
 		private string _httpRequestPassword;
 
 		private bool _enableSqlRequests;
+		private SqlProvider _selectedSqlProvider;
 		private string _sqlRequestHostName;
 		private string _sqlRequestUsername;
 		private string _sqlRequestPassword;
@@ -118,6 +120,12 @@ namespace VCConfigurator
 		{
 			get => _enableSqlRequests;
 			set => SetField(ref _enableSqlRequests, value, nameof(EnableSqlRequests));
+		}
+
+		public SqlProvider SelectedSqlProvider
+		{
+			get => _selectedSqlProvider;
+			set => SetField(ref _selectedSqlProvider, value, nameof(SelectedSqlProvider));
 		}
 
 		public string SqlRequestHostName
@@ -223,6 +231,7 @@ namespace VCConfigurator
 
 			var sqlRequestSettings = settings.SqlRequestSettings;
 			EnableSqlRequests = sqlRequestSettings.EnableRequests;
+			SelectedSqlProvider = sqlRequestSettings.Provider;
 			SqlRequestHostName = sqlRequestSettings.HostName;
 			SqlRequestUsername = sqlRequestSettings.Username;
 			SqlRequestPassword = sqlRequestSettings.Password;
@@ -263,6 +272,7 @@ namespace VCConfigurator
 
 			var sqlRequestSettings = settings.SqlRequestSettings;
 			sqlRequestSettings.EnableRequests = EnableSqlRequests;
+			sqlRequestSettings.Provider = SelectedSqlProvider;
 			sqlRequestSettings.HostName = SqlRequestHostName;
 			sqlRequestSettings.Username = SqlRequestUsername;
 			sqlRequestSettings.Password = SqlRequestPassword;
