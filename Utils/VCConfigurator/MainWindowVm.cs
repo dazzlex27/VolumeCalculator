@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Windows.Input;
+using GuiCommon;
 using Primitives.Settings;
 using ProcessingUtils;
 

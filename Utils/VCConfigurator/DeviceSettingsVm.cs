@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using GuiCommon;
 using Primitives.Settings;
 
 namespace VCConfigurator

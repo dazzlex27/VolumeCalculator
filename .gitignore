@@ -6,10 +6,11 @@
 /DepthMapProcessor/obj
 /DepthMapProcessor/libDepthMapProcessor.vcxproj.user
 /FrameProcessor/obj
-/VolumeCalculatorGUI/obj
+/VolumeCalculator/obj
 /DeviceIntegration/obj
 /ExtIntegration/obj
 /FrameProviders/obj
+/GuiCommon/obj
 /D435FrameProvider/obj
 /D435FrameProvider/D435FrameProvider.vcxproj.user
 /Tests/DepthMapProcessorTests/DepthMapProcessorTests.vcxproj.user

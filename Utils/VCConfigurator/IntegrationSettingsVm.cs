@@ -1,4 +1,5 @@
-﻿using Primitives.Settings;
+﻿using GuiCommon;
+using Primitives.Settings;
 using Primitives.Settings.Integration;
 
 namespace VCConfigurator

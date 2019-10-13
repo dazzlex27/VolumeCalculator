@@ -41,7 +41,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Pelfusion-Long-Shadow-Media-Settings.ico</ApplicationIcon>
+    <ApplicationIcon>gearIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
@@ -55,18 +55,15 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="BaseViewModel.cs" />
-    <Compile Include="CommandHandler.cs" />
-    <Compile Include="DeviceSettingsControl.xaml.cs">
+    <Compile Include="GUI\DeviceSettingsControl.xaml.cs">
       <DependentUpon>DeviceSettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="DeviceSettingsVm.cs" />
-    <Compile Include="EnumDescriptionConverter.cs" />
     <Compile Include="IntegrationSettingsVm.cs" />
-    <Compile Include="IntergrationSettingsControl.xaml.cs">
+    <Compile Include="GUI\IntergrationSettingsControl.xaml.cs">
       <DependentUpon>IntergrationSettingsControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="GUI\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindowVm.cs" />
@@ -77,6 +74,10 @@
     <None Include="app.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\GuiCommon\GuiCommon.csproj">
+      <Project>{9D608412-EDB0-4010-8E90-7E45F0607CC4}</Project>
+      <Name>GuiCommon</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Primitives\Primitives.csproj">
       <Project>{90c0cc4f-e7d1-4a68-801b-fa4bdfc4a55b}</Project>
       <Name>Primitives</Name>
@@ -95,21 +96,21 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="DeviceSettingsControl.xaml">
+    <Page Include="GUI\DeviceSettingsControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="IntergrationSettingsControl.xaml">
+    <Page Include="GUI\IntergrationSettingsControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="GUI\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Pelfusion-Long-Shadow-Media-Settings.ico" />
+    <Content Include="gearIcon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
