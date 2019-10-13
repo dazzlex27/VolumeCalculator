@@ -7,6 +7,7 @@
 /DepthMapProcessor/libDepthMapProcessor.vcxproj.user
 /FrameProcessor/obj
 /VolumeCalculator/obj
+/VCConfigurator/obj
 /DeviceIntegration/obj
 /ExtIntegration/obj
 /FrameProviders/obj
@@ -40,7 +41,6 @@
 /Utils/VersionWriter/obj
 /Utils/MReader/obj
 /Utils/ProBuilder/obj
-/Utils/VCConfigurator/obj
 /Utils/WmsEmulator/obj
 /Utils/CameraTest/bin
 /Utils/CameraTest/obj

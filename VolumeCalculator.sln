@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCalculator", "VolumeC
 		{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D} = {0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VCConfigurator", "VCConfigurator\VCConfigurator.csproj", "{531B0C63-A397-4BC0-9BA3-6F35B440FDE4}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "D435FrameProvider", "D435FrameProvider\D435FrameProvider.vcxproj", "{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameProviders", "FrameProviders\FrameProviders.csproj", "{F9973DC5-0D7C-4805-A622-E99492CD3714}"
@@ -45,8 +47,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VersionWriter", "Utils\VersionWriter\VersionWriter.csproj", "{AE0BF620-EE8F-41C6-B981-7D342FD2EC3B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MReader", "Utils\MReader\MReader.csproj", "{846AD7C7-DBAC-4185-8DEB-FCD51E0F10BB}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VCConfigurator", "Utils\VCConfigurator\VCConfigurator.csproj", "{531B0C63-A397-4BC0-9BA3-6F35B440FDE4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WmsEmulator", "Utils\WmsEmulator\WmsEmulator.csproj", "{16A200EE-28EC-4F21-BC3E-6D55CC1C9326}"
 EndProject
