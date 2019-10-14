@@ -47,11 +47,14 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 
 			using (var command = new SqlCommand(_insertionSqlRequestCommand, _connection))
 			{
+				command.Parameters.AddWithValue("@datetime", result.CalculationTime);
+				command.Parameters.AddWithValue("@barcode", result.Barcode);
 				command.Parameters.AddWithValue("@weight", result.ObjectWeight);
 				command.Parameters.AddWithValue("@length", result.ObjectLengthMm);
 				command.Parameters.AddWithValue("@width", result.ObjectWidthMm);
 				command.Parameters.AddWithValue("@height", result.ObjectHeightMm);
-				command.Parameters.AddWithValue("@barcode", result.Barcode);
+				command.Parameters.AddWithValue("@unitcount", result.UnitCount);
+				command.Parameters.AddWithValue("@comment", result.CalculationComment);
 				return command.ExecuteNonQuery();
 			}
 		}

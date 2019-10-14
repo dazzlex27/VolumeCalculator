@@ -16,7 +16,7 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 		{
 			_logger = logger;
 
-			var insertionSqlRequest = $"INSERT INTO {requestSettings.TableName} (WEIGHT, LENGTH, WIDTH, HEIGHT, BARCODE) VALUES (@weight, @length, @width, @height, @barcode);";
+			var insertionSqlRequest = $"INSERT INTO {requestSettings.TableName} (DATETIME, BARCODE, WEIGHT, LENGTH, WIDTH, HEIGHT, UNITCOUNT, COMMENT) VALUES (@datetime, @barcode, @weight, @length, @width, @height, @unitcount, @comment);";
 
 			_engine = SqlRequestEngineFactory.CreateEngine(requestSettings, insertionSqlRequest);
 			_connectionString = _engine.GetConnectionString();

@@ -1,8 +1,20 @@
 <project outputDir="..\..\..\!!bin\x64\Release\Confused" baseDir="..\..\!!bin\x64\Release" xmlns="http://confuser.codeplex.com">
   <module path="GodSharp.SerialPort.dll"/>
   <module path="Newtonsoft.Json.dll"/>
+  <module path="Google.Protobuf.dll"/>
+  <module path="MySql.Data.dll"/>
+  <module path="Renci.SshNet.dll"/>
+  <module path="BouncyCastle.Crypto.dll"/>
   <module path="Primitives.dll"/>
-    <module path="ProcessingUtils.dll">
+  <module path="GuiCommon.dll">
+    <rule pattern="true" preset="aggressive" inherit="false">
+      <protection id="rename" />
+      <protection id="constants" />
+	  <protection id="anti tamper" />
+      <protection id="anti debug" />
+    </rule>
+  </module>
+  <module path="ProcessingUtils.dll">
     <rule pattern="true" preset="aggressive" inherit="false">
       <protection id="rename" />
       <protection id="constants" />
@@ -17,15 +29,7 @@
 	  <protection id="anti tamper" />
       <protection id="anti debug" />
     </rule>
-  </module>
-  <module path="ExtIntegration.dll">
-    <rule pattern="true" preset="aggressive" inherit="false">
-      <protection id="rename" />
-      <protection id="constants" />
-	  <protection id="anti tamper" />
-      <protection id="anti debug" />
-    </rule>
-  </module>
+  </module>  
   <module path="FrameProcessor.dll">
     <rule pattern="true" preset="aggressive" inherit="false">
       <protection id="rename" />
@@ -33,7 +37,7 @@
 	  <protection id="anti tamper" />
       <protection id="anti debug" />
     </rule>
-  </module>
+  </module>  
   <module path="FrameProviders.dll">
     <rule pattern="true" preset="aggressive" inherit="false">
       <protection id="rename" />
@@ -41,13 +45,15 @@
 	  <protection id="anti tamper" />
       <protection id="anti debug" />
     </rule>
-  </module>
-  <module path="VolumeCalculator.exe">
+  </module>  
+  <module path="ExtIntegration.dll">
     <rule pattern="true" preset="aggressive" inherit="false">
       <protection id="rename" />
       <protection id="constants" />
 	  <protection id="anti tamper" />
       <protection id="anti debug" />
     </rule>
-  </module>
+  </module>  
+  <module path="VCConfigurator.exe"/>
+  <module path="VolumeCalculator.exe"/>
 </project>
