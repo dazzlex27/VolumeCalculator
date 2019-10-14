@@ -23,7 +23,7 @@ namespace ExtIntegration
 							new XElement("length", result.ObjectLengthMm),
 							new XElement("width", result.ObjectWidthMm),
 							new XElement("height", result.ObjectHeightMm),
-							new XElement("units", result.UnitCount),
+							new XElement("unitCount", result.UnitCount),
 							new XElement("comment", result.CalculationComment));
 
 					if (includePhoto)

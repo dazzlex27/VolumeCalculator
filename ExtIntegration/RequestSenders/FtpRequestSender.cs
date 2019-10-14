@@ -61,6 +61,16 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 
 				var weightUnitsString = "";
 
+				switch (result.WeightUnits)
+				{
+					case WeightUnits.Gr:
+						weightUnitsString = "Gr";
+						break;
+					case WeightUnits.Kg:
+						weightUnitsString = "Kg";
+						break;
+				}
+
 				using (var resultFile = File.AppendText(infoFileName))
 				{
 					resultFile.WriteLine($"barcode={result.Barcode}");
@@ -68,7 +78,7 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 					resultFile.WriteLine($"lengthMm={result.ObjectLengthMm}");
 					resultFile.WriteLine($"widthMm={result.ObjectWidthMm}");
 					resultFile.WriteLine($"heightMm={result.ObjectHeightMm}");
-					resultFile.WriteLine($"units={result.UnitCount}");
+					resultFile.WriteLine($"unitCount={result.UnitCount}");
 					resultFile.WriteLine($"comment={result.CalculationComment}");
 				}
 
@@ -82,20 +92,9 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 						PreserveTimestamp = true
 					};
 
-
-					switch (result.WeightUnits)
-					{
-						case WeightUnits.Gr:
-							weightUnitsString = "Gr";
-							break;
-						case WeightUnits.Kg:
-							weightUnitsString = "Kg";
-							break;
-					}
-
 					_logger.LogInfo($"Uploading file to FTP server at {_sessionOptions.HostName}...");
-					var infoRemoteName = string.IsNullOrEmpty(_baseDirectory) 
-						? infoFileName 
+					var infoRemoteName = string.IsNullOrEmpty(_baseDirectory)
+						? infoFileName
 						: $"{_baseDirectory}/{infoFileName}";
 					var transferResult = session.PutFiles($"{infoFileName}", infoRemoteName, false, transferOptions);
 					transferResult.Check();

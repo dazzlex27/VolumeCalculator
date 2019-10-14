@@ -41,7 +41,7 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 
 			using (var command = new MySqlCommand(_insertionSqlRequestCommand, _connection))
 			{
-				command.Parameters.AddWithValue("@datetime", result.CalculationTime);
+				command.Parameters.AddWithValue("@datetime", result.CalculationTime.ToString("yyyy-MM-dd HH:mm:ss"));
 				command.Parameters.AddWithValue("@barcode", result.Barcode);
 				command.Parameters.AddWithValue("@weight", result.ObjectWeight);
 				command.Parameters.AddWithValue("@length", result.ObjectLengthMm);

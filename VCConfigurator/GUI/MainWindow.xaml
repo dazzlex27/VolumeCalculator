@@ -12,7 +12,7 @@
         d:DataContext="{d:DesignInstance local:MainWindowVm}"
         WindowStartupLocation="CenterScreen"
         SizeToContent="WidthAndHeight"
-        ResizeMode="NoResize">
+        ResizeMode="CanMinimize">
 	<Window.DataContext>
 		<local:MainWindowVm/>
 	</Window.DataContext>

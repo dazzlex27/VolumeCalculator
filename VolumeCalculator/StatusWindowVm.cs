@@ -1,4 +1,5 @@
 ﻿using GuiCommon;
+using Primitives;
 using Primitives.Logging;
 using ProcessingUtils;
 using System;
@@ -10,10 +11,17 @@ namespace VolumeCalculatorGUI
 {
 	internal class StatusWindowVm : BaseViewModel
 	{
+		private string _appVersion;
 		private string _hostName;
 		private string _currentIp;
 		private bool _licenseIsOk;
 		private bool _webServerIsRunning;
+
+		public string AppVersion
+		{
+			get => _appVersion;
+			set => SetField(ref _appVersion, value, nameof(AppVersion));
+		}
 
 		public string HostName
 		{
@@ -46,6 +54,8 @@ namespace VolumeCalculatorGUI
 				HostName = IoUtils.GetHostName();
 
 				var ipAddresses = IoUtils.GetLocalIpAddresses();
+
+				AppVersion = GlobalConstants.AppVersion;
 
 				CurrentIp = string.Join(Environment.NewLine, ipAddresses);
 				LicenseIsOk = licenseIsOk;
