@@ -27,7 +27,7 @@ ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 
 [Files]
-Source: {#ObfuscatedPath}\*; DestDir: "{app}";  Flags: ignoreversion; BeforeInstall: TaskKill('VolumeCalculator.exe')
+Source: {#ObfuscatedPath}\*; DestDir: "{app}";  Flags: ignoreversion; BeforeInstall: KillExecutables()
 Source: {#SourcePath}Microsoft.Kinect.dll; DestDir: "{app}"
 Source: {#SourcePath}Fleck.dll; DestDir: "{app}"
 Source: {#SourcePath}IPCameraTest.exe; DestDir: "{app}"
@@ -57,6 +57,7 @@ Filename: "C:\web\nginx-1.15.8\nginx.exe"; Flags: nowait
 Filename: "schtasks"; Parameters: "/Delete /f /tn ""RunVCalc""";
 Filename: "schtasks"; Parameters: "/Delete /f /tn ""RunVCalcWeb""";
 Filename: "taskkill"; Parameters: "/im ""VolumeCalculator.exe"" /f"; Flags: runhidden
+Filename: "taskkill"; Parameters: "/im ""VCConfigurator.exe"" /f"; Flags: runhidden
 Filename: "taskkill"; Parameters: "/im ""nginx.exe"" /f"; Flags: runhidden
 
 [Code]
@@ -140,4 +141,10 @@ begin
       UninstallPreviousVersion();
     end;
   end;
+end;
+
+procedure KillExecutables();
+begin
+    TaskKill('VolumeCalculator.exe');
+	TaskKill('VCConfigurator.exe');
 end;
