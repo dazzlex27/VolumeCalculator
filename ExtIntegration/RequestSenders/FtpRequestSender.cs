@@ -26,7 +26,7 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 
 			_hostname = settings.Host;
 			_port = settings.Port;
-			 _baseDirectory = settings.BaseDirectory;
+			_baseDirectory = settings.BaseDirectory;
 			_includeObjectPhoto = settings.IncludeObjectPhotos;
 			_credentials = new NetworkCredential(settings.Login, settings.Password);
 
@@ -69,11 +69,25 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 			{
 				_logger.LogInfo($"Sending files via FTP to {_hostname}...");
 
-				var timeString = resultData.Result.CalculationTime.ToString("yyyyMMddHHmmss");
-				var fileName = $"{resultData.Result.Barcode}_{timeString}";
+				var calculationResult = resultData.Result;
 
-				using (var memoryStream = GetTextFileMemoryStream(resultData.Result))
+				var timeString = resultData.Result.CalculationTime.ToString("yyyyMMddHHmmss");
+				var fileName = $"{calculationResult.Barcode}_{timeString}";
+
+				using (var memoryStream = new MemoryStream())
+				using (var writer = new StreamWriter(memoryStream))
 				{
+					writer.WriteLine($"barcode={calculationResult.Barcode}");
+					writer.WriteLine($"weight{GetWeightUnitsString(calculationResult)}={calculationResult.ObjectWeight}");
+					writer.WriteLine($"lengthMm={calculationResult.ObjectLengthMm}");
+					writer.WriteLine($"widthMm={calculationResult.ObjectWidthMm}");
+					writer.WriteLine($"heightMm={calculationResult.ObjectHeightMm}");
+					writer.WriteLine($"unitCount={calculationResult.UnitCount}");
+					writer.WriteLine($"comment={calculationResult.CalculationComment}");
+
+					writer.Flush();
+					memoryStream.Seek(0, SeekOrigin.Begin);
+
 					var remoteFileName = Path.Combine(_baseDirectory, $"{fileName}.txt");
 
 					var result = _client.UploadAsync(memoryStream, remoteFileName, FtpExists.Overwrite, true).GetAwaiter().GetResult();
@@ -83,8 +97,11 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 
 				if (_includeObjectPhoto)
 				{
-					using (var memoryStream = GetPhotoFileMemoryStream(resultData))
+					using (var memoryStream = new MemoryStream())
+					using (var bitmap = ImageUtils.GetBitmapFromImageData(resultData.ObjectPhoto))
 					{
+						bitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
+
 						var remoteFileName = Path.Combine(_baseDirectory, $"{fileName}.png");
 
 						var result = _client.UploadAsync(memoryStream, remoteFileName, FtpExists.Overwrite, true).GetAwaiter().GetResult();
@@ -102,39 +119,6 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 				_logger.LogException($"Failed to upload data to FTP server at {_hostname}", ex);
 				return false;
 			}
-		}
-
-		private static MemoryStream GetPhotoFileMemoryStream(CalculationResultData resultData)
-		{
-			var stream = new MemoryStream();
-			using (var bmp = ImageUtils.GetBitmapFromImageData(resultData.ObjectPhoto))
-			{
-				bmp.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-			}
-
-			return stream;
-		}
-
-		private static MemoryStream GetTextFileMemoryStream(CalculationResult result)
-		{
-			var weightUnitsString = GetWeightUnitsString(result);
-
-			var stream = new MemoryStream();
-			using (var writer = new StreamWriter(stream))
-			{
-				writer.WriteLine($"barcode={result.Barcode}");
-				writer.WriteLine($"weight{weightUnitsString}={result.ObjectWeight}");
-				writer.WriteLine($"lengthMm={result.ObjectLengthMm}");
-				writer.WriteLine($"widthMm={result.ObjectWidthMm}");
-				writer.WriteLine($"heightMm={result.ObjectHeightMm}");
-				writer.WriteLine($"unitCount={result.UnitCount}");
-				writer.WriteLine($"comment={result.CalculationComment}");
-
-				writer.Flush();
-				stream.Seek(0, SeekOrigin.Begin);
-			}
-
-			return stream;
 		}
 
 		private static string GetWeightUnitsString(CalculationResult result)
