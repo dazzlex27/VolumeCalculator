@@ -1,56 +1,79 @@
-﻿using System;
-using WinSCP;
+﻿using FluentFTP;
+using System;
+using System.Drawing;
+using System.IO;
+using System.Net;
+using System.Security.Authentication;
 
 namespace FTPSender
 {
 	internal class FtpSender
 	{
-		public FtpSender(string host, ushort port, string login, string password)
+		public FtpSender(string host, ushort port, string login, string password, bool useEncryption)
 		{
-			var sessionOptions = new SessionOptions
+			try
 			{
-				Protocol = Protocol.Ftp,
-				HostName = host,
-				UserName = login,
-				PortNumber = port,
-				Password = password,
-				FtpSecure = FtpSecure.Explicit,
-			//	TlsHostCertificateFingerprint = "f3:c8:af:ed:88:c0:ea:ad:e0:65:84:e5:fd:bd:13:74:37:91:ff:8d",
-				GiveUpSecurityAndAcceptAnyTlsHostCertificate = true
-			};
-
-			using (var session = new Session())
-			{
-				try
+				var credentials = new NetworkCredential(login, password);
+				using (var client = new FtpClient(host, port, credentials)
 				{
-					session.Open(sessionOptions);
+					EncryptionMode = useEncryption ? FtpEncryptionMode.Explicit : FtpEncryptionMode.None,
+					DataConnectionEncryption = useEncryption,
+					SslProtocols = SslProtocols.Default | SslProtocols.Tls11 | SslProtocols.Tls12
+				})
+				{
+					client.ValidateCertificate += Client_ValidateCertificate;
+					client.Connect();
+					Console.WriteLine("Connected");
+					Console.ReadKey();
 
-					var transferOptions = new TransferOptions
+					using (var memoryStream = new MemoryStream())
+					using (var writer = new StreamWriter(memoryStream))
 					{
-						TransferMode = TransferMode.Binary,
-						PreserveTimestamp = true
-					};
+						writer.WriteLine("test:");
+						writer.WriteLine(DateTime.Now.ToString());
+						writer.Flush();
+						memoryStream.Seek(0, SeekOrigin.Begin);
 
-					const string photoName = "is.png";
-					const string textFileName = "info.txt";
-					var folderName = DateTime.Now.Ticks;
-					session.PutFiles($"{photoName}", $"{folderName}/{photoName}", false, transferOptions);
-					var transferResult = session.PutFiles($"{textFileName}", $"{folderName}/{textFileName}", false, transferOptions);
+						var filename = "test.txt";
+						var remotePath = "isTest";
 
-					// Throw on any error
-					transferResult.Check();
+						var remoteFileName = Path.Combine(remotePath, filename);
 
-					// Print results
-					foreach (TransferEventArgs transfer in transferResult.Transfers)
-					{
-						Console.WriteLine("Upload of {0} succeeded", transfer.FileName);
+						var result = client.UploadAsync(memoryStream, remoteFileName, FtpExists.Overwrite, true).GetAwaiter().GetResult();
 					}
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine($"Failed to send file: {ex}");
+
+					Console.WriteLine("Saved the text file");
+
+					using (var memoryStream = new MemoryStream())
+					{
+						using (var bitmap = new Bitmap(40, 30))
+						{
+							bitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
+
+							var filename = "test.png";
+							var remotePath = "isTest";
+
+							var remoteFileName = Path.Combine(remotePath, filename);
+
+							var result = client.UploadAsync(memoryStream, remoteFileName, FtpExists.Overwrite, true).GetAwaiter().GetResult();
+						}
+					}
+
+					Console.WriteLine("Saved the image file file");
+
+					client.ValidateCertificate -= Client_ValidateCertificate;
+					client.Disconnect();
 				}
 			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Failed to upload test files: {ex}");
+			}
+		}
+
+		private void Client_ValidateCertificate(FtpClient control, FtpSslValidationEventArgs e)
+		{
+			e.Accept = true;
 		}
 	}
 }

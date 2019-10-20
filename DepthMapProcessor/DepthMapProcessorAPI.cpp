@@ -1,6 +1,5 @@
 #include "DepthMapProcessorAPI.h"
 #include "DepthMapProcessor.h"
-#include <fstream>
 
 DepthMapProcessor* Processor;
 
@@ -15,9 +14,9 @@ DLL_EXPORT void SetAlgorithmSettings(short floorDepth, short cutOffDepth, RelPoi
 	Processor->SetAlgorithmSettings(floorDepth, cutOffDepth, polygonPoints, polygonPointCount, colorRoiRect);
 }
 
-DLL_EXPORT void SetDebugPath(const char* path)
+DLL_EXPORT void SetDebugPath(const char* path, bool maskMode)
 {
-	Processor->SetDebugPath(path);
+	Processor->SetDebugPath(path, maskMode);
 }
 
 DLL_EXPORT VolumeCalculationResult* CalculateObjectVolume(VolumeCalculationData calculationData)
@@ -42,13 +41,9 @@ DLL_EXPORT short CalculateFloorDepth(DepthMap depthMap)
 	return Processor->CalculateFloorDepth(depthMap);
 }
 
-DLL_EXPORT int SelectAlgorithm(DepthMap depthMap, ColorImage colorImage, const long measuredDistance,
-	bool dm1Enabled, bool dm2Enabled, bool rgbEnabled)
+DLL_EXPORT AlgorithmSelectionResult SelectAlgorithm(AlgorithmSelectionData data)
 {
-	if (depthMap.Data == nullptr)
-		return -1;
-
-	return Processor->SelectAlgorithm(depthMap, colorImage, measuredDistance, dm1Enabled, dm2Enabled, rgbEnabled);
+	return Processor->SelectAlgorithm(data);
 }
 
 DLL_EXPORT void DestroyDepthMapProcessor()

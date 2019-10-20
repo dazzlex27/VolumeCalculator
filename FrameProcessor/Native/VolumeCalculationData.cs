@@ -6,11 +6,8 @@ namespace FrameProcessor.Native
 	internal unsafe struct VolumeCalculationData
 	{
 		public DepthMap* DepthMap;
-		public ColorImage* Image;
-		public int SelectedAlgorithm;
-		public long RangeMeterDistance;
-		public bool SaveDebugData;
-		public int CalculationNumber;
-		public bool MaskMode;
+		public ColorImage* ColorImage;
+		public AlgorithmSelectionResult SelectedAlgorithm;
+		public short CalculatedDistance;
 	}
 }

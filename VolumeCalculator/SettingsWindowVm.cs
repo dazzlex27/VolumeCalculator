@@ -8,11 +8,9 @@ using GuiCommon;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
-using VolumeCalculatorGUI.GUI;
-using VolumeCalculatorGUI.GUI.Utils;
-using VolumeCalculatorGUI.Utils;
+using VolumeCalculator.GUI;
 
-namespace VolumeCalculatorGUI
+namespace VolumeCalculator
 {
 	internal class SettingsWindowVm : BaseViewModel
 	{

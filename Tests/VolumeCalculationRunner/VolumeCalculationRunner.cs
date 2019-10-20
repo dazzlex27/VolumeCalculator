@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using FrameProcessor;
+using FrameProcessor.Native;
 using FrameProviders;
 using Primitives.Logging;
 using Primitives.Settings;
@@ -88,13 +89,13 @@ namespace VolumeCalculationRunner
 
 			LogVerbose("Calculating volume...");
 			var settings = ApplicationSettings.GetDefaultSettings();
-			processor.SetProcessorSettings(settings);
+			processor.SetProcessorSettings(settings, false);
 
 			var results = new List<ObjectVolumeData>();
 
 			foreach (var map in testCaseData.DepthMaps)
 			{
-				var objectDimData = processor.CalculateVolume(map, null, 0, 0, false, false, 0);
+				var objectDimData = processor.CalculateVolume(map, null, 0, AlgorithmSelectionResult.Dm1);
 				results.Add(objectDimData);
 			}
 

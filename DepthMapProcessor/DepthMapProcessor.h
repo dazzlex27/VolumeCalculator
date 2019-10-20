@@ -11,8 +11,8 @@ private:
 	const CameraIntrinsics _depthIntrinsics;
 
 	const short _minObjHeight = 3; // if no depth object is found, this value will be set for height
-	const short _maxObjHeightForRgb = 300; // 300 and shorter objects are ok for rgb calculation
-	const short _contourPlaneDepthDelta = 100; // if exceeded - use dm2, dm1 - otherwise
+	const short _maxObjHeightForRgb = 300; // objects with height of 300mm and less are ok for rgb calculation
+	const short _contourPlaneDepthDelta = 100; // if object is taller than 100mm - use dm2, dm1 - otherwise
 
 	ContourExtractor _contourExtractor;
 
@@ -28,6 +28,8 @@ private:
 	short _cutOffDepth;
 	bool _correctPerspective;
 	RelRect _colorRoiRect;
+
+	bool _maskMode;
 
 	std::string _debugPath;
 
@@ -45,28 +47,27 @@ public:
 
 	void SetAlgorithmSettings(const short floorDepth, const short cutOffDepth, 
 		const RelPoint* polygonPoints, const int polygonPointCount, const RelRect& roiRect);
-	void SetDebugPath(const char* path);
+	void SetDebugPath(const char* path, const bool maskMode);
 
-	const int SelectAlgorithm(const DepthMap& depthMap, const ColorImage& colorImage, const long measuredDistance,
-		const bool dm1Enabled, const bool dm2Enabled, const bool rgbEnabled);
-	VolumeCalculationResult* CalculateObjectVolume(const VolumeCalculationData& calculationData);
+	const AlgorithmSelectionResult SelectAlgorithm(const AlgorithmSelectionData data);
+	VolumeCalculationResult* CalculateObjectVolume(const VolumeCalculationData& data);
+	void PrepareBuffers(const DepthMap*const depthMap, const ColorImage*const colorImage);
 	const short CalculateFloorDepth(const DepthMap& depthMap);
 
 private:
 	void FillColorBufferFromImage(const ColorImage& image);
 	void FillDepthBufferFromDepthMap(const DepthMap& depthMap);
-	const Contour GetTargetContourFromDepthMap(const bool saveDebugData) const;
-	const Contour GetTargetContourFromColorImage(const bool saveDebugData, const int measurementNumber) const;
+	const Contour GetTargetContourFromDepthMap() const;
+	const Contour GetTargetContourFromColorImage(const char* debugPath = "") const;
 	const TwoDimDescription Calculate2DContourDimensions(const Contour& depthObjectContour,
-		const Contour& colorObjectContour, const VolumeCalculationData& calculationData, const short contourTopPlaneDepth) const;
+		const Contour& colorObjectContour, const AlgorithmSelectionResult selectedAlgorithm, const short contourTopPlaneDepth) const;
 	const cv::RotatedRect CalculateObjectBoundingRect(const Contour& depthObjectContour, const Contour& colorObjectContour,
-		const VolumeCalculationData& calculationData, const short contourTopPlaneDepth) const;
+		const AlgorithmSelectionResult selectedAlgorithm, const short contourTopPlaneDepth, const char* debugPath = "") const;
 	const ContourPlanes GetDepthContourPlanes(const Contour& contour) const;
 	const TwoDimDescription GetTwoDimDescription(const cv::RotatedRect& contourBoundingRect,
 		const CameraIntrinsics& intristics, const short contourTopPlaneDepth) const;
 	const bool IsObjectInZone(const std::vector<DepthValue>& contour) const;
 	void UpdateMeasurementVolume(const int mapWidth, const int mapHeight);
 
-	const short GetTopPlaneDepth(const Contour& depthObjectContour, const VolumeCalculationData& calculationData);
 	void Tamper(VolumeCalculationResult* result) const;
 };

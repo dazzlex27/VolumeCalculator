@@ -1,6 +1,6 @@
 ﻿using DeviceIntegration.IoCircuits;
 
-namespace VolumeCalculatorGUI.Utils
+namespace VolumeCalculator.Utils
 {
 	internal class LightToggler
 	{

@@ -113,6 +113,7 @@
     <Compile Include="Utils\DeviceSetFactory.cs" />
     <Compile Include="Utils\DeviceSet.cs" />
     <Compile Include="Utils\LightToggler.cs" />
+    <Compile Include="Utils\VolumeCalculationData.cs" />
     <Compile Include="Utils\VolumeCalculationLogic.cs" />
     <Page Include="GUI\AutoClosingMessageBox.xaml">
       <SubType>Designer</SubType>

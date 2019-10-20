@@ -8,7 +8,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using TextBox = System.Windows.Controls.TextBox;
 
-namespace VolumeCalculatorGUI.GUI
+namespace VolumeCalculator.GUI
 {
     internal partial class SettingsWindow
     {

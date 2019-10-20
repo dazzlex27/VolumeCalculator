@@ -7,7 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
-namespace VolumeCalculatorGUI.GUI
+namespace VolumeCalculator.GUI
 {
 	internal partial class MaskPolygonControl
 	{

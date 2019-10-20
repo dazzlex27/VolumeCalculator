@@ -1,4 +1,4 @@
-﻿namespace VolumeCalculatorGUI.GUI
+﻿namespace VolumeCalculator.GUI
 {
     internal partial class StatusWindow
     {

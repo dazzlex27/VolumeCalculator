@@ -12,11 +12,10 @@ using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 using ProcessingUtils;
-using VolumeCalculatorGUI.GUI;
-using VolumeCalculatorGUI.GUI.Utils;
-using VolumeCalculatorGUI.Utils;
+using VolumeCalculator.Utils;
+using VolumeCalculator.GUI;
 
-namespace VolumeCalculatorGUI
+namespace VolumeCalculator
 {
 	internal class CalculationDashboardControlVm : BaseViewModel, IDisposable
 	{
@@ -52,8 +51,6 @@ namespace VolumeCalculatorGUI
 		private bool _codeBoxFocused;
 		private bool _unitCountBoxFocused;
 		private bool _commentBoxFocused;
-
-		private bool _maskMode;
 
 		private DateTime _calculationTime;
 		private string _lastBarcode;
@@ -293,12 +290,6 @@ namespace VolumeCalculatorGUI
 			ApplyValuesFromSettings(settings);
 		}
 
-		public void ToggleMaskMode()
-		{
-			_maskMode = true;
-			_logger.LogInfo("Applying additional masks...");
-		}
-
 		private void ApplyValuesFromSettings(ApplicationSettings settings)
 		{
 			_deviceSet?.RangeMeter?.SetSubtractionValueMm(settings.IoSettings.RangeMeterSubtractionValueMm);
@@ -440,15 +431,22 @@ namespace VolumeCalculatorGUI
 					_lastUnitCount = UnitCount;
 					_lastComment = Comment;
 
-					var dm1Enabled = _settings.AlgorithmSettings.EnableDmAlgorithm;
-					var dm2Enabled = _settings.AlgorithmSettings.EnablePerspectiveDmAlgorithm;
-					var rgbEnabled = _settings.AlgorithmSettings.EnableRgbAlgorithm;
+					var algorithmSettings = _settings.AlgorithmSettings;
+
+					var dm1Enabled = algorithmSettings.EnableDmAlgorithm && algorithmSettings.UseDepthMask;
+					var dm2Enabled = algorithmSettings.EnablePerspectiveDmAlgorithm && algorithmSettings.UseDepthMask;
+					var rgbEnabled = algorithmSettings.EnableRgbAlgorithm && algorithmSettings.UseColorMask;
+
 					_logger.LogInfo($"Starting a volume check... dm={dm1Enabled} dm2={dm2Enabled} rgb={rgbEnabled}");
 
-					var measurementNumber = IoUtils.GetCurrentUniversalObjectCounter();
+					var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter();
+					var cutOffDepth = (short)(algorithmSettings.FloorDepth - algorithmSettings.MinObjectHeight);
 
-					_volumeCalculator = new VolumeCalculationLogic(_logger, _deviceSet, _processor, _settings, 
-						_maskMode, measurementNumber);
+					var calculationData = new VolumeCalculationData(_deviceSet, _processor, algorithmSettings.SampleDepthMapCount,
+						_lastBarcode, calculationIndex, dm1Enabled, dm2Enabled, rgbEnabled, 
+						_settings.IoSettings.PhotosDirectoryPath, cutOffDepth);
+
+					_volumeCalculator = new VolumeCalculationLogic(_logger, calculationData);
 					_volumeCalculator.CalculationFinished += OnCalculationFinished;
 				}
 				catch (Exception ex)

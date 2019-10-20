@@ -9,10 +9,9 @@ using FrameProviders;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
-using VolumeCalculatorGUI.GUI.Utils;
 using GuiCommon;
 
-namespace VolumeCalculatorGUI
+namespace VolumeCalculator
 {
 	internal class StreamViewControlVm : BaseViewModel, IDisposable
 	{
@@ -137,14 +136,14 @@ namespace VolumeCalculatorGUI
                     throw new AbandonedMutexException();
                 }
 
-				var messageString = string.Join(" ", message);
-				var messageBytes = Encoding.ASCII.GetBytes(messageString);
+				//var messageString = string.Join(" ", message);
+				//var messageBytes = Encoding.ASCII.GetBytes(messageString);
 
-				var addr = TestDataGenerator.GetF2();
-				var str = Encoding.ASCII.GetBytes(addr);
+				//var addr = TestDataGenerator.GetF2();
+				//var str = Encoding.ASCII.GetBytes(addr);
 
-				var isEqual = str.SequenceEqual(messageBytes);
-				return !(str.Length > 10 && isEqual);
+				//var isEqual = str.SequenceEqual(messageBytes);
+				//return !(str.Length > 10 && isEqual);
 			}
 			catch (Exception ex)
 			{

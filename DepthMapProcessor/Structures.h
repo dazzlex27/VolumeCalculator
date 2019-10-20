@@ -6,6 +6,17 @@
 typedef unsigned char byte;
 typedef unsigned int uint;
 
+enum AlgorithmSelectionResult
+{
+	Undefined = -5,
+	NoAlgorithmsAllowed = -3,
+	DataIsInvalid = -2,
+	NoObjectFound = -1,
+	Dm1 = 0,
+	Dm2 = 1,
+	Rgb = 2,
+};
+
 struct VolumeCalculationResult
 {
 	int LengthMm;
@@ -117,11 +128,19 @@ struct ContourPlanes
 
 struct VolumeCalculationData
 {
-	DepthMap* DepthMap;
-	ColorImage* Image;
-	int SelectedAlgorithm;
-	long long RangeMeterDistance;
-	bool SaveDebugData;
-	int CalculationNumber;
-	bool MaskMode;
+	const DepthMap* DepthMap;
+	const ColorImage* ColorImage;
+	const AlgorithmSelectionResult SelectedAlgorithm;
+	const short CalculatedDistance;
+};
+
+struct AlgorithmSelectionData
+{
+	const DepthMap* DepthMap;
+	const ColorImage* ColorImage;
+	const short CalculatedDistance;
+	const bool Dm1Enabled;
+	const bool Dm2Enabled;
+	const bool RgbEnabled;
+	const char DebugFileName[256];
 };

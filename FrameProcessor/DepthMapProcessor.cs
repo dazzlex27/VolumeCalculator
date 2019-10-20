@@ -11,7 +11,7 @@ namespace FrameProcessor
 	public class DepthMapProcessor : IDisposable
 	{
 		private readonly ILogger _logger;
-		private object _lock;
+		private readonly object _lock;
 
 		public DepthMapProcessor(ILogger logger, ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
 		{
@@ -30,8 +30,8 @@ namespace FrameProcessor
 			}
 		}
 
-		public ObjectVolumeData CalculateVolume(DepthMap depthMap, ImageData colorImage,
-			long measuredDistance, int selectedAlgorithm, bool needToSaveDebugData, bool maskMode, int measurementNumber)
+		public ObjectVolumeData CalculateVolume(DepthMap depthMap, ImageData colorImage, short calculatedDistance, 
+			AlgorithmSelectionResult selectedAlgorithm)
 		{
 			lock (_lock)
 			{
@@ -53,12 +53,9 @@ namespace FrameProcessor
 						var volumeCalculationData = new VolumeCalculationData()
 						{
 							DepthMap = &nativeDepthMap,
-							Image = &nativeColorImage,
-							CalculationNumber = measurementNumber,
-							MaskMode = maskMode,
-							SaveDebugData = needToSaveDebugData,
+							ColorImage = &nativeColorImage,
 							SelectedAlgorithm = selectedAlgorithm,
-							RangeMeterDistance = measuredDistance
+							CalculatedDistance = calculatedDistance
 						};
 
 						var nativeResult = DepthMapProcessorDll.CalculateObjectVolume(volumeCalculationData);
@@ -89,8 +86,8 @@ namespace FrameProcessor
 			}
 		}
 
-		public AlgorithmSelectionResult SelectAlgorithm(DepthMap depthMap, ImageData colorFrame, long measuredDistance,
-			bool dm1Enabled, bool dm2Enabled, bool rgbEnabled)
+		public AlgorithmSelectionResult SelectAlgorithm(DepthMap depthMap, ImageData colorFrame, short calculatedDistance,
+			bool dm1Enabled, bool dm2Enabled, bool rgbEnabled, string debugFileName)
 		{
 			lock (_lock)
 			{
@@ -100,7 +97,7 @@ namespace FrameProcessor
 
 				var atLeastOneModeIsAvailable = dm1Enabled || dm2Enabled || rgbEnabled;
 				if (!atLeastOneModeIsAvailable)
-					return AlgorithmSelectionResult.NoModesAreAvailable;
+					return AlgorithmSelectionResult.NoAlgorithmsAllowed;
 
 				unsafe
 				{
@@ -117,14 +114,24 @@ namespace FrameProcessor
 							BytesPerPixel = colorFrame.BytesPerPixel
 						};
 
-						return (AlgorithmSelectionResult)DepthMapProcessorDll.SelectAlgorithm(
-							nativeDepthMap, nativeColorImage, measuredDistance, dm1Enabled, dm2Enabled, rgbEnabled);
+						var algorithmSelectionData = new AlgorithmSelectionData()
+						{
+							DepthMap = &nativeDepthMap,
+							ColorImage = &nativeColorImage,
+							CalculatedDistance = calculatedDistance,
+							Dm1Enabled = dm1Enabled,
+							Dm2Enabled = dm2Enabled,
+							RgbEnabled = rgbEnabled,
+							DebugFileName = debugFileName.Length > 128 ? debugFileName.Substring(0, 128) : debugFileName
+						};
+
+						return DepthMapProcessorDll.SelectAlgorithm(algorithmSelectionData);
 					}
 				}
 			}
 		}
 
-		public void SetProcessorSettings(ApplicationSettings settings)
+		public void SetProcessorSettings(ApplicationSettings settings, bool maskMode)
 		{
 			lock (_lock)
 			{
@@ -147,7 +154,7 @@ namespace FrameProcessor
 					}
 
 					var terminatedPath = settings.IoSettings.PhotosDirectoryPath + "\0";
-					DepthMapProcessorDll.SetDebugPath(terminatedPath);
+					DepthMapProcessorDll.SetDebugPath(terminatedPath, maskMode);
 				}
 			}
 		}

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Timers;
 using System.Windows;
 
-namespace VolumeCalculatorGUI.GUI
+namespace VolumeCalculator.GUI
 {
 	internal partial class AutoClosingMessageBox : INotifyPropertyChanged
 	{

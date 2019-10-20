@@ -22,7 +22,6 @@ namespace VCConfigurator
 		private int _ipCameraPreset;
 		private string _scalesPort;
 		private string _ioCircuitPort;
-		private string _rangeMeterPort;
         private int _scalesMinWeight;
 
 		public ObservableCollection<string> ScalesNames

@@ -7,7 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace VolumeCalculatorGUI
+namespace VolumeCalculator
 {
 	internal class StatusWindowVm : BaseViewModel
 	{

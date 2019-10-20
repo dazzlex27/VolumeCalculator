@@ -1,139 +1,157 @@
 ﻿using System;
 using System.IO;
+using System.Net;
+using System.Security.Authentication;
+using FluentFTP;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings.Integration;
-using WinSCP;
 
 namespace ExtIntegration.RequestSenders.SqlSenders
 {
 	public class FtpRequestSender : IRequestSender
 	{
 		private readonly ILogger _logger;
+		private readonly string _hostname;
+		private readonly int _port;
 		private readonly string _baseDirectory;
-		private readonly SessionOptions _sessionOptions;
 		private readonly bool _includeObjectPhoto;
+		private readonly NetworkCredential _credentials;
+		private readonly FtpClient _client;
 
 		public FtpRequestSender(ILogger logger, FtpRequestSettings settings)
 		{
+			logger.LogInfo($"Creating an FTP request handler for host {settings.Host}");
 			_logger = logger;
-			_baseDirectory = settings.BaseDirectory;
-			_includeObjectPhoto = settings.IncludeObjectPhotos;
 
-			_sessionOptions = new SessionOptions
+			_hostname = settings.Host;
+			_port = settings.Port;
+			 _baseDirectory = settings.BaseDirectory;
+			_includeObjectPhoto = settings.IncludeObjectPhotos;
+			_credentials = new NetworkCredential(settings.Login, settings.Password);
+
+			var useSecureConnection = settings.IsSecure;
+			_client = new FtpClient(_hostname, _port, _credentials)
 			{
-				Protocol = Protocol.Ftp,
-				HostName = settings.Host,
-				UserName = settings.Login,
-				PortNumber = settings.Port,
-				Password = settings.Password,
-				FtpSecure = settings.IsSecure ? FtpSecure.Explicit : FtpSecure.None,
-				GiveUpSecurityAndAcceptAnyTlsHostCertificate = settings.IsSecure
+				EncryptionMode = useSecureConnection ? FtpEncryptionMode.Explicit : FtpEncryptionMode.None,
+				DataConnectionEncryption = useSecureConnection,
+				SslProtocols = SslProtocols.Default | SslProtocols.Tls11 | SslProtocols.Tls12
 			};
+			_client.ValidateCertificate += OnValidateCertificate;
+		}
+
+		private void OnValidateCertificate(FtpClient control, FtpSslValidationEventArgs e)
+		{
+			e.Accept = true;
 		}
 
 		public void Dispose()
 		{
+			_client.ValidateCertificate -= OnValidateCertificate;
+			_client.Dispose();
 		}
 
 		public void Connect()
 		{
+			_client.Connect();
 		}
 
 		public bool Send(CalculationResultData resultData)
 		{
 			if (resultData.Status != CalculationStatus.Sucessful)
 			{
-				_logger.LogInfo($"The result was not successful but {resultData.Status}, will not send FTP request");
+				_logger.LogInfo($"The result was not successful ({resultData.Status}), will not send FTP request");
 
 				return false;
 			}
 
-			var result = resultData.Result;
-			var timeString = result.CalculationTime.ToString("yyyyMMddHHmmss");
-			string fileName = $"{result.Barcode}_{timeString}";
-			var infoFileName = $"{fileName}.txt";
-			var photoFileName = $"{fileName}.png";
-
 			try
 			{
-				_logger.LogInfo($"Sending files via FTP to {_sessionOptions.HostName}...");
+				_logger.LogInfo($"Sending files via FTP to {_hostname}...");
 
-				var weightUnitsString = "";
+				var timeString = resultData.Result.CalculationTime.ToString("yyyyMMddHHmmss");
+				var fileName = $"{resultData.Result.Barcode}_{timeString}";
 
-				switch (result.WeightUnits)
+				using (var memoryStream = GetTextFileMemoryStream(resultData.Result))
 				{
-					case WeightUnits.Gr:
-						weightUnitsString = "Gr";
-						break;
-					case WeightUnits.Kg:
-						weightUnitsString = "Kg";
-						break;
+					var remoteFileName = Path.Combine(_baseDirectory, $"{fileName}.txt");
+
+					var result = _client.UploadAsync(memoryStream, remoteFileName, FtpExists.Overwrite, true).GetAwaiter().GetResult();
+					if (result)
+						_logger.LogInfo("Uploaded text file to FTP");
 				}
 
-				using (var resultFile = File.AppendText(infoFileName))
+				if (_includeObjectPhoto)
 				{
-					resultFile.WriteLine($"barcode={result.Barcode}");
-					resultFile.WriteLine($"weight{weightUnitsString}={result.ObjectWeight}");
-					resultFile.WriteLine($"lengthMm={result.ObjectLengthMm}");
-					resultFile.WriteLine($"widthMm={result.ObjectWidthMm}");
-					resultFile.WriteLine($"heightMm={result.ObjectHeightMm}");
-					resultFile.WriteLine($"unitCount={result.UnitCount}");
-					resultFile.WriteLine($"comment={result.CalculationComment}");
-				}
-
-				using (var session = new Session())
-				{
-					session.Open(_sessionOptions);
-
-					var transferOptions = new TransferOptions
+					using (var memoryStream = GetPhotoFileMemoryStream(resultData))
 					{
-						TransferMode = TransferMode.Binary,
-						PreserveTimestamp = true
-					};
+						var remoteFileName = Path.Combine(_baseDirectory, $"{fileName}.png");
 
-					_logger.LogInfo($"Uploading file to FTP server at {_sessionOptions.HostName}...");
-					var infoRemoteName = string.IsNullOrEmpty(_baseDirectory)
-						? infoFileName
-						: $"{_baseDirectory}/{infoFileName}";
-					var transferResult = session.PutFiles($"{infoFileName}", infoRemoteName, false, transferOptions);
-					transferResult.Check();
-
-					if (_includeObjectPhoto)
-					{
-						ImageUtils.SaveImageDataToFile(resultData.ObjectPhoto, photoFileName);
-						var photoRemoteName = string.IsNullOrEmpty(_baseDirectory)
-							? photoFileName
-							: $"{_baseDirectory}/{photoFileName}";
-						var transferResult1 = session.PutFiles($"{photoFileName}", photoRemoteName, false, transferOptions);
-						transferResult1.Check();
+						var result = _client.UploadAsync(memoryStream, remoteFileName, FtpExists.Overwrite, true).GetAwaiter().GetResult();
+						if (result)
+							_logger.LogInfo("Uploaded photo file to FTP");
 					}
 				}
 
-				_logger.LogInfo($"Uploaded files to FTP server at {_sessionOptions.HostName}");
+				_logger.LogInfo($"Uploaded files to FTP server at {_hostname}");
 
 				return true;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException($"Failed to upload data to FTP server at {_sessionOptions.HostName}", ex);
+				_logger.LogException($"Failed to upload data to FTP server at {_hostname}", ex);
 				return false;
 			}
-			finally
-			{
-				try
-				{
-					if (File.Exists(infoFileName))
-						File.Delete(infoFileName);
+		}
 
-					if (File.Exists(photoFileName))
-						File.Delete(photoFileName);
-				}
-				catch (Exception)
-				{
-					// ignored
-				}
+		private static MemoryStream GetPhotoFileMemoryStream(CalculationResultData resultData)
+		{
+			var stream = new MemoryStream();
+			using (var bmp = ImageUtils.GetBitmapFromImageData(resultData.ObjectPhoto))
+			{
+				bmp.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
 			}
+
+			return stream;
+		}
+
+		private static MemoryStream GetTextFileMemoryStream(CalculationResult result)
+		{
+			var weightUnitsString = GetWeightUnitsString(result);
+
+			var stream = new MemoryStream();
+			using (var writer = new StreamWriter(stream))
+			{
+				writer.WriteLine($"barcode={result.Barcode}");
+				writer.WriteLine($"weight{weightUnitsString}={result.ObjectWeight}");
+				writer.WriteLine($"lengthMm={result.ObjectLengthMm}");
+				writer.WriteLine($"widthMm={result.ObjectWidthMm}");
+				writer.WriteLine($"heightMm={result.ObjectHeightMm}");
+				writer.WriteLine($"unitCount={result.UnitCount}");
+				writer.WriteLine($"comment={result.CalculationComment}");
+
+				writer.Flush();
+				stream.Seek(0, SeekOrigin.Begin);
+			}
+
+			return stream;
+		}
+
+		private static string GetWeightUnitsString(CalculationResult result)
+		{
+			var weightUnitsString = "";
+
+			switch (result.WeightUnits)
+			{
+				case WeightUnits.Gr:
+					weightUnitsString = "Gr";
+					break;
+				case WeightUnits.Kg:
+					weightUnitsString = "Kg";
+					break;
+			}
+
+			return weightUnitsString;
 		}
 	}
 }

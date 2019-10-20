@@ -9,12 +9,11 @@ DLL_EXPORT void CreateDepthMapProcessor(CameraIntrinsics colorIntrinsics, Camera
 DLL_EXPORT void SetAlgorithmSettings(short floorDepth, short cutOffDepth, RelPoint* polygonPoints, int polygonPointCount,
 	RelRect colorRoiRect);
 
-DLL_EXPORT void SetDebugPath(const char* path);
+DLL_EXPORT void SetDebugPath(const char* path, bool maskMode);
 
-DLL_EXPORT int SelectAlgorithm(DepthMap depthMap, ColorImage colorImage, const long measuredDistance,
-	bool dm1Enabled, bool dm2Enabled, bool rgbEnabled);
+DLL_EXPORT AlgorithmSelectionResult SelectAlgorithm(AlgorithmSelectionData data);
 
-DLL_EXPORT VolumeCalculationResult* CalculateObjectVolume(VolumeCalculationData calculationData);
+DLL_EXPORT VolumeCalculationResult* CalculateObjectVolume(VolumeCalculationData data);
 
 DLL_EXPORT void DisposeCalculationResult(VolumeCalculationResult* result);
 

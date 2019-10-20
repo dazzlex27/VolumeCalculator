@@ -5,9 +5,8 @@ using DeviceIntegration.IoCircuits;
 using DeviceIntegration.RangeMeters;
 using DeviceIntegration.Scales;
 using Primitives.Logging;
-using VolumeCalculatorGUI.Utils;
 
-namespace VolumeCalculatorGUI.GUI.Utils
+namespace VolumeCalculator.Utils
 {
 	internal class DashStatusUpdater : IDisposable
 	{

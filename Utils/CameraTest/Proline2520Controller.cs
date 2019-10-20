@@ -40,7 +40,7 @@ namespace CameraTest
 
 				return result.StatusCode == HttpStatusCode.OK;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return false;
 			}
@@ -65,7 +65,7 @@ namespace CameraTest
 					}
 				}
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return null;
 			}
@@ -80,7 +80,7 @@ namespace CameraTest
 
 				return result.StatusCode == HttpStatusCode.OK;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return false;
 			}
@@ -95,7 +95,7 @@ namespace CameraTest
 
 				return result.StatusCode == HttpStatusCode.OK;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return false;
 			}
@@ -110,7 +110,7 @@ namespace CameraTest
 
 				return result.StatusCode == HttpStatusCode.OK;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return false;
 			}
@@ -125,7 +125,7 @@ namespace CameraTest
 
 				return result.StatusCode == HttpStatusCode.OK;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return false;
 			}
@@ -140,7 +140,7 @@ namespace CameraTest
 
 				return result.StatusCode == HttpStatusCode.OK;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return false;
 			}
@@ -155,7 +155,7 @@ namespace CameraTest
 
 				return result.StatusCode == HttpStatusCode.OK;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return false;
 			}
@@ -170,7 +170,7 @@ namespace CameraTest
 
 				return result.StatusCode == HttpStatusCode.OK;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return false;
 			}
@@ -185,7 +185,7 @@ namespace CameraTest
 
 				return result.StatusCode == HttpStatusCode.OK;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return false;
 			}
@@ -200,7 +200,7 @@ namespace CameraTest
 
 				return result.StatusCode == HttpStatusCode.OK;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return false;
 			}

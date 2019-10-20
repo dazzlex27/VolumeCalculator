@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace VolumeCalculatorGUI.GUI
+namespace VolumeCalculator.GUI
 {
 	internal partial class MainWindow
 	{

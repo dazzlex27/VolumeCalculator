@@ -7,7 +7,7 @@ using DeviceIntegration.Scales;
 using DeviceIntegration.Scanners;
 using FrameProviders;
 
-namespace VolumeCalculatorGUI.Utils
+namespace VolumeCalculator.Utils
 {
 	internal class DeviceSet : IDisposable
 	{

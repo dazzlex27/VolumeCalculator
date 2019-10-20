@@ -43,10 +43,7 @@ namespace FTPSender
 				return;
 			}
 
-			var sender = new FtpSender(host, port, login, password);
-			while (Console.ReadLine() != "exit")
-			{
-			}
+			new FtpSender(host, port, login, password, true);
 
 			Console.WriteLine("Application finished");
 		}

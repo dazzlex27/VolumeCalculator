@@ -16,7 +16,7 @@ using Primitives.Logging;
 using Primitives.Settings;
 using ProcessingUtils;
 
-namespace VolumeCalculatorGUI.Utils
+namespace VolumeCalculator.Utils
 {
 	internal class DeviceSetFactory
 	{

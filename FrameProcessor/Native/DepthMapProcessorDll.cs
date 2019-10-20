@@ -15,14 +15,13 @@ namespace FrameProcessor.Native
 			RelPoint* polygonPoints, int polygonPointCount, RelRect colorRoiRect);
 
 	    [DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
-	    public static extern unsafe void SetDebugPath(string path);
+	    public static extern unsafe void SetDebugPath(string path, bool maskMode);
 
 		[DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
-	    public static extern unsafe VolumeCalculationResult* CalculateObjectVolume(VolumeCalculationData calculationData);
+	    public static extern unsafe VolumeCalculationResult* CalculateObjectVolume(VolumeCalculationData data);
 
 	    [DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
-	    public static extern unsafe int SelectAlgorithm(DepthMap depthMap, ColorImage colorImage, long measuredDistance,
-		    bool dm1Enabled, bool dm2Enabled, bool rgbEnabled);
+	    public static extern unsafe AlgorithmSelectionResult SelectAlgorithm(AlgorithmSelectionData data);
 
 		[DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
 	    public static extern unsafe short CalculateFloorDepth(DepthMap depthMap);

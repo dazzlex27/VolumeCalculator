@@ -11,8 +11,8 @@ private:
 	std::string _debugPath;
 
 public:
-	const Contour ExtractContourFromBinaryImage(const cv::Mat& image, const bool saveDebugData) const;
-	const Contour ExtractContourFromColorImage(const cv::Mat& image, const bool saveDebugData, const int measurementNumber) const;
+	const Contour ExtractContourFromBinaryImage(const cv::Mat& image) const;
+	const Contour ExtractContourFromColorImage(const cv::Mat& image, const char* debugPath = "") const;
 	void SetDebugPath(const std::string& path);
 
 private:

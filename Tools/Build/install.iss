@@ -1,6 +1,6 @@
 #define private VendorName "IS"
 #define private ApplicationName "VolumeCalculator"
-#define private ApplicationVersion "1.59"
+#define private ApplicationVersion "1.60"
 #define private BinPath "..\..\!!bin\"
 #define private SourcePath = BinPath + "x64\Release\"
 #define private RootPath = "..\..\"
@@ -29,9 +29,6 @@ ArchitecturesInstallIn64BitMode=x64
 [Files]
 Source: {#ObfuscatedPath}\*; DestDir: "{app}";  Flags: ignoreversion; BeforeInstall: TaskKill('VolumeCalculator.exe')
 Source: {#SourcePath}Microsoft.Kinect.dll; DestDir: "{app}"
-Source: {#SourcePath}WinSCP.exe; DestDir: "{app}"
-Source: {#SourcePath}WinSCPnet.dll; DestDir: "{app}"
-Source: {#SourcePath}LibUsbDotNet.LibUsbDotNet.dll; DestDir: "{app}"
 Source: {#SourcePath}Fleck.dll; DestDir: "{app}"
 Source: {#SourcePath}IPCameraTest.exe; DestDir: "{app}"
 Source: {#SourcePath}libD435FrameProvider.dll; DestDir: "{app}"

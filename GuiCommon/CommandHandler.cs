@@ -25,5 +25,10 @@ namespace GuiCommon
 		{
 			_action();
 		}
+
+		public void FireCanExecuteChanged()
+		{
+			CanExecuteChanged?.Invoke(null, null);
+		}
 	}
 }

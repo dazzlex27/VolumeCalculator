@@ -53,6 +53,8 @@ namespace DeviceIntegration.Cameras
 
 		public async Task<bool> DisconnectAsync()
 		{
+			await Task.Delay(1);
+
 			_logger.LogInfo($"Disconnecting from Proline2520 camera on address {_settings.Ip}... ");
 			_initialized = false;
 			return true;

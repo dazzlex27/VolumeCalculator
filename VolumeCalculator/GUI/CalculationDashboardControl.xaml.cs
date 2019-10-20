@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace VolumeCalculatorGUI.GUI
+namespace VolumeCalculator.GUI
 {
 	internal partial class CalculationDashboardControl
 	{

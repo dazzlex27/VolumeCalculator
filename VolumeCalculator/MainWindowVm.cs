@@ -14,10 +14,10 @@ using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 using ProcessingUtils;
-using VolumeCalculatorGUI.GUI;
-using VolumeCalculatorGUI.Utils;
+using VolumeCalculator.GUI;
+using VolumeCalculator.Utils;
 
-namespace VolumeCalculatorGUI
+namespace VolumeCalculator
 {
 	internal class MainWindowVm : BaseViewModel
 	{
@@ -251,7 +251,7 @@ namespace VolumeCalculatorGUI
 				var depthCameraParams = frameProvider.GetDepthCameraParams();
 
 				_dmProcessor = new DepthMapProcessor(_logger, colorCameraParams, depthCameraParams);
-				_dmProcessor.SetProcessorSettings(Settings);
+				_dmProcessor.SetProcessorSettings(Settings, _usingMasks);
 
 				_requestProcessor = new RequestProcessor(_logger, _settings.IntegrationSettings);
 				_requestProcessor.StartRequestReceived += OnCalculationStartRequested;
@@ -292,7 +292,7 @@ namespace VolumeCalculatorGUI
 				_calculationDashboardControlVm.CalculationStatusChanged += OnCalculationStatusChanged;
 				CalculationStartRequested += _calculationDashboardControlVm.StartCalculation;
 				if (_usingMasks)
-					_calculationDashboardControlVm.ToggleMaskMode();
+					_logger.LogInfo("Additional masks are on...");
 
 				_testDataGenerationControlVm = new TestDataGenerationControlVm(_logger, _settings, frameProvider);
 
@@ -438,7 +438,7 @@ namespace VolumeCalculatorGUI
 
 		private void OnApplicationSettingsChanged(ApplicationSettings settings)
 		{
-			_dmProcessor.SetProcessorSettings(settings);
+			_dmProcessor.SetProcessorSettings(settings, _usingMasks);
 			_calculationDashboardControlVm.ApplicationSettingsUpdated(settings);
 			_streamViewControlVm.ApplicationSettingsUpdated(settings);
 			_testDataGenerationControlVm.ApplicationSettingsUpdated(settings);

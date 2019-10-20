@@ -1,4 +1,4 @@
-﻿namespace VolumeCalculatorGUI.Utils
+﻿namespace VolumeCalculator.Utils
 {
 	internal enum DashboardStatus
 	{

@@ -5,12 +5,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using FrameProcessor;
+using FrameProcessor.Native;
 using Primitives;
 using Primitives.Logging;
-using Primitives.Settings;
-using ProcessingUtils;
 
-namespace VolumeCalculatorGUI.Utils
+namespace VolumeCalculator.Utils
 {
 	internal class VolumeCalculationLogic
 	{
@@ -19,14 +18,19 @@ namespace VolumeCalculatorGUI.Utils
 		private readonly ILogger _logger;
 		private readonly DeviceSet _deviceSet;
 		private readonly DepthMapProcessor _processor;
-		private readonly ApplicationSettings _settings;
+		private readonly int _requiredSampleCount;
+		private readonly string _barcode;
+		private readonly int _calculationIndex;
+		private readonly short _cutOffDepth;
+		private readonly bool _dm1AlgorithmEnabled;
+		private readonly bool _dm2AlgorithmEnabled;
+		private readonly bool _rgbAlgorithmEnabled;
+		private readonly string _photoDirectoryPath;
 
-		private readonly int _measurementNumber;
-
-		private readonly Timer _timer;
+		private readonly Timer _UpdateTimeoutTimer;
 		private readonly List<ObjectVolumeData> _results;
 
-		private long _measuredDistance;
+		private short _calculatedDistance;
 		private bool _useColorData;
 
 		private bool _colorFrameReady;
@@ -39,24 +43,25 @@ namespace VolumeCalculatorGUI.Utils
 
 		private AlgorithmSelectionResult _selectedAlgorithm;
 
-		private readonly bool _maskMode;
-
 		public bool IsRunning { get; private set; }
 
-		private bool HasCompletedFirstRun => _samplesLeft != _settings.AlgorithmSettings.SampleDepthMapCount;
+		private bool HasCompletedFirstRun => _samplesLeft != _requiredSampleCount;
 
-		public VolumeCalculationLogic(ILogger logger, DeviceSet deviceSet, DepthMapProcessor processor, 
-			ApplicationSettings settings, bool maskMode, int measurementNumber)
+		public VolumeCalculationLogic(ILogger logger, VolumeCalculationData calculationData)
 		{
 			_logger = logger;
-			_deviceSet = deviceSet ?? throw new ArgumentException(nameof(deviceSet));
-			_processor = processor ?? throw new ArgumentException(nameof(processor));
-			_settings = settings ?? throw new ArgumentException(nameof(settings));
-			_samplesLeft = settings.AlgorithmSettings.SampleDepthMapCount;
+			_deviceSet = calculationData.DeviceSet;
+			_processor = calculationData.DepthMapProcessor;
+			_requiredSampleCount = calculationData.RequiredSampleCount;
+			_barcode = calculationData.Barcode;
+			_calculationIndex = calculationData.CalculationIndex;
+			_dm1AlgorithmEnabled = calculationData.Dm1AlgorithmEnabled;
+			_dm2AlgorithmEnabled = calculationData.Dm2AlgorithmEnabled;
+			_rgbAlgorithmEnabled = calculationData.RgbAlgorithmEnabled;
+			_photoDirectoryPath = calculationData.PhotosDirectoryPath;
+			_cutOffDepth = calculationData.CutOffDepth;
 
-			_measurementNumber = measurementNumber;
-
-			_maskMode = maskMode;
+			_samplesLeft = _requiredSampleCount;
 
 			_useColorData = true;
 
@@ -65,9 +70,9 @@ namespace VolumeCalculatorGUI.Utils
 			_deviceSet.FrameProvider.UnrestrictedDepthFrameReady += OnDepthFrameReady;
 			_deviceSet.FrameProvider.UnrestrictedColorFrameReady += OnColorFrameReady;
 
-			_timer = new Timer(3000) {AutoReset = false};
-			_timer.Elapsed += OnTimerElapsed;
-			_timer.Start();
+			_UpdateTimeoutTimer = new Timer(3000) {AutoReset = false};
+			_UpdateTimeoutTimer.Elapsed += OnTimerElapsed;
+			_UpdateTimeoutTimer.Start();
 
 			IsRunning = true;
 		}
@@ -79,7 +84,7 @@ namespace VolumeCalculatorGUI.Utils
 
 		private void CleanUp()
 		{
-			_timer.Stop();
+			_UpdateTimeoutTimer.Stop();
 			_deviceSet.FrameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
 			_deviceSet.FrameProvider.UnrestrictedDepthFrameReady -= OnDepthFrameReady;
 			IsRunning = false;
@@ -93,26 +98,29 @@ namespace VolumeCalculatorGUI.Utils
 
 		private void AdvanceCalculation(DepthMap depthMap, ImageData image)
 		{
-			_timer.Stop();
+			_UpdateTimeoutTimer.Stop();
 
 			if (!HasCompletedFirstRun)
 			{
 				if (_deviceSet?.RangeMeter != null)
 				{
-					_measuredDistance = _deviceSet.RangeMeter.GetReading();
-					_logger.LogInfo($"Range meter reading - {_measuredDistance}");
-					if (_measuredDistance <= 0)
-						_logger.LogError("Failed to get range meter reading, will use depth calculation");
+					var reading = _deviceSet.RangeMeter.GetReading();
+					var readingIsInRange = reading > short.MinValue && reading < short.MaxValue;
+					_calculatedDistance = readingIsInRange ? (short)reading : (short)0;
+					_logger.LogInfo($"Range meter reading - {reading}");
+					if (_calculatedDistance <= 0)
+						_logger.LogError("Failed to get proper range meter reading, will use depth calculation");
 				}
 				else
 					_logger.LogInfo($"Range meter is not enabled - will use depth calculation");
 
-				SelectAlgorithm();
-				SaveDebugData();
+				var debugFileName = $"{_barcode}_{_calculationIndex}";
+
+				SelectAlgorithmAndAbortIfFailed(debugFileName);
+				SaveDebugData(debugFileName);
 			}
 
-			var currentResult = _processor.CalculateVolume(depthMap, image, _measuredDistance, (int)_selectedAlgorithm, 
-				!HasCompletedFirstRun, _maskMode, _measurementNumber);
+			var currentResult = _processor.CalculateVolume(depthMap, image, _calculatedDistance, _selectedAlgorithm);
 
 			_results.Add(currentResult);
 			_samplesLeft--;
@@ -121,7 +129,7 @@ namespace VolumeCalculatorGUI.Utils
 			{
 				_colorFrameReady = false;
 				_depthFrameReady = false;
-				_timer.Start();
+				_UpdateTimeoutTimer.Start();
 
 				return;
 			}
@@ -135,31 +143,27 @@ namespace VolumeCalculatorGUI.Utils
 				CalculationFinished?.Invoke(null, CalculationStatus.Error, _latestColorFrame);
 		}
 
-		private void SelectAlgorithm()
+		private void SelectAlgorithmAndAbortIfFailed(string debugFileName)
 		{
-			var dm1Enabled = _settings.AlgorithmSettings.EnableDmAlgorithm && _settings.AlgorithmSettings.UseDepthMask;
-			var dm2Enabled = _settings.AlgorithmSettings.EnablePerspectiveDmAlgorithm && _settings.AlgorithmSettings.UseDepthMask;
-			var rgbEnabled = _settings.AlgorithmSettings.EnableRgbAlgorithm && _settings.AlgorithmSettings.UseColorMask;
-
-			_selectedAlgorithm = _processor.SelectAlgorithm(_latestDepthMap, _latestColorFrame, _measuredDistance,
-				dm1Enabled, dm2Enabled, rgbEnabled);
+			_selectedAlgorithm = _processor.SelectAlgorithm(_latestDepthMap, _latestColorFrame, _calculatedDistance,
+				_dm1AlgorithmEnabled, _dm2AlgorithmEnabled, _rgbAlgorithmEnabled, debugFileName);
 
 			switch (_selectedAlgorithm)
 			{
 				case AlgorithmSelectionResult.DataIsInvalid:
 					_logger.LogError("Failed to select algorithm: data was invalid");
 					break;
-				case AlgorithmSelectionResult.NoModesAreAvailable:
+				case AlgorithmSelectionResult.NoAlgorithmsAllowed:
 					_logger.LogError("Failed to select algorithm: no modes were available");
 					break;
 				case AlgorithmSelectionResult.NoObjectFound:
 					_logger.LogError("Failed to select algorithm: no objects were found");
 					break;
-				case AlgorithmSelectionResult.Dm:
+				case AlgorithmSelectionResult.Dm1:
 					_useColorData = false;
 					_logger.LogInfo("Selected algorithm: dm1");
 					break;
-				case AlgorithmSelectionResult.DmPersp:
+				case AlgorithmSelectionResult.Dm2:
 					_useColorData = false;
 					_logger.LogInfo("Selected algorithm: dm2");
 					break;
@@ -241,35 +245,40 @@ namespace VolumeCalculatorGUI.Utils
 			AbortInternal(CalculationStatus.TimedOut);
 		}
 
-		private void SaveDebugData()
+		private void SaveDebugData(string debugFileName)
 		{
 			try
 			{
-				var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter();
-				_logger.LogInfo($"Global object ID = {calculationIndex}");
+				var baseFilePath = Path.Combine(_photoDirectoryPath, debugFileName);
+				_logger.LogInfo($"Calculation Base filename = {debugFileName}");
 
 				if (_latestColorFrame != null)
 				{
-					var colorFrameFileName = Path.Combine(_settings.IoSettings.PhotosDirectoryPath, $"{calculationIndex}_color.png");
-					ImageUtils.SaveImageDataToFile(_latestColorFrame, colorFrameFileName);
+					var colorFileName = $"{baseFilePath}_color.png";
+					ImageUtils.SaveImageDataToFile(_latestColorFrame, colorFileName);
 				}
 
-				if (_latestDepthMap == null)
-					return;
+				if (_latestDepthMap != null)
+				{
+					var depthFileName = $"{baseFilePath}_depth.png";
+					var depthCameraParams = _deviceSet.FrameProvider.GetDepthCameraParams();
 
-				var depthCameraParams = _deviceSet.FrameProvider.GetDepthCameraParams();
-
-				var depthFrameFileName = Path.Combine(_settings.IoSettings.PhotosDirectoryPath, $"{calculationIndex}_depth.png");
-
-				var cutOffDepth = (short) (_settings.AlgorithmSettings.FloorDepth - _settings.AlgorithmSettings.MinObjectHeight);
-				DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, depthFrameFileName,
-					depthCameraParams.MinDepth, depthCameraParams.MaxDepth, cutOffDepth);
+					DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, depthFileName,
+						depthCameraParams.MinDepth, depthCameraParams.MaxDepth, _cutOffDepth);
+				}
 
 				if (_deviceSet.IpCamera != null && _deviceSet.IpCamera.Initialized())
 				{
-					var ipCameraImage = Task.Run(() => _deviceSet.IpCamera.GetSnaphostAsync()).Result;
-					var cameraFrameFileName = Path.Combine(_settings.IoSettings.PhotosDirectoryPath, $"{calculationIndex}_camera.png");
-					ImageUtils.SaveImageDataToFile(ipCameraImage, cameraFrameFileName);
+					try
+					{
+						var cameraFileName = $"{baseFilePath}_camera.png";
+						var ipCameraFrame = Task.Run(() => _deviceSet.IpCamera.GetSnaphostAsync()).Result;
+						ImageUtils.SaveImageDataToFile(ipCameraFrame, cameraFileName);
+					}
+					catch (Exception ex)
+					{
+						_logger.LogException("Failed to get IP camera frame", ex);
+					}
 				}
 			}
 			catch (Exception ex)

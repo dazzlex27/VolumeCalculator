@@ -6,7 +6,7 @@ using GuiCommon;
 using Primitives.Logging;
 using Primitives.Settings;
 
-namespace VolumeCalculatorGUI
+namespace VolumeCalculator
 {
 	internal class TestDataGenerationControlVm : BaseViewModel
 	{
