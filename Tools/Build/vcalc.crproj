@@ -1,6 +1,7 @@
 <project outputDir="..\..\..\!!bin\x64\Release\Confused" baseDir="..\..\!!bin\x64\Release" xmlns="http://confuser.codeplex.com">
   <module path="FluentFTP.dll"/>
   <module path="GodSharp.SerialPort.dll"/>
+  <module path="LibUsbDotNet.LibUsbDotNet.dll"/>
   <module path="Newtonsoft.Json.dll"/>
   <module path="Google.Protobuf.dll"/>
   <module path="MySql.Data.dll"/>
