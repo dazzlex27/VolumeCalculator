@@ -18,6 +18,7 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 		private readonly bool _includeObjectPhoto;
 		private readonly NetworkCredential _credentials;
 		private readonly FtpClient _client;
+		private bool _useSeparateFolders;
 
 		public FtpRequestSender(ILogger logger, FtpRequestSettings settings)
 		{
@@ -28,6 +29,7 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 			_port = settings.Port;
 			_baseDirectory = settings.BaseDirectory;
 			_includeObjectPhoto = settings.IncludeObjectPhotos;
+			_useSeparateFolders = settings.UseSeparateFolders;
 			_credentials = new NetworkCredential(settings.Login, settings.Password);
 
 			var useSecureConnection = settings.IsSecure;
@@ -72,7 +74,8 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 				var calculationResult = resultData.Result;
 
 				var timeString = resultData.Result.CalculationTime.ToString("yyyyMMddHHmmss");
-				var fileName = $"{calculationResult.Barcode}_{timeString}";
+				var basefileName = $"{calculationResult.Barcode}_{timeString}";
+				var fileName = _useSeparateFolders ? Path.Combine(basefileName, basefileName) : basefileName;
 
 				using (var memoryStream = new MemoryStream())
 				using (var writer = new StreamWriter(memoryStream))

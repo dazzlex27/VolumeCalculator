@@ -18,8 +18,10 @@
 
 		public bool IncludeObjectPhotos { get; set; }
 
+		public bool UseSeparateFolders { get; set; }
+
 		public FtpRequestSettings(bool enableRequests, string host, int port, string login, string password,
-			bool isSecure, string baseDirectory, bool includeObjectPhotos)
+			bool isSecure, string baseDirectory, bool includeObjectPhotos, bool useSeparateFolders)
 		{
 			EnableRequests = enableRequests;
 			Host = host;
@@ -29,11 +31,12 @@
 			IsSecure = isSecure;
 			BaseDirectory = baseDirectory;
 			IncludeObjectPhotos = includeObjectPhotos;
+			UseSeparateFolders = useSeparateFolders;
 		}
 
 		public static FtpRequestSettings GetDefaultSettings()
 		{
-			return new FtpRequestSettings(false, "localhost", 21, "is", "", false, "is", false);
+			return new FtpRequestSettings(false, "localhost", 21, "is", "", false, "is", false, false);
 		}
 	}
 }

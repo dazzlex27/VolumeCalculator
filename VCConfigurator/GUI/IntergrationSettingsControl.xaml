@@ -266,6 +266,12 @@
 					          IsChecked="{Binding FtpRequestIncludeObjectPhotos, Mode=TwoWay}"
 					          Content="Отправлять фото"/>
 				</StackPanel>
+				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<CheckBox Margin="3"
+					          IsChecked="{Binding FtpRequestUseSeparateFolders, Mode=TwoWay}"
+					          Content="Результаты в отдельных папках"/>
+				</StackPanel>
 			</StackPanel>
 		</GroupBox>
 	</WrapPanel>

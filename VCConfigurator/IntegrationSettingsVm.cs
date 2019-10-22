@@ -38,6 +38,7 @@ namespace VCConfigurator
 		private bool _ftpRequestIsSecure;
 		private string _ftpRequestBaseFolderName;
 		private bool _ftpRequestIncludeObjectPhotos;
+		private bool _ftpRequestUseSeparateFolders;
 
 		public bool EnableHttpApi
 		{
@@ -207,6 +208,12 @@ namespace VCConfigurator
 			set => SetField(ref _ftpRequestIncludeObjectPhotos, value, nameof(FtpRequestIncludeObjectPhotos));
 		}
 
+		public bool FtpRequestUseSeparateFolders
+		{
+			get => _ftpRequestUseSeparateFolders;
+			set => SetField(ref _ftpRequestUseSeparateFolders, value, nameof(FtpRequestUseSeparateFolders));
+		}
+
 		public void FillValuesFromSettings(IntegrationSettings settings)
 		{
 			var httpApiSettings = settings.HttpApiSettings;
@@ -248,6 +255,7 @@ namespace VCConfigurator
 			FtpRequestIsSecure = ftpRequestSettings.IsSecure;
 			FtpRequestBaseFolderName = ftpRequestSettings.BaseDirectory;
 			FtpRequestIncludeObjectPhotos = ftpRequestSettings.IncludeObjectPhotos;
+			FtpRequestUseSeparateFolders = ftpRequestSettings.UseSeparateFolders;
 		}
 
 		public void FillSettingsFromValues(IntegrationSettings settings)
@@ -288,6 +296,7 @@ namespace VCConfigurator
 			ftpRequestSettings.IsSecure = FtpRequestIsSecure;
 			ftpRequestSettings.BaseDirectory = FtpRequestBaseFolderName;
 			ftpRequestSettings.IncludeObjectPhotos = FtpRequestIncludeObjectPhotos;
+			ftpRequestSettings.UseSeparateFolders = FtpRequestUseSeparateFolders;
 		}
 	}
 }
