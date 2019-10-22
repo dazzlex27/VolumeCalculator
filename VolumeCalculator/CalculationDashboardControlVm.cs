@@ -253,7 +253,7 @@ namespace VolumeCalculator
 			OpenPhotosFolderCommand = new CommandHandler(OpenPhotosFolder, !CalculationInProgress);
 			CancelPendingCalculationCommand = new CommandHandler(_dashStatusUpdater.CancelPendingCalculation, !CalculationInProgress);
 
-			_barcodeResetTimer = new Timer(10000) { AutoReset = false };
+			_barcodeResetTimer = new Timer(20000) { AutoReset = false };
 			_barcodeResetTimer.Elapsed += OnBarcodeResetElapsed;
 		}
 
