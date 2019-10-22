@@ -58,6 +58,8 @@ namespace VolumeCalculator
 		private uint _lastUnitCount;
 		private string _lastComment;
 
+		private Timer _barcodeResetTimer;
+
 		public ICommand RunVolumeCalculationCommand { get; }
 
 		public ICommand ResetWeightCommand { get; }
@@ -76,6 +78,9 @@ namespace VolumeCalculator
 			set
 			{
 				SetField(ref _objectCode, value, nameof(ObjectCode));
+
+				if (_objectCode != "")
+					_barcodeResetTimer.Start();
 
 				if (CodeReady)
 					ResetMeasurementValues();
@@ -247,6 +252,14 @@ namespace VolumeCalculator
 			OpenResultsFileCommand = new CommandHandler(OpenResultsFile, !CalculationInProgress);
 			OpenPhotosFolderCommand = new CommandHandler(OpenPhotosFolder, !CalculationInProgress);
 			CancelPendingCalculationCommand = new CommandHandler(_dashStatusUpdater.CancelPendingCalculation, !CalculationInProgress);
+
+			_barcodeResetTimer = new Timer(10000) { AutoReset = false };
+			_barcodeResetTimer.Elapsed += OnBarcodeResetElapsed;
+		}
+
+		private void OnBarcodeResetElapsed(object sender, ElapsedEventArgs e)
+		{
+			ObjectCode = "";
 		}
 
 		public void StartCalculation(CalculationRequestData requestData)
@@ -327,7 +340,7 @@ namespace VolumeCalculator
 		}
 
 		private void OnBarcodeReady(string code)
-		{
+		{	
 			if (!CanAcceptBarcodes || code == string.Empty)
 				return;
 
@@ -412,6 +425,8 @@ namespace VolumeCalculator
 			{
 				try
 				{
+					_barcodeResetTimer.Stop();
+
 					_dashStatusUpdater.DashStatus = DashboardStatus.InProgress;
 					CalculationStatusChanged?.Invoke(CalculationStatus.Running);
 

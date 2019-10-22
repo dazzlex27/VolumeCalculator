@@ -27,79 +27,94 @@
 		</ObjectDataProvider>
 	</Window.Resources>
 	<StackPanel Margin="10">
-		<StackPanel Orientation="Horizontal">
-			<StackPanel Margin="2">
-				<Canvas Name="CvColor" Width="400" Height="300" Background="Black">
-					<Image Source="{Binding ColorImageBitmap}"
+		<TabControl>
+			<TabItem Header="Общие настройки"
+					 TabIndex="0">
+				<StackPanel>
+					<!--Video-->
+					<StackPanel Orientation="Horizontal">
+						<StackPanel Margin="2">
+							<Canvas Name="CvColor" Width="400" Height="300" Background="Black">
+								<Image Source="{Binding ColorImageBitmap}"
 					       Width="{Binding Path=ActualWidth, ElementName=CvColor}"
 					       Height="{Binding Path=ActualHeight, ElementName=CvColor}"
 					       Stretch="Fill" />
-					<StackPanel Visibility="{Binding UseColorMask, Converter={StaticResource BooleanToVisibilityConverter}}">
-						<gui:MaskPolygonControl Width="{Binding Path=ActualWidth, ElementName=CvColor}"
+								<StackPanel Visibility="{Binding UseColorMask, Converter={StaticResource BooleanToVisibilityConverter}}">
+									<gui:MaskPolygonControl Width="{Binding Path=ActualWidth, ElementName=CvColor}"
 						                        Height="{Binding Path=ActualHeight, ElementName=CvColor}"
 						                        DataContext="{Binding ColorMaskRectangleControlVm}"
 						                        HorizontalAlignment="Stretch"
 						                        VerticalAlignment="Stretch"
 						                        IsReadOnly="False" 
 						                        RectangleOnly="True"/>
-					</StackPanel>
-				</Canvas>
-				<CheckBox Margin="3" IsEnabled="{Binding HasReceivedAColorImage}" Content="Ограничение зоны измерения"
+								</StackPanel>
+							</Canvas>
+							<CheckBox Margin="3" IsEnabled="{Binding HasReceivedAColorImage}" Content="Ограничение зоны измерения"
 				          IsChecked="{Binding UseColorMask, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-			</StackPanel>
-			<StackPanel Margin="2">
-				<Canvas Name="CvDepth" Width="400" Height="300" Background="Black">
-					<Image Source="{Binding DepthImageBitmap}"
+						</StackPanel>
+						<StackPanel Margin="2">
+							<Canvas Name="CvDepth" Width="400" Height="300" Background="Black">
+								<Image Source="{Binding DepthImageBitmap}"
 				       Width="{Binding Path=ActualWidth, ElementName=CvDepth}"
 				       Height="{Binding Path=ActualHeight, ElementName=CvDepth}"
 				       Stretch="Fill" />
-					<StackPanel Visibility="{Binding UseDepthMask, Converter={StaticResource BooleanToVisibilityConverter}}">
-						<gui:MaskPolygonControl Width="{Binding Path=ActualWidth, ElementName=CvDepth}"
+								<StackPanel Visibility="{Binding UseDepthMask, Converter={StaticResource BooleanToVisibilityConverter}}">
+									<gui:MaskPolygonControl Width="{Binding Path=ActualWidth, ElementName=CvDepth}"
 					                        Height="{Binding Path=ActualHeight, ElementName=CvDepth}"
 					                        DataContext="{Binding DepthMaskPolygonControlVm}"
 					                        HorizontalAlignment="Stretch"
 					                        VerticalAlignment="Stretch"
 					                        IsReadOnly="False" />
-					</StackPanel>
-				</Canvas>
-				<CheckBox Margin="3" IsEnabled="{Binding HasReceivedADepthMap}" Content="Ограничение зоны измерения"
+								</StackPanel>
+							</Canvas>
+							<CheckBox Margin="3" IsEnabled="{Binding HasReceivedADepthMap}" Content="Ограничение зоны измерения"
 			          IsChecked="{Binding UseDepthMask, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-			</StackPanel>
-		</StackPanel>
-		<StackPanel Name="SpParent" Margin="5">
-			<StackPanel Width="{Binding Path=ActualWidth, ElementName=SpParent}">
-				<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Расстояние до плоскости пола, мм" />
-				<Grid HorizontalAlignment="Stretch" Margin="3">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="4*" />
-						<ColumnDefinition />
-					</Grid.ColumnDefinitions>
-					<Slider Minimum="{Binding MinDepth}"
+						</StackPanel>
+					</StackPanel>
+					<!--Floor setup-->
+					<StackPanel Width="{Binding Path=ActualWidth, ElementName=SpParent}">
+						<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Расстояние до плоскости пола, мм" />
+						<Grid HorizontalAlignment="Stretch" Margin="3">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="Auto"/>
+							</Grid.ColumnDefinitions>
+							<Slider Minimum="{Binding MinDepth}"
 					        Maximum="{Binding MaxDepth}"
 					        Value="{Binding FloorDepth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 					        HorizontalAlignment="Stretch"
 					        SmallChange="1"
 					        LargeChange="5"
 					        VerticalAlignment="Center" />
-					<TextBox Grid.Column="1"
+							<TextBox Grid.Column="1"
 					         TextAlignment="Center"
 					         MaxLength="5"
+									 Margin="3"
 					         Width="50"
 					         VerticalAlignment="Center"
 					         Name="TbDistanceToFloor"
 					         Text="{Binding Path=FloorDepth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 					         PreviewTextInput="CheckNumericTextPreview" />
-				</Grid>
-				<Button Name="BtCalculateFloorDepth" 
+							<Button Name="BtCalculateFloorDepth" 
+									Grid.Column="2"
 				        Margin="3" 
 				        Content="Рассчитать автоматически"
 				        Command="{Binding CalculateFloorDepthCommand}" />
-			</StackPanel>
-			<StackPanel Margin="3" Orientation="Horizontal" VerticalAlignment="Center">
-				<TextBlock Style="{StaticResource TextBlockStyle}" 
+						</Grid>
+
+					</StackPanel>
+					<!--Min. height and sample size-->
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition/>
+							<ColumnDefinition/>
+						</Grid.ColumnDefinitions>
+						<StackPanel Margin="3" Orientation="Horizontal" VerticalAlignment="Center">
+							<TextBlock Style="{StaticResource TextBlockStyle}" 
 				           Margin="2,0" Text="Минимальная высота объекта, мм: " 
 				           VerticalAlignment="Center" />
-				<TextBox Margin="2"
+							<TextBox Margin="2"
 				         Name="TbMinObjHeight"
 				         TextAlignment="Center"
 				         MaxLength="5"
@@ -107,53 +122,78 @@
 				         VerticalAlignment="Center"
 				         Text="{Binding Path=MinObjHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 				         PreviewTextInput="CheckNumericTextPreview" />
-			</StackPanel>
-			<StackPanel Margin="3" Orientation="Horizontal">
-				<TextBlock Style="{StaticResource TextBlockStyle}" Text="Число образцов для измерения: " VerticalAlignment="Center" />
-				<TextBox Margin="2"
+						</StackPanel>
+						<StackPanel Margin="3" Orientation="Horizontal" Grid.Column="1">
+							<TextBlock Style="{StaticResource TextBlockStyle}" Text="Число образцов для измерения: " VerticalAlignment="Center" />
+							<TextBox Margin="2"
 				         Name="TbSampleCount"
 				         Width="50"
 				         TextAlignment="Center"
 				         Text="{Binding Path=SampleCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 				         MaxLength="2"
 				         PreviewTextInput="CheckNumericTextPreview" />
-			</StackPanel>
-			<StackPanel Margin="3">
-				<TextBlock Style="{StaticResource TextBlockStyle}" 
+						</StackPanel>
+					</Grid>
+				</StackPanel>
+			</TabItem>
+			<TabItem Header="Дополнительные настройки" 
+					 TabIndex="1">
+				<StackPanel>
+					<StackPanel Margin="3">
+						<TextBlock Style="{StaticResource TextBlockStyle}" 
 				           Margin="2,0" 
 				           Text="Путь для сохранения результатов (будут записаны в 'results.csv)" />
-				<TextBox Style="{StaticResource TextBoxStyle}" 
+						<TextBox Style="{StaticResource TextBoxStyle}" 
 				         Margin="2,2,2,0"
 				         Text="{Binding Path=OutputPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-			</StackPanel>
-			<StackPanel Margin="0,10,0,0">
-				<CheckBox Name="CbEnableAutoTimer" Content="Разрешить автозапуск измерения" IsChecked="{Binding EnableAutoTimer, Mode=TwoWay}"/>
-			</StackPanel>
-			<StackPanel Margin="0,0,0,10" IsEnabled="{Binding ElementName=CbEnableAutoTimer, Path=IsChecked}">
-				<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Значение таймера до начала измерения, мс" />
-				<TextBox Style="{StaticResource TextBoxStyle}" Margin="2,2,2,0" 
-				         Text="{Binding Path=TimeToStartMeasurementMs, Mode=TwoWay}"/>
-			</StackPanel>
-			<StackPanel Margin="0,10,0,0">
-				<CheckBox Content="Обязательный ввод штрихкода" IsChecked="{Binding RequireBarcode, Mode=TwoWay}"/>
-				<ComboBox ItemsSource="{Binding Source={StaticResource AllWeightUnits}}"
+					</StackPanel>
+					<StackPanel Margin="3">
+						<CheckBox Name="CbEnableAutoTimer" Content="Разрешить автозапуск измерения" IsChecked="{Binding EnableAutoTimer, Mode=TwoWay}"/>
+					</StackPanel>
+					<StackPanel Margin="3" IsEnabled="{Binding ElementName=CbEnableAutoTimer, Path=IsChecked}" Orientation="Horizontal" VerticalAlignment="Center">
+						<TextBlock Style="{StaticResource TextBlockStyle}" 
+								   Text="Значение таймера до начала измерения, мс" 
+								   VerticalAlignment="Center"/>
+						<TextBox Style="{StaticResource TextBoxStyle}" Margin="3" 
+				         Text="{Binding Path=TimeToStartMeasurementMs, Mode=TwoWay}"
+								 VerticalAlignment="Center"/>
+					</StackPanel>
+					<StackPanel Margin="3">
+						<CheckBox Content="Обязательный ввод штрихкода" IsChecked="{Binding RequireBarcode, Mode=TwoWay}"/>
+						<ComboBox ItemsSource="{Binding Source={StaticResource AllWeightUnits}}"
 				          SelectedItem="{Binding SelectedWeightUnits, Mode=TwoWay}">
-					<ComboBox.ItemTemplate>
-						<DataTemplate>
-							<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
-						</DataTemplate>
-					</ComboBox.ItemTemplate>
-				</ComboBox>
-			</StackPanel>
-			<StackPanel Margin="3" Visibility="{Binding RangeMeterAvailable, Converter={StaticResource BooleanToVisibilityConverter}}">
-				<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Поправка показаний дальномера" />
-				<TextBox Style="{StaticResource TextBoxStyle}" Margin="2,2,2,0" Name="TbOutputPath"
+							<ComboBox.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+								</DataTemplate>
+							</ComboBox.ItemTemplate>
+						</ComboBox>
+					</StackPanel>
+					<StackPanel Margin="3" Visibility="{Binding RangeMeterAvailable, Converter={StaticResource BooleanToVisibilityConverter}}">
+						<TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0" Text="Поправка показаний дальномера" />
+						<TextBox Style="{StaticResource TextBoxStyle}" Margin="2,2,2,0" Name="TbOutputPath"
 				         Text="{Binding Path=RangeMeterSubtractionValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-			</StackPanel>
+					</StackPanel>
+				</StackPanel>
+			</TabItem>
+		</TabControl>
+		<StackPanel Name="SpParent" Margin="5">
+			<!--OK and Cancel buttons-->
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-				<Button Margin="5" MinWidth="100" Content="OK" Click="BtOk_Click" IsDefault="True" />
-				<Button Margin="5" MinWidth="100" Content="Отмена" Click="BtCancel_Click" IsCancel="True" />
-				<Button Margin="5" MinWidth="100" Content="По умолчанию" Command="{Binding ResetSettingsCommand}" />
+				<Button Margin="5" 
+						MinWidth="100" 
+						Content="OK"
+						Click="BtOk_Click" 
+						IsDefault="True" />
+				<Button Margin="5"
+						MinWidth="100" 
+						Content="Отмена" 
+						Click="BtCancel_Click" 
+						IsCancel="True" />
+				<Button Margin="5" 
+						MinWidth="100"
+						Content="По умолчанию" 
+						Command="{Binding ResetSettingsCommand}" />
 			</StackPanel>
 		</StackPanel>
 	</StackPanel>

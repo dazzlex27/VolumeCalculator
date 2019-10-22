@@ -13,7 +13,8 @@
         WindowStyle="None"
 		WindowState="Maximized"
         ResizeMode="NoResize"
-        ContentRendered="OnContentRendered">
+        ContentRendered="OnContentRendered"
+		KeyboardNavigation.TabNavigation="Cycle">
 	<Window.DataContext>
 		<main:MainWindowVm/>
 	</Window.DataContext>
@@ -23,20 +24,22 @@
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
-		<Menu Background="{StaticResource BackgroundKey}" MinHeight="50">
+		<Menu Background="{StaticResource BackgroundKey}" 
+			  MinHeight="50" 
+			  IsTabStop="false">
 			<Menu.Resources>
 				<Style TargetType="MenuItem">
 					<Setter Property="Height" Value="50" />
 					<Setter Property="FontSize" Value="24"/>
 				</Style>
 			</Menu.Resources>
-			<MenuItem Header="Действия">
+			<MenuItem Header="Действия" IsTabStop="False">
 				<MenuItem Header="Открыть настройки" Command="{Binding OpenSettingsCommand}"/>
 				<MenuItem Header="Информация о системе" Command="{Binding OpenStatusCommand}"/>
 				<MenuItem Header="Запустить Конфигуратор" Command="{Binding OpenConfiguratorCommand}"/>
 				<MenuItem Header="Завершить работу" Command="{Binding ShutDownCommand}"/>
 			</MenuItem>
-			<MenuItem Header="Инструменты">
+			<MenuItem Header="Инструменты" IsTabStop="false">
 				<MenuItem Header="Сохранение тестовых данных" 
 						  IsCheckable="True" 
 						  IsChecked="{Binding IsTestDataGenerationControlVisible, Mode=TwoWay}"/>
@@ -50,8 +53,13 @@
 				<RowDefinition Height="Auto"/>
 			</Grid.RowDefinitions>
 			<gui:StreamViewControl DataContext="{Binding StreamViewControlVm}"/>
-			<gui:CalculationDashboardControl Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" DataContext="{Binding CalculationDashboardControlVm}"/>
-			<gui:TestDataGenerationControl Grid.Row="2" DataContext="{Binding TestDataGenerationControlVm}"/>
+			<gui:CalculationDashboardControl Grid.Row="1" 
+											 VerticalAlignment="Stretch" 
+											 HorizontalAlignment="Stretch" 
+											 DataContext="{Binding CalculationDashboardControlVm}"/>
+			<gui:TestDataGenerationControl Grid.Row="2" 
+										   DataContext="{Binding TestDataGenerationControlVm}" 
+										   KeyboardNavigation.TabNavigation="None"/>
 		</Grid>
 	</Grid>
 </Window>
