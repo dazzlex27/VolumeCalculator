@@ -75,8 +75,10 @@ namespace DeviceIntegration.Scanners
 			if (_keyCollectionBuilder.Length == 0)
 				_keyCollectionTimer.Start();
 
-			var keyString = key.ToString().Replace("D", "");
-			if (keyString.Length != 1)
+			var keyString = key.ToString();
+			if (keyString.Length > 1)
+				keyString = keyString.Replace("D", "");
+			if (keyString.Length < 1)
 				return;
 
 			var keyChar = keyString[0];
