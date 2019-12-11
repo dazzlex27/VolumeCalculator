@@ -21,7 +21,13 @@ namespace DeviceIntegration.Scanners
 		private const int KeyboardHookKey = 13;
 		private const int KeyDownEventKey = 0x0100;
 
-		private static readonly List<char> NumericKeys = "1234567890".ToCharArray().ToList();
+		private static readonly List<string> AvailableKeys = new List<string>
+		{
+			"D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D0" ,
+			"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", 
+			"M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
+		};
+
 		private static readonly List<char> LetterKeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray().ToList();
 
 		private static LowLevelKeyboardProc _proc; // Keep as class member, otherwise it gets GC'd!!!
@@ -72,18 +78,17 @@ namespace DeviceIntegration.Scanners
 			if (_onTimeOut)
 				return;
 
-			if (_keyCollectionBuilder.Length == 0)
-				_keyCollectionTimer.Start();
-
 			var keyString = key.ToString();
-			if (keyString.Length > 1)
-				keyString = keyString.Replace("D", "");
-			if (keyString.Length < 1)
+			if (!AvailableKeys.Contains(keyString))
 				return;
 
-			var keyChar = keyString[0];
-			if (NumericKeys.Contains(keyChar) || LetterKeys.Contains(keyChar))
-				_keyCollectionBuilder.Append(keyChar);
+			if (_keyCollectionBuilder.Length == 0)
+				_keyCollectionTimer.Start();
+					   
+			if (keyString.Length > 1)
+				keyString = keyString.Replace("D", "");
+
+			_keyCollectionBuilder.Append(keyString);
 		}
 
 		private void TimeOutTimer_Elapsed(object sender, ElapsedEventArgs e)
