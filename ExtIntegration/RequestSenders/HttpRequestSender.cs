@@ -1,33 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+using System.Web;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings.Integration;
+using ProcessingUtils;
 
 namespace ExtIntegration.RequestSenders
 {
 	public class HttpRequestSender : IRequestSender
 	{
 		private readonly ILogger _logger;
+		private readonly HttpClient _httpClient;
 		private readonly List<string> _destinationAddresses;
-		private readonly string _login;
-		private readonly string _password;
+		private readonly AuthenticationHeaderValue _authenticationHeaderData;
 
-		public HttpRequestSender(ILogger logger, HttpRequestSettings settings)
+		public HttpRequestSender(ILogger logger, HttpClient httpClient, HttpRequestSettings settings)
 		{
 			_logger = logger;
+			_httpClient = httpClient;
+			var useSecureConnection = settings.UseSecureConnection;
 
 			_destinationAddresses = new List<string>();
 			foreach (var ip in settings.DestinationIps)
 			{
-				var address = $"http://{ip}:{settings.Port}/{settings.Url}";
+				var prefixString = useSecureConnection ? "https" : "http";
+				var portString = GetPortString(useSecureConnection, settings.Port);
+
+				var address = $"{prefixString}://{ip}{portString}/{settings.Url}";
 				_destinationAddresses.Add(address);
 				_logger.LogInfo($"Creating GET request sender for {address}");
 			}
 
-			_login = settings.Login;
-			_password = settings.Password;
+			if (!string.IsNullOrEmpty(settings.Login))
+			{
+				_authenticationHeaderData = NetworkUtils.GetBasicAuthenticationHeaderData(settings.Login, settings.Password);
+				_logger.LogInfo($"Authentication data for https requests - \"{_authenticationHeaderData.ToString()}\"");
+			}
 		}
 
 		public void Dispose()
@@ -61,33 +73,34 @@ namespace ExtIntegration.RequestSenders
 					{
 						_logger.LogInfo($"Sending GET request to {address}...");
 
-						using (var webClient = new WebClient())
+						var builder = new UriBuilder(address);
+
+						var query = HttpUtility.ParseQueryString(builder.Query);
+						query["bar"] = result.Barcode;
+						query["wt"] = result.ObjectWeight.ToString();
+						query["l"] = result.ObjectLengthMm.ToString();
+						query["w"] = result.ObjectWidthMm.ToString();
+						query["h"] = result.ObjectHeightMm.ToString();
+						query["u"] = result.UnitCount.ToString();
+						query["c"] = result.CalculationComment.ToString();
+
+						builder.Query = query.ToString();
+						string finalUrl = builder.ToString();
+
+						HttpResponseMessage response = null;
+
+						if (_authenticationHeaderData != null)
 						{
-							var authenticationRequired = !string.IsNullOrEmpty(_login);
-							if (authenticationRequired)
+							using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, finalUrl))
 							{
-								var credentialCache = new CredentialCache
-								{
-									{
-										new Uri(address), "Basic", new NetworkCredential(_login, _password)
-									}
-								};
-
-								webClient.UseDefaultCredentials = true;
-								webClient.Credentials = credentialCache;
+								requestMessage.Headers.Authorization = _authenticationHeaderData;
+								response = Task.Run(() => _httpClient.SendAsync(requestMessage)).Result;
 							}
-
-							webClient.QueryString.Add("bar", result.Barcode);
-							webClient.QueryString.Add("wt", result.ObjectWeight.ToString());
-							webClient.QueryString.Add("l", result.ObjectLengthMm.ToString());
-							webClient.QueryString.Add("w", result.ObjectWidthMm.ToString());
-							webClient.QueryString.Add("h", result.ObjectHeightMm.ToString());
-							webClient.QueryString.Add("u", result.UnitCount.ToString());
-							webClient.QueryString.Add("c", result.CalculationComment.ToString());
-							var response = webClient.DownloadString(address);
-
-							_logger.LogInfo($"Sent GET request to {address}, response was {response}");
 						}
+						else
+							response = Task.Run(() => _httpClient.GetAsync(finalUrl)).Result;
+
+						_logger.LogInfo($"Sent GET request - {finalUrl}, response was {response}");
 					}
 					catch (Exception ex)
 					{
@@ -98,7 +111,6 @@ namespace ExtIntegration.RequestSenders
 				}
 
 				return !oneOfTheRequestsFailed;
-
 			}
 			catch (Exception ex)
 			{
@@ -106,6 +118,17 @@ namespace ExtIntegration.RequestSenders
 
 				return false;
 			}
+		}
+
+		private string GetPortString(bool secureConnection, int port)
+		{
+			if (secureConnection && port == 443)
+				return "";
+
+			if (!secureConnection && port == 80)
+				return "";
+
+			return $":{port}";
 		}
 	}
 }

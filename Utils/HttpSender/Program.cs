@@ -1,6 +1,10 @@
 ﻿using System;
-using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web;
 
 namespace HttpSender
 {
@@ -10,118 +14,120 @@ namespace HttpSender
 
 		private static void Main()
 		{
-			const string defaultIp = "192.168.200.116";
-			const ushort defaultPort = 80;
-			const string defaultUrl = "WMSA/hs/IS_Measurement/put";
-			const string defaultLogin = "WorkHTTP";
-			const string defaultPassword = "204fnehy";
+			const string defaultIp = "sha.zappstore.pro";
+			const ushort defaultPort = 443;
+			const string defaultUrl = "package/tools/packup-calculate";
+			const string defaultLogin = "is";
+			const string defaultPassword = "AKVc8ceDwUpu83ZRPp5EcVUC8GesWHgC";
 
-			string ip;
-			ushort port;
-			string url;
-			string login;
-			string password;
+			string ip = defaultIp;
+			ushort port = defaultPort;
+			string url = defaultUrl;
+			string login = defaultLogin;
+			string password = defaultPassword;
+
+			var useHttpClient = true;
+
+			var address = $"https://{ip}:45/{url}";
 
 			try
 			{
-				Console.WriteLine("IS HTTP data sender emulator");
-				Console.WriteLine($"Enter Service IP (leave blank for {defaultIp}):");
-				ip = Console.ReadLine();
-				if (ip == "")
-					ip = defaultIp;
-
-				Console.WriteLine($"Enter Service connection port (leave blank for {defaultPort}:");
-				var portOk = ushort.TryParse(Console.ReadLine(), out port);
-				if (!portOk)
-					port = defaultPort;
-
-				Console.WriteLine($"Enter Service url (leave blank for {defaultUrl}:");
-				url = Console.ReadLine();
-				if (url == "")
-					url = defaultUrl;
-
-				Console.WriteLine($"Enter Service login (leave blank for {defaultLogin}:");
-				login = Console.ReadLine();
-				if (login == "")
-					login = defaultLogin;
-
-				Console.WriteLine($"Enter Service url (leave blank for {defaultPassword}:");
-				password = Console.ReadLine();
-				if (password == "")
-					password = defaultPassword;
+				if (useHttpClient)
+					SendRequestViaHttpClient(port, login, password, address);
+				else
+					SendRequestViaWebClient(login, password, address);
 			}
-			catch (Exception e)
+			catch (Exception ex)
 			{
-				Console.WriteLine($"Failed to start the sender: {e}");
-				return;
+				Console.WriteLine(ex);
 			}
 
-			var address = $"http://{ip}:{port}/{url}";
+			Console.WriteLine("Application finished");
+		}
 
-			while (true)
+		private static void SendRequestViaHttpClient(ushort port, string login, string password, string address)
+		{
+			using (var client = new HttpClient())
 			{
-				try
+				var builder = new UriBuilder(address);
+
+				var query = HttpUtility.ParseQueryString(builder.Query);
+				query["wt"] = "2";
+				query["l"] = "1";
+				query["w"] = "1";
+				query["h"] = "1";
+				query["bar"] = "12345";
+
+				builder.Query = query.ToString();
+				string dstUrl = builder.ToString();
+
+				var asciiCredentialsData = Encoding.ASCII.GetBytes($"{login}:{password}");
+				var base64CredentialsData = Convert.ToBase64String(asciiCredentialsData);
+
+				using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, dstUrl))
 				{
-					Console.WriteLine($"Press any key to send request to {address}");
-					var input = Console.ReadLine();
-					if (input == "exit")
-						break;
+					requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64CredentialsData);
+					var dataStr = requestMessage.Headers.Authorization.ToString();
 
-					//var response = httpClient.PostAsync(address, new StringContent("")).Result;
-					//var responceString = response.Content.ReadAsStringAsync().Result;
-					//Console.WriteLine($"Request sent, response received: {responceString}");
-					//Console.WriteLine($"Request sent, response received: {response}");
+					var response = Task.Run(() => client.SendAsync(requestMessage)).Result;
+				}
+			}
+		}
 
-					//var webClient = new WebClient();
-					//webClient.QueryString.Add("bar", "0");
-					//webClient.QueryString.Add("wt", "0");
-					//webClient.QueryString.Add("l", "0");
-					//webClient.QueryString.Add("w", "0");
-					//webClient.QueryString.Add("h", "0");
-					//var response = webClient.DownloadString(address);
-					//Console.WriteLine($"Request sent, response received: {response}");
+		private static void SendRequestViaWebClient(string login, string password, string address)
+		{
+			var webClient = new MyWebClient();
+			try
+			{
 
-
-					try
-					{
-						var webClient = new WebClient();
-
-						var authenticationRequired = !string.IsNullOrEmpty(login);
-						if (authenticationRequired)
-						{
-							var credentialCache = new CredentialCache
+				var authenticationRequired = !string.IsNullOrEmpty(login);
+				if (authenticationRequired)
+				{
+					var credentialCache = new CredentialCache
 							{
 								{
 									new Uri(address), "Basic", new NetworkCredential(login, password)
 								}
 							};
 
-							webClient.UseDefaultCredentials = true;
-							webClient.Credentials = credentialCache;
-						}
-
-						webClient.QueryString.Add("bar", Rd.Next(1000000, 9999999).ToString());
-						webClient.QueryString.Add("wt", Rd.Next(100, 1500).ToString());
-						webClient.QueryString.Add("l", Rd.Next(1, 200).ToString());
-						webClient.QueryString.Add("w", Rd.Next(1, 200).ToString());
-						webClient.QueryString.Add("h", Rd.Next(1, 200).ToString());
-						var response = webClient.DownloadString(address);
-						Console.WriteLine($"Request sent, response received: {response}");
-					}
-					catch (WebException ex)
-					{
-						Console.WriteLine(ex.Status);
-						Console.WriteLine(ex.Message);
-						Console.WriteLine(ex.ToString());
-					}
+					webClient.UseDefaultCredentials = true;
+					webClient.Credentials = credentialCache;
 				}
-				catch (Exception ex)
+
+				webClient.QueryString.Add("bar", Rd.Next(1000000, 9999999).ToString());
+				webClient.QueryString.Add("wt", Rd.Next(100, 1500).ToString());
+				webClient.QueryString.Add("l", Rd.Next(1, 200).ToString());
+				webClient.QueryString.Add("w", Rd.Next(1, 200).ToString());
+				webClient.QueryString.Add("h", Rd.Next(1, 200).ToString());
+
+				var response = webClient.DownloadString(address);
+				Console.WriteLine($"Request sent, response received: {response}");
+			}
+			catch (WebException ex)
+			{
+				var actualUri = ex.Response.ResponseUri;
+				var credentialCache = new CredentialCache
+							{
+								{
+									new Uri(address), "Basic", new NetworkCredential(login, password)
+								}
+							};
+
+				webClient.UseDefaultCredentials = true;
+				webClient.Credentials = credentialCache;
+				try
+				{
+					var response = webClient.DownloadString(actualUri);
+
+				}
+				catch (Exception ex2)
 				{
 					Console.WriteLine(ex);
 				}
+				Console.WriteLine(ex.Status);
+				Console.WriteLine(ex.Message);
+				Console.WriteLine(ex.ToString());
 			}
-
-			Console.WriteLine("Application finished");
 		}
 	}
 

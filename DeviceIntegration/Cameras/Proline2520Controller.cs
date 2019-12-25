@@ -1,11 +1,10 @@
 ﻿using Primitives;
 using Primitives.Logging;
+using ProcessingUtils;
 using System;
 using System.Drawing;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DeviceIntegration.Cameras
@@ -34,11 +33,15 @@ namespace DeviceIntegration.Cameras
 				_login = login;
 				_password = password;
 
-				var base64String = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_login}:{_password}"));
-				_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64String);
-				var result = await _httpClient.GetAsync($"http://{_ip}");
+				var authenticationData = NetworkUtils.GetBasicAuthenticationHeaderData(login, password);
 
-				return result.StatusCode == HttpStatusCode.OK;
+				using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"http://{_ip}"))
+				{
+					requestMessage.Headers.Authorization = authenticationData;
+					var response = await _httpClient.SendAsync(requestMessage);
+					_logger.LogInfo($"Camera connection status code - {response.StatusCode}");
+					return response.StatusCode == HttpStatusCode.OK;
+				}
 			}
 			catch (Exception ex)
 			{

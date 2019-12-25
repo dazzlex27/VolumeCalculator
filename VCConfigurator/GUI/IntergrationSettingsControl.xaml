@@ -100,10 +100,18 @@
 					         MaxWidth="100"/>
 				</StackPanel>
 				<StackPanel Margin="3" 
+				            Orientation="Horizontal">
+					<TextBlock Margin="3"
+					           Text="Использовать HTTPS: "/>
+					<CheckBox Margin="3"
+					         IsChecked="{Binding HttpRequestIsSecure, Mode=TwoWay}"/>
+				</StackPanel>
+				<StackPanel Margin="3" 
 					            Orientation="Horizontal">
 					<TextBlock Margin="3"
 						           Text="Порт: "/>
-					<TextBox Margin="3"
+					<TextBox Margin="3" 
+							 Name="TbHttpRequestPort"
 						         Text="{Binding HttpRequestPort, Mode=TwoWay}"
 								MaxLength="5"
 						         Width="40"/>

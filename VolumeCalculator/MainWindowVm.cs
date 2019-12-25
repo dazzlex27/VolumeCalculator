@@ -253,7 +253,7 @@ namespace VolumeCalculator
 				_dmProcessor = new DepthMapProcessor(_logger, colorCameraParams, depthCameraParams);
 				_dmProcessor.SetProcessorSettings(Settings, _usingMasks);
 
-				_requestProcessor = new RequestProcessor(_logger, _settings.IntegrationSettings);
+				_requestProcessor = new RequestProcessor(_logger, _httpClient, _settings.IntegrationSettings);
 				_requestProcessor.StartRequestReceived += OnCalculationStartRequested;
 
 				var outputPath = _settings.IoSettings.OutputPath;

@@ -17,6 +17,7 @@ namespace VCConfigurator
 
 		private bool _enableHttpRequests;
 		private string _httpRequestAddress;
+		private bool _httpRequestIsSecure;
 		private int _httpRequestPort;
 		private string _httpRequestUrl;
 		private string _httpRequestLogin;
@@ -92,6 +93,19 @@ namespace VCConfigurator
 		{
 			get => _httpRequestAddress;
 			set => SetField(ref _httpRequestAddress, value, nameof(HttpRequestAddress));
+		}
+
+		public bool HttpRequestIsSecure
+		{
+			get => _httpRequestIsSecure;
+			set
+			{
+				SetField(ref _httpRequestIsSecure, value, nameof(HttpRequestIsSecure));
+				if (_httpRequestIsSecure)
+					HttpRequestPort = 443;
+				else
+					HttpRequestPort = 80;
+			}
 		}
 
 		public int HttpRequestPort
@@ -232,6 +246,7 @@ namespace VCConfigurator
 			HttpRequestAddress = httpRequestSettings.DestinationIps.Length > 0
 				? httpRequestSettings.DestinationIps[0]
 				: "127.0.0.1";
+			HttpRequestIsSecure = httpRequestSettings.UseSecureConnection;
 			HttpRequestPort = httpRequestSettings.Port;
 			HttpRequestUrl = httpRequestSettings.Url;
 			HttpRequestLogin = httpRequestSettings.Login;
@@ -274,6 +289,7 @@ namespace VCConfigurator
 			var httpRequestSettings = settings.HttpRequestSettings;
 			httpRequestSettings.EnableRequests = EnableHttpRequests;
 			httpRequestSettings.DestinationIps = new[] {HttpRequestAddress};
+			httpRequestSettings.UseSecureConnection = HttpRequestIsSecure;
 			httpRequestSettings.Port = HttpRequestPort;
 			httpRequestSettings.Url = HttpRequestUrl;
 			httpRequestSettings.Login = HttpRequestLogin;

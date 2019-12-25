@@ -8,6 +8,8 @@ namespace Primitives.Settings.Integration
 
 		public string[] DestinationIps { get; set; }
 
+		public bool UseSecureConnection { get; set; }
+
 		public int Port { get; set; }
 
 		public string Url { get; set; }
@@ -16,10 +18,11 @@ namespace Primitives.Settings.Integration
 
 		public string Password { get; set; }
 
-		public HttpRequestSettings(bool enableRequests, string[] destinationIps, int port, string url, string login, string password)
+		public HttpRequestSettings(bool enableRequests, string[] destinationIps, bool useSecureConnection, int port, string url, string login, string password)
 		{
 			EnableRequests = enableRequests;
 			DestinationIps = destinationIps;
+			UseSecureConnection = useSecureConnection;
 			Port = port;
 			Url = url;
 			Login = login;
@@ -30,7 +33,7 @@ namespace Primitives.Settings.Integration
 		{
 			var defaultAddresses = new[] {"localhost"};
 
-			return new HttpRequestSettings(false, defaultAddresses, 8888, "", "", "");
+			return new HttpRequestSettings(false, defaultAddresses, false, 80, "", "", "");
 		}
 
 		[OnDeserialized]

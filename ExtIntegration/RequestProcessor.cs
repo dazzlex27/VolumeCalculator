@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using ExtIntegration.RequestHandlers;
 using ExtIntegration.RequestSenders;
@@ -21,7 +22,7 @@ namespace ExtIntegration
 		private readonly Queue<HttpRequestData> _activeHttpRequests;
 		private readonly List<IRequestSender> _requestSenders;
 
-		public RequestProcessor(ILogger logger, IntegrationSettings settings)
+		public RequestProcessor(ILogger logger, HttpClient httpClient, IntegrationSettings settings)
 		{
 			_logger = logger;
 			_requestSenders = new List<IRequestSender>();
@@ -48,7 +49,7 @@ namespace ExtIntegration
 				_requestSenders.Add(new SqlRequestSender(_logger, settings.SqlRequestSettings));
 
 			if (settings.HttpRequestSettings.EnableRequests)
-				_requestSenders.Add(new HttpRequestSender(_logger, settings.HttpRequestSettings));
+				_requestSenders.Add(new HttpRequestSender(_logger, httpClient, settings.HttpRequestSettings));
 
 			if (settings.FtpRequestSettings.EnableRequests)
 				_requestSenders.Add(new FtpRequestSender(_logger, settings.FtpRequestSettings));
