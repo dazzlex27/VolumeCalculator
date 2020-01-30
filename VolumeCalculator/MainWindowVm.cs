@@ -109,14 +109,12 @@ namespace VolumeCalculator
 			{
 				_httpClient = new HttpClient();
 
-				var maskBytes = DeviceSetFactory.GetMaskBytes();
-
 				_fatalErrorMessages = new List<string>();
 				_logger = new Logger();
 				_logger.LogInfo($"Starting up \"{GlobalConstants.AppHeaderString}\"...");
 				AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-				InitializeSettings(maskBytes);
+				InitializeSettings();
 				InitializeIoDevices();
 				InitializeSubSystems();
 				InitializeSubViewModels();
@@ -189,7 +187,7 @@ namespace VolumeCalculator
 			}
 		}
 
-		private void InitializeSettings(byte[] maskBytes)
+		private void InitializeSettings()
 		{
 			try
 			{
@@ -204,7 +202,7 @@ namespace VolumeCalculator
 				else
 					Settings = settingsFromFile;
 
-				_usingMasks = StreamViewControlVm.CheckIfOk(maskBytes);
+				_usingMasks = false;// StreamViewControlVm.CheckIfOk(maskBytes);
 
 				_logger.LogInfo("Settings - ok");
 			}

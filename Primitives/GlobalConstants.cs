@@ -12,7 +12,7 @@ namespace Primitives
 
 		public static readonly string CommonFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
 
-		public static readonly string AppVersion = $"v1.65";
+		public static readonly string AppVersion = $"v1.66";
 
 		public static readonly string AppHeaderString = $@"{ManufacturerName} {AppTitle} {AppVersion}";
 
