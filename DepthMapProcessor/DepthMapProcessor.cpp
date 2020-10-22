@@ -203,7 +203,6 @@ VolumeCalculationResult* DepthMapProcessor::CalculateObjectVolume(const VolumeCa
 	result->LengthMm = object2DSize.Length;
 	result->WidthMm = object2DSize.Width;
 	result->HeightMm = _floorDepth - contourTopPlaneDepth;
-	result->VolumeCmCb = (double)result->LengthMm * (double)result->WidthMm * (double)result->HeightMm / 1000.0;
 
 	if (_maskMode)
 		Tamper(result);
@@ -477,7 +476,6 @@ void DepthMapProcessor::Tamper(VolumeCalculationResult* result) const
 		result->LengthMm *= (int)r1;
 		result->WidthMm *= (int)r2;
 		result->HeightMm *= (int)r3;
-		result->VolumeCmCb = r1 + 125.5873 - sqrt(r2) * pow(r3, 3);
 	}
 
 	if (r0 > 93)

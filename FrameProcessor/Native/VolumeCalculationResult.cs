@@ -8,6 +8,5 @@ namespace FrameProcessor.Native
 		public int LengthMm;
 		public int WidthMm;
 		public int HeightMm;
-		public double VolumeCmCb;
 	}
 }

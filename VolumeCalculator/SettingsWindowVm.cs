@@ -41,6 +41,9 @@ namespace VolumeCalculator
 		private int _rangeMeterSubtractionValue;
 		private bool _rangeMeterAvailable;
 		private WeightUnits _selectedWeightUnits;
+		private bool _enablePalletSubtraction;
+		private double _palletWeightKg;
+		private int _palletHeightMm;
 
 		public WriteableBitmap ColorImageBitmap
 		{
@@ -161,6 +164,24 @@ namespace VolumeCalculator
 			get => _rangeMeterAvailable;
 			set => SetField(ref _rangeMeterAvailable, value, nameof(RangeMeterAvailable));
 		}
+		
+		public bool EnablePalletSubtraction
+		{
+			get => _enablePalletSubtraction;
+			set => SetField(ref _enablePalletSubtraction, value, nameof(EnablePalletSubtraction));
+		}
+		
+		public double PalletWeightKg
+		{
+			get => _palletWeightKg;
+			set => SetField(ref _palletWeightKg, value, nameof(PalletWeightKg));
+		}
+		
+		public int PalletHeightMm
+		{
+			get => _palletHeightMm;
+			set => SetField(ref _palletHeightMm, value, nameof(PalletHeightMm));
+		}
 
 		public ICommand CalculateFloorDepthCommand { get; }
 
@@ -194,7 +215,7 @@ namespace VolumeCalculator
 
 			var newAlgorithmSettings = new AlgorithmSettings(FloorDepth, MinObjHeight, SampleCount, UseColorMask,
 				colorMaskPoints, UseDepthMask, depthMaskPoints, EnableAutoTimer, TimeToStartMeasurementMs,
-				RequireBarcode, SelectedWeightUnits);
+				RequireBarcode, SelectedWeightUnits, EnablePalletSubtraction, PalletWeightKg * 1000, PalletHeightMm);
 
 			return new ApplicationSettings(newIoSettings, newAlgorithmSettings, _oldSettings.IntegrationSettings);
 		}
@@ -277,6 +298,9 @@ namespace VolumeCalculator
 			RangeMeterAvailable = settings.IoSettings.ActiveRangeMeterName != "";
 			RangeMeterSubtractionValue = settings.IoSettings.RangeMeterSubtractionValueMm;
 			SelectedWeightUnits = settings.AlgorithmSettings.SelectedWeightUnits;
+			EnablePalletSubtraction = settings.AlgorithmSettings.EnablePalletSubtraction;
+			PalletWeightKg = settings.AlgorithmSettings.PalletWeightGr / 1000;
+			PalletHeightMm = settings.AlgorithmSettings.PalletHeightMm;
 		}
 	}
 }

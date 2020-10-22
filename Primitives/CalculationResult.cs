@@ -23,9 +23,12 @@ namespace Primitives
 		public double ObjectVolumeMm { get; }
 
 		public string CalculationComment { get; }
+		
+		public bool PalletSubtractionEnabled { get; }
 
 		public CalculationResult(DateTime calculationTime, string objectCode, double objectWeight, WeightUnits weightUnits, 
-			uint unitCount, int objectLengthMm, int objectWidthMm, int objectHeightMm, double objectVolumeMm, string calculationComment)
+			uint unitCount, int objectLengthMm, int objectWidthMm, int objectHeightMm, double objectVolumeMm, string calculationComment,
+			bool palletSubtractionEnabled)
 		{
 			CalculationTime = calculationTime;
 			Barcode = objectCode;
@@ -37,6 +40,7 @@ namespace Primitives
 			ObjectHeightMm = objectHeightMm;
 			ObjectVolumeMm = objectVolumeMm;
 			CalculationComment = calculationComment;
+			PalletSubtractionEnabled = palletSubtractionEnabled;
 		}
 	}
 }

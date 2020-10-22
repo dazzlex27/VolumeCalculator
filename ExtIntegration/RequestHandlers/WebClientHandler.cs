@@ -29,7 +29,10 @@ namespace ExtIntegration.RequestHandlers
 
 			_activeConnections = new List<IWebSocketConnection>();
 			_lastRequestData = new CalculationRequestData("", 0, "");
-			_lastCalculationResult = new CalculationResult(DateTime.Now, "", 0, WeightUnits.Gr, 0, 0, 0, 0, 0, "");
+			_lastCalculationResult =
+				new CalculationResult(DateTime.Now, "", 0, WeightUnits.Gr, 
+					0, 0, 0, 0, 0, 
+					"", false);
 
 			_logger.LogInfo("Starting a web client handler...");
 

@@ -22,7 +22,6 @@ struct VolumeCalculationResult
 	int LengthMm;
 	int WidthMm;
 	int HeightMm;
-	double VolumeCmCb;
 };
 
 struct TwoDimDescription

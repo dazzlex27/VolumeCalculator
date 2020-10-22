@@ -39,10 +39,17 @@ namespace Primitives.Settings
 		public bool RequireBarcode { get; set; }
 
 		public WeightUnits SelectedWeightUnits { get; set; }
+		
+		public bool EnablePalletSubtraction { get; set; }
+		
+		public double PalletWeightGr { get; set; }
+		
+		public int PalletHeightMm { get; set; }
 
 		public AlgorithmSettings(short floorDepth, short minObjectHeight, byte sampleDepthMapCount, bool useColorMask,
 			IEnumerable<Point> colorMaskContour, bool useDepthMask, IEnumerable<Point> depthMaskContour,
-			bool enableAutoTimer, long timeToStartMeasurementMs, bool requireBarcode, WeightUnits selectedWeightUnits)
+			bool enableAutoTimer, long timeToStartMeasurementMs, bool requireBarcode, WeightUnits selectedWeightUnits, 
+			bool enablePalletSubtraction, double palletWeightGr, int palletHeightMm)
 		{
 			FloorDepth = floorDepth;
 			MinObjectHeight = minObjectHeight;
@@ -58,17 +65,21 @@ namespace Primitives.Settings
 			EnableRgbAlgorithm = true;
 			RequireBarcode = requireBarcode;
 			SelectedWeightUnits = selectedWeightUnits;
+			PalletWeightGr = palletWeightGr;
+			PalletHeightMm = palletHeightMm;
+			EnablePalletSubtraction = enablePalletSubtraction;
 		}
 
 		public static AlgorithmSettings GetDefaultSettings()
 		{
 			return new AlgorithmSettings(DefaultFloorDepthMm, DefaultMinObjHeightMm, DefaultSampleCount, false,
-				GetDefaultAreaContour(), true, GetDefaultAreaContour(), true, DefaultTimerValueMs, true, WeightUnits.Gr);
+				GetDefaultAreaContour(), true, GetDefaultAreaContour(), true,
+				DefaultTimerValueMs, true, WeightUnits.Gr, false, 0, 0);
 		}
 
 		public override string ToString()
 		{
-			var builder = new StringBuilder("AlgorithmSetings:");
+			var builder = new StringBuilder("AlgorithmSettings:");
 			builder.Append($"floorDepth={FloorDepth}");
 			builder.Append($",useColorMask={UseColorMask}");
 			builder.Append($",useDepthMask={UseDepthMask}");
@@ -78,6 +89,9 @@ namespace Primitives.Settings
 			builder.Append($",timeToStartMeasurementMs={TimeToStartMeasurementMs}");
 			builder.Append($",requireBarcode={RequireBarcode}");
 			builder.Append($",selectedWeightUnits={SelectedWeightUnits}");
+			builder.Append($",enablePalletSubtraction={EnablePalletSubtraction}");
+			builder.Append($",palletWeightKg={PalletWeightGr}");
+			builder.Append($",palletHeightMm={PalletHeightMm}");
 
 			return builder.ToString();
 		}

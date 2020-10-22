@@ -18,6 +18,9 @@
 	<Window.DataContext>
 		<main:MainWindowVm/>
 	</Window.DataContext>
+	<Window.InputBindings>
+		<KeyBinding Key="Enter" Modifiers="Control" Command="{Binding StartMeasurementCommand}"/>
+	</Window.InputBindings>
 	<Grid Width="Auto" Height="Auto">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>

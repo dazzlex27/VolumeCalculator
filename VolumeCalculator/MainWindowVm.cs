@@ -101,7 +101,7 @@ namespace VolumeCalculator
 
 		public ICommand ShutDownCommand { get; }
 
-		public ICommand InitializeApplication { get; }
+		public ICommand StartMeasurementCommand { get; }
 
 		public MainWindowVm()
 		{
@@ -123,6 +123,7 @@ namespace VolumeCalculator
 				OpenStatusCommand = new CommandHandler(OpenStatusWindow, true);
 				OpenConfiguratorCommand = new CommandHandler(OpenConfigurator, true);
 				ShutDownCommand = new CommandHandler(() => { ShutDown(true, false); }, true);
+				StartMeasurementCommand = new CommandHandler(() => { OnCalculationStartRequested(null); }, true);
 
                 if (_usingMasks)
                     MessageBox.Show("Лицензия не установлена. Пожалуйста, установите лицензию.", "Ошибка лицензии",

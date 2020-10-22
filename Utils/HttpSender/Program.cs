@@ -122,7 +122,7 @@ namespace HttpSender
 				}
 				catch (Exception ex2)
 				{
-					Console.WriteLine(ex);
+					Console.WriteLine(ex2);
 				}
 				Console.WriteLine(ex.Status);
 				Console.WriteLine(ex.Message);

@@ -129,6 +129,8 @@ namespace ExtIntegration
 						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.ObjectHeightMm}");
 						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.ObjectVolumeMm}");
 						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.CalculationComment}");
+						if (result.PalletSubtractionEnabled)
+							resultString.Append($@"{GlobalConstants.CsvSeparator}pallet");	
 						resultFile.WriteLine(resultString);
 						resultFile.Flush();
 					}

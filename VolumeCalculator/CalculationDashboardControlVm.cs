@@ -48,6 +48,10 @@ namespace VolumeCalculator
 
 		private string _weightLabelText;
 
+		private bool _subtractPalletValues;
+		private double _palletWeightGr;
+		private int _palletHeightMm;
+
 		private bool _codeBoxFocused;
 		private bool _unitCountBoxFocused;
 		private bool _commentBoxFocused;
@@ -58,7 +62,7 @@ namespace VolumeCalculator
 		private uint _lastUnitCount;
 		private string _lastComment;
 
-		private Timer _barcodeResetTimer;
+		private readonly Timer _barcodeResetTimer;
 
 		public ICommand RunVolumeCalculationCommand { get; }
 
@@ -95,7 +99,7 @@ namespace VolumeCalculator
 				if (Math.Abs(_objectWeight - value) < 0.001)
 					return;
 
-				_objectWeight = value;
+				_objectWeight = _subtractPalletValues ? value - _palletWeightGr : value;
 
 				OnPropertyChanged();
 			}
@@ -308,6 +312,10 @@ namespace VolumeCalculator
 			_deviceSet?.RangeMeter?.SetSubtractionValueMm(settings.IoSettings.RangeMeterSubtractionValueMm);
 			CreateAutoStartTimer(settings.AlgorithmSettings.EnableAutoTimer, settings.AlgorithmSettings.TimeToStartMeasurementMs);
 
+			_subtractPalletValues = settings.AlgorithmSettings.EnablePalletSubtraction;
+			_palletWeightGr = settings.AlgorithmSettings.PalletWeightGr;
+			_palletHeightMm = settings.AlgorithmSettings.PalletHeightMm;
+			
 			Dispatcher.Invoke(() =>
 			{
 				switch (settings.AlgorithmSettings.SelectedWeightUnits)
@@ -499,9 +507,15 @@ namespace VolumeCalculator
 		{
 			_logger.LogInfo("Calculation finished, processing results...");
 
+			var correctedUnitCount = _subtractPalletValues ? Math.Max(_lastUnitCount / 2, 1) : _lastUnitCount;
+			var correctedLength = (int) (_subtractPalletValues ? result.LengthMm / correctedUnitCount : result.LengthMm);
+			var correctedWidth = (int) (_subtractPalletValues ? result.WidthMm / correctedUnitCount : result.WidthMm); 
+			var correctedHeight = _subtractPalletValues ? result.HeightMm - _palletHeightMm : result.HeightMm;
+			var correctedVolume = correctedLength * correctedWidth * correctedHeight;
+			
 			var weightUnits = _settings.AlgorithmSettings.SelectedWeightUnits;
 			var calculationResult = new CalculationResult(_calculationTime, _lastBarcode, _lastWeight, weightUnits,
-				_lastUnitCount, result.LengthMm, result.WidthMm, result.HeightMm, result.VolumeCmCb, _lastComment);
+				_lastUnitCount, correctedLength, correctedWidth, correctedHeight, correctedVolume, _lastComment, _subtractPalletValues);
 			var calculationResultData = new CalculationResultData(calculationResult, status, objectPhoto);
 
 			ObjectCode = "";

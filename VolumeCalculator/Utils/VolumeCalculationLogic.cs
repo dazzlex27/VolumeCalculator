@@ -93,7 +93,7 @@ namespace VolumeCalculator.Utils
 		private void AbortInternal(CalculationStatus status)
 		{
 			CleanUp();
-			CalculationFinished?.Invoke(new ObjectVolumeData(0, 0, 0, 0), status, _latestColorFrame);
+			CalculationFinished?.Invoke(new ObjectVolumeData(0, 0, 0), status, _latestColorFrame);
 		}
 
 		private void AdvanceCalculation(DepthMap depthMap, ImageData image)
@@ -226,9 +226,8 @@ namespace VolumeCalculator.Utils
 				var modeLength = lengths.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key;
 				var modeWidth = widths.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key;
 				var modeHeight = heights.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key;
-				var volume = (double)modeLength * modeWidth * modeHeight / 1000;
 
-				return new ObjectVolumeData(modeLength, modeWidth, modeHeight, volume);
+				return new ObjectVolumeData(modeLength, modeWidth, modeHeight);
 			}
 			catch (Exception ex)
 			{
