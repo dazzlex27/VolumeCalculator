@@ -3,8 +3,7 @@
 	public enum CalculationStatus
 	{
 		Undefined,
-		Ready,
-		Sucessful,
+		Successful,
 		BarcodeNotEntered,
 		Running,
 		AbortedByUser,

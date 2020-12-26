@@ -16,7 +16,7 @@ namespace ExtIntegration
 
 			switch (status)
 			{
-				case CalculationStatus.Sucessful:
+				case CalculationStatus.Successful:
 					content = new XElement("calculationResult",
 							new XElement("barcode", result.Barcode),
 							new XElement("weight", $"{result.ObjectWeight}"),

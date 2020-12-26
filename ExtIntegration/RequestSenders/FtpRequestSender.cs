@@ -60,7 +60,7 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 
 		public bool Send(CalculationResultData resultData)
 		{
-			if (resultData.Status != CalculationStatus.Sucessful)
+			if (resultData.Status != CalculationStatus.Successful)
 			{
 				_logger.LogInfo($"The result was not successful ({resultData.Status}), will not send FTP request");
 

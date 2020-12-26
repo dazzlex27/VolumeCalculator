@@ -24,10 +24,7 @@ namespace FrameProcessor
 			var colorIntrinsics = TypeConverter.ColorParamsToIntrinsics(colorCameraParams);
 			var depthIntrinsics = TypeConverter.DepthParamsToIntrinsics(depthCameraParams);
 
-			unsafe
-			{
-				DepthMapProcessorDll.CreateDepthMapProcessor(colorIntrinsics, depthIntrinsics);
-			}
+			DepthMapProcessorDll.CreateDepthMapProcessor(colorIntrinsics, depthIntrinsics);
 		}
 
 		public ObjectVolumeData CalculateVolume(DepthMap depthMap, ImageData colorImage, short calculatedDistance, 
@@ -50,7 +47,7 @@ namespace FrameProcessor
 							BytesPerPixel = colorImage.BytesPerPixel
 						};
 
-						var volumeCalculationData = new VolumeCalculationData()
+						var volumeCalculationData = new VolumeCalculationData
 						{
 							DepthMap = &nativeDepthMap,
 							ColorImage = &nativeColorImage,
@@ -131,7 +128,7 @@ namespace FrameProcessor
 			}
 		}
 
-		public void SetProcessorSettings(ApplicationSettings settings, bool maskMode)
+		public void SetProcessorSettings(ApplicationSettings settings)
 		{
 			lock (_lock)
 			{
@@ -154,7 +151,7 @@ namespace FrameProcessor
 					}
 
 					var terminatedPath = settings.IoSettings.PhotosDirectoryPath + "\0";
-					DepthMapProcessorDll.SetDebugPath(terminatedPath, maskMode);
+					DepthMapProcessorDll.SetDebugPath(terminatedPath, false);
 				}
 			}
 		}
@@ -162,10 +159,7 @@ namespace FrameProcessor
 		public void Dispose()
 		{
 			_logger.LogInfo("Disposing depth map processor...");
-			unsafe
-			{
-				DepthMapProcessorDll.DestroyDepthMapProcessor();
-			}
+			DepthMapProcessorDll.DestroyDepthMapProcessor();
 		}
 
 		private static unsafe Native.DepthMap GetNativeDepthMapFromDepthMap(DepthMap depthMap, short* depthData)

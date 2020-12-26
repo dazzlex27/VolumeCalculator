@@ -69,7 +69,7 @@ namespace ExtIntegration.RequestHandlers
 				case CalculationStatus.Running:
 					statusInt = 1;
 					break;
-				case CalculationStatus.Sucessful:
+				case CalculationStatus.Successful:
 					statusInt = 0;
 					break;
 				default:

@@ -159,7 +159,7 @@ namespace VolumeCalculator
 			RunTestDataGenerationCommand = new CommandHandler(RunTestDataGeneration, !GenerationInProgress);
 		}
 
-		public void ApplicationSettingsUpdated(ApplicationSettings settings)
+		public void UpdateSettings(ApplicationSettings settings)
 		{
 			_applicationSettings = settings;
 		}

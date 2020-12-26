@@ -54,7 +54,7 @@ namespace ExtIntegration.RequestSenders
 		{
 			try
 			{
-				var resultIsOk = resultData != null && resultData.Status == CalculationStatus.Sucessful;
+				var resultIsOk = resultData != null && resultData.Status == CalculationStatus.Successful;
 				if (!resultIsOk)
 				{
 					var message = resultData == null ? "result was null" : resultData.Status.ToString();

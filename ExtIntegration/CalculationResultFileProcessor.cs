@@ -88,7 +88,7 @@ namespace ExtIntegration
 
 		public void WriteCalculationResult(CalculationResultData resultData)
 		{
-			if (resultData.Status != CalculationStatus.Sucessful)
+			if (resultData.Status != CalculationStatus.Successful)
 			{
 				_logger.LogError(
 					$"Result was not successful but {resultData.Status}, will not write to result csv file");

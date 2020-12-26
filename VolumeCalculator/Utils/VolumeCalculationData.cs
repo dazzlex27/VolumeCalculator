@@ -1,13 +1,7 @@
-﻿using FrameProcessor;
-
-namespace VolumeCalculator.Utils
+﻿namespace VolumeCalculator.Utils
 {
 	internal class VolumeCalculationData
 	{
-		public DeviceSet DeviceSet { get; }
-
-		public DepthMapProcessor DepthMapProcessor { get; }
-
 		public int RequiredSampleCount { get; }
 
 		public string Barcode { get; }
@@ -24,12 +18,10 @@ namespace VolumeCalculator.Utils
 
 		public short CutOffDepth { get; }
 
-		public VolumeCalculationData(DeviceSet deviceSet, DepthMapProcessor depthMapProcessor, int requiredSampleCount, 
+		public VolumeCalculationData(int requiredSampleCount, 
 			string barcode, int calculationIndex, bool dm1AlgorithmEnabled, bool dm2AlgorithmEnabled, 
 			bool rgbAlgorithmEnabled, string photosDirectoryPath, short cutOffDepth)
 		{
-			DeviceSet = deviceSet;
-			DepthMapProcessor = depthMapProcessor;
 			RequiredSampleCount = requiredSampleCount;
 			Barcode = barcode;
 			CalculationIndex = calculationIndex;

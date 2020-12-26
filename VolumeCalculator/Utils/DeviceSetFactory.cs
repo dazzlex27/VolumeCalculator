@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Management;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using DeviceIntegration;
-using DeviceIntegration.Cameras;
 using DeviceIntegration.IoCircuits;
 using DeviceIntegration.RangeMeters;
 using DeviceIntegration.Scales;
@@ -14,19 +10,17 @@ using DeviceIntegration.Scanners;
 using FrameProviders;
 using Primitives.Logging;
 using Primitives.Settings;
-using ProcessingUtils;
 
 namespace VolumeCalculator.Utils
 {
 	internal class DeviceSetFactory
 	{
-		public DeviceSet CreateDeviceSet(ILogger logger, HttpClient httpClient, IoSettings settings)
+		public static DeviceSet CreateDeviceSet(ILogger logger, HttpClient httpClient, IoSettings settings)
 		{
 			IScales scales = null;
 			var barcodeScanners = new List<IBarcodeScanner>();
 			IIoCircuit ioCircuit = null;
 			IRangeMeter rangeMeter = null;
-			IIpCamera ipCamera = null;
 
 			var frameProviderName = settings.ActiveCameraName;
 			logger.LogInfo($"Creating frame provider \"{frameProviderName}\"...");
@@ -75,62 +69,33 @@ namespace VolumeCalculator.Utils
 			}
 
 			var cameraSettings = settings.IpCameraSettings;
-			if (!string.IsNullOrEmpty(cameraSettings.CameraName))
+			if (string.IsNullOrEmpty(cameraSettings.CameraName))
+				return new DeviceSet(frameProvider, scales, barcodeScanners, ioCircuit, rangeMeter, null);
+			
+			logger.LogInfo($"Creating IP camera \"{cameraSettings.CameraName}\"");
+			var ipCamera = DeviceIntegrationCommon.CreateRequestedIpCamera(cameraSettings, httpClient, logger);
+
+			var cameraFailed = false;
+			Exception cameraEx = null;
+
+			Task.Run(async () =>
 			{
-				logger.LogInfo($"Creating IP camera \"{cameraSettings.CameraName}\"");
-				ipCamera = DeviceIntegrationCommon.CreateRequestedIpCamera(cameraSettings, httpClient, logger);
-
-				var cameraFailed = false;
-				Exception cameraEx = null;
-
-				Task.Run(async () =>
+				try
 				{
-					try
-					{
-						var connected = await ipCamera.ConnectAsync();
-						await ipCamera.GoToPresetAsync(settings.IpCameraSettings.ActivePreset);
-					}
-					catch (Exception ex)
-					{
-						cameraFailed = true;
-						cameraEx = ex;
-					}
-				});
+					await ipCamera.ConnectAsync();
+					await ipCamera.GoToPresetAsync(settings.IpCameraSettings.ActivePreset);
+				}
+				catch (Exception ex)
+				{
+					cameraFailed = true;
+					cameraEx = ex;
+				}
+			});
 
-				if (cameraFailed)
-					throw cameraEx;
-			}
+			if (cameraFailed)
+				throw cameraEx;
 
 			return new DeviceSet(frameProvider, scales, barcodeScanners, ioCircuit, rangeMeter, ipCamera);
-		}
-
-		public static byte[] GetMaskBytes()
-		{
-			var serial = "";
-			try
-			{
-				var requestBytesString = Encoding.ASCII.GetString(IoUtils.GetHwBytes());
-				var searcher = new ManagementObjectSearcher(requestBytesString);
-
-				foreach (var o in searcher.Get())
-				{
-					var wmiHd = (ManagementObject)o;
-
-					serial = wmiHd["SerialNumber"].ToString();
-				}
-			}
-			catch (Exception ex)
-			{
-				Directory.CreateDirectory("c:/temp");
-				using (var f = File.AppendText("c:/temp"))
-				{
-					f.WriteLine($"s1 f{ex}");
-				}
-
-				return new byte[0];
-			}
-
-			return string.IsNullOrEmpty(serial) ? new byte[] {0} : Encoding.ASCII.GetBytes(serial);
 		}
 	}
 }

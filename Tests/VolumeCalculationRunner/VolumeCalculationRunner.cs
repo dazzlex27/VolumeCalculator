@@ -89,7 +89,7 @@ namespace VolumeCalculationRunner
 
 			LogVerbose("Calculating volume...");
 			var settings = ApplicationSettings.GetDefaultSettings();
-			processor.SetProcessorSettings(settings, false);
+			processor.SetProcessorSettings(settings);
 
 			var results = new List<ObjectVolumeData>();
 

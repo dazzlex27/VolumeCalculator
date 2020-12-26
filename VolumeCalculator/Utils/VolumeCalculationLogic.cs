@@ -4,8 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using DeviceIntegration.Cameras;
+using DeviceIntegration.RangeMeters;
 using FrameProcessor;
 using FrameProcessor.Native;
+using FrameProviders;
 using Primitives;
 using Primitives.Logging;
 
@@ -16,8 +19,11 @@ namespace VolumeCalculator.Utils
 		public event Action<ObjectVolumeData, CalculationStatus, ImageData> CalculationFinished;
 
 		private readonly ILogger _logger;
-		private readonly DeviceSet _deviceSet;
 		private readonly DepthMapProcessor _processor;
+		private readonly IFrameProvider _frameProvider;
+		private readonly IRangeMeter _rangeMeter;
+		private readonly IIpCamera _ipCamera;
+		
 		private readonly int _requiredSampleCount;
 		private readonly string _barcode;
 		private readonly int _calculationIndex;
@@ -27,7 +33,7 @@ namespace VolumeCalculator.Utils
 		private readonly bool _rgbAlgorithmEnabled;
 		private readonly string _photoDirectoryPath;
 
-		private readonly Timer _UpdateTimeoutTimer;
+		private readonly Timer _updateTimeoutTimer;
 		private readonly List<ObjectVolumeData> _results;
 
 		private short _calculatedDistance;
@@ -40,18 +46,21 @@ namespace VolumeCalculator.Utils
 		private DepthMap _latestDepthMap;
 
 		private int _samplesLeft;
-
 		private AlgorithmSelectionResult _selectedAlgorithm;
-
+		
 		public bool IsRunning { get; private set; }
 
 		private bool HasCompletedFirstRun => _samplesLeft != _requiredSampleCount;
 
-		public VolumeCalculationLogic(ILogger logger, VolumeCalculationData calculationData)
+		public VolumeCalculationLogic(ILogger logger, DepthMapProcessor processor, IFrameProvider frameProvider, 
+			IRangeMeter rangeMeter, IIpCamera ipCamera, VolumeCalculationData calculationData)
 		{
 			_logger = logger;
-			_deviceSet = calculationData.DeviceSet;
-			_processor = calculationData.DepthMapProcessor;
+			_processor = processor;
+			_frameProvider = frameProvider;
+			_rangeMeter = rangeMeter;
+			_ipCamera = ipCamera;
+			
 			_requiredSampleCount = calculationData.RequiredSampleCount;
 			_barcode = calculationData.Barcode;
 			_calculationIndex = calculationData.CalculationIndex;
@@ -67,12 +76,12 @@ namespace VolumeCalculator.Utils
 
 			_results = new List<ObjectVolumeData>();
 
-			_deviceSet.FrameProvider.UnrestrictedDepthFrameReady += OnDepthFrameReady;
-			_deviceSet.FrameProvider.UnrestrictedColorFrameReady += OnColorFrameReady;
+			frameProvider.UnrestrictedDepthFrameReady += OnDepthFrameReady;
+			frameProvider.UnrestrictedColorFrameReady += OnColorFrameReady;
 
-			_UpdateTimeoutTimer = new Timer(3000) {AutoReset = false};
-			_UpdateTimeoutTimer.Elapsed += OnTimerElapsed;
-			_UpdateTimeoutTimer.Start();
+			_updateTimeoutTimer = new Timer(3000) {AutoReset = false};
+			_updateTimeoutTimer.Elapsed += OnTimerElapsed;
+			_updateTimeoutTimer.Start();
 
 			IsRunning = true;
 		}
@@ -84,9 +93,9 @@ namespace VolumeCalculator.Utils
 
 		private void CleanUp()
 		{
-			_UpdateTimeoutTimer.Stop();
-			_deviceSet.FrameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
-			_deviceSet.FrameProvider.UnrestrictedDepthFrameReady -= OnDepthFrameReady;
+			_updateTimeoutTimer.Stop();
+			_frameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
+			_frameProvider.UnrestrictedDepthFrameReady -= OnDepthFrameReady;
 			IsRunning = false;
 		}
 
@@ -98,13 +107,13 @@ namespace VolumeCalculator.Utils
 
 		private void AdvanceCalculation(DepthMap depthMap, ImageData image)
 		{
-			_UpdateTimeoutTimer.Stop();
+			_updateTimeoutTimer.Stop();
 
 			if (!HasCompletedFirstRun)
 			{
-				if (_deviceSet?.RangeMeter != null)
+				if (_rangeMeter != null)
 				{
-					var reading = _deviceSet.RangeMeter.GetReading();
+					var reading = _rangeMeter.GetReading();
 					var readingIsInRange = reading > short.MinValue && reading < short.MaxValue;
 					_calculatedDistance = readingIsInRange ? (short)reading : (short)0;
 					_logger.LogInfo($"Range meter reading - {reading}");
@@ -129,7 +138,7 @@ namespace VolumeCalculator.Utils
 			{
 				_colorFrameReady = false;
 				_depthFrameReady = false;
-				_UpdateTimeoutTimer.Start();
+				_updateTimeoutTimer.Start();
 
 				return;
 			}
@@ -138,7 +147,7 @@ namespace VolumeCalculator.Utils
 
 			var totalResult = AggregateCalculationsData();
 			if (totalResult != null)
-				CalculationFinished?.Invoke(totalResult, CalculationStatus.Sucessful, _latestColorFrame);
+				CalculationFinished?.Invoke(totalResult, CalculationStatus.Successful, _latestColorFrame);
 			else
 				CalculationFinished?.Invoke(null, CalculationStatus.Error, _latestColorFrame);
 		}
@@ -195,7 +204,7 @@ namespace VolumeCalculator.Utils
 			AdvanceCalculation(_latestDepthMap, _latestColorFrame);
 
 			if (!_useColorData)
-				_deviceSet.FrameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
+				_frameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
 		}
 
 		private void OnDepthFrameReady(DepthMap depthMap)
@@ -260,24 +269,25 @@ namespace VolumeCalculator.Utils
 				if (_latestDepthMap != null)
 				{
 					var depthFileName = $"{baseFilePath}_depth.png";
-					var depthCameraParams = _deviceSet.FrameProvider.GetDepthCameraParams();
+					var depthCameraParams = _frameProvider.GetDepthCameraParams();
 
 					DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, depthFileName,
 						depthCameraParams.MinDepth, depthCameraParams.MaxDepth, _cutOffDepth);
 				}
-
-				if (_deviceSet.IpCamera != null && _deviceSet.IpCamera.Initialized())
+				
+				var cameraIsEnabled = _ipCamera != null && _ipCamera.Initialized();
+				if (!cameraIsEnabled)
+					return;
+				
+				try
 				{
-					try
-					{
-						var cameraFileName = $"{baseFilePath}_camera.png";
-						var ipCameraFrame = Task.Run(() => _deviceSet.IpCamera.GetSnaphostAsync()).Result;
-						ImageUtils.SaveImageDataToFile(ipCameraFrame, cameraFileName);
-					}
-					catch (Exception ex)
-					{
-						_logger.LogException("Failed to get IP camera frame", ex);
-					}
+					var cameraFileName = $"{baseFilePath}_camera.png";
+					var ipCameraFrame = Task.Run(() => _ipCamera.GetSnaphostAsync()).Result;
+					ImageUtils.SaveImageDataToFile(ipCameraFrame, cameraFileName);
+				}
+				catch (Exception ex)
+				{
+					_logger.LogException("Failed to get IP camera frame", ex);
 				}
 			}
 			catch (Exception ex)

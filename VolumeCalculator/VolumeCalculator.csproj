@@ -112,9 +112,11 @@
     </Compile>
     <Compile Include="Utils\DeviceSetFactory.cs" />
     <Compile Include="Utils\DeviceSet.cs" />
+    <Compile Include="Utils\IoDeviceManager.cs" />
     <Compile Include="Utils\LightToggler.cs" />
     <Compile Include="Utils\VolumeCalculationData.cs" />
     <Compile Include="Utils\VolumeCalculationLogic.cs" />
+    <Compile Include="Utils\VolumeCalculationRequestHandler.cs" />
     <Page Include="GUI\AutoClosingMessageBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

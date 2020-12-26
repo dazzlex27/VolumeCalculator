@@ -38,7 +38,7 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 
 		public bool Send(CalculationResultData resultData)
 		{
-			if (resultData.Status != CalculationStatus.Sucessful)
+			if (resultData.Status != CalculationStatus.Successful)
 			{
 				_logger.LogError($"The result was not successful ({resultData.Status}), will not send SQL request");
 				return false;

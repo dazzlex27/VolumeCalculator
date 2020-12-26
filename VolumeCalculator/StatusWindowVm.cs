@@ -47,7 +47,7 @@ namespace VolumeCalculator
 			set => SetField(ref _webServerIsRunning, value, nameof(WebServerIsRunning));
 		}
 
-		public StatusWindowVm(ILogger logger, HttpClient httpClient, bool licenseIsOk)
+		public StatusWindowVm(ILogger logger, HttpClient httpClient)
 		{
 			try
 			{
@@ -58,7 +58,8 @@ namespace VolumeCalculator
 				AppVersion = GlobalConstants.AppVersion;
 
 				CurrentIp = string.Join(Environment.NewLine, ipAddresses);
-				LicenseIsOk = licenseIsOk;
+				LicenseIsOk = true;
+				
 				WebServerIsRunning = false;
 
 				Task.Run(async () =>

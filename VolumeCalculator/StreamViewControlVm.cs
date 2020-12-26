@@ -91,7 +91,7 @@ namespace VolumeCalculator
 			_frameProvider.DepthFrameReady -= DepthImageUpdated;
 		}
 
-		public void ApplicationSettingsUpdated(ApplicationSettings settings)
+		public void UpdateSettings(ApplicationSettings settings)
 		{
 			_applicationSettings = settings;
 			UseColorMask = _applicationSettings.AlgorithmSettings.UseColorMask;

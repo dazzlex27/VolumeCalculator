@@ -125,16 +125,6 @@ namespace ProcessingUtils
 			return addresses;
 		}
 
-		public static byte[] GetHwBytes()
-		{
-			return new byte[]
-			{
-				83, 69, 76, 69, 67, 84, 32, 42, 32, 70, 82, 79, 77, 32, 87, 105, 110, 51, 50, 95, 68, 105, 115, 107, 68,
-				114, 105, 118, 101, 32, 87, 72, 69, 82, 69, 32, 73, 110, 116, 101, 114, 102, 97, 99, 101, 84, 121, 112,
-				101, 61, 39, 73, 68, 69, 39
-			};
-		}
-
 		public static void StartProcess(string processPath, bool asAdmin)
 		{
 			var process = new ProcessStartInfo(processPath)

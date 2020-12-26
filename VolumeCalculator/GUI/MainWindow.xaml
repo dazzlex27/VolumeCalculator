@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:gui="clr-namespace:VolumeCalculator.GUI"
 		xmlns:main="clr-namespace:VolumeCalculator"
-        mc:Ignorable="d"
+		mc:Ignorable="d"
         x:ClassModifier="internal"
         Title="{Binding WindowTitle}" 
         WindowStartupLocation="CenterScreen" 
