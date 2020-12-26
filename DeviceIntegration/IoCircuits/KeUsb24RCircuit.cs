@@ -2,6 +2,7 @@
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
+using GodSharp.SerialPort;
 using Primitives.Logging;
 
 namespace DeviceIntegration.IoCircuits
@@ -14,7 +15,7 @@ namespace DeviceIntegration.IoCircuits
 		private readonly ILogger _logger;
 		private readonly string _port;
 
-		private readonly SerialPort _serialPort;
+		private readonly GodSerialPort _serialPort;
 
 		public KeUsb24RCircuit(ILogger logger, string port)
 		{
@@ -26,14 +27,11 @@ namespace DeviceIntegration.IoCircuits
 
 			_logger.LogInfo($"Starting KeUsb24RBoard on port {_port}...");
 
-			_serialPort = new SerialPort(port)
+			_serialPort = new GodSerialPort(port, 4800, Parity.Even, 8, StopBits.One, Handshake.None);
+			_serialPort.UseDataReceived(true, (sp, bytes) =>
 			{
-				BaudRate = 4800,
-				Parity = Parity.Even,
-				StopBits = StopBits.One,
-				DataBits = 8,
-				Handshake = Handshake.None
-			};
+				ReadMessage(bytes);
+			});
 
 			_serialPort.Open();
 		}
@@ -41,7 +39,6 @@ namespace DeviceIntegration.IoCircuits
 		public void Dispose()
 		{
 			_serialPort.Close();
-			_serialPort.Dispose();
 		}
 
 		public void WriteData(string data)
@@ -63,7 +60,19 @@ namespace DeviceIntegration.IoCircuits
 		public void ToggleRelay(int relayNum, bool state)
 		{
 			var stateCode = state ? 1 : 0;
-			WriteData($",REL,{relayNum.ToString()},{stateCode}");
+			WriteData($",REL,{relayNum},{stateCode}");
+		}
+
+		public void PollLine(int lineNum)
+		{
+			WriteData($",RID,{lineNum}");
+		}
+
+		private void ReadMessage(byte[] messageBytes)
+		{
+			var data = Encoding.ASCII.GetString(messageBytes);
+
+			_logger.LogInfo(data);
 		}
 	}
 }

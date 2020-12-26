@@ -49,20 +49,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Ci2001AScales.cs" />
-    <Compile Include="OkaScales.cs" />
-    <Compile Include="TeslaM70RangeMeter.cs" />
-    <Compile Include="IRangeMeter.cs" />
-    <Compile Include="IScales.cs" />
-    <Compile Include="MeasurementStatus.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RawDataSaver.cs" />
-    <Compile Include="ScaleMeasurementData.cs" />
-    <Compile Include="SerialPortListener.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\DeviceIntegration\DeviceIntegration.csproj">
+      <Project>{508afe7e-b27b-4245-8fe3-a04944678115}</Project>
+      <Name>DeviceIntegration</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Primitives\Primitives.csproj">
+      <Project>{90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B}</Project>
+      <Name>Primitives</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

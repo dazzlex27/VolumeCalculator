@@ -46,6 +46,7 @@
     <Compile Include="CalculationStatus.cs" />
     <Compile Include="GlobalConstants.cs" />
     <Compile Include="IoEntry.cs" />
+    <Compile Include="Logging\ConsoleLogger.cs" />
     <Compile Include="Settings\AlgorithmSettings.cs" />
     <Compile Include="Settings\ApplicationSettings.cs" />
     <Compile Include="CalculationResult.cs" />
