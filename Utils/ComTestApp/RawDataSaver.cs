@@ -9,7 +9,7 @@ namespace ComTestApp
 	{
 		public RawDataSaver(string port)
 		{
-			var serialPort = new GodSerialPort(port, 4800, Parity.Even, 8, StopBits.One);
+			var serialPort = new GodSerialPort(port, 9600, Parity.Even, 8, StopBits.One);
 			serialPort.UseDataReceived(true, (sp, bytes) =>
 			{
 				ReadMessage(bytes);
@@ -23,6 +23,7 @@ namespace ComTestApp
 			using (var file = File.AppendText("output.txt"))
 			{
 				var bytesString = string.Join(" ", messageBytes);
+				//var string = 
 				file.WriteLine(bytesString);
 				Console.WriteLine(bytesString);
 			}

@@ -15,11 +15,11 @@ namespace ComTestApp
 
 			//TestOkaScales(logger);
 			//TestLaser(logger);
-			//TestCasM(logger);
+			TestCasM(logger);
 			//SaveRawData(logger);
 			//TestMassaK(logger);
 			//TestCi2001A(logger);
-			TestKeUsb24R(logger);
+			//TestKeUsb24R(logger);
 			Console.ReadKey();
 		}
 
@@ -68,15 +68,15 @@ namespace ComTestApp
 			}
 		}
 
-		//private static void TestCasM()
-		//{
-		//	// 1 2 83 32 48 46 48 48 49 50 107 103 98 3 4 0
-		//	var messageBytes = new byte[] { 1, 2, 83, 32, 48, 46, 48, 48, 49, 50, 107, 103, 98, 3, 4, 0 };
-		//	//var messageBytes = new byte[] { 1, 2, 85, 32, 48, 46, 48, 48, 48, 48, 107, 103, 103, 3, 4, 16 }; // measuring 0kg
-		//	var casM = new RawDataSaver();
-		//	casM.MeasurementReady += (data) => { Console.WriteLine($"{data.Status} {data.WeightKg}kg"); };
-		//	casM.ReadMessage(messageBytes);
-		//}
+		private static void TestCasM(ILogger logger)
+		{
+			var scales = CreateScales("casm", logger);
+			scales.MeasurementReady += data => { Console.WriteLine($"{data.Status} {data.WeightGr}Gr"); };
+			while (true)
+			{
+				Thread.Sleep(1000);
+			}
+		}
 
 		private static void TestMassaK(ILogger logger)
 		{
