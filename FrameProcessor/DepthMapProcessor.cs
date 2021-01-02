@@ -150,7 +150,7 @@ namespace FrameProcessor
 							points, relPoints.Length, colorRoiRect);
 					}
 
-					var terminatedPath = settings.IoSettings.PhotosDirectoryPath + "\0";
+					var terminatedPath = settings.GeneralSettings.PhotosDirectoryPath + "\0";
 					DepthMapProcessorDll.SetDebugPath(terminatedPath, false);
 				}
 			}

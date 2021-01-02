@@ -1,4 +1,4 @@
-﻿namespace VCConfigurator
+﻿namespace VCConfigurator.GUI
 {
 	internal partial class MainWindow
 	{

@@ -1,8 +1,6 @@
-﻿using System.Windows.Controls;
-
-namespace VCConfigurator
+﻿namespace VCConfigurator.GUI
 {
-    public partial class IntergrationSettingsControl : UserControl
+    public partial class IntergrationSettingsControl
     {
         public IntergrationSettingsControl()
         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
@@ -9,81 +10,66 @@ namespace Primitives.Settings
 	{
 		public string ActiveCameraName { get; set; }
 
-		public string ActiveScalesName { get; set; }
+		public ScalesSettings ActiveScales { get; set; }
 
-		public string ScalesPort { get; set; }
+		public DeviceSettings[] ActiveScanners { get; set; }
 
-        public int ScalesMinWeight { get; set; }
-
-		public IoEntry[] ActiveScanners { get; set; }
-
-		public string ActiveIoCircuitName { get; set; }
-
-		public string IoCircuitPort { get; set; }
-
+		public DeviceSettings ActiveIoCircuit { get; set; }
+		
 		public string ActiveRangeMeterName { get; set; }
 
 		public int RangeMeterSubtractionValueMm { get; set; }
 
 		public IpCameraSettings IpCameraSettings { get; set; }
 
-		public string OutputPath { get; set; }
-
-		public bool ShutDownPcByDefault { get; set; }
-
-		public string ResultsFilePath => Path.Combine(OutputPath, GlobalConstants.ResultsFileName);
-
-		public string PhotosDirectoryPath => Path.Combine(OutputPath, GlobalConstants.ResultPhotosFolder);
-
-		public IoSettings(string activeCameraName, string activeScalesName, string scalesPort, int scalesMinWeight, 
-            IoEntry[] activeScanners, string activeIoCircuitName, string ioCircuitPort, string activeRangeMeterName, 
-            int rangeMeterSubtractionValueMm, IpCameraSettings ipCameraSettings, string outputPath, 
-            bool shutDownPcByDefault)
+		public  IoSettings(string activeCameraName, ScalesSettings scalesSettings, 
+			DeviceSettings[] activeScanners, DeviceSettings activeIoCircuit, string activeRangeMeterName, 
+            int rangeMeterSubtractionValueMm, IpCameraSettings ipCameraSettings)
 		{
 			ActiveCameraName = activeCameraName;
-			ActiveScalesName = activeScalesName;
-			ScalesPort = scalesPort;
-            ScalesMinWeight = scalesMinWeight;
+			ActiveScales = scalesSettings;
 			ActiveScanners = activeScanners;
-			ActiveIoCircuitName = activeIoCircuitName;
-			IoCircuitPort = ioCircuitPort;
+			ActiveIoCircuit = activeIoCircuit;
 			ActiveRangeMeterName = activeRangeMeterName;
 			RangeMeterSubtractionValueMm = rangeMeterSubtractionValueMm;
 			IpCameraSettings = ipCameraSettings;
-			OutputPath = outputPath;
-			ShutDownPcByDefault = shutDownPcByDefault;
 		}
 
 		public override string ToString()
 		{
 			var builder = new StringBuilder("IOSetings:");
-			builder.Append($"minWeight={ScalesMinWeight}");
+			builder.Append($"ActiveScales={ActiveScales}");
+			builder.Append($",ActiveScanners={ActiveScanners.ToList().ConvertAll(s=>s.ToString())}");
 			builder.Append($",rangeCorrection={RangeMeterSubtractionValueMm}");
-			builder.Append($",outputPath={OutputPath}");
-			builder.Append($",shuwDown={ShutDownPcByDefault}");
 
 			return builder.ToString();
 		}
 
 		public static IoSettings GetDefaultSettings()
 		{
-			var defaultScanners = new[] { new IoEntry("keyboard", "") };
+			var defaultScales = ScalesSettings.GetDefaultSettings();
+			var defaultScanners = new[] { new DeviceSettings("keyboard", "") };
+			var defaultIoCircuitBoard = new DeviceSettings("keusb24r", "");
 			var defaultCameraSettings = IpCameraSettings.GetDefaultSettings();
-			var documentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-			var outputPath = Path.Combine(documentsFolder, "VolumeCalculationResults");
-
-			return new IoSettings("kinectv2", "massak", "", 5, defaultScanners, "keusb24r", "", "custom", 0,
-				defaultCameraSettings, outputPath, false);
+			
+			return new IoSettings("kinectv2", defaultScales, defaultScanners, defaultIoCircuitBoard, 
+				"custom", 0, defaultCameraSettings);
 		}
 
 		[OnDeserialized]
 		private void OnDeserialized(StreamingContext context)
 		{
+			if (ActiveScales == null)
+				ActiveScales = ScalesSettings.GetDefaultSettings();
+
+			if (ActiveScanners == null)
+				ActiveScanners = new[] {new DeviceSettings("keyboard", "")};
+			
+			if (ActiveIoCircuit == null)
+				ActiveIoCircuit = new DeviceSettings("keusb24r", "");
+			
 			if (IpCameraSettings == null)
 				IpCameraSettings = IpCameraSettings.GetDefaultSettings();
-
-			if (ScalesMinWeight <= 0)
-				ScalesMinWeight = 5;
 		}
 	}
 }

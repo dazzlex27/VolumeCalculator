@@ -43,7 +43,7 @@ namespace Primitives.Settings
 
 		public static AlgorithmSettings GetDefaultSettings()
 		{
-			return new AlgorithmSettings(WorkAreaSettings.GetDefaultSettings(), DefaultSampleCount, true,
+			return new AlgorithmSettings(WorkAreaSettings.GetDefaultSettings(), DefaultSampleCount, true, 
 				DefaultTimerValueMs, true, WeightUnits.Gr, false, 0, 0);
 		}
 

@@ -22,14 +22,10 @@ namespace VolumeCalculator
 
 		private WriteableBitmap _colorImageBitmap;
 		private WriteableBitmap _depthImageBitmap;
-		private bool _useColorMask;
-		private MaskPolygonControlVm _colorMaskRectangleControlVm;
-		private bool _useDepthMask;
-		private MaskPolygonControlVm _depthMaskPolygonControlVm;
+
+		private WorkAreaSettingsVm _workAreaVm;
 		private short _maxDepth;
 		private short _minDepth;
-		private short _floorDepth;
-		private short _minObjHeight;
 		private byte _sampleCount;
 		private bool _requireBarcode;
 		private string _outputPath;
@@ -57,28 +53,10 @@ namespace VolumeCalculator
 			set => SetField(ref _depthImageBitmap, value, nameof(DepthImageBitmap));
 		}
 
-		public bool UseColorMask
+		public WorkAreaSettingsVm WorkAreaVm
 		{
-			get => _useColorMask;
-			set => SetField(ref _useColorMask, value, nameof(UseColorMask));
-		}
-
-		public MaskPolygonControlVm ColorMaskRectangleControlVm
-		{
-			get => _colorMaskRectangleControlVm;
-			set => SetField(ref _colorMaskRectangleControlVm, value, nameof(ColorMaskRectangleControlVm));
-		}
-
-		public bool UseDepthMask
-		{
-			get => _useDepthMask;
-			set => SetField(ref _useDepthMask, value, nameof(UseDepthMask));
-		}
-
-		public MaskPolygonControlVm DepthMaskPolygonControlVm
-		{
-			get => _depthMaskPolygonControlVm;
-			set => SetField(ref _depthMaskPolygonControlVm, value, nameof(DepthMaskPolygonControlVm));
+			get => _workAreaVm;
+			set => SetField(ref _workAreaVm, value, nameof(WorkAreaVm));
 		}
 
 		public short MinDepth
@@ -91,18 +69,6 @@ namespace VolumeCalculator
 		{
 			get => _maxDepth;
 			set => SetField(ref _maxDepth, value, nameof(MaxDepth));
-		}
-
-		public short FloorDepth
-		{
-			get => _floorDepth;
-			set => SetField(ref _floorDepth, value, nameof(FloorDepth));
-		}
-
-		public short MinObjHeight
-		{
-			get => _minObjHeight;
-			set => SetField(ref _minObjHeight, value, nameof(MinObjHeight));
 		}
 
 		public byte SampleCount
@@ -205,25 +171,24 @@ namespace VolumeCalculator
 
 		public ApplicationSettings GetSettings()
 		{
-			var colorMaskPoints = ColorMaskRectangleControlVm.GetPolygonPoints();
-			var depthMaskPoints = DepthMaskPolygonControlVm.GetPolygonPoints();
-
+			var newGeneralSettings = new GeneralSettings(OutputPath, _oldSettings.GeneralSettings.ShutDownPcByDefault);
+			
 			var oldIoSettings = _oldSettings.IoSettings;
-			var newIoSettings = new IoSettings(oldIoSettings.ActiveCameraName, oldIoSettings.ActiveScalesName,
-				oldIoSettings.ScalesPort, oldIoSettings.ScalesMinWeight, oldIoSettings.ActiveScanners, oldIoSettings.ActiveIoCircuitName,
-				oldIoSettings.IoCircuitPort, oldIoSettings.ActiveRangeMeterName, RangeMeterSubtractionValue, oldIoSettings.IpCameraSettings, OutputPath, oldIoSettings.ShutDownPcByDefault);
+			var newIoSettings = new IoSettings(oldIoSettings.ActiveCameraName, oldIoSettings.ActiveScales,
+				oldIoSettings.ActiveScanners, oldIoSettings.ActiveIoCircuit, oldIoSettings.ActiveRangeMeterName, 
+				RangeMeterSubtractionValue, oldIoSettings.IpCameraSettings);
 
-			var newWorkAreaSettings = new WorkAreaSettings(FloorDepth, MinObjHeight, UseColorMask, colorMaskPoints, UseDepthMask, depthMaskPoints);
+			var newWorkAreaSettings = WorkAreaVm.GetSettings();
 			var newAlgorithmSettings = new AlgorithmSettings(newWorkAreaSettings, SampleCount, EnableAutoTimer, TimeToStartMeasurementMs,
 				RequireBarcode, SelectedWeightUnits, EnablePalletSubtraction, PalletWeightKg * 1000, PalletHeightMm);
 
-			return new ApplicationSettings(newIoSettings, newAlgorithmSettings, _oldSettings.IntegrationSettings);
+			return new ApplicationSettings(newGeneralSettings, newIoSettings, newAlgorithmSettings, _oldSettings.IntegrationSettings);
 		}
 
 		public void ColorFrameUpdated(ImageData image)
 		{
 			HasReceivedAColorImage = true;
-			ColorMaskRectangleControlVm.CanEditPolygon = true;
+			WorkAreaVm.ColorMaskRectangleControlVm.CanEditPolygon = true;
 
 			ColorImageBitmap = GraphicsUtils.GetWriteableBitmapFromImageData(image);
 		}
@@ -231,14 +196,14 @@ namespace VolumeCalculator
 		public void DepthFrameUpdated(DepthMap depthMap)
 		{
 			HasReceivedADepthMap = true;
-			DepthMaskPolygonControlVm.CanEditPolygon = true;
+			WorkAreaVm.DepthMaskPolygonControlVm.CanEditPolygon = true;
 			_latestDepthMap = depthMap;
 
 			var mapCopy = new DepthMap(depthMap);
-			var cutOffDepth = (short)(FloorDepth - MinObjHeight);
+			var cutOffDepth = (short)(WorkAreaVm.FloorDepth - WorkAreaVm.MinObjHeight);
 			DepthMapUtils.FilterDepthMapByDepthtLimit(mapCopy, cutOffDepth);
 
-			var depthMapData = DepthMapUtils.GetColorizedDepthMapData(mapCopy, MinDepth, FloorDepth);
+			var depthMapData = DepthMapUtils.GetColorizedDepthMapData(mapCopy, MinDepth, WorkAreaVm.FloorDepth);
 			var depthMapImage = new ImageData(depthMap.Width, depthMap.Height, depthMapData, 1);
 
 			DepthImageBitmap = GraphicsUtils.GetWriteableBitmapFromImageData(depthMapImage);
@@ -260,7 +225,7 @@ namespace VolumeCalculator
 				if (floorDepth <= 0)
 					throw new ArgumentException("Floor depth calculation: return a value less than zero");
 
-				FloorDepth = floorDepth;
+				WorkAreaVm.FloorDepth = floorDepth;
 				_logger.LogInfo($"Caculated floor depth as {floorDepth}mm");
 			}
 			catch (Exception ex)
@@ -284,14 +249,9 @@ namespace VolumeCalculator
 
 		private void FillValuesFromSettings(ApplicationSettings settings)
 		{
-			FloorDepth = settings.AlgorithmSettings.WorkArea.FloorDepth;
-			MinObjHeight = settings.AlgorithmSettings.WorkArea.MinObjectHeight;
-			OutputPath = settings.IoSettings.OutputPath;
+			WorkAreaVm = new WorkAreaSettingsVm(settings.AlgorithmSettings.WorkArea);
+			OutputPath = settings.GeneralSettings.OutputPath;
 			SampleCount = settings.AlgorithmSettings.SampleDepthMapCount;
-			UseColorMask = settings.AlgorithmSettings.WorkArea.UseColorMask;
-			ColorMaskRectangleControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.WorkArea.ColorMaskContour);
-			UseDepthMask = settings.AlgorithmSettings.WorkArea.UseDepthMask;
-			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.WorkArea.DepthMaskContour);
 			EnableAutoTimer = settings.AlgorithmSettings.EnableAutoTimer;
 			TimeToStartMeasurementMs = settings.AlgorithmSettings.TimeToStartMeasurementMs;
 			RequireBarcode = settings.AlgorithmSettings.RequireBarcode;

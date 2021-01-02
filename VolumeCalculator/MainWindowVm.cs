@@ -90,7 +90,7 @@ namespace VolumeCalculator
 			}
 		}
 
-		public bool ShutDownByDefault => _settings?.IoSettings != null && _settings.IoSettings.ShutDownPcByDefault;
+		public bool ShutDownByDefault => _settings?.IoSettings != null && _settings.GeneralSettings.ShutDownPcByDefault;
 
 		public ICommand OpenSettingsCommand { get; }
 
@@ -270,7 +270,7 @@ namespace VolumeCalculator
 				_volumeCalculator.DashStatusUpdated += _dashStatusUpdater.UpdateDashStatus;
 				_volumeCalculator.CalculationStatusChanged += OnStatusChanged;
 
-				var outputPath = _settings.IoSettings.OutputPath;
+				var outputPath = _settings.GeneralSettings.OutputPath;
 				_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, outputPath);
 
 				_logger.LogInfo("Sub systems - ok");
@@ -477,7 +477,7 @@ namespace VolumeCalculator
 			AutoClosingMessageBox.Show(builder.ToString(), "Аварийное завершение");
 
 			var settingsAreOk = Settings?.IoSettings != null;
-			var needToshutDownPc = !settingsAreOk || Settings.IoSettings.ShutDownPcByDefault;
+			var needToshutDownPc = !settingsAreOk || Settings.GeneralSettings.ShutDownPcByDefault;
 			ShutDown(needToshutDownPc, true);
 		}
 		

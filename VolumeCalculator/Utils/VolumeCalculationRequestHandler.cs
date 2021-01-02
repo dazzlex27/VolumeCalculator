@@ -124,7 +124,7 @@ namespace VolumeCalculator.Utils
 					
 					var calculationData = new VolumeCalculationData(algorithmSettings.SampleDepthMapCount,
 						_lastBarcode, calculationIndex, dm1Enabled, dm2Enabled, rgbEnabled, 
-						_settings.IoSettings.PhotosDirectoryPath, cutOffDepth);
+						_settings.GeneralSettings.PhotosDirectoryPath, cutOffDepth);
 
 					_volumeCalculator = new VolumeCalculationLogic(_logger, _dmProcessor, _deviceManager.FrameProvider, 
 						_deviceManager.RangeMeter, _deviceManager.IpCamera, calculationData);

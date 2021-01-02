@@ -233,8 +233,8 @@ namespace VolumeCalculator
 		{
 			_requireBarcode = settings.AlgorithmSettings.RequireBarcode;
 			_selectedWeightUnits = settings.AlgorithmSettings.SelectedWeightUnits;
-			_resultsFilePath = settings.IoSettings.ResultsFilePath;
-			_photosDirectoryPath = settings.IoSettings.PhotosDirectoryPath;
+			_resultsFilePath = settings.GeneralSettings.ResultsFilePath;
+			_photosDirectoryPath = settings.GeneralSettings.PhotosDirectoryPath;
 
 			Dispatcher.Invoke(() =>
 			{

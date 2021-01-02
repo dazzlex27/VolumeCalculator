@@ -87,6 +87,7 @@
       <DependentUpon>MaskPolygonControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="MaskPolygonControlVm.cs" />
+    <Compile Include="WorkAreaSettingsVm.cs" />
     <Compile Include="StatusWindowVm.cs" />
     <Compile Include="GUI\StatusWindow.xaml.cs">
       <DependentUpon>StatusWindow.xaml</DependentUpon>

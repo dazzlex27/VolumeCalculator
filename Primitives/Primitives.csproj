@@ -45,7 +45,7 @@
     <Compile Include="CalculationResultData.cs" />
     <Compile Include="CalculationStatus.cs" />
     <Compile Include="GlobalConstants.cs" />
-    <Compile Include="IoEntry.cs" />
+    <Compile Include="DeviceSettings.cs" />
     <Compile Include="Logging\ConsoleLogger.cs" />
     <Compile Include="Settings\AlgorithmSettings.cs" />
     <Compile Include="Settings\ApplicationSettings.cs" />
@@ -58,6 +58,7 @@
     <Compile Include="ImageData.cs" />
     <Compile Include="Logging\Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Settings\GeneralSettings.cs" />
     <Compile Include="Settings\IpCameraSettings.cs" />
     <Compile Include="Settings\Integration\FtpRequestSettings.cs" />
     <Compile Include="Settings\Integration\HttpRequestSettings.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="Settings\Integration\SqlRequestSettings.cs" />
     <Compile Include="Settings\Integration\HttpApiSettings.cs" />
     <Compile Include="Settings\Integration\WebClientHandlerSettings.cs" />
+    <Compile Include="Settings\ScalesSettings.cs" />
     <Compile Include="Settings\SqlProvider.cs" />
     <Compile Include="Settings\WorkAreaSettings.cs" />
     <Compile Include="WeightUnits.cs" />

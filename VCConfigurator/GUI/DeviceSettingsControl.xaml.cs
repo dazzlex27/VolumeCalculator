@@ -1,8 +1,6 @@
-﻿using System.Windows.Controls;
-
-namespace VCConfigurator
+﻿namespace VCConfigurator.GUI
 {
-	public partial class DeviceSettingsControl : UserControl
+	public partial class DeviceSettingsControl
 	{
 		public DeviceSettingsControl()
 		{

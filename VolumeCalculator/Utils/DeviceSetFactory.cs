@@ -40,19 +40,19 @@ namespace VolumeCalculator.Utils
 				barcodeScanners.Add(scanner);
 			}
 
-			var scalesName = settings.ActiveScalesName;
-			var scalesPort = settings.ScalesPort;
+			var scalesName = settings.ActiveScales.Name;
+			var scalesPort = settings.ActiveScales.Port;
 			var scalesDataIsCorrect = !string.IsNullOrEmpty(scalesName) && !string.IsNullOrEmpty(scalesPort);
 			if (scalesDataIsCorrect)
 			{
-                var minWeight = settings.ScalesMinWeight;
+                var minWeight = settings.ActiveScales.MinWeight;
 
 				logger.LogInfo($"Creating scales \"{scalesName}\", minWeight={minWeight}...");
 				scales = DeviceIntegrationCommon.CreateRequestedScales(scalesName, logger, scalesPort, minWeight);
 			}
 
-			var ioCircuitName = settings.ActiveIoCircuitName;
-			var ioCircuitPort = settings.IoCircuitPort;
+			var ioCircuitName = settings.ActiveIoCircuit.Name;
+			var ioCircuitPort = settings.ActiveIoCircuit.Port;
 			var ioCircuitDataIsCorrect = !string.IsNullOrEmpty(ioCircuitName) && !string.IsNullOrEmpty(ioCircuitPort);
 			if (ioCircuitDataIsCorrect)
 			{

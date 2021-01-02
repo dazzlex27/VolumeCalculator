@@ -31,7 +31,7 @@ namespace ExtIntegration
 		{
 			lock (_fileWriteLock)
 			{
-				InitializeOutputFile(settings.IoSettings.OutputPath);
+				InitializeOutputFile(settings.GeneralSettings.OutputPath);
 			}
 		}
 

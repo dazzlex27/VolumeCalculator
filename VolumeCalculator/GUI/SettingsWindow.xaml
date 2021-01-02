@@ -43,7 +43,7 @@
                                     Visibility="{Binding UseColorMask, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <gui:MaskPolygonControl Width="{Binding Path=ActualWidth, ElementName=CvColor}"
                                                             Height="{Binding Path=ActualHeight, ElementName=CvColor}"
-                                                            DataContext="{Binding ColorMaskRectangleControlVm}"
+                                                            DataContext="{Binding WorkAreaVm.ColorMaskRectangleControlVm}"
                                                             HorizontalAlignment="Stretch"
                                                             VerticalAlignment="Stretch"
                                                             IsReadOnly="False"
@@ -52,7 +52,7 @@
                             </Canvas>
                             <CheckBox Margin="3" IsEnabled="{Binding HasReceivedAColorImage}"
                                       Content="Ограничение зоны измерения"
-                                      IsChecked="{Binding UseColorMask, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                      IsChecked="{Binding WorkAreaVm.UseColorMask, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
                         <StackPanel Margin="2">
                             <Canvas Name="CvDepth" Width="400" Height="300" Background="Black">
@@ -64,7 +64,7 @@
                                     Visibility="{Binding UseDepthMask, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <gui:MaskPolygonControl Width="{Binding Path=ActualWidth, ElementName=CvDepth}"
                                                             Height="{Binding Path=ActualHeight, ElementName=CvDepth}"
-                                                            DataContext="{Binding DepthMaskPolygonControlVm}"
+                                                            DataContext="{Binding WorkAreaVm.DepthMaskPolygonControlVm}"
                                                             HorizontalAlignment="Stretch"
                                                             VerticalAlignment="Stretch"
                                                             IsReadOnly="False" />
@@ -72,7 +72,7 @@
                             </Canvas>
                             <CheckBox Margin="3" IsEnabled="{Binding HasReceivedADepthMap}"
                                       Content="Ограничение зоны измерения"
-                                      IsChecked="{Binding UseDepthMask, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                      IsChecked="{Binding WorkAreaVm.UseDepthMask, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
                     </StackPanel>
                     <!--Floor setup-->
@@ -87,7 +87,7 @@
                             </Grid.ColumnDefinitions>
                             <Slider Minimum="{Binding MinDepth}"
                                     Maximum="{Binding MaxDepth}"
-                                    Value="{Binding FloorDepth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Value="{Binding WorkAreaVm.FloorDepth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     HorizontalAlignment="Stretch"
                                     SmallChange="1"
                                     LargeChange="5"
@@ -99,7 +99,7 @@
                                      Width="50"
                                      VerticalAlignment="Center"
                                      Name="TbDistanceToFloor"
-                                     Text="{Binding Path=FloorDepth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Text="{Binding Path=WorkAreaVm.FloorDepth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      PreviewTextInput="CheckNumericTextPreview" />
                             <Button Name="BtCalculateFloorDepth"
                                     Grid.Column="2"
@@ -125,7 +125,7 @@
                                      MaxLength="5"
                                      Width="60"
                                      VerticalAlignment="Center"
-                                     Text="{Binding Path=MinObjHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Text="{Binding Path=WorkAreaVm.MinObjHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      PreviewTextInput="CheckNumericTextPreview" />
                         </StackPanel>
                         <StackPanel Margin="3" Orientation="Horizontal" Grid.Column="1">
