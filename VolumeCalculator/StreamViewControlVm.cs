@@ -76,11 +76,11 @@ namespace VolumeCalculator
 			_frameProvider.ColorFrameReady += ColorImageUpdated;
 			_frameProvider.DepthFrameReady += DepthImageUpdated;
 
-			UseColorMask = settings.AlgorithmSettings.UseColorMask;
-			UseDepthMask = settings.AlgorithmSettings.UseDepthMask;
+			UseColorMask = settings.AlgorithmSettings.WorkArea.UseColorMask;
+			UseDepthMask = settings.AlgorithmSettings.WorkArea.UseDepthMask;
 
-			ColorMaskPolygonControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.ColorMaskContour);
-			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.DepthMaskContour);
+			ColorMaskPolygonControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.WorkArea.ColorMaskContour);
+			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.WorkArea.DepthMaskContour);
 
 			_minDepth = _frameProvider.GetDepthCameraParams().MinDepth;
 		}
@@ -94,10 +94,10 @@ namespace VolumeCalculator
 		public void UpdateSettings(ApplicationSettings settings)
 		{
 			_applicationSettings = settings;
-			UseColorMask = _applicationSettings.AlgorithmSettings.UseColorMask;
-			UseDepthMask = _applicationSettings.AlgorithmSettings.UseDepthMask;
-			ColorMaskPolygonControlVm.SetPolygonPoints(settings.AlgorithmSettings.ColorMaskContour);
-			DepthMaskPolygonControlVm.SetPolygonPoints(settings.AlgorithmSettings.DepthMaskContour);
+			UseColorMask = _applicationSettings.AlgorithmSettings.WorkArea.UseColorMask;
+			UseDepthMask = _applicationSettings.AlgorithmSettings.WorkArea.UseDepthMask;
+			ColorMaskPolygonControlVm.SetPolygonPoints(settings.AlgorithmSettings.WorkArea.ColorMaskContour);
+			DepthMaskPolygonControlVm.SetPolygonPoints(settings.AlgorithmSettings.WorkArea.DepthMaskContour);
 		}
 
 		private void ColorImageUpdated(ImageData image)
@@ -109,9 +109,9 @@ namespace VolumeCalculator
 		{
 			try
 			{
-				var maxDepth = _applicationSettings.AlgorithmSettings.FloorDepth;
+				var maxDepth = _applicationSettings.AlgorithmSettings.WorkArea.FloorDepth;
 				var maskedMap = new DepthMap(depthMap);
-				var cutOffDepth = (short)(maxDepth - _applicationSettings.AlgorithmSettings.MinObjectHeight);
+				var cutOffDepth = (short)(maxDepth - _applicationSettings.AlgorithmSettings.WorkArea.MinObjectHeight);
 				DepthMapUtils.FilterDepthMapByDepthtLimit(maskedMap, cutOffDepth);
 				var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, _minDepth, maxDepth);
 				var depthMapImage = new ImageData(maskedMap.Width, maskedMap.Height, depthMapData, 1);

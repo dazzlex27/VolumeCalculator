@@ -147,8 +147,8 @@ namespace FrameProcessor
 				file.WriteLine(largerDimension);
 				file.WriteLine(smallerDimension);
 				file.WriteLine(_basicCaseInfo.ObjHeight);
-				file.WriteLine(_settings.FloorDepth);
-				file.Write(_settings.MinObjectHeight);
+				file.WriteLine(_settings.WorkArea.FloorDepth);
+				file.Write(_settings.WorkArea.MinObjectHeight);
 			}
 
 			File.WriteAllText(Path.Combine(_testCaseDirectory, "description.txt"), _basicCaseInfo.Description);

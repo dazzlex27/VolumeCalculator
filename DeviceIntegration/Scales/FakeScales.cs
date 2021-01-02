@@ -18,6 +18,7 @@ namespace DeviceIntegration.Scales
 		public FakeScales(ILogger logger)
 		{
 			_tokenSource = new CancellationTokenSource();
+			_applyPayload = true;
 
 			Task.Run(async () => {
 				try

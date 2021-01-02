@@ -132,21 +132,21 @@ namespace FrameProcessor
 		{
 			lock (_lock)
 			{
-				var cutOffDepth = (short)(settings.AlgorithmSettings.FloorDepth - settings.AlgorithmSettings.MinObjectHeight);
+				var cutOffDepth = (short)(settings.AlgorithmSettings.WorkArea.FloorDepth - settings.AlgorithmSettings.WorkArea.MinObjectHeight);
 				var colorRoiRect = CreateColorRoiRectFromSettings(settings);
 
 				unsafe
 				{
-					var relPoints = new RelPoint[settings.AlgorithmSettings.DepthMaskContour.Count];
+					var relPoints = new RelPoint[settings.AlgorithmSettings.WorkArea.DepthMaskContour.Count];
 					for (var i = 0; i < relPoints.Length; i++)
 					{
-						relPoints[i].X = (float)settings.AlgorithmSettings.DepthMaskContour[i].X;
-						relPoints[i].Y = (float)settings.AlgorithmSettings.DepthMaskContour[i].Y;
+						relPoints[i].X = (float)settings.AlgorithmSettings.WorkArea.DepthMaskContour[i].X;
+						relPoints[i].Y = (float)settings.AlgorithmSettings.WorkArea.DepthMaskContour[i].Y;
 					}
 
 					fixed (RelPoint* points = relPoints)
 					{
-						DepthMapProcessorDll.SetAlgorithmSettings(settings.AlgorithmSettings.FloorDepth, cutOffDepth,
+						DepthMapProcessorDll.SetAlgorithmSettings(settings.AlgorithmSettings.WorkArea.FloorDepth, cutOffDepth,
 							points, relPoints.Length, colorRoiRect);
 					}
 
@@ -179,9 +179,9 @@ namespace FrameProcessor
 			float x2;
 			float y2;
 
-			if (settings != null && settings.AlgorithmSettings.UseDepthMask)
+			if (settings != null && settings.AlgorithmSettings.WorkArea.UseDepthMask)
 			{
-				var rectanglePoints = settings.AlgorithmSettings.ColorMaskContour;
+				var rectanglePoints = settings.AlgorithmSettings.WorkArea.ColorMaskContour;
 				x1 = (float)rectanglePoints[0].X;
 				y1 = (float)rectanglePoints[0].Y;
 				x2 = (float)rectanglePoints[2].X;

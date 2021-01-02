@@ -7,7 +7,6 @@ using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 using ProcessingUtils;
-using VolumeCalculator.GUI;
 
 namespace VolumeCalculator.Utils
 {
@@ -56,7 +55,7 @@ namespace VolumeCalculator.Utils
 	        }
         }
 
-        private bool CanRunAutoTimer => CodeReady && WeightReady && !_isLocked && !WaitingForReset;
+        private bool CanRunAutoTimer => CodeReady && WeightReady && !_isLocked && !WaitingForReset && !CalculationRunning;
 
         private bool WeightReady => _lastWeighingStatus == MeasurementStatus.Measured && _lastWeightGr > 0.001;
 
@@ -93,18 +92,6 @@ namespace VolumeCalculator.Utils
 					SetDashboardStatus(DashboardStatus.InProgress);
 					CalculationStatusChanged?.Invoke(CalculationStatus.Running);
 
-					string error;
-					var canRunCalculation = CheckIfPreConditionsAreSatisfied(out error);
-					if (!canRunCalculation)
-					{
-						SetDashboardStatus(DashboardStatus.Ready);
-						CalculationStatusChanged?.Invoke(CalculationStatus.BarcodeNotEntered);
-						ErrorMessageUpdated?.Invoke(error);
-						ErrorOccured?.Invoke(error, "Ошибка");
-						CalculationFinished?.Invoke(new CalculationResultData(null, CalculationStatus.BarcodeNotEntered, null));
-						return;
-					}
-
 					_calculationTime = DateTime.Now;
 					if (data != null)
 					{
@@ -112,17 +99,28 @@ namespace VolumeCalculator.Utils
 						_lastComment = data.Comment;
 						_lastBarcode = data.Barcode;
 					}
+
+					string error;
+					var canRunCalculation = CheckIfPreConditionsAreSatisfied(out error);
+					if (!canRunCalculation)
+					{
+						CalculationStatusChanged?.Invoke(CalculationStatus.BarcodeNotEntered);
+						ErrorMessageUpdated?.Invoke(error);
+						ErrorOccured?.Invoke(error, "Ошибка");
+						CalculationFinished?.Invoke(new CalculationResultData(null, CalculationStatus.BarcodeNotEntered, null));
+						return;
+					}
 					
 					var algorithmSettings = _settings.AlgorithmSettings;
 					
-					var dm1Enabled = algorithmSettings.EnableDmAlgorithm && algorithmSettings.UseDepthMask;
-					var dm2Enabled = algorithmSettings.EnablePerspectiveDmAlgorithm && algorithmSettings.UseDepthMask;
-					var rgbEnabled = algorithmSettings.EnableRgbAlgorithm && algorithmSettings.UseColorMask;
+					var dm1Enabled = algorithmSettings.WorkArea.EnableDmAlgorithm && algorithmSettings.WorkArea.UseDepthMask;
+					var dm2Enabled = algorithmSettings.WorkArea.EnablePerspectiveDmAlgorithm && algorithmSettings.WorkArea.UseDepthMask;
+					var rgbEnabled = algorithmSettings.WorkArea.EnableRgbAlgorithm && algorithmSettings.WorkArea.UseColorMask;
 					
-					_logger.LogInfo($"Starting a volume check... dm={dm1Enabled} dm2={dm2Enabled} rgb={rgbEnabled}");
+					_logger.LogInfo($"Starting a volume calculation... dm={dm1Enabled} dm2={dm2Enabled} rgb={rgbEnabled}");
 					
 					var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter();
-					var cutOffDepth = (short)(algorithmSettings.FloorDepth - algorithmSettings.MinObjectHeight);
+					var cutOffDepth = (short)(algorithmSettings.WorkArea.FloorDepth - algorithmSettings.WorkArea.MinObjectHeight);
 					
 					var calculationData = new VolumeCalculationData(algorithmSettings.SampleDepthMapCount,
 						_lastBarcode, calculationIndex, dm1Enabled, dm2Enabled, rgbEnabled, 
@@ -138,7 +136,6 @@ namespace VolumeCalculator.Utils
 					ErrorMessageUpdated?.Invoke("Ошибка запуска");
 					SetDashboardStatus(DashboardStatus.Error);
 					CalculationStatusChanged?.Invoke(CalculationStatus.Error);
-					ErrorOccured?.Invoke("Во время обработки произошла ошибка. Информация записана в журнал", "Ошибка");
 				}
 			});
         }
@@ -146,7 +143,10 @@ namespace VolumeCalculator.Utils
         public void UpdateSettings(ApplicationSettings settings)
         {
 	        if (CalculationRunning)
-		        return;
+			{
+				_logger.LogError("Tried to assign settings while a clculation was running");
+				return;
+			}
 
 	        _settings = settings;
 	        _requireBarcode = settings.AlgorithmSettings.RequireBarcode;
@@ -232,6 +232,10 @@ namespace VolumeCalculator.Utils
             var calculationResult = new CalculationResult(_calculationTime, _lastBarcode, _lastWeightGr, _selectedWeightUnits,
                 _lastUnitCount, correctedLength, correctedWidth, correctedHeight, correctedVolume, _lastComment, _subtractPalletValues);
             var calculationResultData = new CalculationResultData(calculationResult, status, objectPhoto);
+
+			_lastBarcode = "";
+			_calculationTime = DateTime.MinValue;
+			_lastWeightGr = 0.0;
 
             UpdateVisualsWithResult(calculationResultData);
             

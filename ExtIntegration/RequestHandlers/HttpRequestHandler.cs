@@ -98,6 +98,34 @@ namespace ExtIntegration.RequestHandlers
 			}
 		}
 
+		public void SendPingResponse(HttpRequestData data)
+		{
+			try
+			{
+				var responseString = "pong";
+				_logger.LogInfo($"Response text is the following: {Environment.NewLine}{responseString}");
+
+				var response = data.Context.Response;
+				var buffer = Encoding.UTF8.GetBytes(responseString);
+
+				response.ContentLength64 = buffer.Length;
+				var output = response.OutputStream;
+				output.Write(buffer, 0, buffer.Length);
+
+				output.Close();
+
+				_logger.LogInfo($"Sent HTTP response for {_address}");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException($"Failed to send HTTP response to {_address}", ex);
+			}
+			finally
+			{
+				_sessionInProgress = false;
+			}
+		}
+
 		public void Reset(HttpRequestData data, string text)
 		{
 			try
@@ -148,15 +176,17 @@ namespace ExtIntegration.RequestHandlers
 				var method = request.HttpMethod;
 				_logger.LogInfo($"HTTP request accepted from {_address} containing {url}, the method is {method}");
 
+				_logger.LogInfo($"Received a \"{command}\" command from {_address}...");
 
 				switch (command)
 				{
+					case "ping":
+						SendPingResponse(new HttpRequestData(context, false));
+						break;
 					case "calculate":
-						_logger.LogInfo($"Received a \"{command}\" command from {_address}...");
 						RaiseCalculationStartRequestedEvent(context, false);
 						break;
 					case "calculate_ph":
-						_logger.LogInfo($"Received a \"{command}\" command from {_address}...");
 						RaiseCalculationStartRequestedEvent(context, true);
 						break;
 					default:

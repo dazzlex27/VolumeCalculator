@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 
 namespace Primitives.Logging
@@ -38,6 +37,7 @@ namespace Primitives.Logging
 		public void LogException(string message, Exception ex)
 		{
 			WriteMessageToLog("EXCEPTION", $"{message} {ex}");
+			Console.Beep();
 		}
 
 		public void LogDebug(string message)

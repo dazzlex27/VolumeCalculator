@@ -213,8 +213,8 @@ namespace VolumeCalculator
 				oldIoSettings.ScalesPort, oldIoSettings.ScalesMinWeight, oldIoSettings.ActiveScanners, oldIoSettings.ActiveIoCircuitName,
 				oldIoSettings.IoCircuitPort, oldIoSettings.ActiveRangeMeterName, RangeMeterSubtractionValue, oldIoSettings.IpCameraSettings, OutputPath, oldIoSettings.ShutDownPcByDefault);
 
-			var newAlgorithmSettings = new AlgorithmSettings(FloorDepth, MinObjHeight, SampleCount, UseColorMask,
-				colorMaskPoints, UseDepthMask, depthMaskPoints, EnableAutoTimer, TimeToStartMeasurementMs,
+			var newWorkAreaSettings = new WorkAreaSettings(FloorDepth, MinObjHeight, UseColorMask, colorMaskPoints, UseDepthMask, depthMaskPoints);
+			var newAlgorithmSettings = new AlgorithmSettings(newWorkAreaSettings, SampleCount, EnableAutoTimer, TimeToStartMeasurementMs,
 				RequireBarcode, SelectedWeightUnits, EnablePalletSubtraction, PalletWeightKg * 1000, PalletHeightMm);
 
 			return new ApplicationSettings(newIoSettings, newAlgorithmSettings, _oldSettings.IntegrationSettings);
@@ -284,14 +284,14 @@ namespace VolumeCalculator
 
 		private void FillValuesFromSettings(ApplicationSettings settings)
 		{
-			FloorDepth = settings.AlgorithmSettings.FloorDepth;
-			MinObjHeight = settings.AlgorithmSettings.MinObjectHeight;
+			FloorDepth = settings.AlgorithmSettings.WorkArea.FloorDepth;
+			MinObjHeight = settings.AlgorithmSettings.WorkArea.MinObjectHeight;
 			OutputPath = settings.IoSettings.OutputPath;
 			SampleCount = settings.AlgorithmSettings.SampleDepthMapCount;
-			UseColorMask = settings.AlgorithmSettings.UseColorMask;
-			ColorMaskRectangleControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.ColorMaskContour);
-			UseDepthMask = settings.AlgorithmSettings.UseDepthMask;
-			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.DepthMaskContour);
+			UseColorMask = settings.AlgorithmSettings.WorkArea.UseColorMask;
+			ColorMaskRectangleControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.WorkArea.ColorMaskContour);
+			UseDepthMask = settings.AlgorithmSettings.WorkArea.UseDepthMask;
+			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.WorkArea.DepthMaskContour);
 			EnableAutoTimer = settings.AlgorithmSettings.EnableAutoTimer;
 			TimeToStartMeasurementMs = settings.AlgorithmSettings.TimeToStartMeasurementMs;
 			RequireBarcode = settings.AlgorithmSettings.RequireBarcode;

@@ -392,10 +392,7 @@ namespace VolumeCalculator
 			UnitCount = 0;
 			Comment = "";
 
-			if (data.Status == CalculationStatus.Successful)
-				UpdateVolumeData(data.Result);
-			else
-				UpdateVolumeData(data.Result);
+			UpdateVolumeData(data.Result);
 		}
 		
 		private void RunVolumeCalculation()
@@ -406,6 +403,19 @@ namespace VolumeCalculator
 
 		private void UpdateVolumeData(CalculationResult result)
 		{
+			if (result == null)
+			{
+				Dispatcher.Invoke(() =>
+				{
+					ObjectLength = 0;
+					ObjectWidth = 0;
+					ObjectHeight = 0;
+					ObjectVolume = 0;
+				});
+
+				return;
+			}
+
 			Dispatcher.Invoke(() =>
 			{
 				ObjectLength = result.ObjectLengthMm;

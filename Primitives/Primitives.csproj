@@ -67,6 +67,7 @@
     <Compile Include="Settings\Integration\HttpApiSettings.cs" />
     <Compile Include="Settings\Integration\WebClientHandlerSettings.cs" />
     <Compile Include="Settings\SqlProvider.cs" />
+    <Compile Include="Settings\WorkAreaSettings.cs" />
     <Compile Include="WeightUnits.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
