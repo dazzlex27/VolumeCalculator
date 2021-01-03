@@ -1,6 +1,6 @@
-﻿namespace VolumeCalculator.Utils
+﻿namespace VCServer
 {
-	internal class VolumeCalculationData
+	public class VolumeCalculationData
 	{
 		public int RequiredSampleCount { get; }
 
@@ -16,11 +16,16 @@
 
 		public string PhotosDirectoryPath { get; }
 
+		public short FloorDepth { get; }
+
 		public short CutOffDepth { get; }
+		
+		public int RangeMeterCorrectionValue { get; }
 
 		public VolumeCalculationData(int requiredSampleCount, 
 			string barcode, int calculationIndex, bool dm1AlgorithmEnabled, bool dm2AlgorithmEnabled, 
-			bool rgbAlgorithmEnabled, string photosDirectoryPath, short cutOffDepth)
+			bool rgbAlgorithmEnabled, string photosDirectoryPath, short floorDepth, short cutOffDepth,
+			int rangeMeterCorrectionValue)
 		{
 			RequiredSampleCount = requiredSampleCount;
 			Barcode = barcode;
@@ -29,7 +34,9 @@
 			Dm2AlgorithmEnabled = dm2AlgorithmEnabled;
 			RgbAlgorithmEnabled = rgbAlgorithmEnabled;
 			PhotosDirectoryPath = photosDirectoryPath;
+			FloorDepth = floorDepth;
 			CutOffDepth = cutOffDepth;
+			RangeMeterCorrectionValue = rangeMeterCorrectionValue;
 		}
 	}
 }

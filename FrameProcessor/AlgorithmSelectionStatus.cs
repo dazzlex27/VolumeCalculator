@@ -1,6 +1,6 @@
-﻿namespace FrameProcessor.Native
+﻿namespace FrameProcessor
 {
-	public enum AlgorithmSelectionResult
+	public enum AlgorithmSelectionStatus
 	{
 		Undefined = -5,
 		NoAlgorithmsAllowed = -3,

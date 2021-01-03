@@ -3,101 +3,105 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-			 xmlns:gui="clr-namespace:VolumeCalculator.GUI"
+             xmlns:gui="clr-namespace:VolumeCalculator.GUI"
              xmlns:main="clr-namespace:VolumeCalculator"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800" x:ClassModifier="internal"
              d:DataContext="{d:DesignInstance main:StreamViewControlVm}">
-	<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto">
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="*" />
-			<ColumnDefinition Width="*" />
-		</Grid.ColumnDefinitions>
-		<Grid Grid.Column="0" Margin="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="Auto">
-			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto" />
-				<RowDefinition Height="*" />
-			</Grid.RowDefinitions>
-			<Grid Grid.Row="1">
-				<Canvas 
-					Name="CvColor"
-					Background="Black"
-					HorizontalAlignment="Stretch"
-					VerticalAlignment="Stretch">
-					<Image Name="ImColor"
-					       Source="{Binding ColorImageBitmap}"
-					       Width="{Binding Path=ActualWidth, ElementName=CvColor}"
-					       Height="{Binding Path=ActualHeight, ElementName=CvColor}"
-					       HorizontalAlignment="Stretch"
-					       VerticalAlignment="Stretch"/>
-					<Line StrokeThickness="3"
-					      X1="0" 
-					      X2="{Binding Path=ActualWidth, ElementName=CvColor}" 
-						  Y1="{Binding Path=ActualHeight, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
-					      Y2="{Binding Path=ActualHeight, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
-					      Stroke="Red"/>
-					<Line StrokeThickness="3"
-					      X1="{Binding Path=ActualWidth, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
-					      X2="{Binding Path=ActualWidth, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
-					      Y1="0" 
-					      Y2="{Binding Path=ActualHeight, ElementName=CvColor}" 
-					      Stroke="Red"/>
-				</Canvas>
-				<Grid HorizontalAlignment="Center"
-				      VerticalAlignment="Center"
-				      Visibility="{Binding UseColorMask, Converter={StaticResource BooleanToVisibilityConverter}}">
-					<gui:MaskPolygonControl
-						DataContext="{Binding ColorMaskPolygonControlVm}"
-						Width="{Binding Path=ActualWidth, ElementName=ImColor}"
-						Height="{Binding Path=ActualHeight, ElementName=ImColor}"
-						HorizontalAlignment="Stretch"
-						VerticalAlignment="Stretch"
-						IsReadOnly="True"/>
-				</Grid>
-			</Grid>
-		</Grid>
-		<Grid Grid.Column="1" Margin="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="Auto">
-			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto" />
-				<RowDefinition Height="*" />
-			</Grid.RowDefinitions>
-			<Grid Grid.Row="1">
-				<Canvas 
-			        Name="CvDepth"
-			        Background="Black"
-			        HorizontalAlignment="Stretch"
-			        VerticalAlignment="Stretch">
-					<Image Name="ImDepth"
-				       Source="{Binding DepthImageBitmap}"
-				       Width="{Binding Path=ActualWidth, ElementName=CvDepth}"
-				       Height="{Binding Path=ActualHeight, ElementName=CvDepth}"
-				       HorizontalAlignment="Stretch"
-				       VerticalAlignment="Stretch"/>
-					<Line StrokeThickness="3"
-					      X1="0" 
-					      X2="{Binding Path=ActualWidth, ElementName=CvColor}" 
-					      Y1="{Binding Path=ActualHeight, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
-					      Y2="{Binding Path=ActualHeight, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
-					      Stroke="Red"/>
-					<Line StrokeThickness="3"
-					      X1="{Binding Path=ActualWidth, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
-					      X2="{Binding Path=ActualWidth, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
-					      Y1="0" 
-					      Y2="{Binding Path=ActualHeight, ElementName=CvColor}" 
-					      Stroke="Red"/>
-				</Canvas>
-				<Grid HorizontalAlignment="Center"
-				      VerticalAlignment="Center"
-				      Visibility="{Binding UseDepthMask, Converter={StaticResource BooleanToVisibilityConverter}}">
-					<gui:MaskPolygonControl
-						DataContext="{Binding DepthMaskPolygonControlVm}"
-						Width="{Binding Path=ActualWidth, ElementName=ImDepth}"
-						Height="{Binding Path=ActualHeight, ElementName=ImDepth}"
-						HorizontalAlignment="Stretch"
-						VerticalAlignment="Stretch"
-						IsReadOnly="True" />
-				</Grid>
-			</Grid>
-		</Grid>
-	</Grid>
+    <Grid HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch"
+          Height="Auto">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0" Margin="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto"
+              Width="Auto">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="1">
+                <Canvas
+                    Name="CvColor"
+                    Background="Black"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch">
+                    <Image Name="ImColor"
+                           Source="{Binding ColorImageBitmap}"
+                           Width="{Binding Path=ActualWidth, ElementName=CvColor}"
+                           Height="{Binding Path=ActualHeight, ElementName=CvColor}"
+                           HorizontalAlignment="Stretch"
+                           VerticalAlignment="Stretch" />
+                    <Line StrokeThickness="3"
+                          X1="0"
+                          X2="{Binding Path=ActualWidth, ElementName=CvColor}"
+                          Y1="{Binding Path=ActualHeight, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
+                          Y2="{Binding Path=ActualHeight, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
+                          Stroke="Red" />
+                    <Line StrokeThickness="3"
+                          X1="{Binding Path=ActualWidth, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
+                          X2="{Binding Path=ActualWidth, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
+                          Y1="0"
+                          Y2="{Binding Path=ActualHeight, ElementName=CvColor}"
+                          Stroke="Red" />
+                </Canvas>
+                <Grid HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Visibility="{Binding UseColorMask, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <gui:MaskPolygonControl
+                        DataContext="{Binding ColorMaskPolygonControlVm}"
+                        Width="{Binding Path=ActualWidth, ElementName=ImColor}"
+                        Height="{Binding Path=ActualHeight, ElementName=ImColor}"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        IsReadOnly="True" />
+                </Grid>
+            </Grid>
+        </Grid>
+        <Grid Grid.Column="1" Margin="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto"
+              Width="Auto">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="1">
+                <Canvas
+                    Name="CvDepth"
+                    Background="Black"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch">
+                    <Image Name="ImDepth"
+                           Source="{Binding DepthImageBitmap}"
+                           Width="{Binding Path=ActualWidth, ElementName=CvDepth}"
+                           Height="{Binding Path=ActualHeight, ElementName=CvDepth}"
+                           HorizontalAlignment="Stretch"
+                           VerticalAlignment="Stretch" />
+                    <Line StrokeThickness="3"
+                          X1="0"
+                          X2="{Binding Path=ActualWidth, ElementName=CvColor}"
+                          Y1="{Binding Path=ActualHeight, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
+                          Y2="{Binding Path=ActualHeight, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
+                          Stroke="Red" />
+                    <Line StrokeThickness="3"
+                          X1="{Binding Path=ActualWidth, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
+                          X2="{Binding Path=ActualWidth, ElementName=CvColor, Converter={StaticResource HalfMeasureConverter}}"
+                          Y1="0"
+                          Y2="{Binding Path=ActualHeight, ElementName=CvColor}"
+                          Stroke="Red" />
+                </Canvas>
+                <Grid HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Visibility="{Binding UseDepthMask, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <gui:MaskPolygonControl
+                        DataContext="{Binding DepthMaskPolygonControlVm}"
+                        Width="{Binding Path=ActualWidth, ElementName=ImDepth}"
+                        Height="{Binding Path=ActualHeight, ElementName=ImDepth}"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        IsReadOnly="True" />
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
 </UserControl>

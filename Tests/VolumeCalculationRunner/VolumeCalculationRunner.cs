@@ -95,7 +95,7 @@ namespace VolumeCalculationRunner
 
 			foreach (var map in testCaseData.DepthMaps)
 			{
-				var objectDimData = processor.CalculateVolume(map, null, 0, AlgorithmSelectionResult.Dm1);
+				var objectDimData = processor.CalculateVolume(map, null, 0, AlgorithmSelectionStatus.Dm1);
 				results.Add(objectDimData);
 			}
 

@@ -11,10 +11,10 @@ DLL_EXPORT void SetAlgorithmSettings(short floorDepth, short cutOffDepth, RelPoi
 
 DLL_EXPORT void SetDebugPath(const char* path, bool maskMode);
 
-DLL_EXPORT AlgorithmSelectionResult SelectAlgorithm(AlgorithmSelectionData data);
+DLL_EXPORT NativeAlgorithmSelectionResult* SelectAlgorithm(NativeAlgorithmSelectionData data);
+DLL_EXPORT void DisposeAlgorithmSelectionResult(VolumeCalculationResult* result);
 
 DLL_EXPORT VolumeCalculationResult* CalculateObjectVolume(VolumeCalculationData data);
-
 DLL_EXPORT void DisposeCalculationResult(VolumeCalculationResult* result);
 
 DLL_EXPORT short CalculateFloorDepth(DepthMap depthMap);

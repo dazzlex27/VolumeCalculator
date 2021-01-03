@@ -28,7 +28,7 @@ namespace FrameProcessor
 		}
 
 		public ObjectVolumeData CalculateVolume(DepthMap depthMap, ImageData colorImage, short calculatedDistance, 
-			AlgorithmSelectionResult selectedAlgorithm)
+			AlgorithmSelectionStatus selectedAlgorithm)
 		{
 			lock (_lock)
 			{
@@ -83,49 +83,72 @@ namespace FrameProcessor
 			}
 		}
 
-		public AlgorithmSelectionResult SelectAlgorithm(DepthMap depthMap, ImageData colorFrame, short calculatedDistance,
-			bool dm1Enabled, bool dm2Enabled, bool rgbEnabled, string debugFileName)
+		public AlgorithmSelectionResult SelectAlgorithm(AlgorithmSelectionData data)
 		{
-			lock (_lock)
+			try
 			{
-				var dataIsInvalid = depthMap?.Data == null || colorFrame?.Data == null;
-				if (dataIsInvalid)
-					return AlgorithmSelectionResult.DataIsInvalid;
 
-				var atLeastOneModeIsAvailable = dm1Enabled || dm2Enabled || rgbEnabled;
-				if (!atLeastOneModeIsAvailable)
-					return AlgorithmSelectionResult.NoAlgorithmsAllowed;
 
-				unsafe
+				if (data == null)
+					return new AlgorithmSelectionResult(AlgorithmSelectionStatus.DataIsInvalid, false);
+
+				lock (_lock)
 				{
-					fixed (short* depthData = depthMap.Data)
-					fixed (byte* colorData = colorFrame.Data)
+					var colorFrame = data.Image;
+					var depthMap = data.DepthMap;
+
+					var dataIsInvalid = data.DepthMap?.Data == null || colorFrame?.Data == null;
+					if (dataIsInvalid)
+						return new AlgorithmSelectionResult(AlgorithmSelectionStatus.DataIsInvalid, false);
+
+					unsafe
 					{
-						var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
-
-						var nativeColorImage = new ColorImage
+						fixed (short* depthData = depthMap.Data)
+						fixed (byte* colorData = colorFrame.Data)
 						{
-							Width = colorFrame.Width,
-							Height = colorFrame.Height,
-							Data = colorData,
-							BytesPerPixel = colorFrame.BytesPerPixel
-						};
+							var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
 
-						var algorithmSelectionData = new AlgorithmSelectionData()
-						{
-							DepthMap = &nativeDepthMap,
-							ColorImage = &nativeColorImage,
-							CalculatedDistance = calculatedDistance,
-							Dm1Enabled = dm1Enabled,
-							Dm2Enabled = dm2Enabled,
-							RgbEnabled = rgbEnabled,
-							DebugFileName = debugFileName.Length > 128 ? debugFileName.Substring(0, 128) : debugFileName
-						};
+							var nativeColorImage = new ColorImage
+							{
+								Width = colorFrame.Width,
+								Height = colorFrame.Height,
+								Data = colorData,
+								BytesPerPixel = colorFrame.BytesPerPixel
+							};
 
-						return DepthMapProcessorDll.SelectAlgorithm(algorithmSelectionData);
+							var debugFilename = data.DebugFileName;
+
+							var algorithmSelectionData = new NativeAlgorithmSelectionData
+							{
+								DepthMap = &nativeDepthMap,
+								ColorImage = &nativeColorImage,
+								CalculatedDistance = data.CalculatedDistance,
+								Dm1Enabled = data.Dm1Enabled,
+								Dm2Enabled = data.Dm2Enabled,
+								RgbEnabled = data.RgbEnabled,
+								DebugFileName = debugFilename.Length > 127
+									? debugFilename.Substring(0, 127)
+									: debugFilename
+							};
+
+							var nativeResult = (NativeAlgorithmSelectionResult*)DepthMapProcessorDll.SelectAlgorithm(algorithmSelectionData);
+
+							var rangeMeterWasUsed = nativeResult->RangeMeterWasUsed > 0;
+							var algorithmSelectionResult = new AlgorithmSelectionResult(nativeResult->Status, rangeMeterWasUsed); 
+							
+							DepthMapProcessorDll.DisposeAlgorithmSelectionResult(nativeResult);
+
+							return algorithmSelectionResult;
+						}
 					}
 				}
 			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to run algorithm selection", ex);
+			}
+			
+			return new AlgorithmSelectionResult(AlgorithmSelectionStatus.Undefined, false);
 		}
 
 		public void SetProcessorSettings(ApplicationSettings settings)

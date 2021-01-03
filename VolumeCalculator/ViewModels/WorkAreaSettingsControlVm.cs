@@ -20,7 +20,7 @@ namespace VolumeCalculator
 		private WriteableBitmap _colorImageBitmap;
 		private WriteableBitmap _depthImageBitmap;
 
-		private WorkAreaSettingsVm _activeWorkAreaVm;
+		private WorkAreaSettingsVm _workAreaVm;
 		
 		private short _maxDepth;
 		private short _minDepth;
@@ -62,15 +62,15 @@ namespace VolumeCalculator
 			get => _hasReceivedDepthMap;
 			set => SetField(ref _hasReceivedDepthMap, value, nameof(HasReceivedADepthMap));
 		}
-		
-		public WorkAreaSettingsVm ActiveWorkAreaVm
+
+		public WorkAreaSettingsVm WorkAreaVm
 		{
-			get => _activeWorkAreaVm;
-			set => SetField(ref _activeWorkAreaVm, value, nameof(ActiveWorkAreaVm));
+			get => _workAreaVm;
+			set => SetField(ref _workAreaVm, value, nameof(WorkAreaVm));
 		}
 
 		public ICommand CalculateFloorDepthCommand { get; }
-		
+
 		public WorkAreaSettingsControlVm(ILogger logger, DepthMapProcessor depthMapProcessor, DepthCameraParams depthCameraParams)
 		{
 			_logger = logger;
@@ -81,11 +81,12 @@ namespace VolumeCalculator
 			CalculateFloorDepthCommand = new CommandHandler(CalculateFloorDepth, true);
 		}
 
+
 		public WorkAreaSettings GetSettings()
 		{
-			return ActiveWorkAreaVm.GetSettings();
+			return WorkAreaVm.GetSettings();
 		}
-		
+
 		private void CalculateFloorDepth()
 		{
 			try
@@ -102,7 +103,7 @@ namespace VolumeCalculator
 				if (floorDepth <= 0)
 					throw new ArgumentException("Floor depth calculation: return a value less than zero");
 
-				ActiveWorkAreaVm.FloorDepth = floorDepth;
+				WorkAreaVm.FloorDepth = floorDepth;
 				_logger.LogInfo($"Caculated floor depth as {floorDepth}mm");
 			}
 			catch (Exception ex)
@@ -118,7 +119,7 @@ namespace VolumeCalculator
 		public void SetColorFrame(ImageData image)
 		{
 			HasReceivedAColorImage = true;
-			ActiveWorkAreaVm.ColorMaskRectangleControlVm.CanEditPolygon = true;
+			WorkAreaVm.ColorMaskRectangleControlVm.CanEditPolygon = true;
 
 			ColorImageBitmap = GraphicsUtils.GetWriteableBitmapFromImageData(image);
 		}
@@ -126,14 +127,14 @@ namespace VolumeCalculator
 		public void SetDepthMap(DepthMap depthMap)
 		{
 			HasReceivedADepthMap = true;
-			ActiveWorkAreaVm.DepthMaskPolygonControlVm.CanEditPolygon = true;
+			WorkAreaVm.DepthMaskPolygonControlVm.CanEditPolygon = true;
 			_latestDepthMap = depthMap;
 
 			var mapCopy = new DepthMap(depthMap);
-			var cutOffDepth = (short)(ActiveWorkAreaVm.FloorDepth - ActiveWorkAreaVm.MinObjHeight);
+			var cutOffDepth = (short)(WorkAreaVm.FloorDepth - WorkAreaVm.MinObjHeight);
 			DepthMapUtils.FilterDepthMapByDepthtLimit(mapCopy, cutOffDepth);
 
-			var depthMapData = DepthMapUtils.GetColorizedDepthMapData(mapCopy, MinDepth, ActiveWorkAreaVm.FloorDepth);
+			var depthMapData = DepthMapUtils.GetColorizedDepthMapData(mapCopy, MinDepth, WorkAreaVm.FloorDepth);
 			var depthMapImage = new ImageData(depthMap.Width, depthMap.Height, depthMapData, 1);
 		    
 			DepthImageBitmap = GraphicsUtils.GetWriteableBitmapFromImageData(depthMapImage);
@@ -141,7 +142,7 @@ namespace VolumeCalculator
 
 		public void SetSettings(WorkAreaSettings workAreaSettings)
 		{
-			ActiveWorkAreaVm = new WorkAreaSettingsVm(workAreaSettings);
+			WorkAreaVm = new WorkAreaSettingsVm(workAreaSettings);
 		}
 	}
 }

@@ -10,9 +10,8 @@ private:
 	const CameraIntrinsics _colorIntrinsics;
 	const CameraIntrinsics _depthIntrinsics;
 
-	const short _minObjHeight = 3; // if no depth object is found, this value will be set for height
 	const short _maxObjHeightForRgb = 300; // objects with height of 300mm and less are ok for rgb calculation
-	const short _contourPlaneDepthDelta = 100; // if object is taller than 100mm - use dm2, dm1 - otherwise
+	const short _contourPlaneDepthDeltaForDm2 = 100; // if object is taller than 100mm - use dm2, dm1 - otherwise
 
 	ContourExtractor _contourExtractor;
 
@@ -49,7 +48,7 @@ public:
 		const RelPoint* polygonPoints, const int polygonPointCount, const RelRect& roiRect);
 	void SetDebugPath(const char* path, const bool maskMode);
 
-	const AlgorithmSelectionResult SelectAlgorithm(const AlgorithmSelectionData data);
+	NativeAlgorithmSelectionResult* SelectAlgorithm(const NativeAlgorithmSelectionData data);
 	VolumeCalculationResult* CalculateObjectVolume(const VolumeCalculationData& data);
 	void PrepareBuffers(const DepthMap*const depthMap, const ColorImage*const colorImage);
 	const short CalculateFloorDepth(const DepthMap& depthMap);
@@ -60,9 +59,9 @@ private:
 	const Contour GetTargetContourFromDepthMap() const;
 	const Contour GetTargetContourFromColorImage(const char* debugPath = "") const;
 	const TwoDimDescription Calculate2DContourDimensions(const Contour& depthObjectContour,
-		const Contour& colorObjectContour, const AlgorithmSelectionResult selectedAlgorithm, const short contourTopPlaneDepth) const;
+		const Contour& colorObjectContour, const AlgorithmSelectionStatus selectedAlgorithm, const short contourTopPlaneDepth) const;
 	const cv::RotatedRect CalculateObjectBoundingRect(const Contour& depthObjectContour, const Contour& colorObjectContour,
-		const AlgorithmSelectionResult selectedAlgorithm, const short contourTopPlaneDepth, const char* debugPath = "") const;
+		const AlgorithmSelectionStatus selectedAlgorithm, const short contourTopPlaneDepth, const char* debugPath = "") const;
 	const ContourPlanes GetDepthContourPlanes(const Contour& contour) const;
 	const TwoDimDescription GetTwoDimDescription(const cv::RotatedRect& contourBoundingRect,
 		const CameraIntrinsics& intristics, const short contourTopPlaneDepth) const;

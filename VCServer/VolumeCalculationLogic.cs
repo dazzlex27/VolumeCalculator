@@ -7,16 +7,15 @@ using System.Timers;
 using DeviceIntegration.Cameras;
 using DeviceIntegration.RangeMeters;
 using FrameProcessor;
-using FrameProcessor.Native;
 using FrameProviders;
 using Primitives;
 using Primitives.Logging;
 
-namespace VolumeCalculator.Utils
+namespace VCServer
 {
-	internal class VolumeCalculationLogic
+	public class VolumeCalculationLogic
 	{
-		public event Action<ObjectVolumeData, CalculationStatus, ImageData> CalculationFinished;
+		public event Action<VolumeCalculatorResultData> CalculationFinished;
 
 		private readonly ILogger _logger;
 		private readonly DepthMapProcessor _processor;
@@ -27,11 +26,13 @@ namespace VolumeCalculator.Utils
 		private readonly int _requiredSampleCount;
 		private readonly string _barcode;
 		private readonly int _calculationIndex;
+		private readonly short _floorDepth;
 		private readonly short _cutOffDepth;
 		private readonly bool _dm1AlgorithmEnabled;
 		private readonly bool _dm2AlgorithmEnabled;
 		private readonly bool _rgbAlgorithmEnabled;
 		private readonly string _photoDirectoryPath;
+		private readonly int _rangeMeterCorrectionValueMm;
 
 		private readonly Timer _updateTimeoutTimer;
 		private readonly List<ObjectVolumeData> _results;
@@ -46,9 +47,8 @@ namespace VolumeCalculator.Utils
 		private DepthMap _latestDepthMap;
 
 		private int _samplesLeft;
-		private AlgorithmSelectionResult _selectedAlgorithm;
-		
-		public bool IsRunning { get; private set; }
+		private AlgorithmSelectionStatus _selectedAlgorithm;
+		private bool _wasRangeMeterUsed;
 
 		private bool HasCompletedFirstRun => _samplesLeft != _requiredSampleCount;
 
@@ -68,7 +68,9 @@ namespace VolumeCalculator.Utils
 			_dm2AlgorithmEnabled = calculationData.Dm2AlgorithmEnabled;
 			_rgbAlgorithmEnabled = calculationData.RgbAlgorithmEnabled;
 			_photoDirectoryPath = calculationData.PhotosDirectoryPath;
+			_floorDepth = calculationData.FloorDepth;
 			_cutOffDepth = calculationData.CutOffDepth;
+			_rangeMeterCorrectionValueMm = calculationData.RangeMeterCorrectionValue;
 
 			_samplesLeft = _requiredSampleCount;
 
@@ -82,8 +84,6 @@ namespace VolumeCalculator.Utils
 			_updateTimeoutTimer = new Timer(3000) {AutoReset = false};
 			_updateTimeoutTimer.Elapsed += OnTimerElapsed;
 			_updateTimeoutTimer.Start();
-
-			IsRunning = true;
 		}
 
 		public void Abort()
@@ -96,13 +96,15 @@ namespace VolumeCalculator.Utils
 			_updateTimeoutTimer.Stop();
 			_frameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
 			_frameProvider.UnrestrictedDepthFrameReady -= OnDepthFrameReady;
-			IsRunning = false;
 		}
 
 		private void AbortInternal(CalculationStatus status)
 		{
 			CleanUp();
-			CalculationFinished?.Invoke(new ObjectVolumeData(0, 0, 0), status, _latestColorFrame);
+			var result = new ObjectVolumeData(0, 0, 0);
+			var resultData = new VolumeCalculatorResultData(result, status, _latestColorFrame,
+					AlgorithmSelectionStatus.Undefined, false);
+			CalculationFinished?.Invoke(resultData);
 		}
 
 		private void AdvanceCalculation(DepthMap depthMap, ImageData image)
@@ -113,10 +115,16 @@ namespace VolumeCalculator.Utils
 			{
 				if (_rangeMeter != null)
 				{
-					var reading = _rangeMeter.GetReading();
+					var reading = _rangeMeter.GetReading() + _rangeMeterCorrectionValueMm;
 					var readingIsInRange = reading > short.MinValue && reading < short.MaxValue;
 					_calculatedDistance = readingIsInRange ? (short)reading : (short)0;
-					_logger.LogInfo($"Range meter reading - {reading}");
+					_logger.LogInfo($"Range meter reading={reading}, floorDepth={_floorDepth}");
+					if (_floorDepth - _calculatedDistance < 0)
+					{
+						_logger.LogError("range meter reading was below floor depth");
+						_calculatedDistance = 0;
+					}
+
 					if (_calculatedDistance <= 0)
 						_logger.LogError("Failed to get proper range meter reading, will use depth calculation");
 				}
@@ -144,45 +152,52 @@ namespace VolumeCalculator.Utils
 			}
 
 			CleanUp();
-
+			
 			var totalResult = AggregateCalculationsData();
-			if (totalResult != null)
-				CalculationFinished?.Invoke(totalResult, CalculationStatus.Successful, _latestColorFrame);
-			else
-				CalculationFinished?.Invoke(null, CalculationStatus.Error, _latestColorFrame);
+			var resultStatus = totalResult != null ? CalculationStatus.Successful : CalculationStatus.Error;
+
+			var resultData =
+				new VolumeCalculatorResultData(totalResult, resultStatus, _latestColorFrame, _selectedAlgorithm,
+					_wasRangeMeterUsed);
+			
+			CalculationFinished?.Invoke(resultData);
 		}
 
 		private void SelectAlgorithmAndAbortIfFailed(string debugFileName)
 		{
-			_selectedAlgorithm = _processor.SelectAlgorithm(_latestDepthMap, _latestColorFrame, _calculatedDistance,
+			var algorithmSelectionData = new AlgorithmSelectionData(_latestDepthMap, _latestColorFrame, _calculatedDistance,
 				_dm1AlgorithmEnabled, _dm2AlgorithmEnabled, _rgbAlgorithmEnabled, debugFileName);
+			
+			var algorithmSelectionResult =_processor.SelectAlgorithm(algorithmSelectionData);
+			_selectedAlgorithm = algorithmSelectionResult.Status;
+			_wasRangeMeterUsed = algorithmSelectionResult.RangeMeterWasUsed;
 
 			switch (_selectedAlgorithm)
 			{
-				case AlgorithmSelectionResult.DataIsInvalid:
+				case AlgorithmSelectionStatus.DataIsInvalid:
 					_logger.LogError("Failed to select algorithm: data was invalid");
 					break;
-				case AlgorithmSelectionResult.NoAlgorithmsAllowed:
+				case AlgorithmSelectionStatus.NoAlgorithmsAllowed:
 					_logger.LogError("Failed to select algorithm: no modes were available");
 					break;
-				case AlgorithmSelectionResult.NoObjectFound:
+				case AlgorithmSelectionStatus.NoObjectFound:
 					_logger.LogError("Failed to select algorithm: no objects were found");
 					break;
-				case AlgorithmSelectionResult.Dm1:
+				case AlgorithmSelectionStatus.Dm1:
 					_useColorData = false;
 					_logger.LogInfo("Selected algorithm: dm1");
 					break;
-				case AlgorithmSelectionResult.Dm2:
+				case AlgorithmSelectionStatus.Dm2:
 					_useColorData = false;
 					_logger.LogInfo("Selected algorithm: dm2");
 					break;
-				case AlgorithmSelectionResult.Rgb:
+				case AlgorithmSelectionStatus.Rgb:
 					_useColorData = true;
 					_logger.LogInfo("Selected algorithm: rgb");
 					break;
 			}
 
-			if (_selectedAlgorithm == AlgorithmSelectionResult.NoObjectFound)
+			if (_selectedAlgorithm == AlgorithmSelectionStatus.NoObjectFound)
 			{
 				AbortInternal(CalculationStatus.ObjectNotFound);
 				return;
@@ -223,9 +238,9 @@ namespace VolumeCalculator.Utils
 		{
 			try
 			{
-				var lengths = _results.Select(r => r.LengthMm).ToArray();
-				var widths = _results.Select(r => r.WidthMm).ToArray();
-				var heights = _results.Select(r => r.HeightMm).ToArray();
+				var lengths = _results.Where(r => r != null).Select(r => r.LengthMm).ToArray();
+				var widths = _results.Where(r => r != null).Select(r => r.WidthMm).ToArray();
+				var heights = _results.Where(r => r != null).Select(r => r.HeightMm).ToArray();
 
 				var joinedLengths = string.Join(",", lengths);
 				var joinedWidths = string.Join(",", widths);

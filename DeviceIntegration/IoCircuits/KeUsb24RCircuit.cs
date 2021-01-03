@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using GodSharp.SerialPort;
 using Primitives.Logging;
@@ -11,8 +12,6 @@ namespace DeviceIntegration.IoCircuits
 {
 	internal class KeUsb24RCircuit : IIoCircuit
 	{
-		private readonly object _lock;
-		
 		private readonly byte[] _headerBytes;
 		private readonly byte[] _footerBytes;
 
@@ -21,22 +20,27 @@ namespace DeviceIntegration.IoCircuits
 
 		private readonly GodSerialPort _serialPort;
 
-		private readonly ConcurrentQueue<string> _messageQueue;
+		private readonly ConcurrentDictionary<int, LineRequestStatus> _lineStates;
+		private readonly ConcurrentDictionary<int, int> _lastLineValues;
 
 		public KeUsb24RCircuit(ILogger logger, string port)
 		{
-			_lock = new object();
-			
-			_headerBytes = Encoding.ASCII.GetBytes("$KE");
-			_footerBytes = new byte[] { 0x0D, 0x0A };
-
-			_messageQueue = new ConcurrentQueue<string>();
-
 			_logger = logger;
 			_port = port;
 
 			_logger.LogInfo($"Starting KeUsb24RBoard on port {_port}...");
+			
+			_headerBytes = Encoding.ASCII.GetBytes("$KE");
+			_footerBytes = new byte[] { 0x0D, 0x0A };
 
+			_lineStates = new ConcurrentDictionary<int, LineRequestStatus>();
+			_lastLineValues = new ConcurrentDictionary<int, int>();
+			for (var i = 0; i < 32; i++)
+			{
+				_lineStates.TryAdd(i, LineRequestStatus.None);
+				_lastLineValues.TryAdd(i, -1);
+			}
+			
 			_serialPort = new GodSerialPort(port, 4800, Parity.Even, 8, StopBits.One, Handshake.None);
 			_serialPort.UseDataReceived(true, (sp, bytes) =>
 			{
@@ -44,6 +48,8 @@ namespace DeviceIntegration.IoCircuits
 			});
 
 			_serialPort.Open();
+			
+			WriteData(",AFR,0"); // disable spam from analog ports
 		}
 
 		public void Dispose()
@@ -85,44 +91,57 @@ namespace DeviceIntegration.IoCircuits
 
 		public int PollLine(int lineNum)
 		{
-			lock (_lock)
+			var startTime = DateTime.Now;
+
+			_lineStates[lineNum] = LineRequestStatus.UpdateRequested;
+			
+			while (DateTime.Now - startTime < TimeSpan.FromSeconds(3))
 			{
-				WriteData($",RID,{lineNum}");
-
-				var startTime = DateTime.Now;
-
-				while (DateTime.Now - startTime < TimeSpan.FromSeconds(3))
+				switch (_lineStates[lineNum])
 				{
-					while (!_messageQueue.IsEmpty)
-					{
-						var success = _messageQueue.TryDequeue(out var message);
-						if (!success)
-							break;
-
-						var messageTokens = message.Split(',');
-						if (messageTokens.Length < 3)
-							continue;
-
-						if (messageTokens[0] != "#RID")
-							continue;
-
-						if (!int.TryParse(messageTokens[1], out var parsedLineNum))
-							continue;
-
-						if (parsedLineNum == lineNum)
-							return int.Parse(messageTokens[2]);
-					}
+					case LineRequestStatus.UpdateRequested:
+						WriteData($",RID,{lineNum}");
+						Thread.Sleep(10);
+						continue;
+					case LineRequestStatus.UpdateReceived:
+						_lineStates[lineNum] = LineRequestStatus.None;
+						return _lastLineValues[lineNum];
 				}
-
-				return -1;
 			}
+
+			return int.MinValue;
 		}
 
 		private void ReadMessage(byte[] messageBytes)
 		{
 			var data = Encoding.ASCII.GetString(messageBytes);
 
-			_messageQueue.Enqueue(data);
+			var allMessages = data.Split(new[] {Environment.NewLine}, 
+				StringSplitOptions.RemoveEmptyEntries);
+
+			foreach (var message in allMessages)
+			{
+				var messageTokens = message.Split(',');
+				
+				if (messageTokens[0] != "#RID")
+					continue;
+
+				if (!int.TryParse(messageTokens[1], out var parsedLineNum))
+					continue;
+
+				var linesRequested = _lineStates
+					.Where(i => i.Value == LineRequestStatus.UpdateRequested)
+					.Select(i => i.Key).ToList();
+
+				if (!linesRequested.Contains(parsedLineNum))
+					continue;
+						
+				if (!int.TryParse(messageTokens[2], out var lineValue))
+					continue;
+
+				_lastLineValues[parsedLineNum] = lineValue;
+				_lineStates[parsedLineNum] = LineRequestStatus.UpdateReceived;
+			}
 		}
 	}
 }

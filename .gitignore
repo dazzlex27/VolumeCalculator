@@ -8,6 +8,7 @@
 /FrameProcessor/obj
 /VolumeCalculator/obj
 /VCConfigurator/obj
+/VCServer/obj
 /DeviceIntegration/obj
 /ExtIntegration/obj
 /FrameProviders/obj

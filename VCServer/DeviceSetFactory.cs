@@ -11,7 +11,7 @@ using FrameProviders;
 using Primitives.Logging;
 using Primitives.Settings;
 
-namespace VolumeCalculator.Utils
+namespace VCServer
 {
 	internal class DeviceSetFactory
 	{

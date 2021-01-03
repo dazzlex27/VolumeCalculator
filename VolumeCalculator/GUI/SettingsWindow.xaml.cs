@@ -18,7 +18,7 @@ namespace VolumeCalculator.GUI
 		{
 			var validationPassed = IsValid(UcWorkAreaSettings.TbDistanceToFloor)
 									&& IsValid(UcWorkAreaSettings.TbMinObjHeight)
-									&& IsValid(UcMiscSettings.TbOutputPath)
+									&& IsValid(UcWorkAreaSettings.TbRangeMeterValue)
 									&& IsValid(UcMiscSettings.TbSampleCount);
 			if (!validationPassed)
 				return;

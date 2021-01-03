@@ -1,5 +1,7 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
+using System.Windows;
 
 namespace Primitives.Settings
 {
@@ -9,7 +11,7 @@ namespace Primitives.Settings
 		private const int DefaultSampleCount = 5;
 
 		public WorkAreaSettings WorkArea { get; set; }
-		
+
 		public byte SampleDepthMapCount { get; set; }
 
 		public bool EnableAutoTimer { get; set; }

@@ -49,6 +49,8 @@ namespace VolumeCalculator
 
 		private string _lastErrorMessage;
 
+		private string _lastAlgorithmUsed;
+		
 		public ICommand RunVolumeCalculationCommand { get; }
 
 		public ICommand ResetWeightCommand { get; }
@@ -203,6 +205,12 @@ namespace VolumeCalculator
 				return true;
 			}
 		}
+		
+		public string LastAlgorithmUsed
+		{
+			get => _lastAlgorithmUsed;
+			set => SetField(ref _lastAlgorithmUsed, value, nameof(LastAlgorithmUsed));
+		}
 
 		public CalculationDashboardControlVm(ILogger logger)
 		{
@@ -344,7 +352,7 @@ namespace VolumeCalculator
 						CalculationInProgress = false;
 						ObjectCode = "";
 						StatusBrush = new SolidColorBrush(Colors.Red);
-						StatusText = $"Произошла ошибка: {_lastErrorMessage}";
+						StatusText = $"Ошибка: {_lastErrorMessage}";
 						CalculationPending = false;
 					});
 					break;
@@ -443,6 +451,11 @@ namespace VolumeCalculator
 		private void UpdateLockingStatus()
 		{
 			LockingStatusChanged?.Invoke(CanAcceptBarcodes);
+		}
+
+		public void UpdateLastAlgorithm(string lastAlgorithmUsed, string wasRangeMeterUsed)
+		{
+			LastAlgorithmUsed = $"LastAlgorithm={lastAlgorithmUsed}, RM={wasRangeMeterUsed}";
 		}
 	}
 }

@@ -5,6 +5,8 @@ using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 using GuiCommon;
+using VCServer;
+using VolumeCalculator.Utils;
 
 namespace VolumeCalculator
 {

@@ -206,6 +206,7 @@
 			        FontSize="24" 
 					IsTabStop="False"
 			        MinHeight="50"/>
+			<TextBlock Text="{Binding LastAlgorithmUsed}"/>
 		</StackPanel>
 		<Grid Grid.Row="1"
 		      Grid.Column="0"

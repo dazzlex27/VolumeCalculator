@@ -8,6 +8,5 @@ namespace DeviceIntegration.RangeMeters
 
 		long GetReading();
 
-		void SetSubtractionValueMm(int value);
 	}
 }

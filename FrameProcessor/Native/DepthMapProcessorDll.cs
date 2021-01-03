@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace FrameProcessor.Native
 {
@@ -21,7 +22,10 @@ namespace FrameProcessor.Native
 	    public static extern unsafe VolumeCalculationResult* CalculateObjectVolume(VolumeCalculationData data);
 
 	    [DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
-	    public static extern AlgorithmSelectionResult SelectAlgorithm(AlgorithmSelectionData data);
+	    public static extern IntPtr SelectAlgorithm(NativeAlgorithmSelectionData data);
+		
+		[DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
+		public static extern unsafe void DisposeAlgorithmSelectionResult(NativeAlgorithmSelectionResult* result);
 
 		[DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
 	    public static extern short CalculateFloorDepth(DepthMap depthMap);

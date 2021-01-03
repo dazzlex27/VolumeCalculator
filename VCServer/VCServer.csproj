@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B824300E-8FF0-4DD7-BD9D-1483E86025D4}</ProjectGuid>
+    <ProjectGuid>{B7303E0E-BC1C-4AF6-B253-1B73F18E7C3F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FrameProcessor</RootNamespace>
-    <AssemblyName>FrameProcessor</AssemblyName>
+    <RootNamespace>VCServer</RootNamespace>
+    <AssemblyName>VCServer</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -18,9 +18,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>..\!!bin\x64\Release\</OutputPath>
@@ -28,42 +27,41 @@
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="WindowsBase" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AlgorithmSelectionData.cs" />
-    <Compile Include="AlgorithmSelectionResult.cs" />
-    <Compile Include="AlgorithmSelectionStatus.cs" />
-    <Compile Include="Native\NativeAlgorithmSelectionData.cs" />
-    <Compile Include="Native\NativeAlgorithmSelectionResult.cs" />
-    <Compile Include="Native\VolumeCalculationData.cs" />
-    <Compile Include="Native\CameraIntrinsics.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="DepthMapProcessor.cs" />
-    <Compile Include="Native\ColorImage.cs" />
-    <Compile Include="Native\DepthMap.cs" />
-    <Compile Include="Native\DepthMapProcessorDll.cs" />
-    <Compile Include="Native\RelPoint.cs" />
-    <Compile Include="Native\RelRect.cs" />
-    <Compile Include="Native\VolumeCalculationResult.cs" />
-    <Compile Include="ObjectVolumeData.cs" />
+    <Compile Include="DeviceSet.cs" />
+    <Compile Include="DeviceSetFactory.cs" />
+    <Compile Include="IoDeviceManager.cs" />
+    <Compile Include="LightToggler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestCaseInfo.cs" />
-    <Compile Include="TestDataGenerator.cs" />
-    <Compile Include="TypeConverter.cs" />
+    <Compile Include="VolumeCalculationData.cs" />
+    <Compile Include="VolumeCalculationLogic.cs" />
+    <Compile Include="VolumeCalculatorResultData.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DeviceIntegration\DeviceIntegration.csproj">
+      <Project>{508afe7e-b27b-4245-8fe3-a04944678115}</Project>
+      <Name>DeviceIntegration</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\FrameProcessor\FrameProcessor.csproj">
+      <Project>{b824300e-8ff0-4dd7-bd9d-1483e86025d4}</Project>
+      <Name>FrameProcessor</Name>
+      <Private>False</Private>
+    </ProjectReference>
     <ProjectReference Include="..\FrameProviders\FrameProviders.csproj">
       <Project>{f9973dc5-0d7c-4805-a622-e99492cd3714}</Project>
       <Name>FrameProviders</Name>
-      <Private>True</Private>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\Primitives\Primitives.csproj">
       <Project>{90c0cc4f-e7d1-4a68-801b-fa4bdfc4a55b}</Project>
@@ -73,7 +71,15 @@
     <ProjectReference Include="..\ProcessingUtils\ProcessingUtils.csproj">
       <Project>{7f073083-eec1-4ab9-8b4b-e68c944715a3}</Project>
       <Name>ProcessingUtils</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+         Other similar extension points exist, see Microsoft.Common.targets.
+    <Target Name="BeforeBuild">
+    </Target>
+    <Target Name="AfterBuild">
+    </Target>
+    -->
 </Project>

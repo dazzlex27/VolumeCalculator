@@ -22,7 +22,6 @@ namespace DeviceIntegration.RangeMeters
 		private UsbEndpointReader _readEnpoint;
 
 		private long _lastDistance;
-		private int _subtractionValueMm;
 
 		public TeslaM70RangeMeter(ILogger logger)
 		{
@@ -34,17 +33,11 @@ namespace DeviceIntegration.RangeMeters
 			if (!deviceOpen)
 				throw new ApplicationException("Failed to open TeslaM70 range meter!");
 			_lastDistance = 0;
-			_subtractionValueMm = 0;
 		}
 
 		public void Dispose()
 		{
 			_teslaM70?.Close();
-		}
-
-		public void SetSubtractionValueMm(int value)
-		{
-			_subtractionValueMm = value;
 		}
 
 		public long GetReading()
@@ -55,8 +48,7 @@ namespace DeviceIntegration.RangeMeters
 				Thread.Sleep(500);
 				ReadCurrentRecord();
 
-				var totalSubtractionValue = DefaultSubtractionValueMm + _subtractionValueMm;
-				var lastDistanceMm = _lastDistance / 10 - totalSubtractionValue;
+				var lastDistanceMm = _lastDistance / 10 - DefaultSubtractionValueMm;
 				_lastDistance = 0;
 				return lastDistanceMm;
 			}

@@ -7,7 +7,7 @@ namespace FrameProcessor.Native
 	{
 		public DepthMap* DepthMap;
 		public ColorImage* ColorImage;
-		public AlgorithmSelectionResult SelectedAlgorithm;
+		public AlgorithmSelectionStatus SelectedAlgorithm;
 		public short CalculatedDistance;
 	}
 }

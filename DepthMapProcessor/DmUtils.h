@@ -22,5 +22,6 @@ public:
 	static const short FindModeInSortedArray(const short*const array, const int count);
 	static void DrawTargetContour(const Contour& contour, const int width, const int height, const std::string& filename);
 	static bool IsPointInZone(const DepthValue& worldPoint, const MeasurementVolume& volume);
-	bool IsPointInsidePolygon(const std::vector<cv::Point>& polygon, int x, int y);
+	static bool IsPointInsidePolygon(const std::vector<cv::Point>& polygon, int x, int y);
+	static bool IsObjectInBounds(const Contour& objectContour, const int width, const int height);
 };

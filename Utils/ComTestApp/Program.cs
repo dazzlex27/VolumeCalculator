@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DeviceIntegration;
@@ -20,8 +24,47 @@ namespace ComTestApp
 			//SaveRawData(logger);
 			//TestMassaK(logger);
 			//TestCi2001A(logger);
-			TestKeUsb24R(logger);
+			//TestKeUsb24R(logger);
+			var byteArray = new byte[] {1, 2, 83, 32, 48, 46, 48, 55, 51, 55, 107, 103, 98, 3, 4};
+			var weight = TestWeightCheck(byteArray);
 			Console.ReadKey();
+		}
+		
+		private static int TestWeightCheck(IReadOnlyCollection<byte> messageBytes)
+		{
+			if (messageBytes == null || messageBytes.Count < 12)
+				throw new ArgumentException("MasC scales: message is too short");
+
+			var weightArray = messageBytes.Skip(4).Take(6).ToArray();
+			var weightString = Encoding.ASCII.GetString(weightArray);
+			var weight = double.Parse(weightString, CultureInfo.InvariantCulture);
+
+			var unitsArray = messageBytes.Skip(10).Take(2).ToArray();
+			var unitsString = Encoding.ASCII.GetString(unitsArray);
+
+			double multiplier;
+
+			switch (unitsString)
+			{
+				case "kg":
+					multiplier = 1000;
+					break;
+				case "lb":
+					multiplier = 453.59237;
+					break;
+				case " g":
+					multiplier = 1;
+					break;
+				case "oz":
+					multiplier = 28.3495;
+					break;
+				default:
+					//_logger.LogError($"CasM scales: failed to find weight multiplier \"{unitsString}\"");
+					multiplier = 0;
+					break;
+			}
+
+			return (int)Math.Floor(weight * multiplier);
 		}
 
 		private static void TestOkaScales(ILogger logger)

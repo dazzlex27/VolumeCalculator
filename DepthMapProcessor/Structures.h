@@ -6,7 +6,7 @@
 typedef unsigned char byte;
 typedef unsigned int uint;
 
-enum AlgorithmSelectionResult
+enum AlgorithmSelectionStatus
 {
 	Undefined = -5,
 	NoAlgorithmsAllowed = -3,
@@ -129,11 +129,11 @@ struct VolumeCalculationData
 {
 	const DepthMap* DepthMap;
 	const ColorImage* ColorImage;
-	const AlgorithmSelectionResult SelectedAlgorithm;
+	const AlgorithmSelectionStatus SelectedAlgorithm;
 	const short CalculatedDistance;
 };
 
-struct AlgorithmSelectionData
+struct NativeAlgorithmSelectionData
 {
 	const DepthMap* DepthMap;
 	const ColorImage* ColorImage;
@@ -141,5 +141,11 @@ struct AlgorithmSelectionData
 	const bool Dm1Enabled;
 	const bool Dm2Enabled;
 	const bool RgbEnabled;
-	const char DebugFileName[256];
+	const char DebugFileName[128];
+};
+
+struct NativeAlgorithmSelectionResult
+{
+	AlgorithmSelectionStatus Status;
+	int RangeMeterWasUsed;
 };

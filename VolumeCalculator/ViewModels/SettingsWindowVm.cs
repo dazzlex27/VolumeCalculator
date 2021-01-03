@@ -45,12 +45,13 @@ namespace VolumeCalculator
 
 		public ApplicationSettings GetSettings()
 		{
-			var newGeneralSettings = new GeneralSettings(MiscControlVm.OutputPath, _oldSettings.GeneralSettings.ShutDownPcByDefault);
+			var newGeneralSettings = new GeneralSettings(MiscControlVm.OutputPath,
+				_oldSettings.GeneralSettings.ShutDownPcByDefault);
 			
 			var oldIoSettings = _oldSettings.IoSettings;
 			var newIoSettings = new IoSettings(oldIoSettings.ActiveCameraName, oldIoSettings.ActiveScales,
 				oldIoSettings.ActiveScanners, oldIoSettings.ActiveIoCircuit, oldIoSettings.ActiveRangeMeterName, 
-				MiscControlVm.RangeMeterSubtractionValue, oldIoSettings.IpCameraSettings);
+				oldIoSettings.IpCameraSettings);
 
 			var newWorkAreaSettings = WorkAreaControlVm.GetSettings();
 			var newAlgorithmSettings = new AlgorithmSettings(newWorkAreaSettings, MiscControlVm.SampleCount, 

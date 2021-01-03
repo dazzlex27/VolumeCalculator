@@ -12,6 +12,7 @@
 		Error,
 		FailedToSelectAlgorithm,
 		ObjectNotFound,
-		FailedToCloseFiles
+		FailedToCloseFiles,
+		WorkAreaNotReady
 	}
 }

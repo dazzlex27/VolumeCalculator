@@ -41,9 +41,18 @@ DLL_EXPORT short CalculateFloorDepth(DepthMap depthMap)
 	return Processor->CalculateFloorDepth(depthMap);
 }
 
-DLL_EXPORT AlgorithmSelectionResult SelectAlgorithm(AlgorithmSelectionData data)
+DLL_EXPORT NativeAlgorithmSelectionResult* SelectAlgorithm(NativeAlgorithmSelectionData data)
 {
 	return Processor->SelectAlgorithm(data);
+}
+
+void DisposeAlgorithmSelectionResult(VolumeCalculationResult* result)
+{
+	if (result)
+	{
+		delete result;
+		result = 0;
+	}
 }
 
 DLL_EXPORT void DestroyDepthMapProcessor()

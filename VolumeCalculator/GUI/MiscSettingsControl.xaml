@@ -67,14 +67,6 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
         </StackPanel>
-        <StackPanel Margin="3"
-                    Visibility="{Binding RangeMeterAvailable, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0"
-                       Text="Поправка показаний дальномера" />
-            <TextBox Style="{StaticResource TextBoxStyle}"
-                     Margin="2,2,2,0" Name="TbOutputPath"
-                     Text="{Binding Path=RangeMeterSubtractionValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-        </StackPanel>
         <CheckBox Content="Вычитание данных паллета"
                   Style="{StaticResource CheckBoxStyle}"
                   IsChecked="{Binding EnablePalletSubtraction, Mode=TwoWay}" />

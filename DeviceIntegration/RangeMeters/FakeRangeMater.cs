@@ -11,7 +11,6 @@ namespace DeviceIntegration.RangeMeters
 		private readonly ILogger _logger;
 
 		private long _lastDistance;
-		private int _subtractionValueMm;
 
 		public FakeRangeMeter(ILogger logger)
 		{
@@ -19,7 +18,6 @@ namespace DeviceIntegration.RangeMeters
 			_logger.LogInfo("Creating a fake range meter...");
 
 			_lastDistance = 0;
-			_subtractionValueMm = 0;
 		}
 
 		public void Dispose()
@@ -27,17 +25,11 @@ namespace DeviceIntegration.RangeMeters
 			_logger.LogInfo("Disposing fake range meter...");
 		}
 
-		public void SetSubtractionValueMm(int value)
-		{
-			_subtractionValueMm = value;
-		}
-
 		public long GetReading()
 		{
 			Thread.Sleep(500);
 
-			var totalSubtractionValue = DefaultSubtractionValueMm + _subtractionValueMm;
-			var lastDistanceMm = _lastDistance / 10 - totalSubtractionValue;
+			var lastDistanceMm = _lastDistance / 10 - DefaultSubtractionValueMm;
 			_lastDistance = 0;
 			return lastDistanceMm;
 		}

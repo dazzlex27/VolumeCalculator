@@ -1,8 +1,8 @@
 ﻿using DeviceIntegration.IoCircuits;
 
-namespace VolumeCalculator.Utils
+namespace VCServer
 {
-	internal class LightToggler
+	public class LightToggler
 	{
 		private readonly IIoCircuit _circuit;
 

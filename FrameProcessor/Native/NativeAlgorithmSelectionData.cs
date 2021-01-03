@@ -3,7 +3,7 @@
 namespace FrameProcessor.Native
 {
 	[StructLayout(LayoutKind.Sequential)]
-	internal unsafe struct AlgorithmSelectionData
+	internal unsafe struct NativeAlgorithmSelectionData
 	{
 		public DepthMap* DepthMap;
 		public ColorImage* ColorImage;
@@ -14,7 +14,7 @@ namespace FrameProcessor.Native
 		public bool Dm2Enabled;
 		[MarshalAs(UnmanagedType.I1)]
 		public bool RgbEnabled;
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
 		public string DebugFileName;
 	}
 }

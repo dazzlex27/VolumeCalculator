@@ -50,6 +50,7 @@
     <Compile Include="CommandHandler.cs" />
     <Compile Include="Converters\ConjunctionToVisibilityMultiConverter.cs" />
     <Compile Include="Converters\EnumDescriptionConverter.cs" />
+    <Compile Include="Converters\InverseBooleanToVisibilityConverter.cs" />
     <Compile Include="GuiConstants.cs" />
     <Compile Include="GraphicsUtils.cs" />
     <Compile Include="Converters\HalfMeasureConverter.cs" />

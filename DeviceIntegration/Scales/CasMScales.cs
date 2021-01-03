@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,8 @@ namespace DeviceIntegration.Scales
 {
 	internal class CasMScales : IScales
 	{
+		private static readonly TimeSpan StabilizationTimeDelta = TimeSpan.FromMilliseconds(300);
+		
 		public event Action<ScaleMeasurementData> MeasurementReady;
 
 		private readonly ILogger _logger;
@@ -19,13 +22,27 @@ namespace DeviceIntegration.Scales
 
 		private readonly GodSerialPort _serialPort;
 
+		private readonly bool _deepLoggingOn;
+		
 		private bool _paused;
+
+		private double _lastWeightGr;
+		private MeasurementStatus _lastMeasurementStatus;
+		private DateTime _lastWeightChangedTime;
 
 		public CasMScales(ILogger logger, string port, int minWeight)
 		{
 			_logger = logger;
 			_port = port;
             _minWeight = minWeight;
+			
+			_logger.LogInfo($"Starting CasMScales on port {_port}...");
+
+			_deepLoggingOn = File.Exists("SCALESLOGGING");
+
+			_lastWeightGr = -1;
+			_lastMeasurementStatus = MeasurementStatus.NotSet;
+			_lastWeightChangedTime = DateTime.MinValue;
 
 			_serialPort = new GodSerialPort(port, 9600, Parity.None, 8, StopBits.One);
 			_serialPort.UseDataReceived(true, (sp, bytes) =>
@@ -45,7 +62,11 @@ namespace DeviceIntegration.Scales
 
 		public void ResetWeight()
 		{
-			_logger.LogError("CasMScales: ResetWeight() is not implemented");
+			if (_lastWeightGr < _minWeight)
+				return;
+			
+			_lastWeightGr = 0;
+			_lastMeasurementStatus = MeasurementStatus.Ready;
 		}
 
 		public void TogglePause(bool pause)
@@ -58,54 +79,55 @@ namespace DeviceIntegration.Scales
 			if (_paused)
 				return;
 
-			var status = GetStatusFromMessage(messageBytes);
-			var signMultipler = GetSignMultiplierFromMessage(messageBytes);
-			var weight = GetWeightFromMessage(messageBytes);
-			var totalWeight = weight * signMultipler;
-			if (totalWeight < _minWeight)
+			if (messageBytes.Length < 4)
+				return;
+
+			var isOverLoaded = messageBytes[3] == 70; // 70 is "F" in ASCII
+			if (isOverLoaded)
 			{
-				status = MeasurementStatus.Ready;
-				totalWeight = 0;
+				_lastMeasurementStatus = MeasurementStatus.Overload;
+				_lastWeightGr = double.NaN;
 			}
-
-			var measurementData = new ScaleMeasurementData(status, totalWeight);
-			MeasurementReady?.Invoke(measurementData);
-		}
-
-		private static MeasurementStatus GetStatusFromMessage(IReadOnlyList<byte> messageBytes)
-		{
-			if (messageBytes == null || messageBytes.Count < 3)
-				return MeasurementStatus.NotSet;
-
-			switch (messageBytes[2])
+			else
 			{
-				case 70:
-					return MeasurementStatus.Ready;
-				case 83:
-					return MeasurementStatus.Measured;
-				case 85:
-					return MeasurementStatus.Measuring;
-				default:
-					return MeasurementStatus.Invalid;
-			}
-		}
-
-		private int GetSignMultiplierFromMessage(IReadOnlyList<byte> messageBytes)
-		{
-			switch (messageBytes[3])
-			{
-				case 32:
-					return 1;
-				case 45:
-					return -1;
-				case 70:
-					return -1000000;
-				default:
+				var currentWeight = GetWeightFromMessage(messageBytes);
+				if (currentWeight < _minWeight)
 				{
-					_logger.LogError("CasMScales: failed to parse multiplier");
-					return 0;
+					_lastMeasurementStatus = MeasurementStatus.Ready;
+					_lastWeightGr = 0;
+				}
+				else
+				{
+					if (Math.Abs(currentWeight - _lastWeightGr) > 2) // different
+					{
+						_lastMeasurementStatus = MeasurementStatus.Measuring;
+						_lastWeightGr = currentWeight;
+						_lastWeightChangedTime = DateTime.Now;
+					}
+					else
+					{
+						var currentTime = DateTime.Now;
+						if (currentTime - _lastWeightChangedTime > StabilizationTimeDelta)
+						{
+							_lastMeasurementStatus = MeasurementStatus.Measured;
+							_lastWeightGr = currentWeight;
+							_lastWeightChangedTime = currentTime;
+						}
+					}
 				}
 			}
+
+			if (_deepLoggingOn)
+			{
+				var rawMessage = string.Join(" ", messageBytes);
+				var sourceString = Encoding.ASCII.GetString(messageBytes);
+				var parsedDataString = $"status={_lastMeasurementStatus} last={_lastWeightGr}";
+				_logger.LogInfo(
+					$"{DateTime.Now.ToLocalTime()}: CasMScales ({_port}) rawMessage={rawMessage}, source message={sourceString}, {parsedDataString}");
+			}
+
+			var measurementData = new ScaleMeasurementData(_lastMeasurementStatus, _lastWeightGr);
+			MeasurementReady?.Invoke(measurementData);
 		}
 
 		private int GetWeightFromMessage(IReadOnlyCollection<byte> messageBytes)
@@ -129,6 +151,12 @@ namespace DeviceIntegration.Scales
 					break;
 				case "lb":
 					multiplier = 453.59237;
+					break;
+				case " g":
+					multiplier = 1;
+					break;
+				case "oz":
+					multiplier = 28.3495;
 					break;
 				default:
 					_logger.LogError($"CasM scales: failed to find weight multiplier \"{unitsString}\"");

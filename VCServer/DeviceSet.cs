@@ -7,7 +7,7 @@ using DeviceIntegration.Scales;
 using DeviceIntegration.Scanners;
 using FrameProviders;
 
-namespace VolumeCalculator.Utils
+namespace VCServer
 {
 	internal class DeviceSet : IDisposable
 	{
@@ -23,7 +23,7 @@ namespace VolumeCalculator.Utils
 
 		public IIpCamera IpCamera { get; }
 
-		public DeviceSet(IFrameProvider frameProvider, IScales scales, 
+		public DeviceSet(IFrameProvider frameProvider, IScales scales,
 			IEnumerable<IBarcodeScanner> scanners,
 			IIoCircuit ioCircuit, IRangeMeter rangeMeter, IIpCamera ipCamera)
 		{

@@ -55,6 +55,14 @@
 	  <protection id="anti tamper" />
       <protection id="anti debug" />
     </rule>
+  </module>
+  <module path="VCServer.dll">
+    <rule pattern="true" preset="aggressive" inherit="false">
+      <protection id="rename" />
+      <protection id="constants" />
+	  <protection id="anti tamper" />
+      <protection id="anti debug" />
+    </rule>
   </module>  
   <module path="VCConfigurator.exe"/>
   <module path="VolumeCalculator.exe"/>

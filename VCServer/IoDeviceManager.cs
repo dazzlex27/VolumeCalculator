@@ -9,9 +9,9 @@ using FrameProviders;
 using Primitives.Logging;
 using Primitives.Settings;
 
-namespace VolumeCalculator.Utils
+namespace VCServer
 {
-    internal class IoDeviceManager : IDisposable
+    public class IoDeviceManager : IDisposable
     {
         public event Action<ScaleMeasurementData> WeightMeasurementReady;
         public event Action<string> BarcodeReady;
@@ -33,6 +33,7 @@ namespace VolumeCalculator.Utils
         public IoDeviceManager(ILogger logger, HttpClient httpClient, IoSettings settings)
         {
             _logger = logger;
+            _logger.LogInfo("Createing device manager...");
             _deviceSet = _deviceSet = DeviceSetFactory.CreateDeviceSet(logger, httpClient, settings);
             
             if (_deviceSet.Scanners != null)
@@ -42,7 +43,9 @@ namespace VolumeCalculator.Utils
             }
 
             if (_deviceSet.Scales != null)
-                _deviceSet.Scales.MeasurementReady += OnWeightMeasurementReady;
+                _deviceSet.Scales.MeasurementReady += OnScalesWeightReady;
+
+            _logger.LogInfo("Device manager created");
         }
 
         public void Dispose()
@@ -58,7 +61,7 @@ namespace VolumeCalculator.Utils
 
             var scales = _deviceSet.Scales;
             if (scales != null)
-                scales.MeasurementReady -= OnWeightMeasurementReady;
+                scales.MeasurementReady -= OnScalesWeightReady;
 
             _logger.LogInfo("Device manager disposed");
         }
@@ -75,9 +78,13 @@ namespace VolumeCalculator.Utils
 
         public void UpdateSettings(ApplicationSettings settings)
         {
-            _deviceSet?.RangeMeter?.SetSubtractionValueMm(settings.IoSettings.RangeMeterSubtractionValueMm);
             _subtractPalletWeight = settings.AlgorithmSettings.EnablePalletSubtraction;
             _palletWeightGr = settings.AlgorithmSettings.PalletWeightGr;
+        }
+
+        private void OnScalesWeightReady(ScaleMeasurementData data)
+        {
+            OnWeightMeasurementReady(data);
         }
 
         private void OnWeightMeasurementReady(ScaleMeasurementData data)

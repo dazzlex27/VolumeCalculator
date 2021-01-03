@@ -9,7 +9,7 @@ namespace Primitives.Settings
         public string OutputPath { get; set; }
 
         public bool ShutDownPcByDefault { get; set; }
-
+        
         public string ResultsFilePath => Path.Combine(OutputPath, GlobalConstants.ResultsFileName);
 
         public string PhotosDirectoryPath => Path.Combine(OutputPath, GlobalConstants.ResultPhotosFolder);

@@ -16,20 +16,17 @@ namespace Primitives.Settings
 		
 		public string ActiveRangeMeterName { get; set; }
 
-		public int RangeMeterSubtractionValueMm { get; set; }
-
 		public IpCameraSettings IpCameraSettings { get; set; }
 
 		public  IoSettings(string activeCameraName, ScalesSettings scalesSettings,
 			DeviceSettings[] activeScanners, DeviceSettings activeIoCircuit, string activeRangeMeterName, 
-            int rangeMeterSubtractionValueMm, IpCameraSettings ipCameraSettings)
+			IpCameraSettings ipCameraSettings)
 		{
 			ActiveCameraName = activeCameraName;
 			ActiveScales = scalesSettings;
 			ActiveScanners = activeScanners;
 			ActiveIoCircuit = activeIoCircuit;
 			ActiveRangeMeterName = activeRangeMeterName;
-			RangeMeterSubtractionValueMm = rangeMeterSubtractionValueMm;
 			IpCameraSettings = ipCameraSettings;
 		}
 
@@ -38,7 +35,6 @@ namespace Primitives.Settings
 			var builder = new StringBuilder("IOSetings:");
 			builder.Append($"ActiveScales={ActiveScales}");
 			builder.Append($",ActiveScanners={ActiveScanners.ToList().ConvertAll(s=>s.ToString())}");
-			builder.Append($",rangeCorrection={RangeMeterSubtractionValueMm}");
 
 			return builder.ToString();
 		}
@@ -50,8 +46,9 @@ namespace Primitives.Settings
 			var defaultIoCircuitBoard = new DeviceSettings("keusb24r", "");
 			var defaultCameraSettings = IpCameraSettings.GetDefaultSettings();
 			
-			return new IoSettings("kinectv2", defaultScales, defaultScanners, 
-				defaultIoCircuitBoard, "custom", 0, defaultCameraSettings);
+			return new IoSettings("kinectv2", defaultScales,
+				defaultScanners, defaultIoCircuitBoard,
+				"custom", defaultCameraSettings);
 		}
 
 		[OnDeserialized]

@@ -14,6 +14,7 @@ using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 using ProcessingUtils;
+using VCServer;
 using VolumeCalculator.GUI;
 using VolumeCalculator.Utils;
 
@@ -101,7 +102,7 @@ namespace VolumeCalculator
 		public ICommand ShutDownCommand { get; }
 
 		public ICommand StartMeasurementCommand { get; }
-
+		
 		public MainWindowVm()
 		{
 			try
@@ -109,7 +110,8 @@ namespace VolumeCalculator
 				_httpClient = new HttpClient();
 
 				_fatalErrorMessages = new List<string>();
-				_logger = new Logger();
+				_logger = new Logger("main");
+
 				_logger.LogInfo($"Starting up \"{GlobalConstants.AppHeaderString}\"...");
 				AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
@@ -215,8 +217,9 @@ namespace VolumeCalculator
 			try
 			{
 				_logger.LogInfo("Initializing IO devices...");
+				var deviceLogger = new Logger("devices");
 
-				_deviceManager = new IoDeviceManager(_logger, _httpClient, Settings.IoSettings);
+				_deviceManager = new IoDeviceManager(deviceLogger, _httpClient, Settings.IoSettings);
 				_deviceManager.BarcodeReady += OnBarcodeReady;
 				_deviceManager.WeightMeasurementReady += OnWeightMeasurementReady;
 
@@ -258,8 +261,11 @@ namespace VolumeCalculator
 				_dmProcessor = new DepthMapProcessor(_logger, colorCameraParams, depthCameraParams);
 				_dmProcessor.SetProcessorSettings(Settings);
 
-				_requestProcessor = new RequestProcessor(_logger, _httpClient, _settings.IntegrationSettings);
+				var integrationLogger = new Logger("integration");
+				_requestProcessor = new RequestProcessor(integrationLogger, _httpClient, _settings.IntegrationSettings);
 				_requestProcessor.StartRequestReceived += OnCalculationStartRequested;
+				var outputPath = _settings.GeneralSettings.OutputPath;
+				_calculationResultFileProcessor = new CalculationResultFileProcessor(integrationLogger, outputPath);
 
 				_dashStatusUpdater = new DashStatusUpdater(_logger, _deviceManager);
 
@@ -269,9 +275,6 @@ namespace VolumeCalculator
 				_volumeCalculator.ErrorOccured += ShowMessageBox;
 				_volumeCalculator.DashStatusUpdated += _dashStatusUpdater.UpdateDashStatus;
 				_volumeCalculator.CalculationStatusChanged += OnStatusChanged;
-
-				var outputPath = _settings.GeneralSettings.OutputPath;
-				_calculationResultFileProcessor = new CalculationResultFileProcessor(_logger, outputPath);
 
 				_logger.LogInfo("Sub systems - ok");
 			}
@@ -304,6 +307,7 @@ namespace VolumeCalculator
 				_dashboardControlVm.CalculationRequested += OnCalculationStartRequested;
 				_dashboardControlVm.LockingStatusChanged += _volumeCalculator.UpdateLockingStatus;
 				_volumeCalculator.DashStatusUpdated += _dashboardControlVm.UpdateDashStatus;
+				_volumeCalculator.LastAlgorithmUsedChanged += _dashboardControlVm.UpdateLastAlgorithm;
 
 				_testDataGenerationControlVm = new TestDataGenerationControlVm(_logger, _settings, frameProvider);
 

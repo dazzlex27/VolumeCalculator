@@ -244,3 +244,15 @@ bool DmUtils::IsPointInsidePolygon(const std::vector<cv::Point>& polygon, int x,
 
 	return pointIsInPolygon;
 }
+
+bool DmUtils::IsObjectInBounds(const Contour& objectContour, const int width, const int height)
+{
+	const int borderDistance = 3;
+	const cv::RotatedRect& colorObjectBoundingRect = cv::minAreaRect(objectContour);
+	const bool rectLowerXIsOk = colorObjectBoundingRect.center.x > (colorObjectBoundingRect.size.width / 2 + borderDistance);
+	const bool rectUpperXIsOk = colorObjectBoundingRect.center.x < (width - colorObjectBoundingRect.size.width / 2 - borderDistance);
+	const bool rectLowerYIsOk = colorObjectBoundingRect.center.y > (colorObjectBoundingRect.size.height / 2 + borderDistance);
+	const bool rectUpperYIsOk = colorObjectBoundingRect.center.y < (height - colorObjectBoundingRect.size.height / 2 - borderDistance);
+
+	return rectLowerXIsOk && rectUpperXIsOk && rectLowerYIsOk && rectUpperYIsOk;
+}

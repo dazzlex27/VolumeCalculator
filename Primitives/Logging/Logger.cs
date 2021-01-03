@@ -5,23 +5,24 @@ namespace Primitives.Logging
 {
 	public class Logger : ILogger
 	{
-		private const string LogFileName = "main.log";
-		private const string AchivedLogFileName = LogFileName + "1";
 		private const int MaxLogSizeBytes = 5 * 1000 * 1000;
-
+		private static readonly DateTime StartupTime = DateTime.Now;
+		
 		private readonly string _filePath;
 		private readonly string _archiveFilePath;
 		private readonly object _writeLock;
 
-		public Logger()
+		public Logger(string logName)
 		{
+			var logFileName = $"{logName}.log";
+			var archivedLogFileName = $"{logFileName}1";
 			_writeLock = new object();
 
-			var currentInstanceFolder = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+			var currentInstanceFolder = StartupTime.ToString("yyyy-MM-dd-HH-mm-ss");
 			var logDirectory = Path.Combine(GlobalConstants.AppLogsPath, currentInstanceFolder);
 			Directory.CreateDirectory(logDirectory);
-			_filePath = Path.Combine(logDirectory, LogFileName);
-			_archiveFilePath = Path.Combine(logDirectory, AchivedLogFileName);
+			_filePath = Path.Combine(logDirectory, logFileName);
+			_archiveFilePath = Path.Combine(logDirectory, archivedLogFileName);
 		}
 
 		public void LogInfo(string message)

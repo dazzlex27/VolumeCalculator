@@ -13,6 +13,8 @@ namespace ProcessingUtils
 {
 	public static class IoUtils
 	{
+		private static object CounterLock = new object();
+		
 		public static void SerializeSettings(ApplicationSettings settings)
 		{
 			Directory.CreateDirectory(GlobalConstants.AppConfigPath);
@@ -36,31 +38,37 @@ namespace ProcessingUtils
 
 		public static int GetCurrentUniversalObjectCounter()
 		{
-			if (!File.Exists(GlobalConstants.CountersFileName))
+			lock (CounterLock)
 			{
-				File.WriteAllText(GlobalConstants.CountersFileName, 0.ToString());
-				return 0;
+				if (!File.Exists(GlobalConstants.CountersFileName))
+				{
+					File.WriteAllText(GlobalConstants.CountersFileName, 0.ToString());
+					return 0;
+				}
+
+				var fileContents = File.ReadAllText(GlobalConstants.CountersFileName);
+				var previousCounter = int.Parse(fileContents);
+
+				return previousCounter;
 			}
-
-			var fileContents = File.ReadAllText(GlobalConstants.CountersFileName);
-			var previousCounter = int.Parse(fileContents);
-
-			return previousCounter;
 		}
 
 		public static void IncrementUniversalObjectCounter()
 		{
-			if (!File.Exists(GlobalConstants.CountersFileName))
+			lock (CounterLock)
 			{
-				File.WriteAllText(GlobalConstants.CountersFileName, 1.ToString());
-				return;
+				if (!File.Exists(GlobalConstants.CountersFileName))
+				{
+					File.WriteAllText(GlobalConstants.CountersFileName, 1.ToString());
+					return;
+				}
+
+				var fileContents = File.ReadAllText(GlobalConstants.CountersFileName);
+				var previousCounter = int.Parse(fileContents);
+
+				var nextCounter = previousCounter + 1;
+				File.WriteAllText(GlobalConstants.CountersFileName, nextCounter.ToString());
 			}
-
-			var fileContents = File.ReadAllText(GlobalConstants.CountersFileName);
-			var previousCounter = int.Parse(fileContents);
-
-			var nextCounter = previousCounter + 1;
-			File.WriteAllText(GlobalConstants.CountersFileName, nextCounter.ToString());
 		}
 
 		public static void OpenFile(string filepath)

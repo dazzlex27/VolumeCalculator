@@ -27,9 +27,11 @@ namespace Primitives.Settings
 		public bool EnablePerspectiveDmAlgorithm { get; set; }
 
 		public bool EnableRgbAlgorithm { get; set; }
+		
+		public int RangeMeterCorrectionValueMm { get; set; }
 
 		public WorkAreaSettings(short floorDepth, short minObjectHeight, bool useColorMask, IReadOnlyList<Point> colorMaskContour,
-			bool useDepthMask, IReadOnlyList<Point> depthMaskContour)
+			bool useDepthMask, IReadOnlyList<Point> depthMaskContour, int rangeMeterCorrectionValueMm)
 		{
 			FloorDepth = floorDepth;
 			MinObjectHeight = minObjectHeight;
@@ -37,6 +39,7 @@ namespace Primitives.Settings
 			ColorMaskContour = colorMaskContour;
 			UseDepthMask = useDepthMask;
 			DepthMaskContour = depthMaskContour;
+			RangeMeterCorrectionValueMm = rangeMeterCorrectionValueMm;
 			EnableDmAlgorithm = true;
 			EnablePerspectiveDmAlgorithm = true;
 			EnableRgbAlgorithm = true;
@@ -49,6 +52,7 @@ namespace Primitives.Settings
 			builder.Append($",UseColorMask={UseColorMask}");
 			builder.Append($",UseDepthMask={UseDepthMask}");
 			builder.Append($",MinObjectHeight={MinObjectHeight}");
+			builder.Append($",RangeMeterCorrectionValueMm={RangeMeterCorrectionValueMm}");
 			builder.Append($",EnableDmAlgorithm={EnableDmAlgorithm}");
 			builder.Append($",EnablePerspectiveDmAlgorithm={EnablePerspectiveDmAlgorithm}");
 			builder.Append($",EnableRgbAlgorithm={EnableRgbAlgorithm}");
@@ -75,7 +79,7 @@ namespace Primitives.Settings
 		public static WorkAreaSettings GetDefaultSettings()
 		{
 			return new WorkAreaSettings(DefaultFloorDepthMm, DefaultMinObjHeightMm, false,
-				GetDefaultAreaContour(), true, GetDefaultAreaContour());
+				GetDefaultAreaContour(), true, GetDefaultAreaContour(), 0);
 		}
 
 		private static List<Point> GetDefaultAreaContour()

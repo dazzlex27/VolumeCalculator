@@ -11,6 +11,8 @@ namespace VolumeCalculator
 		private MaskPolygonControlVm _colorMaskRectangleControlVm;
 		private bool _useDepthMask;
 		private MaskPolygonControlVm _depthMaskPolygonControlVm;
+		
+		private int _rangeMeterCorrectionValue;
 
 		public short FloorDepth
 		{
@@ -48,6 +50,12 @@ namespace VolumeCalculator
 			set => SetField(ref _depthMaskPolygonControlVm, value, nameof(DepthMaskPolygonControlVm));
 		}
 
+		public int RangeMeterCorrectionValue
+		{
+			get => _rangeMeterCorrectionValue;
+			set => SetField(ref _rangeMeterCorrectionValue, value, nameof(RangeMeterCorrectionValue));
+		}
+
 		public WorkAreaSettingsVm(WorkAreaSettings settings)
 		{
 			FloorDepth = settings.FloorDepth;
@@ -56,6 +64,7 @@ namespace VolumeCalculator
 			ColorMaskRectangleControlVm = new MaskPolygonControlVm(settings.ColorMaskContour);
 			UseDepthMask = settings.UseDepthMask;
 			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.DepthMaskContour);
+			RangeMeterCorrectionValue = settings.RangeMeterCorrectionValueMm;
 		}
 
 		public WorkAreaSettings GetSettings()
@@ -63,7 +72,8 @@ namespace VolumeCalculator
 			var colorMaskPoints = ColorMaskRectangleControlVm.GetPolygonPoints();
 			var depthMaskPoints = DepthMaskPolygonControlVm.GetPolygonPoints();
 
-			return new WorkAreaSettings(FloorDepth, MinObjHeight, UseColorMask, colorMaskPoints, UseDepthMask, depthMaskPoints);
+			return new WorkAreaSettings(FloorDepth, MinObjHeight, UseColorMask, colorMaskPoints, UseDepthMask,
+				depthMaskPoints, RangeMeterCorrectionValue);
 		}
 	}
 }

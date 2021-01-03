@@ -92,40 +92,35 @@
     <Compile Include="GUI\WorkAreaSettingsControl.xaml.cs">
       <DependentUpon>WorkAreaSettingsControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MaskPolygonControlVm.cs" />
-    <Compile Include="MiscSettingsControlVm.cs" />
-    <Compile Include="WorkAreaSettingsControlVm.cs" />
-    <Compile Include="WorkAreaSettingsVm.cs" />
-    <Compile Include="StatusWindowVm.cs" />
+    <Compile Include="Utils\GuiUtils.cs" />
+    <Compile Include="ViewModels\CalculationDashboardControlVm.cs" />
+    <Compile Include="ViewModels\MainWindowVm.cs" />
+    <Compile Include="ViewModels\MaskPolygonControlVm.cs" />
+    <Compile Include="ViewModels\MiscSettingsControlVm.cs" />
+    <Compile Include="ViewModels\SettingsWindowVm.cs" />
+    <Compile Include="ViewModels\StatusWindowVm.cs" />
+    <Compile Include="ViewModels\StreamViewControlVm.cs" />
+    <Compile Include="ViewModels\TestDataGenerationControlVm.cs" />
+    <Compile Include="ViewModels\WorkAreaSettingsControlVm.cs" />
     <Compile Include="GUI\StatusWindow.xaml.cs">
       <DependentUpon>StatusWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="GUI\CalculationDashboardControl.xaml.cs">
       <DependentUpon>CalculationDashboardControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CalculationDashboardControlVm.cs" />
     <Compile Include="Utils\DashStatusUpdater.cs" />
-    <Compile Include="MainWindowVm.cs" />
-    <Compile Include="SettingsWindowVm.cs" />
     <Compile Include="GUI\StreamViewControl.xaml.cs">
       <DependentUpon>StreamViewControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="StreamViewControlVm.cs" />
     <Compile Include="GUI\TestDataGenerationControl.xaml.cs">
       <DependentUpon>TestDataGenerationControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="TestDataGenerationControlVm.cs" />
     <Compile Include="Utils\DashboardStatus.cs" />
     <Compile Include="GUI\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Utils\DeviceSetFactory.cs" />
-    <Compile Include="Utils\DeviceSet.cs" />
-    <Compile Include="Utils\IoDeviceManager.cs" />
-    <Compile Include="Utils\LightToggler.cs" />
-    <Compile Include="Utils\VolumeCalculationData.cs" />
-    <Compile Include="Utils\VolumeCalculationLogic.cs" />
     <Compile Include="Utils\VolumeCalculationRequestHandler.cs" />
+    <Compile Include="ViewModels\WorkAreaSettingsVm.cs" />
     <Page Include="GUI\AutoClosingMessageBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -253,6 +248,10 @@
       <Project>{7f073083-eec1-4ab9-8b4b-e68c944715a3}</Project>
       <Name>ProcessingUtils</Name>
       <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\VCServer\VCServer.csproj">
+      <Project>{b7303e0e-bc1c-4af6-b253-1b73f18e7c3f}</Project>
+      <Name>VCServer</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

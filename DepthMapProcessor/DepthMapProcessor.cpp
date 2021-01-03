@@ -84,117 +84,147 @@ void DepthMapProcessor::SetDebugPath(const char* path, const bool maskMode)
 	_maskMode = maskMode;
 }
 
-const AlgorithmSelectionResult DepthMapProcessor::SelectAlgorithm(const AlgorithmSelectionData data)
+NativeAlgorithmSelectionResult* DepthMapProcessor::SelectAlgorithm(const NativeAlgorithmSelectionData data)
 {
 	const bool dataIsValid = data.DepthMap->Data != nullptr && data.ColorImage->Data != nullptr;
 	if (!dataIsValid)
-		return DataIsInvalid;
+		return new NativeAlgorithmSelectionResult{ DataIsInvalid, false };
 
 	const bool atLeastOneModeIsEnabled = data.Dm1Enabled || data.Dm2Enabled || data.RgbEnabled;
 	if (!atLeastOneModeIsEnabled)
-		return NoAlgorithmsAllowed;
+		return new NativeAlgorithmSelectionResult{ NoAlgorithmsAllowed, false };
 
 	PrepareBuffers(data.DepthMap, data.ColorImage);
 
-	const Contour& depthObjectContour = GetTargetContourFromDepthMap();
 	const Contour& colorObjectContour = data.RgbEnabled ? GetTargetContourFromColorImage(data.DebugFileName) : Contour();
+	const int colorContourArea = !colorObjectContour.empty() ? (int)cv::contourArea(colorObjectContour) : 0;
+	const bool colorContourExists = colorContourArea > 3;
 
-	const bool colorContourIsEmpty = colorObjectContour.empty();
-	const bool depthContourIsEmpty = depthObjectContour.empty();
+	const Contour& depthObjectContour = (data.Dm1Enabled || data.Dm2Enabled) ? GetTargetContourFromDepthMap() : Contour();
+	const int depthContourArea = !depthObjectContour.empty() ? (int)cv::contourArea(depthObjectContour) : 0;
+	const bool depthContourExists = depthContourArea > 3;
 
-	const int depthContourArea = depthContourIsEmpty ? 0 : (int)cv::contourArea(depthObjectContour);
-	const bool noDepthObject = depthContourArea < 4;
-	const bool bothContoursAreEmpty = noDepthObject && colorContourIsEmpty;
-	if (bothContoursAreEmpty)
-		return NoObjectFound;
+	const bool atLeastOneContourExists = colorContourExists || depthContourExists;
+	if (!atLeastOneContourExists)
+		return new NativeAlgorithmSelectionResult{ NoObjectFound, false };
 
-	if (depthContourIsEmpty && !data.RgbEnabled)
-		return NoObjectFound;
+	const bool rgbDisabled = !data.RgbEnabled;
+	if (rgbDisabled && !depthContourExists)
+		return new NativeAlgorithmSelectionResult{ NoObjectFound, false };
 
-	AlgorithmSelectionResult algorithm = Undefined;
+	const bool onlyRgbIsEnabled = data.RgbEnabled && !data.Dm1Enabled && !data.Dm2Enabled;
+	if (onlyRgbIsEnabled && !colorContourExists)
+		return new NativeAlgorithmSelectionResult{ NoObjectFound, false };
 
-	const bool onlyDm1IsEnabled = data.Dm1Enabled && !data.Dm2Enabled && !data.RgbEnabled;
-	if (onlyDm1IsEnabled)
-		algorithm = depthContourIsEmpty ? NoObjectFound : Dm1;
+	// out of easy invalid cases
 
-	const bool onlyDm2IsEnabled = !data.Dm1Enabled && data.Dm2Enabled && !data.RgbEnabled;
-	if (onlyDm2IsEnabled && algorithm == Undefined)
-		algorithm = depthContourIsEmpty ? NoObjectFound : Dm2;
+	const short rangeMeterDistance = data.CalculatedDistance;
+	const ContourPlanes& depthContourPlanes = depthContourExists
+		? GetDepthContourPlanes(depthObjectContour)
+		: ContourPlanes{ 0, 0 };
 
-	const bool onlyRgbIsEnabled = !data.Dm1Enabled && !data.Dm2Enabled && data.RgbEnabled;
-	if (onlyRgbIsEnabled && algorithm == Undefined)
-		algorithm = colorContourIsEmpty ? NoObjectFound : Rgb;
-
-	const ContourPlanes& contourPlanes = GetDepthContourPlanes(depthObjectContour);
-	const short contourTopPlaneDepth = data.CalculatedDistance > 0 ? data.CalculatedDistance : contourPlanes.Top;
-
-	const bool eligibleForRgbCalculation = data.RgbEnabled && !colorContourIsEmpty;
-	if (eligibleForRgbCalculation && algorithm == Undefined)
+	bool rangeMeterWasUsed = false;
+	short contourTopPlaneDepth = depthContourPlanes.Top;
+	if (rangeMeterDistance > 0)
 	{
-		if (noDepthObject)
-			algorithm = Rgb;
-		else
+		if (rangeMeterDistance < contourTopPlaneDepth) // using the tallest object option
 		{
-			const cv::RotatedRect& colorObjectBoundingRect = cv::minAreaRect(colorObjectContour);
+			contourTopPlaneDepth = rangeMeterDistance;
+			rangeMeterWasUsed = true;
+		}
+	}
 
-			// object borders must not touch the borders of the image
-			const bool rectLowerXIsOk = colorObjectBoundingRect.center.x > (colorObjectBoundingRect.size.width / 2 + 3);
-			const bool rectUpperXIsOk = colorObjectBoundingRect.center.x < (data.ColorImage->Width - colorObjectBoundingRect.size.width / 2 - 3);
-			const bool rectLowerYIsOk = colorObjectBoundingRect.center.y > (colorObjectBoundingRect.size.height / 2 + 3);
-			const bool rectUpperYIsOk = colorObjectBoundingRect.center.y < (data.ColorImage->Height - colorObjectBoundingRect.size.height / 2 - 3);
-			const bool boundRectIsFarFromEdges = rectLowerXIsOk && rectUpperXIsOk && rectLowerYIsOk && rectUpperYIsOk;
-			const short objHeight = _floorDepth - contourTopPlaneDepth;
+	const int minObjHeight = 3;
+	short objectHeight = _floorDepth - contourTopPlaneDepth;
+	if (contourTopPlaneDepth <= 0 || objectHeight <= 0)
+	{
+		if (data.RgbEnabled && colorContourExists)
+		{
+			contourTopPlaneDepth = _floorDepth - minObjHeight;
+			objectHeight = minObjHeight;
+		}
+		else
+			return new NativeAlgorithmSelectionResult{ NoObjectFound, false };
+	}
 
-			const bool heightIsOkForRgb = data.CalculatedDistance > 0 ? true : objHeight < _maxObjHeightForRgb;
-			const bool objectHeightIsOkForRgbCalculation = contourTopPlaneDepth < _floorDepth && heightIsOkForRgb;
-			const bool shouldBeCalculatedWithRgb = colorObjectContour.size() > 0 && objectHeightIsOkForRgbCalculation && boundRectIsFarFromEdges;
-			if (shouldBeCalculatedWithRgb)
+	AlgorithmSelectionStatus algorithm = Undefined;
+
+	// checking RGB option
+	const bool eligibleForRgbCalculation = data.RgbEnabled && colorContourExists;
+	if (eligibleForRgbCalculation)
+	{
+		// object borders must not touch the borders of the image
+		const bool boundRectIsFarFromEdges = DmUtils::IsObjectInBounds(colorObjectContour,
+			data.ColorImage->Width, data.ColorImage->Height);
+		if (boundRectIsFarFromEdges)
+		{
+			const bool heightIsOkForRgb = objectHeight < _maxObjHeightForRgb;
+			if (heightIsOkForRgb)
 				algorithm = Rgb;
 		}
 	}
 
-	if (data.Dm1Enabled && !data.Dm2Enabled && algorithm == Undefined)
-		return Dm1;
-
-	if (!data.Dm1Enabled && data.Dm2Enabled && algorithm == Undefined)
-		return Dm2;
-
+	// at this point rgb is not an option
 	if (algorithm == Undefined)
 	{
+		if (!depthContourExists)
+			return new NativeAlgorithmSelectionResult{ NoObjectFound, false };
+
 		// if data from range meter is present - ignore the bottom plane
-		const short contourPlanesDelta = data.CalculatedDistance > 0 ? 0 : contourPlanes.Bottom - contourPlanes.Top;
-		if (contourPlanesDelta > _contourPlaneDepthDelta)
-			algorithm = Dm2;
+		const short contourPlanesDelta = rangeMeterWasUsed ? 0 : depthContourPlanes.Bottom - contourTopPlaneDepth;
+		const bool planesAreWithinMargin = contourPlanesDelta < _contourPlaneDepthDeltaForDm2;
+		algorithm = planesAreWithinMargin ? Dm1 : Dm2;
 	}
 
-	// if still not set for some reason - set to dm1
-	if (algorithm == Undefined)
-		algorithm = Dm1;
+	// Saving debug data (by passing debug file name)
+	CalculateObjectBoundingRect(depthObjectContour, colorObjectContour, algorithm, contourTopPlaneDepth, data.DebugFileName);
 
-	// Saving debugData if algorithm is selected
-	const bool algorithmIsSelected = algorithm == Dm1 || algorithm == Dm2 || algorithm == Rgb;
-	if (algorithmIsSelected)
-		CalculateObjectBoundingRect(depthObjectContour, colorObjectContour, algorithm, contourTopPlaneDepth, data.DebugFileName);
-
-	return algorithm;
+	return new NativeAlgorithmSelectionResult{ algorithm, rangeMeterWasUsed };
 }
 
 VolumeCalculationResult* DepthMapProcessor::CalculateObjectVolume(const VolumeCalculationData& data)
 {
 	if (data.DepthMap == nullptr || data.DepthMap->Data == nullptr)
-		return new VolumeCalculationResult();
+		return nullptr;
 
 	if (data.ColorImage == nullptr || data.ColorImage->Data == nullptr)
-		return new VolumeCalculationResult();
+		return nullptr;
 
 	PrepareBuffers(data.DepthMap, data.ColorImage);
 
-	const Contour& depthObjectContour = GetTargetContourFromDepthMap();
 	const Contour& colorObjectContour = data.SelectedAlgorithm == Rgb ? GetTargetContourFromColorImage() : Contour();
+	const int colorContourArea = !colorObjectContour.empty() ? (int)cv::contourArea(colorObjectContour) : 0;
+	const bool colorContourExists = colorContourArea > 3;
 
-	const short contourTopPlaneDepth = data.CalculatedDistance > 0 ?
-		data.CalculatedDistance
-		: GetDepthContourPlanes(depthObjectContour).Top;
+	const Contour& depthObjectContour = GetTargetContourFromDepthMap();
+	const int depthContourArea = !depthObjectContour.empty() ? (int)cv::contourArea(depthObjectContour) : 0;
+	const bool depthContourExists = depthContourArea > 3;
+
+	const bool atLeastOneContourExists = colorContourExists || depthContourExists;
+	if (!atLeastOneContourExists)
+		return nullptr;
+
+	// out of easy invalid cases
+
+	const short rangeMeterDistance = data.CalculatedDistance;
+	const ContourPlanes& depthContourPlanes = depthContourExists
+		? GetDepthContourPlanes(depthObjectContour)
+		: ContourPlanes{ 0, 0 };
+
+	short contourTopPlaneDepth = depthContourPlanes.Top;
+
+	const int minObjHeight = 3;
+	short objectHeight = _floorDepth - contourTopPlaneDepth;
+	if (contourTopPlaneDepth <= 0 || objectHeight <= 0)
+	{
+		if (data.SelectedAlgorithm == Rgb && colorContourExists)
+		{
+			contourTopPlaneDepth = _floorDepth - minObjHeight;
+			objectHeight = minObjHeight;
+		}
+		else
+			return nullptr;
+	}
 
 	const TwoDimDescription& object2DSize = Calculate2DContourDimensions(depthObjectContour, colorObjectContour, 
 		data.SelectedAlgorithm, contourTopPlaneDepth);
@@ -202,7 +232,7 @@ VolumeCalculationResult* DepthMapProcessor::CalculateObjectVolume(const VolumeCa
 	auto result = new VolumeCalculationResult();
 	result->LengthMm = object2DSize.Length;
 	result->WidthMm = object2DSize.Width;
-	result->HeightMm = _floorDepth - contourTopPlaneDepth;
+	result->HeightMm = objectHeight;
 
 	if (_maskMode)
 		Tamper(result);
@@ -299,11 +329,8 @@ const Contour DepthMapProcessor::GetTargetContourFromColorImage(const char* debu
 }
 
 const TwoDimDescription DepthMapProcessor::Calculate2DContourDimensions(const Contour& depthObjectContour,
-	const Contour& colorObjectContour, const AlgorithmSelectionResult selectedAlgorithm, const short contourTopPlaneDepth) const
+	const Contour& colorObjectContour, const AlgorithmSelectionStatus selectedAlgorithm, const short contourTopPlaneDepth) const
 {
-	if (depthObjectContour.empty())
-		return TwoDimDescription();
-	
 	const cv::RotatedRect& boundingRect = CalculateObjectBoundingRect(depthObjectContour, colorObjectContour,
 		selectedAlgorithm, contourTopPlaneDepth);
 
@@ -319,7 +346,7 @@ const TwoDimDescription DepthMapProcessor::Calculate2DContourDimensions(const Co
 }
 
 const cv::RotatedRect DepthMapProcessor::CalculateObjectBoundingRect(const Contour& depthObjectContour,
-	const Contour& colorObjectContour, const AlgorithmSelectionResult selectedAlgorithm, const short contourTopPlaneDepth,
+	const Contour& colorObjectContour, const AlgorithmSelectionStatus selectedAlgorithm, const short contourTopPlaneDepth,
 	const char* debugFilename) const
 {
 	switch (selectedAlgorithm)

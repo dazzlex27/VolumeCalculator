@@ -3,6 +3,7 @@ using System.Timers;
 using DeviceIntegration.IoCircuits;
 using DeviceIntegration.RangeMeters;
 using Primitives.Logging;
+using VCServer;
 
 namespace VolumeCalculator.Utils
 {
@@ -59,7 +60,7 @@ namespace VolumeCalculator.Utils
 		private void UpdateLaser(bool enable)
 		{
 			_rangeMeter?.ToggleLaser(enable);
-			_circuit?.ToggleRelay(1, enable);
+			//_circuit?.ToggleRelay(1, enable);
 		}
 
 		private void SetStatusReady()

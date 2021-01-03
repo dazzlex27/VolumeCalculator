@@ -12,8 +12,6 @@ namespace VolumeCalculator
 
 		private bool _enableAutoTimer;
 		private long _timeToStartMeasurementMs;
-		private int _rangeMeterSubtractionValue;
-		private bool _rangeMeterAvailable;
 		private WeightUnits _selectedWeightUnits;
 		private bool _enablePalletSubtraction;
 		private double _palletWeightKg;
@@ -55,18 +53,6 @@ namespace VolumeCalculator
 			set => SetField(ref _selectedWeightUnits, value, nameof(SelectedWeightUnits));
 		}
 
-		public int RangeMeterSubtractionValue
-		{
-			get => _rangeMeterSubtractionValue;
-			set => SetField(ref _rangeMeterSubtractionValue, value, nameof(RangeMeterSubtractionValue));
-		}
-
-		public bool RangeMeterAvailable
-		{
-			get => _rangeMeterAvailable;
-			set => SetField(ref _rangeMeterAvailable, value, nameof(RangeMeterAvailable));
-		}
-		
 		public bool EnablePalletSubtraction
 		{
 			get => _enablePalletSubtraction;
@@ -92,8 +78,7 @@ namespace VolumeCalculator
 			EnableAutoTimer = settings.AlgorithmSettings.EnableAutoTimer;
 			TimeToStartMeasurementMs = settings.AlgorithmSettings.TimeToStartMeasurementMs;
 			RequireBarcode = settings.AlgorithmSettings.RequireBarcode;
-			RangeMeterAvailable = settings.IoSettings.ActiveRangeMeterName != "";
-			RangeMeterSubtractionValue = settings.IoSettings.RangeMeterSubtractionValueMm;
+
 			SelectedWeightUnits = settings.AlgorithmSettings.SelectedWeightUnits;
 			EnablePalletSubtraction = settings.AlgorithmSettings.EnablePalletSubtraction;
 			PalletWeightKg = settings.AlgorithmSettings.PalletWeightGr / 1000;
