@@ -14,7 +14,7 @@ namespace VolumeCalculator.Utils
 		public IFrameProvider FrameProvider { get; }
 
 		public IScales Scales { get; }
-
+		
 		public IReadOnlyList<IBarcodeScanner> Scanners { get; }
 
 		public IIoCircuit IoCircuit { get; }
@@ -23,7 +23,8 @@ namespace VolumeCalculator.Utils
 
 		public IIpCamera IpCamera { get; }
 
-		public DeviceSet(IFrameProvider frameProvider, IScales scales, IEnumerable<IBarcodeScanner> scanners,
+		public DeviceSet(IFrameProvider frameProvider, IScales scales, 
+			IEnumerable<IBarcodeScanner> scanners,
 			IIoCircuit ioCircuit, IRangeMeter rangeMeter, IIpCamera ipCamera)
 		{
 			FrameProvider = frameProvider;

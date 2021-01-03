@@ -59,7 +59,7 @@ namespace VolumeCalculator.Utils
             var scales = _deviceSet.Scales;
             if (scales != null)
                 scales.MeasurementReady -= OnWeightMeasurementReady;
-            
+
             _logger.LogInfo("Device manager disposed");
         }
 
@@ -70,7 +70,7 @@ namespace VolumeCalculator.Utils
         
         public void ResetWeight()
         {
-            _deviceSet?.Scales?.ResetWeight();
+            _deviceSet.Scales?.ResetWeight();
         }
 
         public void UpdateSettings(ApplicationSettings settings)

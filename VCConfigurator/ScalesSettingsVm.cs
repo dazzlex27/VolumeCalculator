@@ -40,18 +40,18 @@ namespace VCConfigurator
 			ScalesNames = new ObservableCollection<string> { "", "massak", "casm", "fakescales", "ci2001a", "oka" };
 		}
 
-		public void FillValuesFromSettings(IoSettings settings)
+		public void FillValuesFromSettings(ScalesSettings settings)
 		{
-			ActiveScalesName = settings.ActiveScales.Name;
-			ScalesPort = settings.ActiveScales.Port;
-			ScalesMinWeight = settings.ActiveScales.MinWeight;
+			ActiveScalesName = settings.Name;
+			ScalesPort = settings.Port;
+			ScalesMinWeight = settings.MinWeight;
 		}
 
-		public void FillSettingsFromValues(IoSettings settings)
+		public void FillSettingsFromValues(ScalesSettings settings)
 		{
-			settings.ActiveScales.Name = ActiveScalesName;
-			settings.ActiveScales.Port = ScalesPort;
-			settings.ActiveScales.MinWeight = ScalesMinWeight;
+			settings.Name = ActiveScalesName;
+			settings.Port = ScalesPort;
+			settings.MinWeight = ScalesMinWeight;
         }
 	}
 }

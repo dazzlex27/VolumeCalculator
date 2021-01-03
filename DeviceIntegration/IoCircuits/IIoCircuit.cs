@@ -6,6 +6,6 @@ namespace DeviceIntegration.IoCircuits
 	{
 		void WriteData(string data);
 		void ToggleRelay(int relayNum, bool state);
-		void PollLine(int lineNum);
+		int PollLine(int lineNum);
 	}
 }

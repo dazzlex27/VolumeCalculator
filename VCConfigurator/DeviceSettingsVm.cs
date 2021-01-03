@@ -41,7 +41,7 @@ namespace VCConfigurator
 			get => _scalesSettings;
 			set => SetField(ref _scalesSettings, value, nameof(ScalesSettings));
 		}
-		
+
 		public IpCameraSettingsVm IpCameraSettings
 		{
 			get => _ipCameraSettings;
@@ -86,7 +86,7 @@ namespace VCConfigurator
 		{
 			ActiveCameraName = settings.ActiveCameraName;
 			
-			ScalesSettings.FillValuesFromSettings(settings);
+			ScalesSettings.FillValuesFromSettings(settings.ActiveScales);
 			
 			ActiveIoCircuitName = settings.ActiveIoCircuit.Name;
 			IoCircuitPort = settings.ActiveIoCircuit.Port;
@@ -100,7 +100,7 @@ namespace VCConfigurator
 		{
 			settings.ActiveCameraName = ActiveCameraName;
 			
-			ScalesSettings.FillSettingsFromValues(settings);
+			ScalesSettings.FillSettingsFromValues(settings.ActiveScales);
 			
 			settings.ActiveIoCircuit.Name = ActiveIoCircuitName;
 			settings.ActiveIoCircuit.Port = IoCircuitPort;

@@ -9,7 +9,7 @@ namespace Primitives.Settings
 		private const int DefaultSampleCount = 5;
 
 		public WorkAreaSettings WorkArea { get; set; }
-
+		
 		public byte SampleDepthMapCount { get; set; }
 
 		public bool EnableAutoTimer { get; set; }
@@ -26,7 +26,8 @@ namespace Primitives.Settings
 		
 		public int PalletHeightMm { get; set; }
 
-		public AlgorithmSettings(WorkAreaSettings workArea, byte sampleDepthMapCount, bool enableAutoTimer, long timeToStartMeasurementMs, 
+		public AlgorithmSettings(WorkAreaSettings workArea, 
+			byte sampleDepthMapCount, bool enableAutoTimer, long timeToStartMeasurementMs, 
 			bool requireBarcode, WeightUnits selectedWeightUnits, 
 			bool enablePalletSubtraction, double palletWeightGr, int palletHeightMm)
 		{
@@ -43,7 +44,8 @@ namespace Primitives.Settings
 
 		public static AlgorithmSettings GetDefaultSettings()
 		{
-			return new AlgorithmSettings(WorkAreaSettings.GetDefaultSettings(), DefaultSampleCount, true, 
+			return new AlgorithmSettings(WorkAreaSettings.GetDefaultSettings(),
+				DefaultSampleCount, true, 
 				DefaultTimerValueMs, true, WeightUnits.Gr, false, 0, 0);
 		}
 
@@ -61,10 +63,13 @@ namespace Primitives.Settings
 
 			return builder.ToString();
 		}
-
+	
 		[OnDeserialized]
 		private void OnDeserialized(StreamingContext context)
 		{
+			if (WorkArea == null)
+				WorkArea = WorkAreaSettings.GetDefaultSettings();
+
 			if (SampleDepthMapCount <= 0)
 				SampleDepthMapCount = DefaultSampleCount;
 

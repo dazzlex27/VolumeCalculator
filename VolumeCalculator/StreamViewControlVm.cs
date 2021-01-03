@@ -1,10 +1,5 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Windows.Media.Imaging;
-using FrameProcessor;
 using FrameProviders;
 using Primitives;
 using Primitives.Logging;
@@ -67,6 +62,10 @@ namespace VolumeCalculator
 			set => SetField(ref _depthMaskPolygonControlVm, value, nameof(DepthMaskPolygonControlVm));
 		}
 
+		public short FloorDepth { get; set; }
+		
+		public short CutOffDepth { get; set; }
+
 		public StreamViewControlVm(ILogger logger, ApplicationSettings settings, IFrameProvider frameProvider)
 		{
 			_logger = logger;
@@ -83,6 +82,10 @@ namespace VolumeCalculator
 			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.AlgorithmSettings.WorkArea.DepthMaskContour);
 
 			_minDepth = _frameProvider.GetDepthCameraParams().MinDepth;
+			
+			var workArea = _applicationSettings.AlgorithmSettings.WorkArea;
+			FloorDepth = workArea.FloorDepth;
+			CutOffDepth = (short) (FloorDepth - workArea.MinObjectHeight);
 		}
 
 		public void Dispose()
@@ -98,6 +101,9 @@ namespace VolumeCalculator
 			UseDepthMask = _applicationSettings.AlgorithmSettings.WorkArea.UseDepthMask;
 			ColorMaskPolygonControlVm.SetPolygonPoints(settings.AlgorithmSettings.WorkArea.ColorMaskContour);
 			DepthMaskPolygonControlVm.SetPolygonPoints(settings.AlgorithmSettings.WorkArea.DepthMaskContour);
+			var workArea = _applicationSettings.AlgorithmSettings.WorkArea;
+			FloorDepth = workArea.FloorDepth;
+			CutOffDepth = (short) (FloorDepth - workArea.MinObjectHeight);
 		}
 
 		private void ColorImageUpdated(ImageData image)
@@ -109,11 +115,9 @@ namespace VolumeCalculator
 		{
 			try
 			{
-				var maxDepth = _applicationSettings.AlgorithmSettings.WorkArea.FloorDepth;
 				var maskedMap = new DepthMap(depthMap);
-				var cutOffDepth = (short)(maxDepth - _applicationSettings.AlgorithmSettings.WorkArea.MinObjectHeight);
-				DepthMapUtils.FilterDepthMapByDepthtLimit(maskedMap, cutOffDepth);
-				var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, _minDepth, maxDepth);
+				DepthMapUtils.FilterDepthMapByDepthtLimit(maskedMap, CutOffDepth);
+				var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, _minDepth, FloorDepth);
 				var depthMapImage = new ImageData(maskedMap.Width, maskedMap.Height, depthMapData, 1);
 
 				DepthImageBitmap = GraphicsUtils.GetWriteableBitmapFromImageData(depthMapImage);
@@ -121,46 +125,6 @@ namespace VolumeCalculator
 			catch (Exception ex)
 			{
 				_logger.LogException("failed to receive a depth frame", ex);
-			}
-		}
-
-		public static bool CheckIfOk(byte[] message)
-		{
-			try
-			{
-                // TODO: KLUDGE
-                {
-                    if (DateTime.Now < new DateTime(2020, 01, 01))
-                        return false;
-
-                    throw new AbandonedMutexException();
-                }
-
-				//var messageString = string.Join(" ", message);
-				//var messageBytes = Encoding.ASCII.GetBytes(messageString);
-
-				//var addr = TestDataGenerator.GetF2();
-				//var str = Encoding.ASCII.GetBytes(addr);
-
-				//var isEqual = str.SequenceEqual(messageBytes);
-				//return !(str.Length > 10 && isEqual);
-			}
-			catch (Exception ex)
-			{
-				try
-				{
-					Directory.CreateDirectory("c:/temp");
-					using (var f = File.AppendText("c:/temp"))
-					{
-						f.WriteLine($"s2 f{ex}");
-					}
-				}
-				catch (Exception)
-				{
-					return true;
-				}
-
-				return true;
 			}
 		}
 	}

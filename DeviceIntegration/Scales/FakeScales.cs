@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Primitives.Logging;
@@ -7,6 +8,8 @@ namespace DeviceIntegration.Scales
 {
 	internal class FakeScales : IScales
 	{
+		private static readonly ConcurrentQueue<int> Values = new ConcurrentQueue<int>(new[] {135, 407});
+		
 		private readonly CancellationTokenSource _tokenSource;
 
 		public event Action<ScaleMeasurementData> MeasurementReady;
@@ -19,6 +22,7 @@ namespace DeviceIntegration.Scales
 		{
 			_tokenSource = new CancellationTokenSource();
 			_applyPayload = true;
+			Values.TryDequeue(out var value);
 
 			Task.Run(async () => {
 				try
@@ -32,12 +36,12 @@ namespace DeviceIntegration.Scales
 						if (!_paused)
 						{
 							var data = _applyPayload
-								? new ScaleMeasurementData(MeasurementStatus.Measured, 700)
+								? new ScaleMeasurementData(MeasurementStatus.Measured, value)
 								: new ScaleMeasurementData(MeasurementStatus.Ready, 0);
 
 							MeasurementReady?.Invoke(data);
 						}
-						await Task.Delay(1000);
+						await Task.Delay(500);
 					}
 				}
 				catch (Exception ex)

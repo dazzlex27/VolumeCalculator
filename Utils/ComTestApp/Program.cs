@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using DeviceIntegration;
@@ -15,11 +16,11 @@ namespace ComTestApp
 
 			//TestOkaScales(logger);
 			//TestLaser(logger);
-			TestCasM(logger);
+			//TestCasM(logger);
 			//SaveRawData(logger);
 			//TestMassaK(logger);
 			//TestCi2001A(logger);
-			//TestKeUsb24R(logger);
+			TestKeUsb24R(logger);
 			Console.ReadKey();
 		}
 
@@ -109,20 +110,28 @@ namespace ComTestApp
 				try
 				{
 					var dataArray = Console.ReadLine().Split(' ');
-					if (dataArray[0] == "r")
+					switch (dataArray[0])
 					{
-						var num = int.Parse(dataArray[1]);
-						var state = dataArray[2];
-						ioCircuit.ToggleRelay(num, state == "1");
-					}
-					else if (dataArray[0] == "l")
-					{
-						var num = int.Parse(dataArray[1]);
-						ioCircuit.PollLine(num);
-					}
-					else
-					{
-						logger.LogError("unknown command received");
+						case "r":
+						{
+							var num = int.Parse(dataArray[1]);
+							var state = dataArray[2];
+							ioCircuit.ToggleRelay(num, state == "1");
+							break;
+						}
+						case "l":
+						{
+							var stopWatch = new Stopwatch();
+							stopWatch.Start();
+							var num = int.Parse(dataArray[1]);
+							var value = ioCircuit.PollLine(num);
+							stopWatch.Stop();
+							logger.LogInfo($"LINE {num}: {value}, elapsed={stopWatch.ElapsedMilliseconds}");
+							break;
+						}
+						default:
+							logger.LogError("unknown command received");
+							break;
 					}
 				}
 				catch (Exception ex)

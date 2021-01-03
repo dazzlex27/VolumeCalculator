@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
@@ -22,7 +20,7 @@ namespace Primitives.Settings
 
 		public IpCameraSettings IpCameraSettings { get; set; }
 
-		public  IoSettings(string activeCameraName, ScalesSettings scalesSettings, 
+		public  IoSettings(string activeCameraName, ScalesSettings scalesSettings,
 			DeviceSettings[] activeScanners, DeviceSettings activeIoCircuit, string activeRangeMeterName, 
             int rangeMeterSubtractionValueMm, IpCameraSettings ipCameraSettings)
 		{
@@ -52,8 +50,8 @@ namespace Primitives.Settings
 			var defaultIoCircuitBoard = new DeviceSettings("keusb24r", "");
 			var defaultCameraSettings = IpCameraSettings.GetDefaultSettings();
 			
-			return new IoSettings("kinectv2", defaultScales, defaultScanners, defaultIoCircuitBoard, 
-				"custom", 0, defaultCameraSettings);
+			return new IoSettings("kinectv2", defaultScales, defaultScanners, 
+				defaultIoCircuitBoard, "custom", 0, defaultCameraSettings);
 		}
 
 		[OnDeserialized]

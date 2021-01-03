@@ -132,26 +132,31 @@ namespace FrameProcessor
 		{
 			lock (_lock)
 			{
-				var cutOffDepth = (short)(settings.AlgorithmSettings.WorkArea.FloorDepth - settings.AlgorithmSettings.WorkArea.MinObjectHeight);
-				var colorRoiRect = CreateColorRoiRectFromSettings(settings);
+				SetWorkAreaSettings(settings.AlgorithmSettings.WorkArea);
 
-				unsafe
+				var terminatedPath = settings.GeneralSettings.PhotosDirectoryPath + "\0";
+				DepthMapProcessorDll.SetDebugPath(terminatedPath, false);
+			}
+		}
+
+		public void SetWorkAreaSettings(WorkAreaSettings workAreaSettings)
+		{
+			var cutOffDepth = (short)(workAreaSettings.FloorDepth - workAreaSettings.MinObjectHeight);
+			var colorRoiRect = CreateColorRoiRectFromSettings(workAreaSettings);
+
+			unsafe
+			{
+				var relPoints = new RelPoint[workAreaSettings.DepthMaskContour.Count];
+				for (var i = 0; i < relPoints.Length; i++)
 				{
-					var relPoints = new RelPoint[settings.AlgorithmSettings.WorkArea.DepthMaskContour.Count];
-					for (var i = 0; i < relPoints.Length; i++)
-					{
-						relPoints[i].X = (float)settings.AlgorithmSettings.WorkArea.DepthMaskContour[i].X;
-						relPoints[i].Y = (float)settings.AlgorithmSettings.WorkArea.DepthMaskContour[i].Y;
-					}
+					relPoints[i].X = (float) workAreaSettings.DepthMaskContour[i].X;
+					relPoints[i].Y = (float) workAreaSettings.DepthMaskContour[i].Y;
+				}
 
-					fixed (RelPoint* points = relPoints)
-					{
-						DepthMapProcessorDll.SetAlgorithmSettings(settings.AlgorithmSettings.WorkArea.FloorDepth, cutOffDepth,
-							points, relPoints.Length, colorRoiRect);
-					}
-
-					var terminatedPath = settings.GeneralSettings.PhotosDirectoryPath + "\0";
-					DepthMapProcessorDll.SetDebugPath(terminatedPath, false);
+				fixed (RelPoint* points = relPoints)
+				{
+					DepthMapProcessorDll.SetAlgorithmSettings(workAreaSettings.FloorDepth, cutOffDepth,
+						points, relPoints.Length, colorRoiRect);
 				}
 			}
 		}
@@ -172,16 +177,16 @@ namespace FrameProcessor
 			};
 		}
 
-		private static RelRect CreateColorRoiRectFromSettings(ApplicationSettings settings)
+		private static RelRect CreateColorRoiRectFromSettings(WorkAreaSettings workAreaSettings)
 		{
 			float x1;
 			float y1;
 			float x2;
 			float y2;
 
-			if (settings != null && settings.AlgorithmSettings.WorkArea.UseDepthMask)
+			if (workAreaSettings != null && workAreaSettings.UseDepthMask)
 			{
-				var rectanglePoints = settings.AlgorithmSettings.WorkArea.ColorMaskContour;
+				var rectanglePoints = workAreaSettings.ColorMaskContour;
 				x1 = (float)rectanglePoints[0].X;
 				y1 = (float)rectanglePoints[0].Y;
 				x2 = (float)rectanglePoints[2].X;

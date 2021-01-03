@@ -19,7 +19,7 @@ namespace VolumeCalculator
 		private double _canvasWidth;
 		private double _canvasHeight;
 
-		private List<Point> _relPoints;
+		private IReadOnlyList<Point> _relPoints;
 
 		public List<Ellipse> PolygonNodes { get; }
 
@@ -64,7 +64,8 @@ namespace VolumeCalculator
 
 		public IReadOnlyList<Point> GetPolygonPoints()
 		{
-			return GetRelPoints(_polygonPoints.ToList());
+			return _relPoints; 
+				//GetRelPoints(_polygonPoints.ToList());
 		}
 
 		public void SetCanvasSize(double width, double height)

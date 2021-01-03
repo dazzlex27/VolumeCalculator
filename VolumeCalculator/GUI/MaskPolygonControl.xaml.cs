@@ -83,7 +83,7 @@ namespace VolumeCalculator.GUI
 			}
 		}
 
-		private IEnumerable<Point> GetPoints()
+		private IReadOnlyList<Point> GetPoints()
 		{
 			if (IsReadOnly)
 				return null;
@@ -162,6 +162,9 @@ namespace VolumeCalculator.GUI
 			Canvas.SetLeft(_selectedShape, newPoint.X - _clickPoint.X);
 			Canvas.SetTop(_selectedShape, newPoint.Y - _clickPoint.Y);
 
+			// var newPoints = GetPoints();
+			// _vm.SetPolygonPoints(GetRelPoints(newPoints));
+			//
 			_vm.PolygonPoints = new PointCollection(GetPoints());
 		}
 
@@ -169,6 +172,9 @@ namespace VolumeCalculator.GUI
 		{
 			if (IsReadOnly)
 				return;
+			
+			var newPoints = GetPoints();
+			_vm.SetPolygonPoints(GetRelPoints(newPoints));
 
 			_selectedShape = null;
 		}
@@ -248,6 +254,19 @@ namespace VolumeCalculator.GUI
 		private void MaskPolygonControl_OnSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			_vm?.SetCanvasSize(CvMain.ActualWidth, CvMain.ActualHeight);
+		}
+		
+		private IReadOnlyList<Point> GetRelPoints(IReadOnlyCollection<Point> absPoints)
+		{
+			var relPoints = new List<Point>(absPoints.Count);
+
+			foreach (var point in absPoints)
+			{
+				var relPoint = new Point(point.X / CvMain.ActualWidth, point.Y / CvMain.ActualHeight);
+				relPoints.Add(relPoint);
+			}
+
+			return relPoints;
 		}
 	}
 }

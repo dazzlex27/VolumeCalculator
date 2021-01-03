@@ -48,7 +48,7 @@ namespace VolumeCalculator
 		private bool _commentBoxFocused;
 
 		private string _lastErrorMessage;
-		
+
 		public ICommand RunVolumeCalculationCommand { get; }
 
 		public ICommand ResetWeightCommand { get; }

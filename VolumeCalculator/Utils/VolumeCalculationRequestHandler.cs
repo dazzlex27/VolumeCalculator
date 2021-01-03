@@ -10,87 +10,97 @@ using ProcessingUtils;
 
 namespace VolumeCalculator.Utils
 {
-    internal class VolumeCalculationRequestHandler : IDisposable
-    {
-        public event Action<CalculationResultData> CalculationFinished;
-        public event Action<string, string> ErrorOccured;
-        public event Action<DashboardStatus> DashStatusUpdated;
-        public event Action<string> ErrorMessageUpdated;
-        public event Action<CalculationStatus> CalculationStatusChanged;
+	internal class VolumeCalculationRequestHandler : IDisposable
+	{
+		private readonly Timer _autoStartingCheckingTimer;
+		private readonly IoDeviceManager _deviceManager;
+		private readonly DepthMapProcessor _dmProcessor;
 
-        private readonly ILogger _logger;
-        private readonly DepthMapProcessor _dmProcessor;
-        private readonly IoDeviceManager _deviceManager;
-        private readonly Timer _autoStartingCheckingTimer;
-        
-        private VolumeCalculationLogic _volumeCalculator;
+		private readonly ILogger _logger;
+		private DateTime _calculationTime;
 
-        private DashboardStatus _lastDashboardStatus;
-        
-        private MeasurementStatus _lastWeighingStatus;
-        private bool _requireBarcode;
-        private DateTime _calculationTime;
-        private string _lastBarcode;
-        private double _lastWeightGr;
-        private uint _lastUnitCount;
-        private string _lastComment;
-        private bool _subtractPalletValues;
-        private int _palletHeightMm;
-        private WeightUnits _selectedWeightUnits;
-        private ApplicationSettings _settings;
-        
-        private Timer _pendingTimer;
-        private bool _isLocked;
+		private volatile MeasurementStatus _currentWeighingStatus;
 
-        public bool CalculationRunning => _volumeCalculator != null && _volumeCalculator.IsRunning;
+		private double _currentWeightGr;
+		private bool _isLocked;
+		private string _lastBarcode;
+		private string _lastComment;
+		private DashboardStatus _lastDashboardStatus;
 
-        private bool CodeReady
-        {
-	        get
-	        {
-		        if (_requireBarcode)
-			        return !string.IsNullOrEmpty(_lastBarcode);
+		private uint _lastUnitCount;
+		private volatile MeasurementStatus _lastWeighingStatus;
+		private double _lastWeightGr;
+		private int _palletHeightMm;
 
-		        return true;
-	        }
-        }
+		private Timer _pendingTimer;
 
-        private bool CanRunAutoTimer => CodeReady && WeightReady && !_isLocked && !WaitingForReset && !CalculationRunning;
+		private bool _requireBarcode;
+		private WeightUnits _selectedWeightUnits;
+		private ApplicationSettings _settings;
+		private bool _subtractPalletValues;
 
-        private bool WeightReady => _lastWeighingStatus == MeasurementStatus.Measured && _lastWeightGr > 0.001;
+		private VolumeCalculationLogic _volumeCalculator;
 
-        private bool WaitingForReset => _lastDashboardStatus == DashboardStatus.Finished;
+		public VolumeCalculationRequestHandler(ILogger logger, DepthMapProcessor dmProcessor,
+			IoDeviceManager deviceManager)
+		{
+			_logger = logger;
+			_dmProcessor = dmProcessor;
+			_deviceManager = deviceManager;
 
-        public VolumeCalculationRequestHandler(ILogger logger, DepthMapProcessor dmProcessor, IoDeviceManager deviceManager)
-        {
-            _logger = logger;
-            _dmProcessor = dmProcessor;
-            _deviceManager = deviceManager;
-            
-            _autoStartingCheckingTimer = new Timer(100) { AutoReset = true };
-            _autoStartingCheckingTimer.Elapsed += UpdateAutoTimerStatus;
-            _autoStartingCheckingTimer.Start();
-        }
+			_autoStartingCheckingTimer = new Timer(200) {AutoReset = true};
+			_autoStartingCheckingTimer.Elapsed += UpdateAutoTimerStatus;
+			_autoStartingCheckingTimer.Start();
+		}
 
-        public void Dispose()
-        {
-	        _autoStartingCheckingTimer.Dispose();
-        }
+		private bool CalculationRunning { get; set; }
 
-        public void StartCalculation(CalculationRequestData data)
-        {
-            if (CalculationRunning)
-            {
-                _logger.LogInfo("tried to start a calculation while another one was running");
-                return;
-            }
-            
-            Task.Run(() =>
+		private bool CodeReady
+		{
+			get
+			{
+				if (_requireBarcode)
+					return !string.IsNullOrEmpty(_lastBarcode);
+
+				return true;
+			}
+		}
+
+		private bool CanRunAutoTimer => CodeReady && WeightReady && !_isLocked && !WaitingForReset && !CalculationRunning;
+
+		private bool WeightReady => _lastWeighingStatus == MeasurementStatus.Measured && _currentWeightGr > 0.001;
+
+		private bool WaitingForReset => _lastDashboardStatus == DashboardStatus.Finished;
+
+		public void Dispose()
+		{
+			_autoStartingCheckingTimer.Dispose();
+		}
+
+		public event Action<CalculationResultData> CalculationFinished;
+		public event Action<string, string> ErrorOccured;
+		public event Action<DashboardStatus> DashStatusUpdated;
+		public event Action<CalculationStatus, string> CalculationStatusChanged;
+
+		public void StartCalculation(CalculationRequestData data)
+		{
+			if (CalculationRunning)
+			{
+				_logger.LogInfo("tried to start a calculation while another one was running");
+				return;
+			}
+
+			CalculationRunning = true;
+
+			if (_pendingTimer.Enabled)
+				_pendingTimer.Stop();
+
+			Task.Run(() =>
 			{
 				try
 				{
 					SetDashboardStatus(DashboardStatus.InProgress);
-					CalculationStatusChanged?.Invoke(CalculationStatus.Running);
+					CalculationStatusChanged?.Invoke(CalculationStatus.Running, "");
 
 					_calculationTime = DateTime.Now;
 					if (data != null)
@@ -100,220 +110,263 @@ namespace VolumeCalculator.Utils
 						_lastBarcode = data.Barcode;
 					}
 
-					string error;
-					var canRunCalculation = CheckIfPreConditionsAreSatisfied(out error);
-					if (!canRunCalculation)
+					var preConditionEvaluationResult = CheckIfPreConditionsAreSatisfied();
+					if (preConditionEvaluationResult != ErrorCode.None)
 					{
-						CalculationStatusChanged?.Invoke(CalculationStatus.BarcodeNotEntered);
-						ErrorMessageUpdated?.Invoke(error);
-						ErrorOccured?.Invoke(error, "Ошибка");
-						CalculationFinished?.Invoke(new CalculationResultData(null, CalculationStatus.BarcodeNotEntered, null));
+						var status = GetCalculationStatus(preConditionEvaluationResult, out var errorMessage);
+
+						CalculationStatusChanged?.Invoke(status, errorMessage);
+						CalculationFinished?.Invoke(new CalculationResultData(null, status, null));
+						SetDashboardStatus(DashboardStatus.Error);
+						CalculationRunning = false;
 						return;
 					}
-					
-					var algorithmSettings = _settings.AlgorithmSettings;
-					
-					var dm1Enabled = algorithmSettings.WorkArea.EnableDmAlgorithm && algorithmSettings.WorkArea.UseDepthMask;
-					var dm2Enabled = algorithmSettings.WorkArea.EnablePerspectiveDmAlgorithm && algorithmSettings.WorkArea.UseDepthMask;
-					var rgbEnabled = algorithmSettings.WorkArea.EnableRgbAlgorithm && algorithmSettings.WorkArea.UseColorMask;
-					
-					_logger.LogInfo($"Starting a volume calculation... dm={dm1Enabled} dm2={dm2Enabled} rgb={rgbEnabled}");
-					
+
+					_lastWeightGr = _currentWeightGr;
+					_lastWeighingStatus = _currentWeighingStatus;
+
+					var activeWorkArea = _settings.AlgorithmSettings.WorkArea;
+					_dmProcessor.SetWorkAreaSettings(_settings.AlgorithmSettings.WorkArea);
+
+					var dm1Enabled = activeWorkArea.EnableDmAlgorithm && activeWorkArea.UseDepthMask;
+					var dm2Enabled = activeWorkArea.EnablePerspectiveDmAlgorithm && activeWorkArea.UseDepthMask;
+					var rgbEnabled = activeWorkArea.EnableRgbAlgorithm && activeWorkArea.UseColorMask;
+
+					_logger.LogInfo(
+						$"Starting a volume calculation... dm={dm1Enabled} dm2={dm2Enabled} rgb={rgbEnabled}");
+
 					var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter();
-					var cutOffDepth = (short)(algorithmSettings.WorkArea.FloorDepth - algorithmSettings.WorkArea.MinObjectHeight);
-					
-					var calculationData = new VolumeCalculationData(algorithmSettings.SampleDepthMapCount,
-						_lastBarcode, calculationIndex, dm1Enabled, dm2Enabled, rgbEnabled, 
+					var cutOffDepth = (short) (activeWorkArea.FloorDepth - activeWorkArea.MinObjectHeight);
+
+					var calculationData = new VolumeCalculationData(_settings.AlgorithmSettings.SampleDepthMapCount,
+						_lastBarcode, calculationIndex, dm1Enabled, dm2Enabled, rgbEnabled,
 						_settings.GeneralSettings.PhotosDirectoryPath, cutOffDepth);
 
-					_volumeCalculator = new VolumeCalculationLogic(_logger, _dmProcessor, _deviceManager.FrameProvider, 
+					_volumeCalculator = new VolumeCalculationLogic(_logger, _dmProcessor, _deviceManager.FrameProvider,
 						_deviceManager.RangeMeter, _deviceManager.IpCamera, calculationData);
 					_volumeCalculator.CalculationFinished += OnCalculationFinished;
 				}
 				catch (Exception ex)
 				{
 					_logger.LogException("Failed to start volume calculation", ex);
-					ErrorMessageUpdated?.Invoke("Ошибка запуска");
 					SetDashboardStatus(DashboardStatus.Error);
-					CalculationStatusChanged?.Invoke(CalculationStatus.Error);
+					CalculationStatusChanged?.Invoke(CalculationStatus.Error, "Неизвестная ошибка");
+					CalculationRunning = false;
 				}
 			});
-        }
+		}
 
-        public void UpdateSettings(ApplicationSettings settings)
-        {
-	        if (CalculationRunning)
+		private static CalculationStatus GetCalculationStatus(ErrorCode preConditionEvaluationResult,
+			out string errorMessage)
+		{
+			var status = CalculationStatus.Undefined;
+			errorMessage = "";
+
+			switch (preConditionEvaluationResult)
+			{
+				case ErrorCode.BarcodeNotEntered:
+					status = CalculationStatus.BarcodeNotEntered;
+					errorMessage = "Введите код объекта";
+					break;
+				case ErrorCode.FileHandleOpen:
+					status = CalculationStatus.FailedToCloseFiles;
+					errorMessage = "Открыт файл результатов";
+					break;
+				case ErrorCode.WeightNotStable:
+					status = CalculationStatus.WeightNotStable;
+					errorMessage = "Вес нестабилен";
+					break;
+			}
+
+			return status;
+		}
+
+		public void UpdateSettings(ApplicationSettings settings)
+		{
+			if (CalculationRunning)
 			{
 				_logger.LogError("Tried to assign settings while a clculation was running");
 				return;
 			}
 
-	        _settings = settings;
-	        _requireBarcode = settings.AlgorithmSettings.RequireBarcode;
-	        _selectedWeightUnits = settings.AlgorithmSettings.SelectedWeightUnits;
+			_settings = settings;
+			_requireBarcode = settings.AlgorithmSettings.RequireBarcode;
+			_selectedWeightUnits = settings.AlgorithmSettings.SelectedWeightUnits;
 
-	        _subtractPalletValues = settings.AlgorithmSettings.EnablePalletSubtraction;
-	        _palletHeightMm = settings.AlgorithmSettings.PalletHeightMm;
-	        CreateAutoStartTimer(settings.AlgorithmSettings.EnableAutoTimer, settings.AlgorithmSettings.TimeToStartMeasurementMs);
-        }
-        
-        public void CancelPendingCalculation()
-        {
-	        var timerEnabled = _pendingTimer != null && _pendingTimer.Enabled;
-	        if (!timerEnabled)
-		        return;
+			_subtractPalletValues = settings.AlgorithmSettings.EnablePalletSubtraction;
+			_palletHeightMm = settings.AlgorithmSettings.PalletHeightMm;
+			CreateAutoStartTimer(settings.AlgorithmSettings.EnableAutoTimer,
+				settings.AlgorithmSettings.TimeToStartMeasurementMs);
+		}
 
-	        _pendingTimer.Stop();
-	        SetDashboardStatus(DashboardStatus.Ready);
-        }
+		public void CancelPendingCalculation()
+		{
+			var timerEnabled = _pendingTimer != null && _pendingTimer.Enabled;
+			if (!timerEnabled)
+				return;
 
-        public void UpdateLockingStatus(bool isLocked)
-        {
-	        _isLocked = isLocked;
-        }
-        
-        public void UpdateBarcode(string barcode)
-        {
-	        if (CalculationRunning)
-		        return;
-	        
-	        _lastBarcode = barcode;
-        }
+			_pendingTimer.Stop();
+			SetDashboardStatus(DashboardStatus.Ready);
+		}
 
-        public void UpdateWeight(ScaleMeasurementData data)
-        {
-	        if (CalculationRunning || data == null)
-		        return;
+		public void UpdateLockingStatus(bool isLocked)
+		{
+			_isLocked = isLocked;
+		}
 
-	        _lastWeightGr = data.WeightGr;
-	        _lastWeighingStatus = data.Status;
-        }
+		public void UpdateBarcode(string barcode)
+		{
+			if (CalculationRunning)
+				return;
 
-        public void ValidateDashboardStatus()
-        {
-	        SetDashboardStatus(DashboardStatus.Ready);
-        }
-        
-        private void CreateAutoStartTimer(bool timerEnabled, long intervalMs)
-        {
-	        if (_pendingTimer != null)
-		        _pendingTimer.Elapsed -= OnMeasurementTimerElapsed;
+			_lastBarcode = barcode;
+		}
 
-	        if (timerEnabled)
-	        {
-		        _pendingTimer = new Timer(intervalMs) { AutoReset = false };
-		        _pendingTimer.Elapsed += OnMeasurementTimerElapsed;
-	        }
-	        else
-		        _pendingTimer = null;
-        }
+		public void UpdateWeight(ScaleMeasurementData data)
+		{
+			if (CalculationRunning || data == null)
+				return;
 
-        private void OnMeasurementTimerElapsed(object sender, ElapsedEventArgs e)
-        {
-	        StartCalculation(null);
-        }
+			_currentWeightGr = data.WeightGr;
+			_currentWeighingStatus = data.Status;
+		}
 
-        private void SetDashboardStatus(DashboardStatus status)
-        {
-	        _lastDashboardStatus = status;
-	        DashStatusUpdated?.Invoke(status);
-        }
-        
-        private void OnCalculationFinished(ObjectVolumeData result, CalculationStatus status, ImageData objectPhoto)
-        {
-            _logger.LogInfo("Calculation finished, processing results...");
+		public void ValidateDashboardStatus()
+		{
+			SetDashboardStatus(DashboardStatus.Ready);
+		}
 
-            var correctedUnitCount = _subtractPalletValues ? Math.Max(_lastUnitCount / 2, 1) : _lastUnitCount;
-            var correctedLength = (int) (_subtractPalletValues ? result.LengthMm / correctedUnitCount : result.LengthMm);
-            var correctedWidth = (int) (_subtractPalletValues ? result.WidthMm / correctedUnitCount : result.WidthMm); 
-            var correctedHeight = _subtractPalletValues ? result.HeightMm - _palletHeightMm : result.HeightMm;
-            var correctedVolume = correctedLength * correctedWidth * correctedHeight;
-			
-            var calculationResult = new CalculationResult(_calculationTime, _lastBarcode, _lastWeightGr, _selectedWeightUnits,
-                _lastUnitCount, correctedLength, correctedWidth, correctedHeight, correctedVolume, _lastComment, _subtractPalletValues);
-            var calculationResultData = new CalculationResultData(calculationResult, status, objectPhoto);
+		private void CreateAutoStartTimer(bool timerEnabled, long intervalMs)
+		{
+			if (_pendingTimer != null)
+				_pendingTimer.Elapsed -= OnMeasurementTimerElapsed;
 
-			_lastBarcode = "";
-			_calculationTime = DateTime.MinValue;
-			_lastWeightGr = 0.0;
+			if (timerEnabled)
+			{
+				_pendingTimer = new Timer(intervalMs) {AutoReset = false};
+				_pendingTimer.Elapsed += OnMeasurementTimerElapsed;
+			}
+			else
+			{
+				_pendingTimer = null;
+			}
+		}
 
-            UpdateVisualsWithResult(calculationResultData);
-            
-            CalculationFinished?.Invoke(calculationResultData);
+		private void OnMeasurementTimerElapsed(object sender, ElapsedEventArgs e)
+		{
+			StartCalculation(null);
+		}
 
-            _volumeCalculator = null;
+		private void SetDashboardStatus(DashboardStatus status)
+		{
+			_lastDashboardStatus = status;
+			DashStatusUpdated?.Invoke(status);
+		}
 
-            _logger.LogInfo("Done processing calculatiuon results");
-        }
-        
-        private bool CheckIfPreConditionsAreSatisfied(out string error)
-        {
-	        error = "";
-	        
-	        if (!CodeReady)
-	        {
-		        error = "Введите код объекта";
-		        _logger.LogInfo("barcode was required, but not entered");
+		private void OnCalculationFinished(ObjectVolumeData result, CalculationStatus status, ImageData objectPhoto)
+		{
+			try
+			{
+				_logger.LogInfo("Calculation finished, processing results...");
 
-		        return false;
-	        }
+				var correctedUnitCount = _subtractPalletValues ? Math.Max(_lastUnitCount / 2, 1) : _lastUnitCount;
+				var correctedLength =
+					(int) (_subtractPalletValues ? result.LengthMm / correctedUnitCount : result.LengthMm);
+				var correctedWidth =
+					(int) (_subtractPalletValues ? result.WidthMm / correctedUnitCount : result.WidthMm);
+				var correctedHeight = _subtractPalletValues ? result.HeightMm - _palletHeightMm : result.HeightMm;
+				var correctedVolume = correctedLength * correctedWidth * correctedHeight;
 
-	        if (_lastWeighingStatus != MeasurementStatus.Measured)
-	        {
-		        error = "Вес не стабилизирован";
-		        _logger.LogInfo("Weight was not stabilized");
-		        
-		        return false;
-	        }
+				var calculationResult = new CalculationResult(_calculationTime, _lastBarcode, _lastWeightGr,
+					_selectedWeightUnits, _lastUnitCount, correctedLength, correctedWidth, correctedHeight,
+					correctedVolume, _lastComment, _subtractPalletValues);
+				var calculationResultData = new CalculationResultData(calculationResult, status, objectPhoto);
 
-	        var killedProcess = IoUtils.KillProcess("Excel");
-	        if (killedProcess)
-		        return true;
+				_lastBarcode = "";
+				_calculationTime = DateTime.MinValue;
+				_lastWeightGr = 0.0;
 
-	        error = "Не удалось закрыть файл с результатами, убедитесь, что файл закрыт";
-	        _logger.LogInfo("Failed to access the result file");
+				UpdateVisualsWithResult(calculationResultData);
 
-	        return false;
-        }
+				CalculationFinished?.Invoke(calculationResultData);
 
-        private void UpdateAutoTimerStatus(object sender, ElapsedEventArgs e)
-        {
-	        if (_lastWeighingStatus == MeasurementStatus.Ready && WaitingForReset)
-		        SetDashboardStatus(DashboardStatus.Ready);
+				_volumeCalculator.CalculationFinished -= OnCalculationFinished;
+				_volumeCalculator = null;
 
-	        if (_pendingTimer == null)
-		        return;
+				_logger.LogInfo("Done processing calculation results");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to finalize calculation results", ex);
+			}
+			finally
+			{
+				CalculationRunning = false;
+			}
+		}
 
-	        if (_pendingTimer.Enabled)
-	        {
-		        if (_lastDashboardStatus != DashboardStatus.Pending)
-			        SetDashboardStatus(DashboardStatus.Pending);
+		private ErrorCode CheckIfPreConditionsAreSatisfied()
+		{
+			if (!CodeReady)
+			{
+				_logger.LogInfo("barcode was required, but not entered");
+				return ErrorCode.BarcodeNotEntered;
+			}
 
-		        if (CanRunAutoTimer)
-			        return;
+			if (_currentWeighingStatus != MeasurementStatus.Measured)
+			{
+				_logger.LogInfo("Weight was not stabilized");
+				return ErrorCode.WeightNotStable;
+			}
 
-		        _pendingTimer.Stop();
-		        SetDashboardStatus(DashboardStatus.Ready);
-	        }
-	        else
-	        {
-		        if (_lastDashboardStatus == DashboardStatus.Pending)
-			        SetDashboardStatus(DashboardStatus.Ready);
+			var killedProcess = IoUtils.KillProcess("Excel");
+			if (!killedProcess)
+			{
+				_logger.LogInfo("Failed to access the result file");
+				return ErrorCode.FileHandleOpen;
+			}
 
-		        if (!CanRunAutoTimer || _lastDashboardStatus == DashboardStatus.Pending)
-			        return;
+			return ErrorCode.None;
+		}
 
-		        _pendingTimer.Start();
-		        SetDashboardStatus(DashboardStatus.Pending);
-	        }
-        }
-        
+		private void UpdateAutoTimerStatus(object sender, ElapsedEventArgs e)
+		{
+			if (_lastWeighingStatus == MeasurementStatus.Ready && WaitingForReset)
+				SetDashboardStatus(DashboardStatus.Ready);
+
+			if (_pendingTimer == null)
+				return;
+
+			if (_pendingTimer.Enabled)
+			{
+				if (_lastDashboardStatus != DashboardStatus.Pending)
+					SetDashboardStatus(DashboardStatus.Pending);
+
+				if (CanRunAutoTimer)
+					return;
+
+				_pendingTimer.Stop();
+				SetDashboardStatus(DashboardStatus.Ready);
+			}
+			else
+			{
+				if (_lastDashboardStatus == DashboardStatus.Pending)
+					SetDashboardStatus(DashboardStatus.Ready);
+
+				if (!CanRunAutoTimer || _lastDashboardStatus == DashboardStatus.Pending)
+					return;
+
+				_pendingTimer.Start();
+				SetDashboardStatus(DashboardStatus.Pending);
+			}
+		}
+
 		private void UpdateVisualsWithResult(CalculationResultData resultData)
 		{
 			try
 			{
 				var calculationResult = resultData.Result;
-				CalculationStatusChanged?.Invoke(resultData.Status);
+				CalculationStatusChanged?.Invoke(resultData.Status, "");
 
 				SetDashboardStatus(resultData.Status == CalculationStatus.Successful
 					? DashboardStatus.Finished
@@ -324,50 +377,50 @@ namespace VolumeCalculator.Utils
 				switch (status)
 				{
 					case CalculationStatus.Error:
-						{
-							ErrorMessageUpdated?.Invoke("ошибка измерения");
-							SetDashboardStatus(DashboardStatus.Error);
-							_logger.LogError("Volume calculation finished with errors");
-							break;
-						}
+					{
+						CalculationStatusChanged?.Invoke(CalculationStatus.Error, "ошибка измерения");
+						SetDashboardStatus(DashboardStatus.Error);
+						_logger.LogError("Volume calculation finished with errors");
+						break;
+					}
 					case CalculationStatus.TimedOut:
-						{
-							ErrorMessageUpdated?.Invoke("нарушена связь с устройством");
-							SetDashboardStatus(DashboardStatus.Error);
-							_logger.LogError("Failed to acquire enough samples for volume calculation");
-							break;
-						}
+					{
+						CalculationStatusChanged?.Invoke(CalculationStatus.Error, "нарушена связь с устройством");
+						SetDashboardStatus(DashboardStatus.Error);
+						_logger.LogError("Failed to acquire enough samples for volume calculation");
+						break;
+					}
 					case CalculationStatus.Undefined:
-						{
-							SetDashboardStatus(DashboardStatus.Error);
-							_logger.LogError("No object was found during volume calculation");
-							break;
-						}
+					{
+						SetDashboardStatus(DashboardStatus.Error);
+						_logger.LogError("No object was found during volume calculation");
+						break;
+					}
 					case CalculationStatus.AbortedByUser:
-						{
-							ErrorMessageUpdated?.Invoke("измерение прервано");
-							SetDashboardStatus(DashboardStatus.Error);
-							_logger.LogError("Volume calculation was aborted");
-							break;
-						}
+					{
+						CalculationStatusChanged?.Invoke(CalculationStatus.Error, "измерение прервано");
+						SetDashboardStatus(DashboardStatus.Error);
+						_logger.LogError("Volume calculation was aborted");
+						break;
+					}
 					case CalculationStatus.Successful:
-						{
-							_logger.LogInfo(
-								$"Completed a volume check, L={calculationResult.ObjectLengthMm} W={calculationResult.ObjectWidthMm} H={calculationResult.ObjectHeightMm}");
-							break;
-						}
+					{
+						_logger.LogInfo(
+							$"Completed a volume check, L={calculationResult.ObjectLengthMm} W={calculationResult.ObjectWidthMm} H={calculationResult.ObjectHeightMm}");
+						break;
+					}
 					case CalculationStatus.FailedToSelectAlgorithm:
-						{
-							ErrorMessageUpdated?.Invoke("не удалось выбрать алгоритм");
-							SetDashboardStatus(DashboardStatus.Error);
-							break;
-						}
+					{
+						CalculationStatusChanged?.Invoke(CalculationStatus.Error, "не удалось выбрать алгоритм");
+						SetDashboardStatus(DashboardStatus.Error);
+						break;
+					}
 					case CalculationStatus.ObjectNotFound:
-						{
-							ErrorMessageUpdated?.Invoke("объект не найден");
-							SetDashboardStatus(DashboardStatus.Error);
-							break;
-						}
+					{
+						CalculationStatusChanged?.Invoke(CalculationStatus.Error, "объект не найден");
+						SetDashboardStatus(DashboardStatus.Error);
+						break;
+					}
 					default:
 						throw new ArgumentOutOfRangeException(nameof(status), status,
 							@"Failed to resolve failed calculation status");
@@ -378,5 +431,5 @@ namespace VolumeCalculator.Utils
 				_logger.LogException("Failed to process result data", ex);
 			}
 		}
-    }
+	}
 }

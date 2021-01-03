@@ -1,0 +1,101 @@
+﻿<UserControl x:Class="VolumeCalculator.GUI.MiscSettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:main="clr-namespace:VolumeCalculator"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             xmlns:primitives="clr-namespace:Primitives;assembly=Primitives"
+             mc:Ignorable="d"
+             x:ClassModifier="internal"
+             Height="Auto"
+             Width="Auto"
+             d:DataContext="{d:DesignInstance main:MiscSettingsControlVm}">
+    <UserControl.Resources>
+        <ObjectDataProvider x:Key="AllWeightUnits"
+                            MethodName="GetValues"
+                            ObjectType="{x:Type system:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="primitives:WeightUnits" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </UserControl.Resources>
+    <StackPanel Margin="10">
+        <StackPanel Margin="13, 3" Orientation="Horizontal">
+            <TextBlock Style="{StaticResource TextBlockStyle}" Text="Число образцов для измерения: "
+                       VerticalAlignment="Center" />
+            <TextBox Margin="2"
+                     Name="TbSampleCount"
+                     Width="50"
+                     TextAlignment="Center"
+                     Text="{Binding Path=SampleCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     MaxLength="2"
+                     PreviewTextInput="CheckNumericTextPreview" />
+        </StackPanel>
+        <StackPanel Margin="3">
+            <TextBlock Style="{StaticResource TextBlockStyle}"
+                       Margin="2,0"
+                       Text="Путь для сохранения результатов (будут записаны в 'results.csv)" />
+            <TextBox Style="{StaticResource TextBoxStyle}"
+                     Margin="2,2,2,0"
+                     Text="{Binding Path=OutputPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        </StackPanel>
+        <StackPanel Margin="3">
+            <CheckBox Name="CbEnableAutoTimer"
+                      Content="Разрешить автозапуск измерения"
+                      Style="{StaticResource CheckBoxStyle}"
+                      IsChecked="{Binding EnableAutoTimer, Mode=TwoWay}" />
+        </StackPanel>
+        <StackPanel Margin="3" IsEnabled="{Binding ElementName=CbEnableAutoTimer, Path=IsChecked}"
+                    Orientation="Horizontal" VerticalAlignment="Center">
+            <TextBlock Style="{StaticResource TextBlockStyle}"
+                       Text="Значение таймера до начала измерения, мс"
+                       VerticalAlignment="Center" />
+            <TextBox Style="{StaticResource TextBoxStyle}" Margin="3"
+                     Text="{Binding Path=TimeToStartMeasurementMs, Mode=TwoWay}"
+                     VerticalAlignment="Center" />
+        </StackPanel>
+        <StackPanel Margin="3">
+            <CheckBox Content="Обязательный ввод штрихкода"
+                      IsChecked="{Binding RequireBarcode, Mode=TwoWay}" />
+            <ComboBox ItemsSource="{Binding Source={StaticResource AllWeightUnits}}"
+                      SelectedItem="{Binding SelectedWeightUnits, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
+        <StackPanel Margin="3"
+                    Visibility="{Binding RangeMeterAvailable, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0"
+                       Text="Поправка показаний дальномера" />
+            <TextBox Style="{StaticResource TextBoxStyle}"
+                     Margin="2,2,2,0" Name="TbOutputPath"
+                     Text="{Binding Path=RangeMeterSubtractionValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        </StackPanel>
+        <CheckBox Content="Вычитание данных паллета"
+                  Style="{StaticResource CheckBoxStyle}"
+                  IsChecked="{Binding EnablePalletSubtraction, Mode=TwoWay}" />
+        <StackPanel Orientation="Horizontal"
+                    Margin="3"
+                    Visibility="{Binding EnablePalletSubtraction, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel Margin="3">
+                <TextBlock Style="{StaticResource TextBlockStyle}" Margin="2,0"
+                           Text="Вес паллета, кг" />
+                <TextBox Style="{StaticResource TextBoxStyle}"
+                         Margin="2,2,2,0"
+                         Text="{Binding Path=PalletWeightKg, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </StackPanel>
+            <StackPanel Margin="3">
+                <TextBlock Style="{StaticResource TextBlockStyle}"
+                           Margin="2,0"
+                           Text="Высота паллета, мм" />
+                <TextBox Style="{StaticResource TextBoxStyle}"
+                         Margin="2,2,2,0"
+                         Text="{Binding Path=PalletHeightMm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </StackPanel>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

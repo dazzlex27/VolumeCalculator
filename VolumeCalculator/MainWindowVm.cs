@@ -304,8 +304,7 @@ namespace VolumeCalculator
 				_dashboardControlVm.CalculationRequested += OnCalculationStartRequested;
 				_dashboardControlVm.LockingStatusChanged += _volumeCalculator.UpdateLockingStatus;
 				_volumeCalculator.DashStatusUpdated += _dashboardControlVm.UpdateDashStatus;
-				_volumeCalculator.ErrorMessageUpdated += _dashboardControlVm.UpdateErrorMessage;
-				
+
 				_testDataGenerationControlVm = new TestDataGenerationControlVm(_logger, _settings, frameProvider);
 
 				ApplicationSettingsChanged += OnApplicationSettingsChanged;
@@ -334,10 +333,11 @@ namespace VolumeCalculator
 			_volumeCalculator.StartCalculation(data);
 		}
 
-		private void OnStatusChanged(CalculationStatus status)
+		private void OnStatusChanged(CalculationStatus status, string message)
 		{
 			_requestProcessor.UpdateCalculationStatus(status);
 			_dashboardControlVm.UpdateState(status);
+			_dashboardControlVm.UpdateErrorMessage(message);
 		}
 
 		private void SaveSettings()

@@ -86,7 +86,15 @@
     <Compile Include="GUI\MaskPolygonControl.xaml.cs">
       <DependentUpon>MaskPolygonControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GUI\MiscSettingsControl.xaml.cs">
+      <DependentUpon>MiscSettingsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\WorkAreaSettingsControl.xaml.cs">
+      <DependentUpon>WorkAreaSettingsControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MaskPolygonControlVm.cs" />
+    <Compile Include="MiscSettingsControlVm.cs" />
+    <Compile Include="WorkAreaSettingsControlVm.cs" />
     <Compile Include="WorkAreaSettingsVm.cs" />
     <Compile Include="StatusWindowVm.cs" />
     <Compile Include="GUI\StatusWindow.xaml.cs">
@@ -142,6 +150,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="GUI\MiscSettingsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="GUI\StatusWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -155,6 +167,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="GUI\TestDataGenerationControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GUI\WorkAreaSettingsControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -13,6 +13,8 @@ namespace DeviceIntegration.RangeMeters
 		private const int Vid = 1155;
 		private const int Pid = 22352;
 
+		private readonly object _lock;
+
 		private readonly ILogger _logger;
 
 		private UsbDevice _teslaM70;
@@ -24,6 +26,8 @@ namespace DeviceIntegration.RangeMeters
 
 		public TeslaM70RangeMeter(ILogger logger)
 		{
+			_lock = new object();
+			
 			_logger = logger;
 			logger.LogInfo("Creating a TeslaM70 range meter...");
 			var deviceOpen = OpenDevice();
@@ -45,23 +49,29 @@ namespace DeviceIntegration.RangeMeters
 
 		public long GetReading()
 		{
-			SendReadCommand();
-			Thread.Sleep(500);
-			ReadCurrentRecord();
+			lock (_lock)
+			{
+				SendReadCommand();
+				Thread.Sleep(500);
+				ReadCurrentRecord();
 
-			var totalSubtractionValue = DefaultSubtractionValueMm + _subtractionValueMm;
-			var lastDistanceMm = _lastDistance / 10 - totalSubtractionValue;
-			_lastDistance = 0;
-			return lastDistanceMm;
+				var totalSubtractionValue = DefaultSubtractionValueMm + _subtractionValueMm;
+				var lastDistanceMm = _lastDistance / 10 - totalSubtractionValue;
+				_lastDistance = 0;
+				return lastDistanceMm;
+			}
 		}
 
 		public void ToggleLaser(bool enable)
 		{
-			if (!enable)
-				return;
+			lock (_lock)
+			{
+				if (!enable)
+					return;
 
-			SendClearCommand();
-			SendReadCommand();
+				SendClearCommand();
+				SendReadCommand();
+			}
 		}
 
 		private bool OpenDevice()

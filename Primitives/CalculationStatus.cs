@@ -5,11 +5,13 @@
 		Undefined,
 		Successful,
 		BarcodeNotEntered,
+		WeightNotStable,
 		Running,
 		AbortedByUser,
 		TimedOut,
 		Error,
 		FailedToSelectAlgorithm,
-		ObjectNotFound
+		ObjectNotFound,
+		FailedToCloseFiles
 	}
 }
