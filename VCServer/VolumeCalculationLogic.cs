@@ -103,7 +103,7 @@ namespace VCServer
 			CleanUp();
 			var result = new ObjectVolumeData(0, 0, 0);
 			var resultData = new VolumeCalculatorResultData(result, status, _latestColorFrame,
-					AlgorithmSelectionStatus.Undefined, false);
+					_selectedAlgorithm, false);
 			CalculationFinished?.Invoke(resultData);
 		}
 

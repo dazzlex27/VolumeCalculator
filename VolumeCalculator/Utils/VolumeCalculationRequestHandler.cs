@@ -25,7 +25,7 @@ namespace VolumeCalculator.Utils
 		private double _currentWeightGr;
 		private string _currentBarcode;
 		
-		private bool _isLocked;
+		private volatile bool _isLocked;
 		private string _lastBarcode;
 		private string _lastComment;
 		private DashboardStatus _currentDashboardStatus;
@@ -43,7 +43,7 @@ namespace VolumeCalculator.Utils
 		
 		private VolumeCalculationLogic _volumeCalculator;
 		
-		private bool _timerWasCancelled;
+		private volatile bool _timerWasCancelled;
 
 		public VolumeCalculationRequestHandler(ILogger logger, DepthMapProcessor dmProcessor,
 			IoDeviceManager deviceManager)
@@ -221,7 +221,8 @@ namespace VolumeCalculator.Utils
 			if (CalculationRunning || data == null)
 				return;
 
-			if (Math.Abs(_currentWeightGr - data.WeightGr) > 0.1 || data.Status != MeasurementStatus.Measuring)
+			var needToResetTimer = Math.Abs(_currentWeightGr - data.WeightGr) > 1 && _currentWeighingStatus != data.Status;
+			if (needToResetTimer)
 				_timerWasCancelled = false;	
 			
 			_currentWeightGr = data.WeightGr;
@@ -282,7 +283,7 @@ namespace VolumeCalculator.Utils
 				_calculationTime = DateTime.MinValue;
 				_lastWeightGr = 0.0;
 
-				UpdateVisualsWithResult(calculationResultData);
+				UpdateVisualsWithResult(calculationResultData.Result, resultData.Status);
 
 				CalculationFinished?.Invoke(calculationResultData);
 				LastAlgorithmUsedChanged?.Invoke(resultData.LastAlgorithmUsed.ToString(), resultData.WasRangeMeterUsed.ToString());
@@ -361,19 +362,10 @@ namespace VolumeCalculator.Utils
 			}
 		}
 
-		private void UpdateVisualsWithResult(CalculationResultData resultData)
+		private void UpdateVisualsWithResult(CalculationResult result, CalculationStatus status)
 		{
 			try
 			{
-				var calculationResult = resultData.Result;
-				CalculationStatusChanged?.Invoke(resultData.Status, "");
-
-				SetDashboardStatus(resultData.Status == CalculationStatus.Successful
-					? DashboardStatus.Finished
-					: DashboardStatus.Error);
-
-				var status = resultData.Status;
-
 				switch (status)
 				{
 					case CalculationStatus.Error:
@@ -406,7 +398,7 @@ namespace VolumeCalculator.Utils
 					case CalculationStatus.Successful:
 					{
 						_logger.LogInfo(
-							$"Completed a volume check, L={calculationResult.ObjectLengthMm} W={calculationResult.ObjectWidthMm} H={calculationResult.ObjectHeightMm}");
+							$"Completed a volume check, L={result.ObjectLengthMm} W={result.ObjectWidthMm} H={result.ObjectHeightMm}");
 						break;
 					}
 					case CalculationStatus.FailedToSelectAlgorithm:
