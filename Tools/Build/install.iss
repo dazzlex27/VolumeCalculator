@@ -1,11 +1,10 @@
 #define private VendorName "IS"
 #define private ApplicationName "VolumeCalculator"
-#define private ApplicationVersion "1.69"
-#define private BinPath "..\..\!!bin\"
-#define private SourcePath = BinPath + "x64\Release\"
+#define private ApplicationVersion "1.69 DT"
 #define private RootPath = "..\..\"
-#define private ObfuscatedPath SourcePath + "Confused"
-#define private OutputPath BinPath + "Installers"
+#define private SourcePath = RootPath + "!!bin\x64\Release\"
+#define private ObfuscatedPath SourcePath + "Confused\"
+#define private OutputPath RootPath + "!!distribs\"
 
 [CustomMessages]
 MsgInstallingRedist =Installing Visual C++ Redistributable 2015...
