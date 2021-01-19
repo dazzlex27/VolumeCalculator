@@ -9,7 +9,7 @@
 		Running,
 		AbortedByUser,
 		TimedOut,
-		Error,
+		CalculationError,
 		FailedToSelectAlgorithm,
 		ObjectNotFound,
 		FailedToCloseFiles,

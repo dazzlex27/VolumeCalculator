@@ -93,6 +93,7 @@
       <DependentUpon>WorkAreaSettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utils\GuiUtils.cs" />
+    <Compile Include="Utils\StateData.cs" />
     <Compile Include="ViewModels\CalculationDashboardControlVm.cs" />
     <Compile Include="ViewModels\MainWindowVm.cs" />
     <Compile Include="ViewModels\MaskPolygonControlVm.cs" />

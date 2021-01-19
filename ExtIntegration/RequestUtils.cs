@@ -32,7 +32,7 @@ namespace ExtIntegration
 						content.Add(new XElement("photo", photo));
 					}
 					break;
-				case CalculationStatus.Error:
+				case CalculationStatus.CalculationError:
 					content = new XElement("calculationResult", "Failed to start calculation");
 					break;
 				case CalculationStatus.AbortedByUser:

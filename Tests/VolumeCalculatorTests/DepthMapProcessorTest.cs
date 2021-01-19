@@ -100,7 +100,7 @@ namespace VolumeCalculatorTests
 		}
 
 		[Test]
-		public void SelectAlgorithm_WhenOnlyDm1IsAvailable_ReturnsDm1Result()
+		public void SelectAlgorithm_WhenOnlyDm1IsAvailable_ReturnsNoObjectFound()
 		{
 			var image = new ImageData(1, 1, new byte[3], 3);
 			var map = new DepthMap(1, 1, new short[1]);
@@ -110,12 +110,12 @@ namespace VolumeCalculatorTests
 			{
 				var data = new AlgorithmSelectionData(map, image, 0, true, false, false, "");
 				var algorithmSelectionResult = processor.SelectAlgorithm(data);
-				Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.Dm1);
+				Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoObjectFound);
 			}
 		}
 
 		[Test]
-		public void SelectAlgorithm_WhenOnlyDm2IsAvailable_ReturnsDm2Result()
+		public void SelectAlgorithm_WhenOnlyDm2IsAvailable_ReturnsNoObjectFound()
 		{
 			var image = new ImageData(1, 1, new byte[3], 3);
 			var map = new DepthMap(1, 1, new short[1]);
@@ -125,12 +125,12 @@ namespace VolumeCalculatorTests
 			{
 				var data = new AlgorithmSelectionData(map, image, 0, false, true, false, "");
 				var algorithmSelectionResult = processor.SelectAlgorithm(data);
-				Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.Dm2);
+				Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoObjectFound);
 			}
 		}
 
 		[Test]
-		public void SelectAlgorithm_WhenOnlyRgbIsAvailable_ReturnsRgbResult()
+		public void SelectAlgorithm_WhenOnlyRgbIsAvailable_ReturnsNoObjectFound()
 		{
 			var image = new ImageData(1, 1, new byte[3], 3);
 			var map = new DepthMap(1, 1, new short[1]);
@@ -140,7 +140,7 @@ namespace VolumeCalculatorTests
 			{
 				var data = new AlgorithmSelectionData(map, image, 0, false, false, true, "");
 				var algorithmSelectionResult = processor.SelectAlgorithm(data);
-				Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.Rgb);
+				Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoObjectFound);
 			}
 		}
 

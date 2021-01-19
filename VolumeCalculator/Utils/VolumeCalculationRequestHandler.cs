@@ -167,7 +167,7 @@ namespace VolumeCalculator.Utils
 				{
 					_logger.LogException("Failed to start volume calculation", ex);
 					SetDashboardStatus(DashboardStatus.Error);
-					CalculationStatusChanged?.Invoke(CalculationStatus.Error, "Неизвестная ошибка");
+					CalculationStatusChanged?.Invoke(CalculationStatus.CalculationError, "Неизвестная ошибка");
 					CalculationRunning = false;
 				}
 			});
@@ -222,8 +222,8 @@ namespace VolumeCalculator.Utils
 				return;
 
 			var needToResetTimer = Math.Abs(_currentWeightGr - data.WeightGr) > 1 && _currentWeighingStatus != data.Status;
-			if (needToResetTimer)
-				_timerWasCancelled = false;	
+			if (needToResetTimer && !WaitingForReset)
+				_timerWasCancelled = false;
 			
 			_currentWeightGr = data.WeightGr;
 			_currentWeighingStatus = data.Status;
@@ -263,6 +263,8 @@ namespace VolumeCalculator.Utils
 		{
 			try
 			{
+				_timerWasCancelled = true;
+				
 				var result = resultData.Result;
 				_logger.LogInfo("Calculation finished, processing results...");
 
@@ -291,9 +293,6 @@ namespace VolumeCalculator.Utils
 				_volumeCalculator.CalculationFinished -= OnCalculationFinished;
 				_volumeCalculator = null;
 				
-				if (resultData.Status != CalculationStatus.Successful)
-					_timerWasCancelled = true;
-
 				_logger.LogInfo("Done processing calculation results");
 			}
 			catch (Exception ex)
@@ -366,57 +365,9 @@ namespace VolumeCalculator.Utils
 		{
 			try
 			{
-				switch (status)
-				{
-					case CalculationStatus.Error:
-					{
-						CalculationStatusChanged?.Invoke(CalculationStatus.Error, "ошибка измерения");
-						SetDashboardStatus(DashboardStatus.Error);
-						_logger.LogError("Volume calculation finished with errors");
-						break;
-					}
-					case CalculationStatus.TimedOut:
-					{
-						CalculationStatusChanged?.Invoke(CalculationStatus.Error, "нарушена связь с устройством");
-						SetDashboardStatus(DashboardStatus.Error);
-						_logger.LogError("Failed to acquire enough samples for volume calculation");
-						break;
-					}
-					case CalculationStatus.Undefined:
-					{
-						SetDashboardStatus(DashboardStatus.Error);
-						_logger.LogError("No object was found during volume calculation");
-						break;
-					}
-					case CalculationStatus.AbortedByUser:
-					{
-						CalculationStatusChanged?.Invoke(CalculationStatus.Error, "измерение прервано");
-						SetDashboardStatus(DashboardStatus.Error);
-						_logger.LogError("Volume calculation was aborted");
-						break;
-					}
-					case CalculationStatus.Successful:
-					{
-						_logger.LogInfo(
-							$"Completed a volume check, L={result.ObjectLengthMm} W={result.ObjectWidthMm} H={result.ObjectHeightMm}");
-						break;
-					}
-					case CalculationStatus.FailedToSelectAlgorithm:
-					{
-						CalculationStatusChanged?.Invoke(CalculationStatus.Error, "не удалось выбрать алгоритм");
-						SetDashboardStatus(DashboardStatus.Error);
-						break;
-					}
-					case CalculationStatus.ObjectNotFound:
-					{
-						CalculationStatusChanged?.Invoke(CalculationStatus.Error, "объект не найден");
-						SetDashboardStatus(DashboardStatus.Error);
-						break;
-					}
-					default:
-						throw new ArgumentOutOfRangeException(nameof(status), status,
-							@"Failed to resolve failed calculation status");
-				}
+				var stateData = GuiUtils.GetDashStatusAfterCalculation(result, status, _logger);
+				CalculationStatusChanged?.Invoke(status, stateData.Message);
+				SetDashboardStatus(stateData.DashStatus);
 			}
 			catch (Exception ex)
 			{

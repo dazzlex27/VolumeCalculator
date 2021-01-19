@@ -154,7 +154,7 @@ namespace VCServer
 			CleanUp();
 			
 			var totalResult = AggregateCalculationsData();
-			var resultStatus = totalResult != null ? CalculationStatus.Successful : CalculationStatus.Error;
+			var resultStatus = totalResult != null ? CalculationStatus.Successful : CalculationStatus.CalculationError;
 
 			var resultData =
 				new VolumeCalculatorResultData(totalResult, resultStatus, _latestColorFrame, _selectedAlgorithm,
