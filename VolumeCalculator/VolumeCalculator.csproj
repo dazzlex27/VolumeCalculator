@@ -93,7 +93,6 @@
       <DependentUpon>WorkAreaSettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utils\GuiUtils.cs" />
-    <Compile Include="Utils\StateData.cs" />
     <Compile Include="ViewModels\CalculationDashboardControlVm.cs" />
     <Compile Include="ViewModels\MainWindowVm.cs" />
     <Compile Include="ViewModels\MaskPolygonControlVm.cs" />
@@ -120,7 +119,6 @@
     <Compile Include="GUI\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Utils\CalculationRequestHandler.cs" />
     <Compile Include="ViewModels\WorkAreaSettingsVm.cs" />
     <Page Include="GUI\AutoClosingMessageBox.xaml">
       <SubType>Designer</SubType>

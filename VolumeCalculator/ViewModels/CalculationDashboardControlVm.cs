@@ -291,12 +291,12 @@ namespace VolumeCalculator
 			});
 		}
 
-		public void UpdateCalculationStatus(CalculationStatus status, string message)
+		public void UpdateCalculationStatus(CalculationStatus status)
 		{
 			if (status == CalculationStatus.InProgress)
 				_barcodeResetTimer.Stop();
-			
-			_lastErrorMessage = message;
+
+			_lastErrorMessage = GuiUtils.GetErrorMessageFromCalculationStatus(status);;
 		}
 
 		public void UpdateDashStatus(DashboardStatus status)

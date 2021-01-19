@@ -7,11 +7,10 @@ using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 using ProcessingUtils;
-using VCServer;
 
-namespace VolumeCalculator.Utils
+namespace VCServer
 {
-	internal class CalculationRequestHandler : IDisposable
+	public class CalculationRequestHandler : IDisposable
 	{
 		private readonly ILogger _logger;
 		private readonly DepthMapProcessor _dmProcessor;
@@ -90,8 +89,7 @@ namespace VolumeCalculator.Utils
 		}
 
 		public event Action<CalculationResultData> CalculationFinished;
-		public event Action<string, string> ErrorOccured;
-		public event Action<CalculationStatus, string> CalculationStatusChanged;
+		public event Action<CalculationStatus> CalculationStatusChanged;
 		public event Action<string, string> LastAlgorithmUsedChanged;
 
 		public void StartCalculation(CalculationRequestData data)
@@ -120,17 +118,16 @@ namespace VolumeCalculator.Utils
 					}
 
 					var preConditionEvaluationResult = CheckIfPreConditionsAreSatisfied();
-					if (preConditionEvaluationResult != ErrorCode.None)
+					if (preConditionEvaluationResult != CalculationStatus.Undefined)
 					{
-						var status = GuiUtils.GetCalculationStatus(preConditionEvaluationResult, out var errorMessage);
-
-						CalculationStatusChanged?.Invoke(status, errorMessage);
-						CalculationFinished?.Invoke(new CalculationResultData(null, status, null));
+						CalculationStatusChanged?.Invoke(preConditionEvaluationResult);
+						var resultData = new CalculationResultData(null, preConditionEvaluationResult, null);
+						CalculationFinished?.Invoke(resultData);
 						CalculationRunning = false;
 						return;
 					}
 					
-					CalculationStatusChanged?.Invoke(CalculationStatus.InProgress, "");
+					CalculationStatusChanged?.Invoke(CalculationStatus.InProgress);
 
 					if (data == null)
 						_lastBarcode = _currentBarcode;
@@ -163,7 +160,7 @@ namespace VolumeCalculator.Utils
 				{
 					_logger.LogException("Failed to start volume calculation", ex);
 					var status = CalculationStatus.FailedToStart;
-					CalculationStatusChanged?.Invoke(status, "не удалось запустить измерение");
+					CalculationStatusChanged?.Invoke(status);
 					CalculationFinished?.Invoke(new CalculationResultData(null, status, null));
 					CalculationRunning = false;
 				}
@@ -196,7 +193,7 @@ namespace VolumeCalculator.Utils
 
 			_timerWasCancelled = true;
 			_pendingTimer.Stop();
-			CalculationStatusChanged?.Invoke(CalculationStatus.Undefined, "");
+			CalculationStatusChanged?.Invoke(CalculationStatus.Undefined);
 		}
 
 		public void UpdateLockingStatus(bool isLocked)
@@ -206,7 +203,7 @@ namespace VolumeCalculator.Utils
 		
 		public void ValidateStatus()
 		{
-			CalculationStatusChanged?.Invoke(CalculationStatus.Undefined, "");
+			CalculationStatusChanged?.Invoke(CalculationStatus.Undefined);
 		}
 
 		public void UpdateBarcode(string barcode)
@@ -276,8 +273,7 @@ namespace VolumeCalculator.Utils
 				_calculationTime = DateTime.MinValue;
 				_lastWeightGr = 0.0;
 
-				UpdateVisualsWithResult(calculationResultData.Result, resultData.Status);
-
+				CalculationStatusChanged?.Invoke(resultData.Status);
 				CalculationFinished?.Invoke(calculationResultData);
 				LastAlgorithmUsedChanged?.Invoke(resultData.LastAlgorithmUsed.ToString(), resultData.WasRangeMeterUsed.ToString());
 				
@@ -297,28 +293,28 @@ namespace VolumeCalculator.Utils
 			}
 		}
 
-		private ErrorCode CheckIfPreConditionsAreSatisfied()
+		private CalculationStatus CheckIfPreConditionsAreSatisfied()
 		{
 			if (!CodeReady)
 			{
 				_logger.LogInfo("barcode was required, but not entered");
-				return ErrorCode.BarcodeNotEntered;
+				return CalculationStatus.BarcodeNotEntered;
 			}
 
 			if (_currentWeighingStatus != MeasurementStatus.Measured)
 			{
 				_logger.LogInfo("Weight was not stabilized");
-				return ErrorCode.WeightNotStable;
+				return CalculationStatus.WeightNotStable;
 			}
 
 			var killedProcess = IoUtils.KillProcess("Excel");
 			if (!killedProcess)
 			{
 				_logger.LogInfo("Failed to access the result file");
-				return ErrorCode.FileHandleOpen;
+				return CalculationStatus.FailedToCloseFiles;
 			}
 
-			return ErrorCode.None;
+			return CalculationStatus.Undefined;
 		}
 
 		private void RunUpdateRoutine(object sender, ElapsedEventArgs e)
@@ -326,7 +322,7 @@ namespace VolumeCalculator.Utils
 			if (_waitingForReset && _currentWeighingStatus == MeasurementStatus.Ready)
 			{
 				_waitingForReset = false;
-				CalculationStatusChanged?.Invoke(CalculationStatus.Undefined, "");
+				CalculationStatusChanged?.Invoke(CalculationStatus.Undefined);
 			}
 
 			if (_pendingTimer == null)
@@ -340,13 +336,13 @@ namespace VolumeCalculator.Utils
 			
 			if (_pendingTimer.Enabled)
 			{
-				CalculationStatusChanged?.Invoke(CalculationStatus.Pending, "");
+				CalculationStatusChanged?.Invoke(CalculationStatus.Pending);
 
 				if (CanRunAutoTimer)
 					return;
 
 				_pendingTimer.Stop();
-				CalculationStatusChanged?.Invoke(CalculationStatus.Undefined, "");
+				CalculationStatusChanged?.Invoke(CalculationStatus.Undefined);
 			}
 			else
 			{
@@ -354,20 +350,7 @@ namespace VolumeCalculator.Utils
 					return;
 
 				_pendingTimer.Start();
-				CalculationStatusChanged?.Invoke(CalculationStatus.Pending, "");
-			}
-		}
-
-		private void UpdateVisualsWithResult(CalculationResult result, CalculationStatus status)
-		{
-			try
-			{
-				var stateData = GuiUtils.GetDashStatusAfterCalculation(result, status, _logger);
-				CalculationStatusChanged?.Invoke(status, stateData.Message);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogException("Failed to process result data", ex);
+				CalculationStatusChanged?.Invoke(CalculationStatus.Pending);
 			}
 		}
 	}

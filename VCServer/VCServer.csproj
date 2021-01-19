@@ -38,6 +38,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CalculationRequestHandler.cs" />
     <Compile Include="DeviceSet.cs" />
     <Compile Include="DeviceSetFactory.cs" />
     <Compile Include="IoDeviceManager.cs" />

@@ -272,7 +272,6 @@ namespace VolumeCalculator
 				_calculator = new CalculationRequestHandler(_logger, _dmProcessor, _deviceManager);
 				_calculator.UpdateSettings(Settings);
 				_calculator.CalculationFinished += OnCalculationFinished;
-				_calculator.ErrorOccured += ShowMessageBox;
 				_calculator.CalculationStatusChanged += OnStatusChanged;
 
 				_logger.LogInfo("Sub systems - ok");
@@ -336,11 +335,11 @@ namespace VolumeCalculator
 			_calculator.StartCalculation(data);
 		}
 
-		private void OnStatusChanged(CalculationStatus status, string message)
+		private void OnStatusChanged(CalculationStatus status)
 		{
 			_requestProcessor.UpdateCalculationStatus(status);
 			_dashStatusUpdater.UpdateCalculationStatus(status);
-			_dashboardControlVm.UpdateCalculationStatus(status, message);
+			_dashboardControlVm.UpdateCalculationStatus(status);
 		}
 
 		private void SaveSettings()
@@ -482,11 +481,6 @@ namespace VolumeCalculator
 			var settingsAreOk = Settings?.IoSettings != null;
 			var needToshutDownPc = !settingsAreOk || Settings.GeneralSettings.ShutDownPcByDefault;
 			ShutDown(needToshutDownPc, true);
-		}
-		
-		private void ShowMessageBox(string message, string caption)
-		{
-			Dispatcher.Invoke(() => { AutoClosingMessageBox.Show(message, caption); });
 		}
 	}
 }
