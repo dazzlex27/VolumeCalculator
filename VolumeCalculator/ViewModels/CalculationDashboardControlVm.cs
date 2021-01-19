@@ -291,10 +291,12 @@ namespace VolumeCalculator
 			});
 		}
 
-		public void UpdateState(CalculationStatus status)
+		public void UpdateCalculationStatus(CalculationStatus status, string message)
 		{
-			if (status == CalculationStatus.Running)
+			if (status == CalculationStatus.InProgress)
 				_barcodeResetTimer.Stop();
+			
+			_lastErrorMessage = message;
 		}
 
 		public void UpdateDashStatus(DashboardStatus status)
@@ -442,12 +444,7 @@ namespace VolumeCalculator
 			UnitCount = 0;
 			Comment = "";
 		}
-
-		public void UpdateErrorMessage(string message)
-		{
-			_lastErrorMessage = message;
-		}
-
+		
 		private void UpdateLockingStatus()
 		{
 			LockingStatusChanged?.Invoke(CanAcceptBarcodes);

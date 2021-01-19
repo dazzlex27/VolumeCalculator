@@ -11,13 +11,14 @@ using VCServer;
 
 namespace VolumeCalculator.Utils
 {
-	internal class VolumeCalculationRequestHandler : IDisposable
+	internal class CalculationRequestHandler : IDisposable
 	{
-		private readonly Timer _autoStartingCheckingTimer;
-		private readonly IoDeviceManager _deviceManager;
-		private readonly DepthMapProcessor _dmProcessor;
-
 		private readonly ILogger _logger;
+		private readonly DepthMapProcessor _dmProcessor;
+		private readonly IoDeviceManager _deviceManager;
+		
+		private readonly Timer _autoStartingCheckingTimer;
+
 		private DateTime _calculationTime;
 
 		private volatile MeasurementStatus _currentWeighingStatus;
@@ -28,7 +29,6 @@ namespace VolumeCalculator.Utils
 		private volatile bool _isLocked;
 		private string _lastBarcode;
 		private string _lastComment;
-		private DashboardStatus _currentDashboardStatus;
 
 		private uint _lastUnitCount;
 		private double _lastWeightGr;
@@ -44,8 +44,9 @@ namespace VolumeCalculator.Utils
 		private VolumeCalculationLogic _volumeCalculator;
 		
 		private volatile bool _timerWasCancelled;
+		private bool _waitingForReset;
 
-		public VolumeCalculationRequestHandler(ILogger logger, DepthMapProcessor dmProcessor,
+		public CalculationRequestHandler(ILogger logger, DepthMapProcessor dmProcessor,
 			IoDeviceManager deviceManager)
 		{
 			_logger = logger;
@@ -75,15 +76,13 @@ namespace VolumeCalculator.Utils
 			get
 			{
 				var inputDataReady = CodeReady && WeightReady;
-				var stateReady = !_isLocked && !WaitingForReset && !_timerWasCancelled;
+				var stateReady = !_isLocked && !_timerWasCancelled;
 
 				return inputDataReady && stateReady && !CalculationRunning;
 			}
 		}
 
 		private bool WeightReady => _currentWeighingStatus == MeasurementStatus.Measured && _currentWeightGr > 0.001;
-
-		private bool WaitingForReset => _currentDashboardStatus == DashboardStatus.Finished;
 
 		public void Dispose()
 		{
@@ -92,7 +91,6 @@ namespace VolumeCalculator.Utils
 
 		public event Action<CalculationResultData> CalculationFinished;
 		public event Action<string, string> ErrorOccured;
-		public event Action<DashboardStatus> DashStatusUpdated;
 		public event Action<CalculationStatus, string> CalculationStatusChanged;
 		public event Action<string, string> LastAlgorithmUsedChanged;
 
@@ -128,13 +126,11 @@ namespace VolumeCalculator.Utils
 
 						CalculationStatusChanged?.Invoke(status, errorMessage);
 						CalculationFinished?.Invoke(new CalculationResultData(null, status, null));
-						SetDashboardStatus(DashboardStatus.Error);
 						CalculationRunning = false;
 						return;
 					}
 					
-					SetDashboardStatus(DashboardStatus.InProgress);
-					CalculationStatusChanged?.Invoke(CalculationStatus.Running, "");
+					CalculationStatusChanged?.Invoke(CalculationStatus.InProgress, "");
 
 					if (data == null)
 						_lastBarcode = _currentBarcode;
@@ -166,8 +162,9 @@ namespace VolumeCalculator.Utils
 				catch (Exception ex)
 				{
 					_logger.LogException("Failed to start volume calculation", ex);
-					SetDashboardStatus(DashboardStatus.Error);
-					CalculationStatusChanged?.Invoke(CalculationStatus.CalculationError, "Неизвестная ошибка");
+					var status = CalculationStatus.FailedToStart;
+					CalculationStatusChanged?.Invoke(status, "не удалось запустить измерение");
+					CalculationFinished?.Invoke(new CalculationResultData(null, status, null));
 					CalculationRunning = false;
 				}
 			});
@@ -199,12 +196,17 @@ namespace VolumeCalculator.Utils
 
 			_timerWasCancelled = true;
 			_pendingTimer.Stop();
-			SetDashboardStatus(DashboardStatus.Ready);
+			CalculationStatusChanged?.Invoke(CalculationStatus.Undefined, "");
 		}
 
 		public void UpdateLockingStatus(bool isLocked)
 		{
 			_isLocked = isLocked;
+		}
+		
+		public void ValidateStatus()
+		{
+			CalculationStatusChanged?.Invoke(CalculationStatus.Undefined, "");
 		}
 
 		public void UpdateBarcode(string barcode)
@@ -222,16 +224,11 @@ namespace VolumeCalculator.Utils
 				return;
 
 			var needToResetTimer = Math.Abs(_currentWeightGr - data.WeightGr) > 1 && _currentWeighingStatus != data.Status;
-			if (needToResetTimer && !WaitingForReset)
+			if (needToResetTimer)
 				_timerWasCancelled = false;
 			
 			_currentWeightGr = data.WeightGr;
 			_currentWeighingStatus = data.Status;
-		}
-
-		public void ValidateDashboardStatus()
-		{
-			SetDashboardStatus(DashboardStatus.Ready);
 		}
 
 		private void CreateAutoStartTimer(bool timerEnabled, long intervalMs)
@@ -251,12 +248,6 @@ namespace VolumeCalculator.Utils
 		private void OnMeasurementTimerElapsed(object sender, ElapsedEventArgs e)
 		{
 			StartCalculation(null);
-		}
-
-		private void SetDashboardStatus(DashboardStatus status)
-		{
-			_currentDashboardStatus = status;
-			DashStatusUpdated?.Invoke(status);
 		}
 
 		private void OnCalculationFinished(VolumeCalculatorResultData resultData)
@@ -302,6 +293,7 @@ namespace VolumeCalculator.Utils
 			finally
 			{
 				CalculationRunning = false;
+				_waitingForReset = true;
 			}
 		}
 
@@ -331,33 +323,38 @@ namespace VolumeCalculator.Utils
 
 		private void RunUpdateRoutine(object sender, ElapsedEventArgs e)
 		{
-			if (_currentWeighingStatus == MeasurementStatus.Ready && WaitingForReset)
-				SetDashboardStatus(DashboardStatus.Ready);
+			if (_waitingForReset && _currentWeighingStatus == MeasurementStatus.Ready)
+			{
+				_waitingForReset = false;
+				CalculationStatusChanged?.Invoke(CalculationStatus.Undefined, "");
+			}
 
 			if (_pendingTimer == null)
 				return;
 
+			if (CalculationRunning)
+			{
+				_pendingTimer?.Stop();
+				return;
+			}
+			
 			if (_pendingTimer.Enabled)
 			{
-				if (_currentDashboardStatus != DashboardStatus.Pending)
-					SetDashboardStatus(DashboardStatus.Pending);
+				CalculationStatusChanged?.Invoke(CalculationStatus.Pending, "");
 
 				if (CanRunAutoTimer)
 					return;
 
 				_pendingTimer.Stop();
-				SetDashboardStatus(DashboardStatus.Ready);
+				CalculationStatusChanged?.Invoke(CalculationStatus.Undefined, "");
 			}
 			else
 			{
-				if (_currentDashboardStatus == DashboardStatus.Pending)
-					SetDashboardStatus(DashboardStatus.Ready);
-
-				if (!CanRunAutoTimer || _currentDashboardStatus == DashboardStatus.Pending)
+				if (!CanRunAutoTimer)// || _currentDashboardStatus == DashboardStatus.Pending)
 					return;
 
 				_pendingTimer.Start();
-				SetDashboardStatus(DashboardStatus.Pending);
+				CalculationStatusChanged?.Invoke(CalculationStatus.Pending, "");
 			}
 		}
 
@@ -367,7 +364,6 @@ namespace VolumeCalculator.Utils
 			{
 				var stateData = GuiUtils.GetDashStatusAfterCalculation(result, status, _logger);
 				CalculationStatusChanged?.Invoke(status, stateData.Message);
-				SetDashboardStatus(stateData.DashStatus);
 			}
 			catch (Exception ex)
 			{

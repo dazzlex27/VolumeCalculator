@@ -120,7 +120,7 @@
     <Compile Include="GUI\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Utils\VolumeCalculationRequestHandler.cs" />
+    <Compile Include="Utils\CalculationRequestHandler.cs" />
     <Compile Include="ViewModels\WorkAreaSettingsVm.cs" />
     <Page Include="GUI\AutoClosingMessageBox.xaml">
       <SubType>Designer</SubType>
