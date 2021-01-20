@@ -10,11 +10,11 @@ using ProcessingUtils;
 
 namespace VCServer
 {
-	public class CalculationRequestHandler : IDisposable
+	public class CalculationDataAggregator : IDisposable
 	{
 		private readonly ILogger _logger;
 		private readonly DepthMapProcessor _dmProcessor;
-		private readonly HardwareManager _deviceManager;
+		private readonly IoDeviceManager _deviceManager;
 		
 		private readonly Timer _autoStartingCheckingTimer;
 
@@ -46,7 +46,7 @@ namespace VCServer
 		private bool _waitingForReset;
 
 		public CalculationRequestHandler(ILogger logger, DepthMapProcessor dmProcessor,
-			HardwareManager deviceManager)
+			IoDeviceManager deviceManager)
 		{
 			_logger = logger;
 			_dmProcessor = dmProcessor;
@@ -118,7 +118,7 @@ namespace VCServer
 					}
 
 					var preConditionEvaluationResult = CheckIfPreConditionsAreSatisfied();
-					if (preConditionEvaluationResult != CalculationStatus.Ready)
+					if (preConditionEvaluationResult != CalculationStatus.Undefined)
 					{
 						CalculationStatusChanged?.Invoke(preConditionEvaluationResult);
 						var resultData = new CalculationResultData(null, preConditionEvaluationResult, null);
@@ -193,7 +193,7 @@ namespace VCServer
 
 			_timerWasCancelled = true;
 			_pendingTimer.Stop();
-			CalculationStatusChanged?.Invoke(CalculationStatus.Ready);
+			CalculationStatusChanged?.Invoke(CalculationStatus.Undefined);
 		}
 
 		public void UpdateLockingStatus(bool isLocked)
@@ -203,7 +203,7 @@ namespace VCServer
 		
 		public void ValidateStatus()
 		{
-			CalculationStatusChanged?.Invoke(CalculationStatus.Ready);
+			CalculationStatusChanged?.Invoke(CalculationStatus.Undefined);
 		}
 
 		public void UpdateBarcode(string barcode)
@@ -314,7 +314,7 @@ namespace VCServer
 				return CalculationStatus.FailedToCloseFiles;
 			}
 
-			return CalculationStatus.Ready;
+			return CalculationStatus.Undefined;
 		}
 
 		private void RunUpdateRoutine(object sender, ElapsedEventArgs e)
@@ -322,7 +322,7 @@ namespace VCServer
 			if (_waitingForReset && _currentWeighingStatus == MeasurementStatus.Ready)
 			{
 				_waitingForReset = false;
-				CalculationStatusChanged?.Invoke(CalculationStatus.Ready);
+				CalculationStatusChanged?.Invoke(CalculationStatus.Undefined);
 			}
 
 			if (_pendingTimer == null)
@@ -342,7 +342,7 @@ namespace VCServer
 					return;
 
 				_pendingTimer.Stop();
-				CalculationStatusChanged?.Invoke(CalculationStatus.Ready);
+				CalculationStatusChanged?.Invoke(CalculationStatus.Undefined);
 			}
 			else
 			{

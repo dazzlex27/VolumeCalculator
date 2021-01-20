@@ -32,8 +32,7 @@ namespace VolumeCalculator
 		private CalculationRequestHandler _calculator;
 		private DepthMapProcessor _dmProcessor;
 		private RequestProcessor _requestProcessor;
-		private IoDeviceManager _deviceManager;
-		private DashStatusUpdater _dashStatusUpdater;
+		private HardwareManager _deviceManager;
 		private CalculationResultFileProcessor _calculationResultFileProcessor;
 
 		private StreamViewControlVm _streamViewControlVm;
@@ -219,7 +218,7 @@ namespace VolumeCalculator
 				_logger.LogInfo("Initializing IO devices...");
 				var deviceLogger = new Logger("devices");
 
-				_deviceManager = new IoDeviceManager(deviceLogger, _httpClient, Settings.IoSettings);
+				_deviceManager = new HardwareManager(deviceLogger, _httpClient, Settings.IoSettings);
 				_deviceManager.BarcodeReady += OnBarcodeReady;
 				_deviceManager.WeightMeasurementReady += OnWeightMeasurementReady;
 
@@ -267,8 +266,6 @@ namespace VolumeCalculator
 				var outputPath = _settings.GeneralSettings.OutputPath;
 				_calculationResultFileProcessor = new CalculationResultFileProcessor(integrationLogger, outputPath);
 
-				_dashStatusUpdater = new DashStatusUpdater(_logger, _deviceManager);
-
 				_calculator = new CalculationRequestHandler(_logger, _dmProcessor, _deviceManager);
 				_calculator.UpdateSettings(Settings);
 				_calculator.CalculationFinished += OnCalculationFinished;
@@ -304,7 +301,6 @@ namespace VolumeCalculator
 				_dashboardControlVm.CalculationCancellationRequested += _calculator.CancelPendingCalculation;
 				_dashboardControlVm.CalculationRequested += OnCalculationStartRequested;
 				_dashboardControlVm.LockingStatusChanged += _calculator.UpdateLockingStatus;
-				_dashStatusUpdater.DashboardStatusChanged += _dashboardControlVm.UpdateDashStatus;
 				_calculator.LastAlgorithmUsedChanged += _dashboardControlVm.UpdateLastAlgorithm;
 
 				_testDataGenerationControlVm = new TestDataGenerationControlVm(_logger, _settings, frameProvider);
@@ -338,8 +334,8 @@ namespace VolumeCalculator
 		private void OnStatusChanged(CalculationStatus status)
 		{
 			_requestProcessor.UpdateCalculationStatus(status);
-			_dashStatusUpdater.UpdateCalculationStatus(status);
 			_dashboardControlVm.UpdateCalculationStatus(status);
+			_deviceManager.UpdateCalculationStatus(status);
 		}
 
 		private void SaveSettings()
@@ -441,8 +437,7 @@ namespace VolumeCalculator
 		private void DisposeSubSystems()
 		{
 			_logger.LogInfo("Disposing sub systems...");
-
-			_dashStatusUpdater?.Dispose();
+			
 			_calculator?.Dispose();
 			_requestProcessor?.Dispose();
 			_dmProcessor?.Dispose();

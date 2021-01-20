@@ -4,7 +4,7 @@ namespace VolumeCalculator.Utils
 {
 	internal static class GuiUtils
 	{
-		public static string GetErrorMessageFromCalculationStatus(CalculationStatus status)
+		public static string GetMessageFromCalculationStatus(CalculationStatus status)
 		{
 			var message = "";
 
@@ -36,6 +36,18 @@ namespace VolumeCalculator.Utils
 					break;
 				case CalculationStatus.FailedToCloseFiles:
 					message = "открыт файл результатов";
+					break;
+				case CalculationStatus.Pending:
+					message = "запущен автотаймер...";
+					break;
+				case CalculationStatus.InProgress:
+					message = "выполняется измерение...";
+					break;
+				case CalculationStatus.Ready:
+					message = "Готов к измерению";
+					break;
+				case CalculationStatus.Successful:
+					message = "измерение завершено";
 					break;
 			}
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using DeviceIntegration.Cameras;
@@ -10,6 +10,7 @@ using FrameProcessor;
 using FrameProviders;
 using Primitives;
 using Primitives.Logging;
+using Timer = System.Timers.Timer;
 
 namespace VCServer
 {
@@ -18,7 +19,6 @@ namespace VCServer
 		public event Action<VolumeCalculatorResultData> CalculationFinished;
 
 		private readonly ILogger _logger;
-		private readonly DepthMapProcessor _processor;
 		private readonly IFrameProvider _frameProvider;
 		private readonly IRangeMeter _rangeMeter;
 		private readonly IIpCamera _ipCamera;
@@ -28,72 +28,64 @@ namespace VCServer
 		private readonly int _calculationIndex;
 		private readonly short _floorDepth;
 		private readonly short _cutOffDepth;
-		private readonly bool _dm1AlgorithmEnabled;
-		private readonly bool _dm2AlgorithmEnabled;
-		private readonly bool _rgbAlgorithmEnabled;
 		private readonly string _photoDirectoryPath;
 		private readonly int _rangeMeterCorrectionValueMm;
 
 		private readonly Timer _updateTimeoutTimer;
-		private readonly List<ObjectVolumeData> _results;
-
-		private short _calculatedDistance;
-		private bool _useColorData;
-
-		private bool _colorFrameReady;
-		private bool _depthFrameReady;
 
 		private ImageData _latestColorFrame;
 		private DepthMap _latestDepthMap;
 
-		private int _samplesLeft;
-		private AlgorithmSelectionStatus _selectedAlgorithm;
-		private bool _wasRangeMeterUsed;
+		private readonly List<ImageData> _images;
+		private readonly List<DepthMap> _depthMaps;
+		
+		private readonly VolumeCalculator _calculator;
 
-		private bool HasCompletedFirstRun => _samplesLeft != _requiredSampleCount;
+		private CancellationToken _token;
+		private VolumeCalculationData _calculationData;
 
 		public VolumeCalculationLogic(ILogger logger, DepthMapProcessor processor, IFrameProvider frameProvider, 
 			IRangeMeter rangeMeter, IIpCamera ipCamera, VolumeCalculationData calculationData)
 		{
 			_logger = logger;
-			_processor = processor;
 			_frameProvider = frameProvider;
 			_rangeMeter = rangeMeter;
 			_ipCamera = ipCamera;
-			
+
+			_calculationData = calculationData;
 			_requiredSampleCount = calculationData.RequiredSampleCount;
 			_barcode = calculationData.Barcode;
 			_calculationIndex = calculationData.CalculationIndex;
-			_dm1AlgorithmEnabled = calculationData.Dm1AlgorithmEnabled;
-			_dm2AlgorithmEnabled = calculationData.Dm2AlgorithmEnabled;
-			_rgbAlgorithmEnabled = calculationData.RgbAlgorithmEnabled;
 			_photoDirectoryPath = calculationData.PhotosDirectoryPath;
 			_floorDepth = calculationData.FloorDepth;
 			_cutOffDepth = calculationData.CutOffDepth;
 			_rangeMeterCorrectionValueMm = calculationData.RangeMeterCorrectionValue;
 
-			_samplesLeft = _requiredSampleCount;
+			_images = new List<ImageData>();
+			_depthMaps = new List<DepthMap>();
 
-			_useColorData = true;
-
-			_results = new List<ObjectVolumeData>();
+			_calculator = new VolumeCalculator(logger, processor);
 
 			frameProvider.UnrestrictedDepthFrameReady += OnDepthFrameReady;
 			frameProvider.UnrestrictedColorFrameReady += OnColorFrameReady;
 
-			_updateTimeoutTimer = new Timer(3000) {AutoReset = false};
+			_updateTimeoutTimer = new Timer(5000) {AutoReset = false};
 			_updateTimeoutTimer.Elapsed += OnTimerElapsed;
 			_updateTimeoutTimer.Start();
 		}
 
-		public void Abort()
+		public void Dispose()
 		{
 			AbortInternal(CalculationStatus.AbortedByUser);
 		}
 
 		private void CleanUp()
 		{
-			_updateTimeoutTimer.Stop();
+			_token.ThrowIfCancellationRequested();
+			_updateTimeoutTimer?.Stop();
+			if (_frameProvider == null)
+				return;
+			
 			_frameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
 			_frameProvider.UnrestrictedDepthFrameReady -= OnDepthFrameReady;
 		}
@@ -103,166 +95,77 @@ namespace VCServer
 			CleanUp();
 			var result = new ObjectVolumeData(0, 0, 0);
 			var resultData = new VolumeCalculatorResultData(result, status, _latestColorFrame,
-					_selectedAlgorithm, false);
+					AlgorithmSelectionStatus.Undefined, false);
 			CalculationFinished?.Invoke(resultData);
 		}
 
-		private void AdvanceCalculation(DepthMap depthMap, ImageData image)
+		private void PerformCalculation()
 		{
+			SaveDebugData($"{_barcode}_{_calculationIndex}");
+			var calculatedDistance = GetCalculatedDistance();
+			
+			var result = _calculator.Calculate(_images, _depthMaps, _calculationData, calculatedDistance);
+			CalculationFinished?.Invoke(result);
 			_updateTimeoutTimer.Stop();
-
-			if (!HasCompletedFirstRun)
-			{
-				if (_rangeMeter != null)
-				{
-					var reading = _rangeMeter.GetReading() + _rangeMeterCorrectionValueMm;
-					var readingIsInRange = reading > short.MinValue && reading < short.MaxValue;
-					_calculatedDistance = readingIsInRange ? (short)reading : (short)0;
-					_logger.LogInfo($"Range meter reading={reading}, floorDepth={_floorDepth}");
-					if (_floorDepth - _calculatedDistance < 0)
-					{
-						_logger.LogError("range meter reading was below floor depth");
-						_calculatedDistance = 0;
-					}
-
-					if (_calculatedDistance <= 0)
-						_logger.LogError("Failed to get proper range meter reading, will use depth calculation");
-				}
-				else
-					_logger.LogInfo($"Range meter is not enabled - will use depth calculation");
-
-				var debugFileName = $"{_barcode}_{_calculationIndex}";
-
-				SelectAlgorithmAndAbortIfFailed(debugFileName);
-				SaveDebugData(debugFileName);
-			}
-
-			var currentResult = _processor.CalculateVolume(depthMap, image, _calculatedDistance, _selectedAlgorithm);
-
-			_results.Add(currentResult);
-			_samplesLeft--;
-
-			if (_samplesLeft > 0)
-			{
-				_colorFrameReady = false;
-				_depthFrameReady = false;
-				_updateTimeoutTimer.Start();
-
-				return;
-			}
-
-			CleanUp();
-			
-			var totalResult = AggregateCalculationsData();
-			var resultStatus = totalResult != null ? CalculationStatus.Successful : CalculationStatus.CalculationError;
-
-			var resultData =
-				new VolumeCalculatorResultData(totalResult, resultStatus, _latestColorFrame, _selectedAlgorithm,
-					_wasRangeMeterUsed);
-			
-			CalculationFinished?.Invoke(resultData);
 		}
 
-		private void SelectAlgorithmAndAbortIfFailed(string debugFileName)
+		private short GetCalculatedDistance()
 		{
-			var algorithmSelectionData = new AlgorithmSelectionData(_latestDepthMap, _latestColorFrame, _calculatedDistance,
-				_dm1AlgorithmEnabled, _dm2AlgorithmEnabled, _rgbAlgorithmEnabled, debugFileName);
+			short calculatedDistance = 0;
 			
-			var algorithmSelectionResult =_processor.SelectAlgorithm(algorithmSelectionData);
-			_selectedAlgorithm = algorithmSelectionResult.Status;
-			_wasRangeMeterUsed = algorithmSelectionResult.RangeMeterWasUsed;
-
-			switch (_selectedAlgorithm)
+			if (_rangeMeter != null)
 			{
-				case AlgorithmSelectionStatus.DataIsInvalid:
-					_logger.LogError("Failed to select algorithm: data was invalid");
-					break;
-				case AlgorithmSelectionStatus.NoAlgorithmsAllowed:
-					_logger.LogError("Failed to select algorithm: no modes were available");
-					break;
-				case AlgorithmSelectionStatus.NoObjectFound:
-					_logger.LogError("Failed to select algorithm: no objects were found");
-					break;
-				case AlgorithmSelectionStatus.Dm1:
-					_useColorData = false;
-					_logger.LogInfo("Selected algorithm: dm1");
-					break;
-				case AlgorithmSelectionStatus.Dm2:
-					_useColorData = false;
-					_logger.LogInfo("Selected algorithm: dm2");
-					break;
-				case AlgorithmSelectionStatus.Rgb:
-					_useColorData = true;
-					_logger.LogInfo("Selected algorithm: rgb");
-					break;
-			}
+				var reading = _rangeMeter.GetReading() + _rangeMeterCorrectionValueMm;
+				var readingIsInRange = reading > short.MinValue && reading < short.MaxValue;
+				calculatedDistance = readingIsInRange ? (short) reading : (short) 0;
+				_logger.LogInfo($"Range meter reading={reading}, floorDepth={_floorDepth}");
+				if (_floorDepth - calculatedDistance < 0)
+				{
+					_logger.LogError("range meter reading was below floor depth");
+					calculatedDistance = 0;
+				}
 
-			if (_selectedAlgorithm == AlgorithmSelectionStatus.NoObjectFound)
-			{
-				AbortInternal(CalculationStatus.ObjectNotFound);
-				return;
+				if (calculatedDistance <= 0)
+					_logger.LogError("Failed to get proper range meter reading, will use depth calculation");
 			}
+			else
+				_logger.LogInfo($"Range meter is not enabled - will use depth calculation");
 
-			if (_selectedAlgorithm < 0)
-				AbortInternal(CalculationStatus.FailedToSelectAlgorithm);
+			return calculatedDistance;
 		}
-
+		
 		private void OnColorFrameReady(ImageData image)
 		{
-			_latestColorFrame = image;
-
-			_colorFrameReady = true;
-
-			if (!_depthFrameReady)
+			if (_images.Count == _requiredSampleCount)
 				return;
-
-			AdvanceCalculation(_latestDepthMap, _latestColorFrame);
-
-			if (!_useColorData)
-				_frameProvider.UnrestrictedColorFrameReady -= OnColorFrameReady;
+			
+			_logger.LogInfo($"added color frame, count={_images.Count}");
+			
+			_latestColorFrame = image;
+			_images.Add(image);
+			
+			if (_depthMaps.Count == _requiredSampleCount)
+				PerformCalculation();
 		}
 
 		private void OnDepthFrameReady(DepthMap depthMap)
 		{
-			_latestDepthMap = depthMap;
-
-			_depthFrameReady = true;
-
-			if (_useColorData && !_colorFrameReady || !HasCompletedFirstRun)
+			if (_depthMaps.Count == _requiredSampleCount)
 				return;
+			
+			_logger.LogInfo($"added depth frame, count={_depthMaps.Count}");
+			
+			_latestDepthMap = depthMap;
+			_depthMaps.Add(depthMap);
 
-			AdvanceCalculation(_latestDepthMap, _latestColorFrame);
-		}
-
-		private ObjectVolumeData AggregateCalculationsData()
-		{
-			try
-			{
-				var lengths = _results.Where(r => r != null).Select(r => r.LengthMm).ToArray();
-				var widths = _results.Where(r => r != null).Select(r => r.WidthMm).ToArray();
-				var heights = _results.Where(r => r != null).Select(r => r.HeightMm).ToArray();
-
-				var joinedLengths = string.Join(",", lengths);
-				var joinedWidths = string.Join(",", widths);
-				var joinedHeights= string.Join(",", heights);
-				_logger.LogInfo($"Measured values: {{{joinedLengths}}}; {{{joinedWidths}}}; {{{joinedHeights}}}");
-
-				var modeLength = lengths.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key;
-				var modeWidth = widths.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key;
-				var modeHeight = heights.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key;
-
-				return new ObjectVolumeData(modeLength, modeWidth, modeHeight);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogException("Failed to aggregate calculation results", ex);
-				return null;
-			}
+			if (_images.Count == _requiredSampleCount)
+				PerformCalculation();
 		}
 
 		private void OnTimerElapsed(object sender, ElapsedEventArgs e)
 		{
-			_logger.LogInfo($"Timeout timer elapsed (samplesLeft={_samplesLeft}), aborting calculation...");
+			var samplesCollected = _depthMaps?.Count ?? 0;
+			_logger.LogInfo($"Timeout timer elapsed (samples collected={samplesCollected}), aborting calculation...");
 
 			CleanUp();
 			AbortInternal(CalculationStatus.TimedOut);

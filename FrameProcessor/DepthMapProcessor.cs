@@ -87,10 +87,8 @@ namespace FrameProcessor
 		{
 			try
 			{
-
-
 				if (data == null)
-					return new AlgorithmSelectionResult(AlgorithmSelectionStatus.DataIsInvalid, false);
+					return new AlgorithmSelectionResult(false, AlgorithmSelectionStatus.DataIsInvalid, false);
 
 				lock (_lock)
 				{
@@ -99,7 +97,7 @@ namespace FrameProcessor
 
 					var dataIsInvalid = data.DepthMap?.Data == null || colorFrame?.Data == null;
 					if (dataIsInvalid)
-						return new AlgorithmSelectionResult(AlgorithmSelectionStatus.DataIsInvalid, false);
+						return new AlgorithmSelectionResult(false, AlgorithmSelectionStatus.DataIsInvalid, false);
 
 					unsafe
 					{
@@ -133,12 +131,15 @@ namespace FrameProcessor
 
 							var nativeResult = (NativeAlgorithmSelectionResult*)DepthMapProcessorDll.SelectAlgorithm(algorithmSelectionData);
 
+							var status = nativeResult->Status;
+							var isSelected = IsAlgorithmSelected(status);
 							var rangeMeterWasUsed = nativeResult->RangeMeterWasUsed > 0;
-							var algorithmSelectionResult = new AlgorithmSelectionResult(nativeResult->Status, rangeMeterWasUsed); 
+
+							var result = new AlgorithmSelectionResult(isSelected, nativeResult->Status, rangeMeterWasUsed);
 							
 							DepthMapProcessorDll.DisposeAlgorithmSelectionResult(nativeResult);
-
-							return algorithmSelectionResult;
+							
+							return result; 
 						}
 					}
 				}
@@ -148,7 +149,7 @@ namespace FrameProcessor
 				_logger.LogException("Failed to run algorithm selection", ex);
 			}
 			
-			return new AlgorithmSelectionResult(AlgorithmSelectionStatus.Undefined, false);
+			return new AlgorithmSelectionResult(false, AlgorithmSelectionStatus.Undefined, false);
 		}
 
 		public void SetProcessorSettings(ApplicationSettings settings)
@@ -230,6 +231,43 @@ namespace FrameProcessor
 				Width = x2 - x1,
 				Height = y2 - y1
 			};
+		}
+
+		private bool IsAlgorithmSelected(AlgorithmSelectionStatus status)
+		{
+			var selected = false;
+			
+			switch (status)
+			{
+				case AlgorithmSelectionStatus.DataIsInvalid:
+					_logger.LogError("Failed to select algorithm: data was invalid");
+					break;
+				case AlgorithmSelectionStatus.NoAlgorithmsAllowed:
+					_logger.LogError("Failed to select algorithm: no modes were available");
+					break;
+				case AlgorithmSelectionStatus.NoObjectFound:
+					_logger.LogError("Failed to select algorithm: no objects were found");
+					break;
+				case AlgorithmSelectionStatus.Dm1:
+					selected = true;
+					_logger.LogInfo("Selected algorithm: dm1");
+					break;
+				case AlgorithmSelectionStatus.Dm2:
+					selected = true;
+					_logger.LogInfo("Selected algorithm: dm2");
+					break;
+				case AlgorithmSelectionStatus.Rgb:
+					selected = true;
+					_logger.LogInfo("Selected algorithm: rgb");
+					break;
+				case AlgorithmSelectionStatus.Undefined:
+					_logger.LogInfo("algorithm was undefined");
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+
+			return selected;
 		}
 	}
 }

@@ -108,14 +108,12 @@
     <Compile Include="GUI\CalculationDashboardControl.xaml.cs">
       <DependentUpon>CalculationDashboardControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Utils\DashStatusUpdater.cs" />
     <Compile Include="GUI\StreamViewControl.xaml.cs">
       <DependentUpon>StreamViewControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="GUI\TestDataGenerationControl.xaml.cs">
       <DependentUpon>TestDataGenerationControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Utils\DashboardStatus.cs" />
     <Compile Include="GUI\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>

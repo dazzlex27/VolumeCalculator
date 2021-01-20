@@ -41,11 +41,13 @@
     <Compile Include="CalculationRequestHandler.cs" />
     <Compile Include="DeviceSet.cs" />
     <Compile Include="DeviceSetFactory.cs" />
-    <Compile Include="IoDeviceManager.cs" />
-    <Compile Include="LightToggler.cs" />
+    <Compile Include="StatusUtils.cs" />
+    <Compile Include="HardwareManager.cs" />
+    <Compile Include="StateController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VolumeCalculationData.cs" />
     <Compile Include="VolumeCalculationLogic.cs" />
+    <Compile Include="VolumeCalculator.cs" />
     <Compile Include="VolumeCalculatorResultData.cs" />
   </ItemGroup>
   <ItemGroup>

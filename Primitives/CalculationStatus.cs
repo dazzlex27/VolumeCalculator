@@ -2,7 +2,7 @@
 {
 	public enum CalculationStatus
 	{
-		Undefined,
+		Ready,
 		Pending,
 		FailedToStart,
 		Successful,
