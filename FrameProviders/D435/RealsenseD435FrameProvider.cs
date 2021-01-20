@@ -7,7 +7,6 @@ namespace FrameProviders.D435
 {
 	internal class RealsenseD435FrameProvider : FrameProvider
 	{
-		private readonly ILogger _logger;
 		private readonly DllWrapper.ColorFrameCallback _colorFrameCallback;
 		private readonly DllWrapper.DepthFrameCallback _depthFramesCallback;
 
@@ -19,9 +18,8 @@ namespace FrameProviders.D435
 		{
 			_colorFrameProcessingLock = new object();
 			_depthFrameProcessingLock = new object();
-
-			_logger = logger;
-			_logger.LogInfo("Creating Realsense D435 frame receiver...");
+			
+			Logger.LogInfo("Creating Realsense D435 frame receiver...");
 
 			unsafe
 			{
@@ -32,7 +30,7 @@ namespace FrameProviders.D435
 
 		public override void Start()
 		{
-			_logger.LogInfo("Starting Realsense D435 frame receiver...");
+			Logger.LogInfo("Starting Realsense D435 frame receiver...");
 			DllWrapper.CreateFrameProvider();
 			DllWrapper.SubscribeToColorFrames(_colorFrameCallback);
 			DllWrapper.SubscribeToDepthFrames(_depthFramesCallback);
@@ -40,7 +38,7 @@ namespace FrameProviders.D435
 
 		public override void Dispose()
 		{
-			_logger.LogInfo("Disposing Realsense D435 frame receiver...");
+			Logger.LogInfo("Disposing Realsense D435 frame receiver...");
 			DllWrapper.UnsubscribeFromColorFrames(_colorFrameCallback);
 			DllWrapper.UnsubscribeFromDepthFrames(_depthFramesCallback);
 			DllWrapper.DestroyFrameProvider();
@@ -83,22 +81,22 @@ namespace FrameProviders.D435
 
 		public override void SuspendDepthStream()
 		{
-			if (IsColorStreamSuspended)
+			if (IsDepthStreamSuspended)
 				return;
 
 			DllWrapper.UnsubscribeFromDepthFrames(_depthFramesCallback);
 
-			IsColorStreamSuspended = true;
+			IsDepthStreamSuspended = true;
 		}
 
 		public override void ResumeDepthStream()
 		{
-			if (!IsColorStreamSuspended)
+			if (!IsDepthStreamSuspended)
 				return;
 
 			DllWrapper.SubscribeToDepthFrames(_depthFramesCallback);
 
-			IsColorStreamSuspended = false;
+			IsDepthStreamSuspended = false;
 		}
 
 		private unsafe void ColorFrameCallback(ColorFrame* frame)
@@ -121,15 +119,11 @@ namespace FrameProviders.D435
 
 					var image = new ImageData(frame->Width, frame->Height, data, 3);
 
-					if (NeedUnrestrictedColorFrame)
-						RaiseUnrestrictedColorFrameReadyEvent(image);
-
-					if (NeedColorFrame)
-						RaiseColorFrameReadyEvent(image);
+					PushColorFrame(image);
 				}
 				catch (Exception ex)
 				{
-					_logger.LogException("Failed to receive a color frame", ex);
+					Logger.LogException("Failed to receive a color frame", ex);
 				}
 			}
 		}
@@ -152,15 +146,11 @@ namespace FrameProviders.D435
 					Marshal.Copy(new IntPtr(frame->Data), data, 0, data.Length);
 					var depthMap = new DepthMap(frame->Width, frame->Height, data);
 
-					if (NeedUnrestrictedDepthFrame)
-						RaiseUnrestrictedDepthFrameReadyEvent(depthMap);
-
-					if (NeedDepthFrame)
-						RaiseDepthFrameReadyEvent(depthMap);
+					PushDepthFrame(depthMap);
 				}
 				catch (Exception ex)
 				{
-					_logger.LogException("Failed to receive a depth frame", ex);
+					Logger.LogException("Failed to receive a depth frame", ex);
 				}
 			}
 		}

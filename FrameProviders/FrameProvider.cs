@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Primitives;
 using Primitives.Logging;
 
@@ -11,7 +13,8 @@ namespace FrameProviders
 		public event Action<ImageData> UnrestrictedColorFrameReady;
 		public event Action<DepthMap> UnrestrictedDepthFrameReady;
 
-		private readonly ILogger _logger;
+		protected readonly CancellationTokenSource TokenSource;
+		protected readonly ILogger Logger;
 
 		private double _colorCameraFps;
 		private double _depthCameraFps;
@@ -21,8 +24,11 @@ namespace FrameProviders
 
 		private TimeSpan _timeBetweenColorFrames;
 		private TimeSpan _timeBetweenDepthFrames;
+		
+		private readonly FixedSizeQueue<ImageData> _imageQueue;
+		private readonly FixedSizeQueue<DepthMap> _depthMapQueue;
 
-		protected bool Paused { get; private set; }
+		protected bool Paused { get; set; }
 
 		public double ColorCameraFps
 		{
@@ -34,12 +40,12 @@ namespace FrameProviders
 				if (_colorCameraFps > 0)
 				{
 					_timeBetweenColorFrames = TimeSpan.FromMilliseconds(1000 / _colorCameraFps);
-					_logger.LogInfo($"FrameProvider: color camera fps was set to {_colorCameraFps}");
+					Logger.LogInfo($"FrameProvider: color camera fps was set to {_colorCameraFps}");
 				}
 				else
 				{
 					_timeBetweenColorFrames = TimeSpan.Zero;
-					_logger.LogInfo("FrameProvider: color camera fps was reset");
+					Logger.LogInfo("FrameProvider: color camera fps was reset");
 				}
 			}
 		}
@@ -54,31 +60,27 @@ namespace FrameProviders
 				if (_depthCameraFps > 0)
 				{
 					_timeBetweenDepthFrames = TimeSpan.FromMilliseconds(1000 / _depthCameraFps);
-					_logger.LogInfo($"FrameProvider: depth camera fps was set to {_depthCameraFps}");
+					Logger.LogInfo($"FrameProvider: depth camera fps was set to {_depthCameraFps}");
 				}
 				else
 				{
 					_timeBetweenDepthFrames = TimeSpan.Zero;
-					_logger.LogInfo("FrameProvider: depth camera fps was reset");
+					Logger.LogInfo("FrameProvider: depth camera fps was reset");
 				}
 			}
 		}
 
-		protected virtual bool NeedUnrestrictedColorFrame => IsUnrestrictedColorStreamSubsribedTo;
+		protected bool NeedUnrestrictedColorFrame => UnrestrictedColorFrameReady?.GetInvocationList().Length > 0;
 
-		protected virtual bool NeedColorFrame => IsColorStreamSubsribedTo && !IsColorStreamSuspended && TimeToProcessColorFrame;
+		protected bool NeedColorFrame => IsColorStreamSubsribedTo && !IsColorStreamSuspended && TimeToProcessColorFrame;
 
-		protected virtual bool NeedUnrestrictedDepthFrame => IsUnrestrictedDepthStreamSubsribedTo;
+		protected bool NeedUnrestrictedDepthFrame => UnrestrictedDepthFrameReady?.GetInvocationList().Length > 0;
 
-		protected virtual bool NeedDepthFrame => IsDepthStreamSubsribedTo && !IsDepthStreamSuspended && TimeToProcessDepthFrame;
+		protected bool NeedDepthFrame => IsDepthStreamSubsribedTo && !IsDepthStreamSuspended && TimeToProcessDepthFrame;
 
 		protected bool IsColorStreamSuspended { get; set; }
 
 		protected bool IsDepthStreamSuspended { get; set; }
-
-		protected bool IsUnrestrictedColorStreamSubsribedTo => UnrestrictedColorFrameReady?.GetInvocationList().Length > 0;
-
-		protected bool IsUnrestrictedDepthStreamSubsribedTo => UnrestrictedDepthFrameReady?.GetInvocationList().Length > 0;
 
 		protected bool IsColorStreamSubsribedTo => ColorFrameReady?.GetInvocationList().Length > 0;
 
@@ -90,22 +92,57 @@ namespace FrameProviders
 
 		protected FrameProvider(ILogger logger)
 		{
-			_logger = logger;
+			Logger = logger;
 
 			ColorCameraFps = -1;
 			DepthCameraFps = -1;
 
 			_lastProcessedColorFrameTime = DateTime.MinValue;
 			_lastProcessedDepthFrameTime = DateTime.MinValue;
+			
+			_imageQueue = new FixedSizeQueue<ImageData>(5);
+			_depthMapQueue = new FixedSizeQueue<DepthMap>(5);
+			
+			Paused = true;
+
+			TokenSource = new CancellationTokenSource();
+			
+			Task.Factory.StartNew(o => PollColorFrames(TokenSource), TaskCreationOptions.LongRunning, TokenSource.Token);
+			Task.Factory.StartNew(o => PollDepthFrames(TokenSource), TaskCreationOptions.LongRunning, TokenSource.Token);
 		}
 
-		public abstract void SuspendColorStream();
 
-		public abstract void ResumeColorStream();
+		public virtual void SuspendColorStream()
+		{
+			if (IsColorStreamSuspended)
+				return;
 
-		public abstract void SuspendDepthStream();
+			IsColorStreamSuspended = true;
+		}
 
-		public abstract void ResumeDepthStream();
+		public virtual void ResumeColorStream()
+		{
+			if (!IsColorStreamSuspended)
+				return;
+
+			IsColorStreamSuspended = false;
+		}
+
+		public virtual void SuspendDepthStream()
+		{
+			if (IsDepthStreamSuspended)
+				return;
+
+			IsDepthStreamSuspended = true;
+		}
+
+		public virtual void ResumeDepthStream()
+		{
+			if (!IsDepthStreamSuspended)
+				return;
+
+			IsDepthStreamSuspended = false;
+		}
 
 		public abstract ColorCameraParams GetColorCameraParams();
 
@@ -115,11 +152,16 @@ namespace FrameProviders
 
 		public abstract void Dispose();
 
-		public void TogglePause(bool pause)
+		protected void PushColorFrame(ImageData image)
 		{
-			Paused = pause;
+			_imageQueue.Enqueue(image);
 		}
-
+		
+		protected void PushDepthFrame(DepthMap map)
+		{
+			_depthMapQueue.Enqueue(map);
+		}
+		
 		protected void RaiseUnrestrictedColorFrameReadyEvent(ImageData image)
 		{
 			UnrestrictedColorFrameReady?.Invoke(image);
@@ -140,6 +182,68 @@ namespace FrameProviders
 		{
 			_lastProcessedDepthFrameTime = DateTime.Now;
 			DepthFrameReady?.Invoke(depthMap);
+		}
+		
+		private async Task PollColorFrames(CancellationTokenSource tokenSource)
+		{
+			try
+			{
+				while (!tokenSource.IsCancellationRequested)
+				{
+					if (Paused)
+					{
+						await Task.Delay(10);
+						continue;
+					}
+					
+					var image = _imageQueue.Dequeue();
+					if (image != null)
+					{
+						if (NeedUnrestrictedColorFrame)
+							RaiseUnrestrictedColorFrameReadyEvent(image);
+
+						if (NeedColorFrame)
+							RaiseColorFrameReadyEvent(image);
+					}
+					else
+						await Task.Delay(5);
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.LogException("failed to handle color frame", ex);
+			}
+		}
+
+		private async Task PollDepthFrames(CancellationTokenSource tokenSource)
+		{
+			try
+			{
+				while (!tokenSource.IsCancellationRequested)
+				{
+					if (Paused)
+					{
+						await Task.Delay(10);
+						continue;
+					}
+					
+					var depthMap = _depthMapQueue.Dequeue();
+					if (depthMap != null)
+					{
+						if (NeedUnrestrictedDepthFrame)
+							RaiseUnrestrictedDepthFrameReadyEvent(depthMap);
+
+						if (NeedDepthFrame)
+							RaiseDepthFrameReadyEvent(depthMap);
+					}
+					else
+						await Task.Delay(5);
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.LogException("failed to handle depth frame", ex);
+			}
 		}
 	}
 }

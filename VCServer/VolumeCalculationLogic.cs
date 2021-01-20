@@ -23,6 +23,7 @@ namespace VCServer
 		private readonly IRangeMeter _rangeMeter;
 		private readonly IIpCamera _ipCamera;
 		
+		private readonly VolumeCalculationData _calculationData;
 		private readonly int _requiredSampleCount;
 		private readonly string _barcode;
 		private readonly int _calculationIndex;
@@ -42,7 +43,6 @@ namespace VCServer
 		private readonly VolumeCalculator _calculator;
 
 		private CancellationToken _token;
-		private VolumeCalculationData _calculationData;
 
 		public VolumeCalculationLogic(ILogger logger, DepthMapProcessor processor, IFrameProvider frameProvider, 
 			IRangeMeter rangeMeter, IIpCamera ipCamera, VolumeCalculationData calculationData)

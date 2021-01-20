@@ -1,30 +1,18 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Primitives;
 using Primitives.Logging;
 
 namespace FrameProviders.LocalFiles
 {
 	internal class LocalFileFrameProvider : FrameProvider
 	{
-		private static readonly string ColorFramesPath = Path.Combine("localFrameProvider", "color");
-		private static readonly string DepthFramesPath = Path.Combine("localFrameProvider", "depth");
-
-		private readonly ILogger _logger;
-
-		private CancellationTokenSource _tokenSource;
 		private bool _started;
-
-		private bool _sendColorFrames;
-		private bool _sendDepthFrames;
 
 		public LocalFileFrameProvider(ILogger logger)
 			: base(logger)
 		{
-			_logger = logger;
+			Logger.LogInfo("Created local frame provider");
 		}
 
 		public override ColorCameraParams GetColorCameraParams()
@@ -45,105 +33,100 @@ namespace FrameProviders.LocalFiles
 				return;
 
 			_started = true;
+			Logger.LogInfo("Starting local frame provider...");
 
-			_sendColorFrames = true;
-			_sendDepthFrames = true;
-			_tokenSource = new CancellationTokenSource();
-			Task.Factory.StartNew(o => RunFrameGeneration(_tokenSource), TaskCreationOptions.LongRunning, _tokenSource.Token);
+			Paused = false;
+			Task.Factory.StartNew(o => PushColorFrames(TokenSource), TaskCreationOptions.LongRunning, TokenSource.Token);
+			Task.Factory.StartNew(o => PushDepthFrames(TokenSource), TaskCreationOptions.LongRunning, TokenSource.Token);
 		}
 
 		public override void Dispose()
 		{
 			_started = false;
-			_tokenSource.Cancel();
+			TokenSource.Cancel();
 		}
 
-		public override void SuspendColorStream()
+		private async Task PushColorFrames(CancellationTokenSource tokenSource)
 		{
-			_sendColorFrames = false;
-		}
-
-		public override void ResumeColorStream()
-		{
-			_sendColorFrames = true;
-		}
-
-		public override void SuspendDepthStream()
-		{
-			_sendDepthFrames = false;
-		}
-
-		public override void ResumeDepthStream()
-		{
-			_sendDepthFrames = true;
-		}
-
-		private async Task RunFrameGeneration(CancellationTokenSource tokenSource)
-		{
-			if (!Directory.Exists(ColorFramesPath))
-			{
-				_logger.LogError($@"Directory {DepthFramesPath} for color frames in local frame provider was not found!");
-				return;
-			}
-
-			if (!Directory.Exists(DepthFramesPath))
-			{
-				_logger.LogError($@"Directory {DepthFramesPath} for depth frames in local frame provider was not found!");
-				return;
-			}
-
 			try
 			{
-				var colorFrames = new DirectoryInfo(ColorFramesPath).EnumerateFiles().ToArray();
-				var depthFrames = new DirectoryInfo(DepthFramesPath).EnumerateFiles().ToArray();
-
+				var colorFrames = LocalFrameProviderUtils.ReadImages();
+				if (colorFrames == null)
+				{
+					Logger.LogError(@"Directory for color frames in local frame provider was not found!");
+					return;
+				}
+				
 				var colorFrameIndex = 0;
-				var depthFrameIndex = 0;
 
 				while (!tokenSource.IsCancellationRequested)
 				{
-					if (_sendColorFrames && colorFrames.Length > 0)
+					if (IsColorStreamSuspended || colorFrames.Count <= 0)
 					{
-						if (colorFrameIndex == colorFrames.Length)
-							colorFrameIndex = 0;
-
-						if (NeedUnrestrictedColorFrame || NeedColorFrame)
-						{
-							var nextColorFrameInfo = colorFrames[colorFrameIndex++];
-							var image = ImageUtils.ReadImageDataFromFile(nextColorFrameInfo.FullName);
-
-							if (NeedUnrestrictedColorFrame)
-								RaiseUnrestrictedColorFrameReadyEvent(image);
-
-							if (NeedColorFrame)
-								RaiseColorFrameReadyEvent(image);
-						}
+						await Task.Delay(5);
+						continue;
 					}
 
-					if (_sendDepthFrames && depthFrames.Length > 0)
+					if (!NeedUnrestrictedColorFrame && !NeedColorFrame)
 					{
-						if (depthFrameIndex == depthFrames.Length)
-							depthFrameIndex = 0;
-
-						if (NeedUnrestrictedDepthFrame || NeedDepthFrame)
-						{
-							var nextDepthFrameInfo = depthFrames[depthFrameIndex++];
-							var depthMap = DepthMapUtils.ReadDepthMapFromRawFile(nextDepthFrameInfo.FullName);
-
-							if (NeedUnrestrictedDepthFrame)
-								RaiseUnrestrictedDepthFrameReadyEvent(depthMap);
-
-							if (NeedDepthFrame)
-								RaiseDepthFrameReadyEvent(depthMap);
-						}
+						await Task.Delay(5);
+						continue;
 					}
 
-					await Task.Delay(100);
+					if (colorFrameIndex == colorFrames.Count)
+						colorFrameIndex = 0;
+
+					var image = colorFrames[colorFrameIndex++];
+					PushColorFrame(image);
+
+					await Task.Delay(33); // ~30 FPS
 				}
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException("Error in local frame provider", ex);
+				Logger.LogException("LocalFrameProvider: Failed to push color frames", ex);
+			}
+		}
+
+		private async Task PushDepthFrames(CancellationTokenSource tokenSource)
+		{
+			try
+			{
+				var depthFrames = LocalFrameProviderUtils.ReadDepthMaps();
+				if (depthFrames == null)
+				{
+					Logger.LogError(@"Directory for depth frames in local frame provider was not found!");
+					return;
+				}
+
+				var depthFrameIndex = 0;
+
+				while (!tokenSource.IsCancellationRequested)
+				{
+					if (IsDepthStreamSuspended || depthFrames.Count <= 0)
+					{
+						await Task.Delay(5);
+						continue;
+					}
+
+					if (!NeedUnrestrictedDepthFrame && !NeedDepthFrame)
+					{
+						await Task.Delay(5);
+						continue;
+					}
+
+					if (depthFrameIndex == depthFrames.Count)
+						depthFrameIndex = 0;
+
+					var depthMap = depthFrames[depthFrameIndex++];
+					PushDepthFrame(depthMap);
+
+					await Task.Delay(33); // ~30 FPS
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.LogException("Error in local frame provider", ex);
 			}
 		}
 	}
