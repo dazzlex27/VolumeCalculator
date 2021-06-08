@@ -82,6 +82,15 @@ namespace DeviceIntegration.Scales
 			if (messageBytes.Length < 4)
 				return;
 
+			if (_deepLoggingOn)
+			{
+				var rawMessage = string.Join(" ", messageBytes);
+				var sourceString = Encoding.ASCII.GetString(messageBytes);
+				var parsedDataString = $"status={_lastMeasurementStatus} last={_lastWeightGr}";
+				_logger.LogInfo(
+					$"{DateTime.Now.ToLocalTime()}: CasMScales ({_port}) rawMessage={rawMessage}, source message={sourceString}, {parsedDataString}");
+			}
+
 			var isOverLoaded = messageBytes[3] == 70; // 70 is "F" in ASCII
 			if (isOverLoaded)
 			{
@@ -115,15 +124,6 @@ namespace DeviceIntegration.Scales
 						}
 					}
 				}
-			}
-
-			if (_deepLoggingOn)
-			{
-				var rawMessage = string.Join(" ", messageBytes);
-				var sourceString = Encoding.ASCII.GetString(messageBytes);
-				var parsedDataString = $"status={_lastMeasurementStatus} last={_lastWeightGr}";
-				_logger.LogInfo(
-					$"{DateTime.Now.ToLocalTime()}: CasMScales ({_port}) rawMessage={rawMessage}, source message={sourceString}, {parsedDataString}");
 			}
 
 			var measurementData = new ScaleMeasurementData(_lastMeasurementStatus, _lastWeightGr);

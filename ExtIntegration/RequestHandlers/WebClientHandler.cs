@@ -34,10 +34,12 @@ namespace ExtIntegration.RequestHandlers
 					0, 0, 0, 0, 0, 
 					"", false);
 
-			_logger.LogInfo("Starting a web client handler...");
 
 			// "ws://0.0.0.0:8081"
 			_address = $"ws://{settings.Address}:{settings.Port}";
+
+			_logger.LogInfo($"Starting a web client handler... ws - {_address}");
+
 			_server = new WebSocketServer(_address)
 			{
 				ListenerSocket = {NoDelay = true},
