@@ -44,7 +44,8 @@
     <Compile Include="CalculationRequestData.cs" />
     <Compile Include="CalculationResultData.cs" />
     <Compile Include="CalculationStatus.cs" />
-    <Compile Include="ErrorCode.cs" />
+    <Compile Include="FixedSizeQueue.cs" />
+    <Compile Include="DashboardStatus.cs" />
     <Compile Include="GlobalConstants.cs" />
     <Compile Include="DeviceSettings.cs" />
     <Compile Include="Logging\ConsoleLogger.cs" />

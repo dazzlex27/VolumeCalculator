@@ -9,6 +9,7 @@ using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 using ProcessingUtils;
+using VCServer;
 using VolumeCalculator.Utils;
 
 namespace VolumeCalculator
@@ -47,7 +48,7 @@ namespace VolumeCalculator
 		private bool _unitCountBoxFocused;
 		private bool _commentBoxFocused;
 
-		private string _lastErrorMessage;
+		private string _lastMessage;
 
 		private string _lastAlgorithmUsed;
 		
@@ -291,13 +292,17 @@ namespace VolumeCalculator
 			});
 		}
 
-		public void UpdateState(CalculationStatus status)
+		public void UpdateCalculationStatus(CalculationStatus status)
 		{
-			if (status == CalculationStatus.Running)
+			if (status == CalculationStatus.InProgress)
 				_barcodeResetTimer.Stop();
+
+			_lastMessage = GuiUtils.GetMessageFromCalculationStatus(status);
+			var dashStatus = StatusUtils.GetDashboardStatus(status);
+			UpdateDashStatus(dashStatus);
 		}
 
-		public void UpdateDashStatus(DashboardStatus status)
+		private void UpdateDashStatus(DashboardStatus status)
 		{
 			switch (status)
 			{
@@ -307,7 +312,7 @@ namespace VolumeCalculator
 					{
 						CalculationInProgress = true;
 						StatusBrush = new SolidColorBrush(Colors.DarkOrange);
-						StatusText = "Выполняется измерение...";
+						StatusText = _lastMessage;
 						CalculationPending = false;
 					});
 					break;
@@ -318,7 +323,7 @@ namespace VolumeCalculator
 					{
 						CalculationInProgress = false;
 						StatusBrush = new SolidColorBrush(Colors.Green);
-						StatusText = "Готов к измерению";
+						StatusText = _lastMessage;
 						CalculationPending = false;
 					});
 					break;
@@ -329,7 +334,7 @@ namespace VolumeCalculator
 					{
 						CalculationInProgress = false;
 						StatusBrush = new SolidColorBrush(Colors.Blue);
-						StatusText = "Запущен автотаймер...";
+						StatusText = _lastMessage;
 						CalculationPending = true;
 					});
 					break;
@@ -340,7 +345,7 @@ namespace VolumeCalculator
 					{
 						CalculationInProgress = false;
 						StatusBrush = new SolidColorBrush(Colors.DarkGreen);
-						StatusText = "Измерение завершено";
+						StatusText = _lastMessage;
 						CalculationPending = false;
 					});
 					break;
@@ -352,7 +357,7 @@ namespace VolumeCalculator
 						CalculationInProgress = false;
 						ObjectCode = "";
 						StatusBrush = new SolidColorBrush(Colors.Red);
-						StatusText = $"Ошибка: {_lastErrorMessage}";
+						StatusText = $"Ошибка: {_lastMessage}";
 						CalculationPending = false;
 					});
 					break;
@@ -442,12 +447,7 @@ namespace VolumeCalculator
 			UnitCount = 0;
 			Comment = "";
 		}
-
-		public void UpdateErrorMessage(string message)
-		{
-			_lastErrorMessage = message;
-		}
-
+		
 		private void UpdateLockingStatus()
 		{
 			LockingStatusChanged?.Invoke(CanAcceptBarcodes);

@@ -2,61 +2,59 @@
 using System.Timers;
 using DeviceIntegration.IoCircuits;
 using DeviceIntegration.RangeMeters;
-using Primitives.Logging;
-using VCServer;
+using Primitives;
 
-namespace VolumeCalculator.Utils
+namespace VCServer
 {
-	internal class DashStatusUpdater : IDisposable
+	public class StateController : IDisposable
 	{
 		private readonly IIoCircuit _circuit;
 		private readonly IRangeMeter _rangeMeter;
-		private readonly LightToggler _lightToggler;
 		private readonly Timer _laserUpdateTimer;
-
+		
 		private DashboardStatus _dashStatus;
 
-		public DashStatusUpdater(ILogger logger, IoDeviceManager deviceManager)
+		public StateController(IIoCircuit circuit, IRangeMeter rangeMeter)
 		{
-			logger.LogInfo("Creating dash status updater...");
+			_circuit = circuit;
+			_rangeMeter = rangeMeter;
 
-			_circuit = deviceManager.IoCircuit;
-			_rangeMeter = deviceManager.RangeMeter;
-			if (_circuit != null)
-				_lightToggler = new LightToggler(_circuit);
-
+			if (_rangeMeter == null)
+				return;
+			
 			_laserUpdateTimer = new Timer(TimeSpan.FromSeconds(120).TotalMilliseconds) {AutoReset = true};
 			_laserUpdateTimer.Elapsed += OnLaserUpdateTimerElapsed;
 		}
-
+		
 		public void Dispose()
 		{
-			_laserUpdateTimer.Dispose();
+			_laserUpdateTimer?.Dispose();
 		}
 
-		public void UpdateDashStatus(DashboardStatus status)
+		public void Update(CalculationStatus status)
 		{
-			_dashStatus = status;
-			switch (_dashStatus)
+			var dashStatus = StatusUtils.GetDashboardStatus(status);
+			_dashStatus = dashStatus;
+			switch (dashStatus)
 			{
 				case DashboardStatus.Ready:
 					SetStatusReady();
-					return;
+					break;
 				case DashboardStatus.Pending:
 					SetStatusAutoStarting();
-					return;
+					break;
 				case DashboardStatus.InProgress:
 					SetStatusInProgress();
-					return;
+					break;
 				case DashboardStatus.Finished:
 					SetStatusFinished();
-					return;
+					break;
 				case DashboardStatus.Error:
 					SetStatusError();
-					return;
+					break;
 			}
 		}
-
+		
 		private void UpdateLaser(bool enable)
 		{
 			_rangeMeter?.ToggleLaser(enable);
@@ -65,41 +63,62 @@ namespace VolumeCalculator.Utils
 
 		private void SetStatusReady()
 		{
-			_lightToggler?.ToggleReady();
+			ToggleReady();
 			UpdateLaser(true);
 		}
 
 		private void SetStatusError()
 		{
 			UpdateLaser(true);
-			_lightToggler?.ToggleError();
+			ToggleError();
 		}
 
 		private void SetStatusAutoStarting()
 		{
-			_lightToggler?.ToggleMeasuring();
+			ToggleMeasuring();
 			UpdateLaser(false);
 		}
 
 		private void SetStatusInProgress()
 		{
-			_lightToggler?.ToggleMeasuring();
+			ToggleMeasuring();
 			UpdateLaser(false);
 		}
 
 		private void SetStatusFinished()
 		{
 			UpdateLaser(true);
-			_lightToggler?.ToggleMeasuring();
+			ToggleMeasuring();
 		}
 
 		private void OnLaserUpdateTimerElapsed(object sender, ElapsedEventArgs e)
 		{
 			var needLaserOn = _dashStatus == DashboardStatus.Error || _dashStatus == DashboardStatus.Ready ||
-			                  _dashStatus == DashboardStatus.Finished;
+							_dashStatus == DashboardStatus.Finished;
 			
 			if (needLaserOn)
 				UpdateLaser(true);
+		}
+		
+		private void ToggleReady()
+		{
+			_circuit?.ToggleRelay(2, false);
+			_circuit?.ToggleRelay(3, true);
+			_circuit?.ToggleRelay(4, true);
+		}
+
+		private void ToggleError()
+		{
+			_circuit?.ToggleRelay(2, true);
+			_circuit?.ToggleRelay(3, true);
+			_circuit?.ToggleRelay(4, false);
+		}
+
+		private void ToggleMeasuring()
+		{
+			_circuit?.ToggleRelay(2, true);
+			_circuit?.ToggleRelay(3, false);
+			_circuit?.ToggleRelay(4, true);
 		}
 	}
 }

@@ -33,12 +33,12 @@ namespace ExtIntegration
 					}
 					break;
 				case CalculationStatus.CalculationError:
-					content = new XElement("calculationResult", "Failed to start calculation");
+					content = new XElement("calculationResult", "Failed to calculate volume");
 					break;
 				case CalculationStatus.AbortedByUser:
 					content = new XElement("calculationResult", "Aborted by user");
 					break;
-				case CalculationStatus.Undefined:
+				case CalculationStatus.Ready:
 					content = new XElement("calculationResult", "Unknown error");
 					break;
 				case CalculationStatus.TimedOut:
@@ -52,6 +52,21 @@ namespace ExtIntegration
 					break;
 				case CalculationStatus.BarcodeNotEntered:
 					content = new XElement("calculationResult", "Barcode not entered");
+					break;
+				case CalculationStatus.Pending:
+					content = new XElement("calculationResult", "Calculation is pending");
+					break;
+				case CalculationStatus.FailedToStart:
+					content = new XElement("calculationResult", "Failed to start calculation");
+					break;
+				case CalculationStatus.WeightNotStable:
+					content = new XElement("calculationResult", "Weight was not stable");
+					break;
+				case CalculationStatus.InProgress:
+					content = new XElement("calculationResult", "Calculation in progress");
+					break;
+				case CalculationStatus.FailedToCloseFiles:
+					content = new XElement("calculationResult", "Failed to close open result files");
 					break;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(status), status, null);

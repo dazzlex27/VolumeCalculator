@@ -6,18 +6,20 @@ using DeviceIntegration.IoCircuits;
 using DeviceIntegration.RangeMeters;
 using DeviceIntegration.Scales;
 using FrameProviders;
+using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 
 namespace VCServer
 {
-    public class IoDeviceManager : IDisposable
+    public class HardwareManager : IDisposable
     {
         public event Action<ScaleMeasurementData> WeightMeasurementReady;
         public event Action<string> BarcodeReady;
 
         private readonly ILogger _logger;
         private readonly DeviceSet _deviceSet;
+        private readonly StateController _stateController;
 
         private bool _subtractPalletWeight;
         private double _palletWeightGr;
@@ -30,10 +32,10 @@ namespace VCServer
 
         public IIpCamera IpCamera => _deviceSet.IpCamera;
         
-        public IoDeviceManager(ILogger logger, HttpClient httpClient, IoSettings settings)
+        public HardwareManager(ILogger logger, HttpClient httpClient, IoSettings settings)
         {
             _logger = logger;
-            _logger.LogInfo("Createing device manager...");
+            _logger.LogInfo("Creating device manager...");
             _deviceSet = _deviceSet = DeviceSetFactory.CreateDeviceSet(logger, httpClient, settings);
             
             if (_deviceSet.Scanners != null)
@@ -41,7 +43,9 @@ namespace VCServer
                 foreach (var scanner in _deviceSet.Scanners.Where(s => s != null))
                     scanner.CharSequenceFormed += OnBarcodeReady;
             }
-
+            
+            _stateController = new StateController(IoCircuit, RangeMeter);
+            
             if (_deviceSet.Scales != null)
                 _deviceSet.Scales.MeasurementReady += OnScalesWeightReady;
 
@@ -51,6 +55,8 @@ namespace VCServer
         public void Dispose()
         {
             _logger.LogInfo("Disposing device manager...");
+            
+            _stateController.Dispose();
             
             var scanners = _deviceSet.Scanners;
             if (scanners != null)
@@ -82,6 +88,11 @@ namespace VCServer
             _palletWeightGr = settings.AlgorithmSettings.PalletWeightGr;
         }
 
+        public void UpdateCalculationStatus(CalculationStatus status)
+        {
+            _stateController.Update(status);
+        }
+
         private void OnScalesWeightReady(ScaleMeasurementData data)
         {
             OnWeightMeasurementReady(data);
@@ -102,5 +113,6 @@ namespace VCServer
         {
             BarcodeReady?.Invoke(barcode);
         }
+       
     }
 }

@@ -68,7 +68,7 @@ namespace ExtIntegration.RequestHandlers
 			var statusInt = 0;
 			switch (status)
 			{
-				case CalculationStatus.Running:
+				case CalculationStatus.InProgress:
 					statusInt = 1;
 					break;
 				case CalculationStatus.Successful:

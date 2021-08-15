@@ -29,11 +29,10 @@ namespace VolumeCalculator
 		private readonly List<string> _fatalErrorMessages;
 
 		private ApplicationSettings _settings;
-		private VolumeCalculationRequestHandler _volumeCalculator;
+		private CalculationRequestHandler _calculator;
 		private DepthMapProcessor _dmProcessor;
 		private RequestProcessor _requestProcessor;
-		private IoDeviceManager _deviceManager;
-		private DashStatusUpdater _dashStatusUpdater;
+		private HardwareManager _deviceManager;
 		private CalculationResultFileProcessor _calculationResultFileProcessor;
 
 		private StreamViewControlVm _streamViewControlVm;
@@ -126,7 +125,7 @@ namespace VolumeCalculator
 				ShutDownCommand = new CommandHandler(() => { ShutDown(true, false); }, true);
 				StartMeasurementCommand = new CommandHandler(() => { OnCalculationStartRequested(null); }, true);
 
-				_volumeCalculator.ValidateDashboardStatus();
+				_calculator.ValidateStatus();
 				_logger.LogInfo("Application is initalized");
 			}
 			catch (Exception ex)
@@ -219,7 +218,7 @@ namespace VolumeCalculator
 				_logger.LogInfo("Initializing IO devices...");
 				var deviceLogger = new Logger("devices");
 
-				_deviceManager = new IoDeviceManager(deviceLogger, _httpClient, Settings.IoSettings);
+				_deviceManager = new HardwareManager(deviceLogger, _httpClient, Settings.IoSettings);
 				_deviceManager.BarcodeReady += OnBarcodeReady;
 				_deviceManager.WeightMeasurementReady += OnWeightMeasurementReady;
 
@@ -237,13 +236,13 @@ namespace VolumeCalculator
 
 		private void OnBarcodeReady(string barcode)
 		{
-			_volumeCalculator?.UpdateBarcode(barcode);
+			_calculator?.UpdateBarcode(barcode);
 			_dashboardControlVm?.UpdateBarcode(barcode);
 		}
 		
 		private void OnWeightMeasurementReady(ScaleMeasurementData data)
 		{
-			_volumeCalculator?.UpdateWeight(data);
+			_calculator?.UpdateWeight(data);
 			_dashboardControlVm?.UpdateWeight(data);
 		}
 
@@ -267,14 +266,10 @@ namespace VolumeCalculator
 				var outputPath = _settings.GeneralSettings.OutputPath;
 				_calculationResultFileProcessor = new CalculationResultFileProcessor(integrationLogger, outputPath);
 
-				_dashStatusUpdater = new DashStatusUpdater(_logger, _deviceManager);
-
-				_volumeCalculator = new VolumeCalculationRequestHandler(_logger, _dmProcessor, _deviceManager);
-				_volumeCalculator.UpdateSettings(Settings);
-				_volumeCalculator.CalculationFinished += OnCalculationFinished;
-				_volumeCalculator.ErrorOccured += ShowMessageBox;
-				_volumeCalculator.DashStatusUpdated += _dashStatusUpdater.UpdateDashStatus;
-				_volumeCalculator.CalculationStatusChanged += OnStatusChanged;
+				_calculator = new CalculationRequestHandler(_logger, _dmProcessor, _deviceManager);
+				_calculator.UpdateSettings(Settings);
+				_calculator.CalculationFinished += OnCalculationFinished;
+				_calculator.CalculationStatusChanged += OnStatusChanged;
 
 				_logger.LogInfo("Sub systems - ok");
 			}
@@ -303,11 +298,10 @@ namespace VolumeCalculator
 				_dashboardControlVm.WeightResetRequested += _deviceManager.ResetWeight;
 				_deviceManager.WeightMeasurementReady += _dashboardControlVm.UpdateWeight;
 				_deviceManager.BarcodeReady += _dashboardControlVm.UpdateBarcode;
-				_dashboardControlVm.CalculationCancellationRequested += _volumeCalculator.CancelPendingCalculation;
+				_dashboardControlVm.CalculationCancellationRequested += _calculator.CancelPendingCalculation;
 				_dashboardControlVm.CalculationRequested += OnCalculationStartRequested;
-				_dashboardControlVm.LockingStatusChanged += _volumeCalculator.UpdateLockingStatus;
-				_volumeCalculator.DashStatusUpdated += _dashboardControlVm.UpdateDashStatus;
-				_volumeCalculator.LastAlgorithmUsedChanged += _dashboardControlVm.UpdateLastAlgorithm;
+				_dashboardControlVm.LockingStatusChanged += _calculator.UpdateLockingStatus;
+				_calculator.LastAlgorithmUsedChanged += _dashboardControlVm.UpdateLastAlgorithm;
 
 				_testDataGenerationControlVm = new TestDataGenerationControlVm(_logger, _settings, frameProvider);
 
@@ -334,14 +328,14 @@ namespace VolumeCalculator
 
 		private void OnCalculationStartRequested(CalculationRequestData data)
 		{
-			_volumeCalculator.StartCalculation(data);
+			_calculator.StartCalculation(data);
 		}
 
-		private void OnStatusChanged(CalculationStatus status, string message)
+		private void OnStatusChanged(CalculationStatus status)
 		{
 			_requestProcessor.UpdateCalculationStatus(status);
-			_dashboardControlVm.UpdateState(status);
-			_dashboardControlVm.UpdateErrorMessage(message);
+			_dashboardControlVm.UpdateCalculationStatus(status);
+			_deviceManager.UpdateCalculationStatus(status);
 		}
 
 		private void SaveSettings()
@@ -443,16 +437,15 @@ namespace VolumeCalculator
 		private void DisposeSubSystems()
 		{
 			_logger.LogInfo("Disposing sub systems...");
-
-			_dashStatusUpdater?.Dispose();
-			_volumeCalculator?.Dispose();
+			
+			_calculator?.Dispose();
 			_requestProcessor?.Dispose();
 			_dmProcessor?.Dispose();
 		}
 
 		private void OnApplicationSettingsChanged(ApplicationSettings settings)
 		{
-			_volumeCalculator.UpdateSettings(settings);
+			_calculator.UpdateSettings(settings);
 			_dmProcessor.SetProcessorSettings(settings);
 			_deviceManager.UpdateSettings(settings);
 			_dashboardControlVm.UpdateSettings(settings);
@@ -483,11 +476,6 @@ namespace VolumeCalculator
 			var settingsAreOk = Settings?.IoSettings != null;
 			var needToshutDownPc = !settingsAreOk || Settings.GeneralSettings.ShutDownPcByDefault;
 			ShutDown(needToshutDownPc, true);
-		}
-		
-		private void ShowMessageBox(string message, string caption)
-		{
-			Dispatcher.Invoke(() => { AutoClosingMessageBox.Show(message, caption); });
 		}
 	}
 }

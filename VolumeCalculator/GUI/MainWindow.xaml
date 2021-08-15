@@ -9,7 +9,7 @@
         x:ClassModifier="internal"
         Title="{Binding WindowTitle}" 
         WindowStartupLocation="CenterScreen" 
-        Closing="Window_Closing"
+        Closing="OnWindowClosing"
         WindowStyle="None"
 		WindowState="Maximized"
         ResizeMode="NoResize"

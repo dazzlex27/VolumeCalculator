@@ -2,17 +2,18 @@
 {
 	public enum CalculationStatus
 	{
-		Undefined,
+		Ready,
+		Pending,
+		FailedToStart,
 		Successful,
 		BarcodeNotEntered,
 		WeightNotStable,
-		Running,
+		InProgress,
 		AbortedByUser,
 		TimedOut,
 		CalculationError,
 		FailedToSelectAlgorithm,
 		ObjectNotFound,
-		FailedToCloseFiles,
-		WorkAreaNotReady
+		FailedToCloseFiles
 	}
 }
