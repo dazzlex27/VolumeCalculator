@@ -20,7 +20,7 @@ namespace GuiCommon
 			return colorImageBitmap;
 		}
 
-		public static PixelFormat GetFormatFromBytesPerPixel(int bytesPerPixel)
+		private static PixelFormat GetFormatFromBytesPerPixel(int bytesPerPixel)
 		{
 			switch (bytesPerPixel)
 			{

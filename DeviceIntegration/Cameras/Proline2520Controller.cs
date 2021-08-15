@@ -23,11 +23,11 @@ namespace DeviceIntegration.Cameras
 			_httpClient = httpClient;
 		}
 
-		public async Task<bool> ConnectAsync(string ip, string login, string password)
+		public async Task ConnectAsync(string ip, string login, string password)
 		{
 			try
 			{
-				_logger.LogInfo($"{ip} {login} {password}");
+				await _logger.LogInfo($"{ip} {login} {password}");
 
 				_ip = ip;
 				_login = login;
@@ -39,14 +39,13 @@ namespace DeviceIntegration.Cameras
 				{
 					requestMessage.Headers.Authorization = authenticationData;
 					var response = await _httpClient.SendAsync(requestMessage);
-					_logger.LogInfo($"Camera connection status code - {response.StatusCode}");
-					return response.StatusCode == HttpStatusCode.OK;
+					await _logger.LogInfo($"Camera connection status code - {response.StatusCode}");
 				}
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException($"Failed to connect to Proline2520 camera on {_ip}", ex);
-				return false;
+				await _logger.LogException($"Failed to connect to Proline2520 camera on {_ip}", ex);
+				return;
 			}
 		}
 
@@ -71,7 +70,7 @@ namespace DeviceIntegration.Cameras
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException($"Failed to get snapshot from Proline2520 camera on {_ip}", ex);
+				await _logger.LogException($"Failed to get snapshot from Proline2520 camera on {_ip}", ex);
 				return null;
 			}
 		}
@@ -87,7 +86,7 @@ namespace DeviceIntegration.Cameras
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException($"Failed to tilt up Proline2520 camera on {_ip}", ex);
+				await _logger.LogException($"Failed to tilt up Proline2520 camera on {_ip}", ex);
 				return false;
 			}
 		}
@@ -103,7 +102,7 @@ namespace DeviceIntegration.Cameras
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException($"Failed to tilt down Proline2520 camera on {_ip}", ex);
+				await _logger.LogException($"Failed to tilt down Proline2520 camera on {_ip}", ex);
 				return false;
 			}
 		}
@@ -119,7 +118,7 @@ namespace DeviceIntegration.Cameras
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException($"Failed to pan left Proline2520 camera on {_ip}", ex);
+				await _logger.LogException($"Failed to pan left Proline2520 camera on {_ip}", ex);
 				return false;
 			}
 		}
@@ -135,7 +134,7 @@ namespace DeviceIntegration.Cameras
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException($"Failed to pan right Proline2520 camera on {_ip}", ex);
+				await _logger.LogException($"Failed to pan right Proline2520 camera on {_ip}", ex);
 				return false;
 			}
 		}
@@ -151,7 +150,7 @@ namespace DeviceIntegration.Cameras
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException($"Failed to stop Proline2520 camera on {_ip}", ex);
+				await _logger.LogException($"Failed to stop Proline2520 camera on {_ip}", ex);
 				return false;
 			}
 		}
@@ -167,7 +166,7 @@ namespace DeviceIntegration.Cameras
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException($"Failed to zoom in Proline2520 camera on {_ip}", ex);
+				await _logger.LogException($"Failed to zoom in Proline2520 camera on {_ip}", ex);
 				return false;
 			}
 		}
@@ -183,7 +182,7 @@ namespace DeviceIntegration.Cameras
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException($"Failed to zoom out Proline2520 camera on {_ip}", ex);
+				await _logger.LogException($"Failed to zoom out Proline2520 camera on {_ip}", ex);
 				return false;
 			}
 		}
@@ -199,7 +198,7 @@ namespace DeviceIntegration.Cameras
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException($"Failed to go to preset {presetIndex} on Proline2520 camera on {_ip}", ex);
+				await _logger.LogException($"Failed to go to preset {presetIndex} on Proline2520 camera on {_ip}", ex);
 				return false;
 			}
 		}

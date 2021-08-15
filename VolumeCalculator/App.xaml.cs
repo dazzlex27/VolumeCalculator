@@ -1,8 +1,6 @@
-﻿using System.Windows;
-
-namespace DepthMapProcessorGUI
+﻿namespace VolumeCalculator
 {
-    public partial class App : Application
+    public partial class App
     {
     }
 }

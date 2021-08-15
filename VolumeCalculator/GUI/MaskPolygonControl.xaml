@@ -4,9 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 			 xmlns:main="clr-namespace:VolumeCalculator"
-             mc:Ignorable="d" 
+			 xmlns:viewModels="clr-namespace:VolumeCalculator.ViewModels"
+			 mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" x:ClassModifier="internal"
-             d:DataContext="{d:DesignInstance main:MaskPolygonControlVm}"
+             d:DataContext="{d:DesignInstance viewModels:MaskPolygonControlVm}"
              DataContextChanged="MaskPolygonControl_OnDataContextChanged"
              SizeChanged="MaskPolygonControl_OnSizeChanged">
 	<Canvas Name="CvMain" 

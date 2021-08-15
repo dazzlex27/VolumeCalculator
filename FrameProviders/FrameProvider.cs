@@ -72,23 +72,23 @@ namespace FrameProviders
 
 		protected bool NeedUnrestrictedColorFrame => UnrestrictedColorFrameReady?.GetInvocationList().Length > 0;
 
-		protected bool NeedColorFrame => IsColorStreamSubsribedTo && !IsColorStreamSuspended && TimeToProcessColorFrame;
+		protected bool NeedColorFrame => IsColorStreamSubscribedTo && !IsColorStreamSuspended && TimeToProcessColorFrame;
 
 		protected bool NeedUnrestrictedDepthFrame => UnrestrictedDepthFrameReady?.GetInvocationList().Length > 0;
 
-		protected bool NeedDepthFrame => IsDepthStreamSubsribedTo && !IsDepthStreamSuspended && TimeToProcessDepthFrame;
+		protected bool NeedDepthFrame => IsDepthStreamSubscribedTo && !IsDepthStreamSuspended && TimeToProcessDepthFrame;
 
 		protected bool IsColorStreamSuspended { get; set; }
 
 		protected bool IsDepthStreamSuspended { get; set; }
 
-		protected bool IsColorStreamSubsribedTo => ColorFrameReady?.GetInvocationList().Length > 0;
+		private bool IsColorStreamSubscribedTo => ColorFrameReady?.GetInvocationList().Length > 0;
 
-		protected bool IsDepthStreamSubsribedTo => DepthFrameReady?.GetInvocationList().Length > 0;
+		private bool IsDepthStreamSubscribedTo => DepthFrameReady?.GetInvocationList().Length > 0;
 
-		protected bool TimeToProcessColorFrame => _lastProcessedColorFrameTime + _timeBetweenColorFrames < DateTime.Now;
+		private bool TimeToProcessColorFrame => _lastProcessedColorFrameTime + _timeBetweenColorFrames < DateTime.Now;
 
-		protected bool TimeToProcessDepthFrame => _lastProcessedDepthFrameTime + _timeBetweenDepthFrames < DateTime.Now;
+		private bool TimeToProcessDepthFrame => _lastProcessedDepthFrameTime + _timeBetweenDepthFrames < DateTime.Now;
 
 		protected FrameProvider(ILogger logger)
 		{
@@ -161,24 +161,24 @@ namespace FrameProviders
 		{
 			_depthMapQueue.Enqueue(map);
 		}
-		
-		protected void RaiseUnrestrictedColorFrameReadyEvent(ImageData image)
+
+		private void RaiseUnrestrictedColorFrameReadyEvent(ImageData image)
 		{
 			UnrestrictedColorFrameReady?.Invoke(image);
 		}
 
-		protected void RaiseUnrestrictedDepthFrameReadyEvent(DepthMap depthMap)
+		private void RaiseUnrestrictedDepthFrameReadyEvent(DepthMap depthMap)
 		{
 			UnrestrictedDepthFrameReady?.Invoke(depthMap);
 		}
 
-		protected void RaiseColorFrameReadyEvent(ImageData image)
+		private void RaiseColorFrameReadyEvent(ImageData image)
 		{
 			_lastProcessedColorFrameTime = DateTime.Now;
 			ColorFrameReady?.Invoke(image);
 		}
 
-		protected void RaiseDepthFrameReadyEvent(DepthMap depthMap)
+		private void RaiseDepthFrameReadyEvent(DepthMap depthMap)
 		{
 			_lastProcessedDepthFrameTime = DateTime.Now;
 			DepthFrameReady?.Invoke(depthMap);
@@ -211,7 +211,7 @@ namespace FrameProviders
 			}
 			catch (Exception ex)
 			{
-				Logger.LogException("failed to handle color frame", ex);
+				await Logger.LogException("failed to handle color frame", ex);
 			}
 		}
 
@@ -242,7 +242,7 @@ namespace FrameProviders
 			}
 			catch (Exception ex)
 			{
-				Logger.LogException("failed to handle depth frame", ex);
+				await Logger.LogException("failed to handle depth frame", ex);
 			}
 		}
 	}

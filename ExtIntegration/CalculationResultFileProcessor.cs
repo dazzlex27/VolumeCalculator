@@ -58,34 +58,6 @@ namespace ExtIntegration
 			}
 		}
 
-		public void CreateFileIfNecessary()
-		{
-			lock (_fileWriteLock)
-			{
-				Directory.CreateDirectory(_outputFolderPath);
-				if (File.Exists(FullOutputPath))
-					return;
-
-				using (var resultFile = new StreamWriter(FullOutputPath, true, Encoding.Default))
-				{
-					var resultString = new StringBuilder();
-					resultString.Append("#");
-					resultString.Append($@"{GlobalConstants.CsvSeparator}date local");
-					resultString.Append($@"{GlobalConstants.CsvSeparator}time local");
-					resultString.Append($@"{GlobalConstants.CsvSeparator}code");
-					resultString.Append($@"{GlobalConstants.CsvSeparator}weight (gr)");
-					resultString.Append($@"{GlobalConstants.CsvSeparator}unitCount (p)");
-					resultString.Append($@"{GlobalConstants.CsvSeparator}length (mm)");
-					resultString.Append($@"{GlobalConstants.CsvSeparator}width (mm)");
-					resultString.Append($@"{GlobalConstants.CsvSeparator}height (mm)");
-					resultString.Append($@"{GlobalConstants.CsvSeparator}volume (cm^3)");
-					resultString.Append($@"{GlobalConstants.CsvSeparator}comment");
-					resultFile.WriteLine(resultString);
-					resultFile.Flush();
-				}
-			}
-		}
-
 		public void WriteCalculationResult(CalculationResultData resultData)
 		{
 			if (resultData.Status != CalculationStatus.Successful)
@@ -134,6 +106,34 @@ namespace ExtIntegration
 				catch (Exception ex)
 				{
 					_logger.LogException("Failed to write data to csv...", ex);
+				}
+			}
+		}
+		
+		private void CreateFileIfNecessary()
+		{
+			lock (_fileWriteLock)
+			{
+				Directory.CreateDirectory(_outputFolderPath);
+				if (File.Exists(FullOutputPath))
+					return;
+
+				using (var resultFile = new StreamWriter(FullOutputPath, true, Encoding.Default))
+				{
+					var resultString = new StringBuilder();
+					resultString.Append("#");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}date local");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}time local");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}code");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}weight (gr)");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}unitCount (p)");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}length (mm)");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}width (mm)");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}height (mm)");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}volume (cm^3)");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}comment");
+					resultFile.WriteLine(resultString);
+					resultFile.Flush();
 				}
 			}
 		}

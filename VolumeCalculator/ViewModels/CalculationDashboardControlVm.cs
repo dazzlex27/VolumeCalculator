@@ -12,7 +12,7 @@ using ProcessingUtils;
 using VCServer;
 using VolumeCalculator.Utils;
 
-namespace VolumeCalculator
+namespace VolumeCalculator.ViewModels
 {
 	internal class CalculationDashboardControlVm : BaseViewModel
 	{

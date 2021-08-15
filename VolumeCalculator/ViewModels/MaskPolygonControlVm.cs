@@ -1,12 +1,11 @@
-﻿using GuiCommon;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using GuiCommon;
 
-namespace VolumeCalculator
+namespace VolumeCalculator.ViewModels
 {
 	internal class MaskPolygonControlVm : BaseViewModel
 	{

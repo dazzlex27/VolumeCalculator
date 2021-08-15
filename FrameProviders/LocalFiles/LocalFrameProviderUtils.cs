@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using Primitives;
+using ProcessingUtils;
 
 namespace FrameProviders.LocalFiles
 {

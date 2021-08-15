@@ -10,13 +10,13 @@ namespace VCConfigurator
 	{
 		private readonly ApplicationSettings _settings;
 
-		private DeviceSettingsVm _deviceSetingsVm;
+		private DeviceSettingsVm _deviceSettingsVm;
 		private IntegrationSettingsVm _integrationSettingsVm;
 
 		public DeviceSettingsVm DeviceSettingsVm
 		{
-			get => _deviceSetingsVm;
-			set => SetField(ref _deviceSetingsVm, value, nameof(DeviceSettingsVm));
+			get => _deviceSettingsVm;
+			set => SetField(ref _deviceSettingsVm, value, nameof(DeviceSettingsVm));
 		}
 
 		public IntegrationSettingsVm IntegrationSettingsVm
@@ -47,7 +47,7 @@ namespace VCConfigurator
 
 			try
 			{
-				var settingsFromFile = IoUtils.DeserializeSettings();
+				var settingsFromFile = IoUtils.DeserializeSettings<ApplicationSettings>();
 				if (settingsFromFile != null)
 					return settingsFromFile;
 			}
@@ -61,13 +61,13 @@ namespace VCConfigurator
 
 		private void FillValuesFromSettings(ApplicationSettings settings)
 		{
-			_deviceSetingsVm.FillValuesFromSettings(settings.IoSettings);
+			_deviceSettingsVm.FillValuesFromSettings(settings.IoSettings);
 			_integrationSettingsVm.FillValuesFromSettings(settings.IntegrationSettings);
 		}
 
 		private void ApplySettings(bool closeApplication)
 		{
-			_deviceSetingsVm.FillSettingsFromValues(_settings.IoSettings);
+			_deviceSettingsVm.FillSettingsFromValues(_settings.IoSettings);
 			_integrationSettingsVm.FillSettingsFromValues(_settings.IntegrationSettings);
 
 			IoUtils.SerializeSettings(_settings);

@@ -10,15 +10,14 @@ using System.Windows.Media.Imaging;
 
 namespace CameraTest
 {
-	public partial class MainWindow : Window, INotifyPropertyChanged
+	public partial class MainWindow : INotifyPropertyChanged
 	{
 		private WriteableBitmap _colorImageBitmap;
-		private readonly HttpClient _httpClient;
-		private Proline2520Controller _controller;
+		private readonly Proline2520Controller _controller;
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
@@ -40,8 +39,8 @@ namespace CameraTest
 		{
 			InitializeComponent();
 
-			_httpClient = new HttpClient();
-			_controller = new Proline2520Controller(_httpClient);
+			var httpClient = new HttpClient();
+			_controller = new Proline2520Controller(httpClient);
 
 			var settings = ReadSettingsFromFile();
 			var ipCameraSettings = settings.IoSettings.IpCameraSettings;
@@ -57,7 +56,7 @@ namespace CameraTest
 
 			try
 			{
-				var settingsFromFile = IoUtils.DeserializeSettings();
+				var settingsFromFile = IoUtils.DeserializeSettings<ApplicationSettings>();
 				if (settingsFromFile != null)
 					return settingsFromFile;
 			}
@@ -148,10 +147,10 @@ namespace CameraTest
 			}
 
 			if (initialized)
-				await Task.Run(async () => { await RunSnaphotFetchingLoop(); });
+				await Task.Run(async () => { await RunSnapshotFetchingLoop(); });
 		}
 
-		private async Task RunSnaphotFetchingLoop()
+		private async Task RunSnapshotFetchingLoop()
 		{
 			try
 			{

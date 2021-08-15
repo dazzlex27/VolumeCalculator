@@ -7,7 +7,7 @@ using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 
-namespace VolumeCalculator
+namespace VolumeCalculator.ViewModels
 {
 	internal class SettingsWindowVm : BaseViewModel
 	{

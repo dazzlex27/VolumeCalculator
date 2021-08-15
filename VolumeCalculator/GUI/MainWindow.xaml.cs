@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using VolumeCalculator.ViewModels;
 
 namespace VolumeCalculator.GUI
 {

@@ -6,8 +6,9 @@ using FluentFTP;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings.Integration;
+using ProcessingUtils;
 
-namespace ExtIntegration.RequestSenders.SqlSenders
+namespace ExtIntegration.RequestSenders
 {
 	public class FtpRequestSender : IRequestSender
 	{
@@ -16,9 +17,8 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 		private readonly int _port;
 		private readonly string _baseDirectory;
 		private readonly bool _includeObjectPhoto;
-		private readonly NetworkCredential _credentials;
 		private readonly FtpClient _client;
-		private bool _useSeparateFolders;
+		private readonly bool _useSeparateFolders;
 
 		public FtpRequestSender(ILogger logger, FtpRequestSettings settings)
 		{
@@ -30,10 +30,10 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 			_baseDirectory = settings.BaseDirectory;
 			_includeObjectPhoto = settings.IncludeObjectPhotos;
 			_useSeparateFolders = settings.UseSeparateFolders;
-			_credentials = new NetworkCredential(settings.Login, settings.Password);
+			var credentials = new NetworkCredential(settings.Login, settings.Password);
 
 			var useSecureConnection = settings.IsSecure;
-			_client = new FtpClient(_hostname, _port, _credentials)
+			_client = new FtpClient(_hostname, _port, credentials)
 			{
 				EncryptionMode = useSecureConnection ? FtpEncryptionMode.Explicit : FtpEncryptionMode.None,
 				DataConnectionEncryption = useSecureConnection,
@@ -69,13 +69,13 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 
 			try
 			{
-				_logger.LogInfo($"Sending files via FTP to {_hostname}...");
+				_logger.LogInfo($"Sending files via FTP to {_hostname}:{_port}...");
 
 				var calculationResult = resultData.Result;
 
 				var timeString = resultData.Result.CalculationTime.ToString("yyyyMMddHHmmss");
-				var basefileName = $"{calculationResult.Barcode}_{timeString}";
-				var fileName = _useSeparateFolders ? Path.Combine(basefileName, basefileName) : basefileName;
+				var baseFileName = $"{calculationResult.Barcode}_{timeString}";
+				var fileName = _useSeparateFolders ? Path.Combine(baseFileName, baseFileName) : baseFileName;
 
 				using (var memoryStream = new MemoryStream())
 				using (var writer = new StreamWriter(memoryStream))

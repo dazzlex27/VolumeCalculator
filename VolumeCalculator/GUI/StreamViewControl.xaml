@@ -5,9 +5,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:gui="clr-namespace:VolumeCalculator.GUI"
              xmlns:main="clr-namespace:VolumeCalculator"
+             xmlns:viewModels="clr-namespace:VolumeCalculator.ViewModels"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800" x:ClassModifier="internal"
-             d:DataContext="{d:DesignInstance main:StreamViewControlVm}">
+             d:DataContext="{d:DesignInstance viewModels:StreamViewControlVm}">
     <Grid HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch"
           Height="Auto">

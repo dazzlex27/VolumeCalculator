@@ -6,11 +6,12 @@
              xmlns:main="clr-namespace:VolumeCalculator"
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              xmlns:primitives="clr-namespace:Primitives;assembly=Primitives"
+             xmlns:viewModels="clr-namespace:VolumeCalculator.ViewModels"
              mc:Ignorable="d"
              x:ClassModifier="internal"
              Height="Auto"
              Width="Auto"
-             d:DataContext="{d:DesignInstance main:MiscSettingsControlVm}">
+             d:DataContext="{d:DesignInstance viewModels:MiscSettingsControlVm}">
     <UserControl.Resources>
         <ObjectDataProvider x:Key="AllWeightUnits"
                             MethodName="GetValues"

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -35,11 +36,11 @@ namespace ExtIntegration.RequestSenders
 				_logger.LogInfo($"Creating GET request sender for {address}");
 			}
 
-			if (!string.IsNullOrEmpty(settings.Login))
-			{
-				_authenticationHeaderData = NetworkUtils.GetBasicAuthenticationHeaderData(settings.Login, settings.Password);
-				_logger.LogInfo($"Authentication data for https requests - \"{_authenticationHeaderData.ToString()}\"");
-			}
+			if (string.IsNullOrEmpty(settings.Login))
+				return;
+			
+			_authenticationHeaderData = NetworkUtils.GetBasicAuthenticationHeaderData(settings.Login, settings.Password);
+			_logger.LogInfo($"Authentication data for https requests - \"{_authenticationHeaderData}\"");
 		}
 
 		public void Dispose()
@@ -77,17 +78,17 @@ namespace ExtIntegration.RequestSenders
 
 						var query = HttpUtility.ParseQueryString(builder.Query);
 						query["bar"] = result.Barcode;
-						query["wt"] = result.ObjectWeight.ToString();
+						query["wt"] = result.ObjectWeight.ToString(CultureInfo.InvariantCulture);
 						query["l"] = result.ObjectLengthMm.ToString();
 						query["w"] = result.ObjectWidthMm.ToString();
 						query["h"] = result.ObjectHeightMm.ToString();
 						query["u"] = result.UnitCount.ToString();
-						query["c"] = result.CalculationComment.ToString();
+						query["c"] = result.CalculationComment;
 
 						builder.Query = query.ToString();
 						string finalUrl = builder.ToString();
 
-						HttpResponseMessage response = null;
+						HttpResponseMessage response;
 
 						if (_authenticationHeaderData != null)
 						{
@@ -120,15 +121,16 @@ namespace ExtIntegration.RequestSenders
 			}
 		}
 
-		private string GetPortString(bool secureConnection, int port)
+		private static string GetPortString(bool secureConnection, int port)
 		{
-			if (secureConnection && port == 443)
-				return "";
-
-			if (!secureConnection && port == 80)
-				return "";
-
-			return $":{port}";
+			switch (secureConnection)
+			{
+				case true when port == 443:
+				case false when port == 80:
+					return "";
+				default:
+					return $":{port}";
+			}
 		}
 	}
 }

@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:gui="clr-namespace:VolumeCalculator.GUI"
 		xmlns:main="clr-namespace:VolumeCalculator"
+		xmlns:viewModels="clr-namespace:VolumeCalculator.ViewModels"
 		mc:Ignorable="d"
         x:ClassModifier="internal"
         Title="{Binding WindowTitle}" 
@@ -16,7 +17,7 @@
         ContentRendered="OnContentRendered"
 		KeyboardNavigation.TabNavigation="Cycle">
 	<Window.DataContext>
-		<main:MainWindowVm/>
+		<viewModels:MainWindowVm/>
 	</Window.DataContext>
 	<Window.InputBindings>
 		<KeyBinding Key="Enter" Modifiers="Control" Command="{Binding StartMeasurementCommand}"/>

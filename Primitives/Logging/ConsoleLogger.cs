@@ -1,27 +1,40 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Primitives.Logging
 {
 	public class ConsoleLogger : ILogger
 	{
-		public void LogDebug(string message)
+		public async Task LogDebug(string message)
 		{
+			Console.ForegroundColor = ConsoleColor.Blue;
 			Console.WriteLine($"DEBUG: {message}");
+			Console.ResetColor();
+			await Task.FromResult(0);
 		}
 
-		public void LogError(string message)
+		public async Task LogError(string message)
 		{
+			Console.ForegroundColor = ConsoleColor.DarkMagenta;
 			Console.WriteLine($"ERROR: {message}");
+			Console.ResetColor();
+			await Task.FromResult(0);
 		}
 
-		public void LogException(string message, Exception ex)
+		public async Task LogException(string message, Exception ex)
 		{
+			Console.ForegroundColor = ConsoleColor.Red;
 			Console.WriteLine($"EXCEPTION: {message}");
+			Console.ResetColor();
+			await Task.FromResult(0);
 		}
 
-		public void LogInfo(string message)
+		public async Task LogInfo(string message)
 		{
+			Console.ForegroundColor = ConsoleColor.Yellow;
 			Console.WriteLine($"INFO: {message}");
+			Console.ResetColor();
+			await Task.FromResult(0);
 		}
 	}
 }

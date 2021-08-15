@@ -16,9 +16,8 @@ using Primitives.Settings;
 using ProcessingUtils;
 using VCServer;
 using VolumeCalculator.GUI;
-using VolumeCalculator.Utils;
 
-namespace VolumeCalculator
+namespace VolumeCalculator.ViewModels
 {
 	internal class MainWindowVm : BaseViewModel
 	{
@@ -109,7 +108,7 @@ namespace VolumeCalculator
 				_httpClient = new HttpClient();
 
 				_fatalErrorMessages = new List<string>();
-				_logger = new Logger("main");
+				_logger = new TxtLogger("main");
 
 				_logger.LogInfo($"Starting up \"{GlobalConstants.AppHeaderString}\"...");
 				AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
@@ -190,7 +189,7 @@ namespace VolumeCalculator
 			try
 			{
 				_logger.LogInfo("Reading settings...");
-				var settingsFromFile = IoUtils.DeserializeSettings();
+				var settingsFromFile = IoUtils.DeserializeSettings<ApplicationSettings>();
 				if (settingsFromFile == null)
 				{
 					_logger.LogError("Failed to read settings from file, will use default settings");
@@ -216,7 +215,7 @@ namespace VolumeCalculator
 			try
 			{
 				_logger.LogInfo("Initializing IO devices...");
-				var deviceLogger = new Logger("devices");
+				var deviceLogger = new TxtLogger("devices");
 
 				_deviceManager = new HardwareManager(deviceLogger, _httpClient, Settings.IoSettings);
 				_deviceManager.BarcodeReady += OnBarcodeReady;
@@ -260,7 +259,7 @@ namespace VolumeCalculator
 				_dmProcessor = new DepthMapProcessor(_logger, colorCameraParams, depthCameraParams);
 				_dmProcessor.SetProcessorSettings(Settings);
 
-				var integrationLogger = new Logger("integration");
+				var integrationLogger = new TxtLogger("integration");
 				_requestProcessor = new RequestProcessor(integrationLogger, _httpClient, _settings.IntegrationSettings);
 				_requestProcessor.StartRequestReceived += OnCalculationStartRequested;
 				var outputPath = _settings.GeneralSettings.OutputPath;

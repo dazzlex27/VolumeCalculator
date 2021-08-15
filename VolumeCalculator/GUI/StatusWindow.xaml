@@ -7,6 +7,7 @@
 		xmlns:main="clr-namespace:VolumeCalculator"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         xmlns:primitives="clr-namespace:Primitives;assembly=Primitives"
+        xmlns:viewModels="clr-namespace:VolumeCalculator.ViewModels"
         mc:Ignorable="d"
         x:ClassModifier="internal"
         Title="Информация о приложении" 
@@ -15,7 +16,7 @@
         SizeToContent="WidthAndHeight" 
         WindowStartupLocation="CenterOwner" 
         ResizeMode="NoResize"
-        d:DataContext="{d:DesignInstance main:StatusWindowVm}">
+        d:DataContext="{d:DesignInstance viewModels:StatusWindowVm}">
 	<Window.Resources>
 		<ObjectDataProvider x:Key="AllWeightUnits"
 		                    MethodName="GetValues"
