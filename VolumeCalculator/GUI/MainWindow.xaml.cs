@@ -13,7 +13,7 @@ namespace VolumeCalculator.GUI
 			_vm = (MainWindowVm) DataContext;
 		}
 
-		private void Window_Closing(object sender, CancelEventArgs e)
+		private void OnWindowClosing(object sender, CancelEventArgs e)
 		{
 			if (!_vm.ShutDown(_vm.ShutDownByDefault, false))
 				e.Cancel = true;
