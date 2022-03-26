@@ -6,7 +6,7 @@ using Primitives.Logging;
 
 namespace FrameProviders
 {
-	public class FrameProvidersCommon
+	public static class FrameProvidersCommon
 	{
 		public static IFrameProvider CreateRequestedFrameProvider(string deviceName, ILogger logger)
 		{

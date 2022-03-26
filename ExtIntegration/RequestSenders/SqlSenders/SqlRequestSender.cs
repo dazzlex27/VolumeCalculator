@@ -9,7 +9,7 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 	{
 		private readonly ILogger _logger;
 
-		private ISqlRequestSenderEngine _engine;
+		private readonly ISqlRequestSenderEngine _engine;
 		private readonly string _connectionString;
 
 		public SqlRequestSender(ILogger logger, SqlRequestSettings requestSettings)

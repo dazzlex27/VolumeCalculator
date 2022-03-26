@@ -1,13 +1,13 @@
-﻿using GuiCommon;
-using Primitives;
-using Primitives.Logging;
-using ProcessingUtils;
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using GuiCommon;
+using Primitives;
+using Primitives.Logging;
+using ProcessingUtils;
 
-namespace VolumeCalculator
+namespace VolumeCalculator.ViewModels
 {
 	internal class StatusWindowVm : BaseViewModel
 	{
@@ -77,7 +77,7 @@ namespace VolumeCalculator
 					}
 					catch (Exception ex)
 					{
-						logger.LogException("Web server request for info failed", ex);
+						await logger.LogException("Web server request for info failed", ex);
 					}
 				});
 

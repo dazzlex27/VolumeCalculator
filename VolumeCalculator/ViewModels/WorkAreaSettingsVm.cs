@@ -1,7 +1,7 @@
 ﻿using GuiCommon;
 using Primitives.Settings;
 
-namespace VolumeCalculator
+namespace VolumeCalculator.ViewModels
 {
 	internal class WorkAreaSettingsVm : BaseViewModel
 	{

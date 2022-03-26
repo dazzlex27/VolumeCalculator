@@ -13,7 +13,7 @@ using Primitives.Settings;
 
 namespace VCServer
 {
-	internal class DeviceSetFactory
+	internal static class DeviceSetFactory
 	{
 		public static DeviceSet CreateDeviceSet(ILogger logger, HttpClient httpClient, IoSettings settings)
 		{

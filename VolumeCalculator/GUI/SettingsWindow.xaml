@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:gui="clr-namespace:VolumeCalculator.GUI"
         xmlns:main="clr-namespace:VolumeCalculator"
+        xmlns:viewModels="clr-namespace:VolumeCalculator.ViewModels"
         mc:Ignorable="d"
         x:ClassModifier="internal"
         Title="Настройки приложения"
@@ -14,7 +15,7 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         SizeChanged="SettingsWindow_OnSizeChanged"
-        d:DataContext="{d:DesignInstance main:SettingsWindowVm}">
+        d:DataContext="{d:DesignInstance viewModels:SettingsWindowVm}">
     <Window.Resources>
         
     </Window.Resources>

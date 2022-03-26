@@ -10,6 +10,7 @@ using FrameProcessor;
 using FrameProviders;
 using Primitives;
 using Primitives.Logging;
+using ProcessingUtils;
 using Timer = System.Timers.Timer;
 
 namespace VCServer

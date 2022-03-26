@@ -17,7 +17,7 @@ namespace FrameProviders.KinectV2
 			var frameLength = frameDescription.Width * frameDescription.Height;
 			var data = new byte[frameLength * 4];
 
-			using (var colorBuffer = colorFrame.LockRawImageBuffer())
+			using (colorFrame.LockRawImageBuffer())
 			{
 				var pinnedArray = GCHandle.Alloc(data, GCHandleType.Pinned);
 				var pointer = pinnedArray.AddrOfPinnedObject();

@@ -5,7 +5,7 @@ using System.Windows;
 
 namespace VolumeCalculator.GUI
 {
-	internal partial class AutoClosingMessageBox : INotifyPropertyChanged
+	internal sealed partial class AutoClosingMessageBox : INotifyPropertyChanged
 	{
 		private const int DefaultClosingTimeMs = 3000;
 		private const string DefaultCaptionText = "Сообщение";
@@ -73,7 +73,7 @@ namespace VolumeCalculator.GUI
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		private void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}

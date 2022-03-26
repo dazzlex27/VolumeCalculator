@@ -4,13 +4,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:gui="clr-namespace:VolumeCalculator.GUI"
-             xmlns:main="clr-namespace:VolumeCalculator"
+             xmlns:viewModels="clr-namespace:VolumeCalculator.ViewModels"
              mc:Ignorable="d"
              x:ClassModifier="internal"
              Height="Auto"
              Width="Auto"
              SizeChanged="SettingsWindow_OnSizeChanged"
-             d:DataContext="{d:DesignInstance main:WorkAreaSettingsControlVm}">
+             d:DataContext="{d:DesignInstance viewModels:WorkAreaSettingsControlVm}">
     <StackPanel Margin="10">
         <!--Video-->
         <StackPanel Orientation="Horizontal">

@@ -44,13 +44,12 @@ namespace VolumeCalculator.GUI
 		    if (!(sender is Window window))
 			    return;
 
-		    var currentScreenHandle = new WindowInteropHelper(window).Handle;
-			var currentScreem = Screen.FromHandle(currentScreenHandle);
-
 		    var source = PresentationSource.FromVisual(window);
 		    var dpiScaling = source?.CompositionTarget?.TransformFromDevice.M11 ?? 1;
 
-		    var workingArea = currentScreem.WorkingArea;
+		    var currentScreenHandle = new WindowInteropHelper(window).Handle;
+		    var currentScreen = Screen.FromHandle(currentScreenHandle);
+		    var workingArea = currentScreen.WorkingArea;
 		    var workAreaWidth = (int)Math.Floor(workingArea.Width * dpiScaling);
 		    var workAreaHeight = (int)Math.Floor(workingArea.Height * dpiScaling);
 

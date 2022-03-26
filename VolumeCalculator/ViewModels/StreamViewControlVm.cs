@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Windows.Media.Imaging;
 using FrameProviders;
+using GuiCommon;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
-using GuiCommon;
-using VCServer;
-using VolumeCalculator.Utils;
 
-namespace VolumeCalculator
+namespace VolumeCalculator.ViewModels
 {
 	internal class StreamViewControlVm : BaseViewModel, IDisposable
 	{

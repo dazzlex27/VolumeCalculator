@@ -63,7 +63,7 @@ namespace DeviceIntegration.Scales
 				}
 				catch (Exception ex)
 				{
-					_logger.LogException("Exception in OkaScales polling loop", ex);
+					await _logger.LogException("Exception in OkaScales polling loop", ex);
 				}
 			});
 		}
@@ -174,7 +174,7 @@ namespace DeviceIntegration.Scales
 				}
 				catch (Exception ex)
 				{
-					_logger.LogException("Failed to poll data from OkaScales", ex);
+					await _logger.LogException("Failed to poll data from OkaScales", ex);
 					await Task.Delay(errorTimeOutMs);
 				}
 			}

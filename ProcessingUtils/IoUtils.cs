@@ -7,17 +7,19 @@ using System.Net;
 using System.Net.Sockets;
 using Newtonsoft.Json;
 using Primitives;
-using Primitives.Settings;
 
 namespace ProcessingUtils
 {
 	public static class IoUtils
 	{
-		private static object CounterLock = new object();
+		private static readonly object CounterLock = new object();
 		
-		public static void SerializeSettings(ApplicationSettings settings)
+		public static void SerializeSettings<T>(T settings)
 		{
-			Directory.CreateDirectory(GlobalConstants.AppConfigPath);
+			var logFileInfo = new FileInfo(GlobalConstants.ConfigFileName);
+			if (!string.IsNullOrEmpty(logFileInfo.DirectoryName))
+				Directory.CreateDirectory(logFileInfo.DirectoryName);
+			
 			if (settings == null)
 				return;
 
@@ -25,15 +27,17 @@ namespace ProcessingUtils
 			File.WriteAllText(GlobalConstants.ConfigFileName, settingsText);
 		}
 
-		public static ApplicationSettings DeserializeSettings()
+		public static T DeserializeSettings<T>()
 		{
-			Directory.CreateDirectory(GlobalConstants.AppConfigPath);
-			var configFile = GlobalConstants.ConfigFileName;
-			if (!File.Exists(configFile))
-				return null;
+			var configFileInfo = new FileInfo(GlobalConstants.ConfigFileName);
+			if (!string.IsNullOrEmpty(configFileInfo.DirectoryName))
+				Directory.CreateDirectory(configFileInfo.DirectoryName);
+			
+			if (!configFileInfo.Exists)
+				return default;
 
-			var settingsText = File.ReadAllText(configFile);
-			return JsonConvert.DeserializeObject<ApplicationSettings>(settingsText);
+			var settingsText = File.ReadAllText(configFileInfo.FullName);
+			return JsonConvert.DeserializeObject<T>(settingsText);
 		}
 
 		public static int GetCurrentUniversalObjectCounter()

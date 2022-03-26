@@ -18,7 +18,7 @@ namespace ExtIntegration.RequestHandlers
 		private const int RequestTimeoutMs = 15000;
 		private const int ThreadIdleTimeSpan = 500;
 
-		private readonly System.Timers.Timer _requesthandlingTimeoutTimer;
+		private readonly System.Timers.Timer _requestHandlingTimeoutTimer;
 		private readonly ILogger _logger;
 		private readonly HttpListener _listener;
 		private readonly string _address;
@@ -42,8 +42,8 @@ namespace ExtIntegration.RequestHandlers
 			_listener.Prefixes.Add(_address);
 			_running = true;
 
-			_requesthandlingTimeoutTimer = new System.Timers.Timer(RequestTimeoutMs) { AutoReset = false };
-			_requesthandlingTimeoutTimer.Elapsed += OnTimeoutTimerElapsed;
+			_requestHandlingTimeoutTimer = new System.Timers.Timer(RequestTimeoutMs) { AutoReset = false };
+			_requestHandlingTimeoutTimer.Elapsed += OnTimeoutTimerElapsed;
 
 			Task.Run(() =>
 			{
@@ -71,7 +71,7 @@ namespace ExtIntegration.RequestHandlers
 				if (!_sessionInProgress)
 					_logger.LogError($"Response generation call for {_address} came after the session timeout");
 
-				_requesthandlingTimeoutTimer.Stop();
+				_requestHandlingTimeoutTimer.Stop();
 
 				_logger.LogInfo($"Generating HTTP response for {_address}...");
 				var responseString = RequestUtils.GenerateXmlResponseText(resultData, data.SendPhoto);
@@ -98,11 +98,11 @@ namespace ExtIntegration.RequestHandlers
 			}
 		}
 
-		public void SendPingResponse(HttpRequestData data)
+		private void SendPingResponse(HttpRequestData data)
 		{
 			try
 			{
-				var responseString = "pong";
+				const string responseString = "pong";
 				_logger.LogInfo($"Response text is the following: {Environment.NewLine}{responseString}");
 
 				var response = data.Context.Response;
@@ -204,7 +204,7 @@ namespace ExtIntegration.RequestHandlers
 
 			CalculationStartRequested?.Invoke(requestData);
 			_sessionInProgress = true;
-			_requesthandlingTimeoutTimer.Start();
+			_requestHandlingTimeoutTimer.Start();
 		}
 
 		private void OnTimeoutTimerElapsed(object sender, ElapsedEventArgs e)
@@ -227,10 +227,10 @@ namespace ExtIntegration.RequestHandlers
 			var encodedUsernamePassword = authHeader.Substring("Basic ".Length).Trim();
 			var encoding = Encoding.GetEncoding("iso-8859-1");
 			var usernamePassword = encoding.GetString(Convert.FromBase64String(encodedUsernamePassword));
-			var seperatorIndex = usernamePassword.IndexOf(':');
+			var separatorIndex = usernamePassword.IndexOf(':');
 
-			var login = usernamePassword.Substring(0, seperatorIndex);
-			var password = usernamePassword.Substring(seperatorIndex + 1);
+			var login = usernamePassword.Substring(0, separatorIndex);
+			var password = usernamePassword.Substring(separatorIndex + 1);
 
 			var loginIsOk = _login == login;
 			if (!loginIsOk)

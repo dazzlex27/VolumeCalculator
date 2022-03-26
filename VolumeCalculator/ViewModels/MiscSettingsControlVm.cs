@@ -2,7 +2,7 @@
 using Primitives;
 using Primitives.Settings;
 
-namespace VolumeCalculator
+namespace VolumeCalculator.ViewModels
 {
 	internal class MiscSettingsControlVm : BaseViewModel
 	{

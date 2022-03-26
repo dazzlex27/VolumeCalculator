@@ -9,7 +9,7 @@ using Primitives.Logging;
 using Primitives.Settings;
 using VolumeCalculator.GUI;
 
-namespace VolumeCalculator
+namespace VolumeCalculator.ViewModels
 {
 	internal class WorkAreaSettingsControlVm : BaseViewModel
 	{
