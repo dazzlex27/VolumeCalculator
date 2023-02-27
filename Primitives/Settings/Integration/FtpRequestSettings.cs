@@ -36,7 +36,9 @@
 
 		public static FtpRequestSettings GetDefaultSettings()
 		{
-			return new FtpRequestSettings(false, "localhost", 21, "is", "", false, "is", false, false);
+			var login = GlobalConstants.ManufacturerName.ToLower();
+
+			return new FtpRequestSettings(false, "localhost", 21, login, "", false, login, false, false);
 		}
 	}
 }

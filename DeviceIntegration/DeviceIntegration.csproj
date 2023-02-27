@@ -32,9 +32,6 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="GodSharp.SerialPort, Version=1.2.0.5, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\GodSharp.SerialPort.1.2.0.5\lib\net46\GodSharp.SerialPort.dll</HintPath>
-    </Reference>
     <Reference Include="LibUsbDotNet.LibUsbDotNet">
       <HintPath>..\packages\LibUsbDotNet\LibUsbDotNet.LibUsbDotNet.dll</HintPath>
     </Reference>
@@ -87,8 +84,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
     <None Include="Properties\DataSources\System.Xml.XmlElement.datasource" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="GodSharp.SerialPort">
+      <Version>1.2.0.6</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

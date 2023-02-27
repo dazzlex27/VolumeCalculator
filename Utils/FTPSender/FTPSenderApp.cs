@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace FTPSender
 {
 	internal class FtpSenderApp
 	{
-		private static void Main()
+		private static async Task Main()
 		{
 			const string defaultHost = "87.251.82.99";
 			const ushort defaultPort = 10021;
@@ -43,7 +44,8 @@ namespace FTPSender
 				return;
 			}
 
-			new FtpSender(host, port, login, password, true);
+			var sender = new FtpSender(host, port, login, password, true);
+			await sender.UploadAsync();
 
 			Console.WriteLine("Application finished");
 		}

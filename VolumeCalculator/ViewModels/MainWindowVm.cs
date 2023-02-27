@@ -470,7 +470,7 @@ namespace VolumeCalculator.ViewModels
 			builder.AppendLine();
 			builder.AppendLine("Приложение будет закрыто, информация записана в журнал");
 
-			AutoClosingMessageBox.Show(builder.ToString(), "Аварийное завершение");
+			AutoClosingMessageBox.Show(builder.ToString(), "Аварийное завершение", 5000);
 
 			var settingsAreOk = Settings?.IoSettings != null;
 			var needToshutDownPc = !settingsAreOk || Settings.GeneralSettings.ShutDownPcByDefault;
