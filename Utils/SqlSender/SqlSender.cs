@@ -14,7 +14,7 @@ namespace SqlSender
 			const string dbName = "innovation";
 			const string username = "cargo";
 			const string password = "cargo123";
-			const string tableName = "EXPORT_FROM_INSIZE";
+			const string tableName = "EXPORT_FROM_IS";
 
 			var connectionString = $"server={hostname};port={3306};database={dbName}; UID={username}; password={password}";
 

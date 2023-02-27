@@ -12,7 +12,7 @@ using Primitives;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct(GlobalConstants.AppTitle)]
-[assembly: AssemblyCopyright("IS ©  2018")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
