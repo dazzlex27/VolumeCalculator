@@ -26,7 +26,7 @@
   <PropertyGroup>
     <RootNamespace>FrameProviders</RootNamespace>
     <ProjectGuid>{F9973DC5-0D7C-4805-A622-E99492CD3714}</ProjectGuid>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup>
