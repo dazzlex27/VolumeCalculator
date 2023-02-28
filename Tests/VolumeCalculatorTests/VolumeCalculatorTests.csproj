@@ -1,77 +1,26 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\NUnit.3.10.1\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.10.1\build\NUnit.props')" />
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4EBE3F89-1320-4565-8F28-C9B6AB9C0797}</ProjectGuid>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <OutputType>Library</OutputType>
-    <RootNamespace>VolumeCalculatorTests</RootNamespace>
-    <AssemblyName>VolumeCalculatorTests</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <TargetFrameworkProfile />
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\!!bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <OutputPath>..\..\!!bin\AnyCPU\Debug\</OutputPath>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>..\..\!!bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>..\..\!!bin\AnyCPU\Release\</OutputPath>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="DepthMapUtilsTest.cs" />
-    <Compile Include="DepthMapProcessorTest.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestUtils.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\FrameProcessor\FrameProcessor.csproj">
-      <Project>{B824300E-8FF0-4DD7-BD9D-1483E86025D4}</Project>
-      <Name>FrameProcessor</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Primitives\Primitives.csproj">
-      <Project>{90c0cc4f-e7d1-4a68-801b-fa4bdfc4a55b}</Project>
-      <Name>Primitives</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\..\FrameProviders\FrameProviders.csproj">
-      <Project>{f9973dc5-0d7c-4805-a622-e99492cd3714}</Project>
-      <Name>FrameProviders</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ProcessingUtils\ProcessingUtils.csproj">
-      <Project>{7f073083-eec1-4ab9-8b4b-e68c944715a3}</Project>
-      <Name>ProcessingUtils</Name>
-      <Private>False</Private>
-    </ProjectReference>
+    <ProjectReference Include="..\..\FrameProcessor\FrameProcessor.csproj" />
+    <ProjectReference Include="..\..\Primitives\Primitives.csproj" />
+    <ProjectReference Include="..\..\FrameProviders\FrameProviders.csproj" />
+    <ProjectReference Include="..\..\ProcessingUtils\ProcessingUtils.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NUnit">
@@ -80,6 +29,9 @@
     <PackageReference Include="NUnit3TestAdapter">
       <Version>4.4.0</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.410601">
+      <PrivateAssets>none</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.0" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

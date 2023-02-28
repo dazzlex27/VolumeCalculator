@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace FrameProcessor.Native
 {
-    internal static class DepthMapProcessorDll
+    internal static class NativeMethods
     {
 	    [DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
 	    public static extern void CreateDepthMapProcessor(CameraIntrinsics colorIntrinsics, CameraIntrinsics depthIntrinsics);
@@ -15,7 +15,7 @@ namespace FrameProcessor.Native
 	    public static extern unsafe void SetAlgorithmSettings(short floorDepth, short cutOffDepth, 
 			RelPoint* polygonPoints, int polygonPointCount, RelRect colorRoiRect);
 
-	    [DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
+	    [DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
 	    public static extern void SetDebugPath(string path, bool maskMode);
 
 		[DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]

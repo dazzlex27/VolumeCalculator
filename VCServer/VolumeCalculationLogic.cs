@@ -43,7 +43,7 @@ namespace VCServer
 		
 		private readonly VolumeCalculator _calculator;
 
-		private CancellationToken _token;
+		private readonly CancellationToken _token;
 
 		public VolumeCalculationLogic(ILogger logger, DepthMapProcessor processor, IFrameProvider frameProvider, 
 			IRangeMeter rangeMeter, IIpCamera ipCamera, VolumeCalculationData calculationData)
@@ -69,6 +69,8 @@ namespace VCServer
 
 			frameProvider.UnrestrictedDepthFrameReady += OnDepthFrameReady;
 			frameProvider.UnrestrictedColorFrameReady += OnColorFrameReady;
+
+			_token = new CancellationToken();
 
 			_updateTimeoutTimer = new Timer(5000) {AutoReset = false};
 			_updateTimeoutTimer.Elapsed += OnTimerElapsed;

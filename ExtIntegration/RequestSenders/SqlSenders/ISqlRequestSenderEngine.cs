@@ -1,8 +1,9 @@
 ﻿using Primitives;
+using System;
 
 namespace ExtIntegration.RequestSenders.SqlSenders
 {
-	internal interface ISqlRequestSenderEngine
+	internal interface ISqlRequestSenderEngine : IDisposable
 	{
 		void Connect();
 

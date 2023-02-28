@@ -7,8 +7,8 @@ namespace FrameProviders.D435
 {
 	internal class RealsenseD435FrameProvider : FrameProvider
 	{
-		private readonly DllWrapper.ColorFrameCallback _colorFrameCallback;
-		private readonly DllWrapper.DepthFrameCallback _depthFramesCallback;
+		private readonly NativeMethods.ColorFrameCallback _colorFrameCallback;
+		private readonly NativeMethods.DepthFrameCallback _depthFramesCallback;
 
 		private readonly object _colorFrameProcessingLock;
 		private readonly object _depthFrameProcessingLock;
@@ -31,17 +31,17 @@ namespace FrameProviders.D435
 		public override void Start()
 		{
 			Logger.LogInfo("Starting Realsense D435 frame receiver...");
-			DllWrapper.CreateFrameProvider();
-			DllWrapper.SubscribeToColorFrames(_colorFrameCallback);
-			DllWrapper.SubscribeToDepthFrames(_depthFramesCallback);
+			NativeMethods.CreateFrameProvider();
+			NativeMethods.SubscribeToColorFrames(_colorFrameCallback);
+			NativeMethods.SubscribeToDepthFrames(_depthFramesCallback);
 		}
 
 		public override void Dispose()
 		{
 			Logger.LogInfo("Disposing Realsense D435 frame receiver...");
-			DllWrapper.UnsubscribeFromColorFrames(_colorFrameCallback);
-			DllWrapper.UnsubscribeFromDepthFrames(_depthFramesCallback);
-			DllWrapper.DestroyFrameProvider();
+			NativeMethods.UnsubscribeFromColorFrames(_colorFrameCallback);
+			NativeMethods.UnsubscribeFromDepthFrames(_depthFramesCallback);
+			NativeMethods.DestroyFrameProvider();
 		}
 
 		public override ColorCameraParams GetColorCameraParams()
@@ -51,7 +51,7 @@ namespace FrameProviders.D435
 
 		public override DepthCameraParams GetDepthCameraParams()
 		{
-			//var intristics = DllWrapper.GetDepthCameraIntrinsics();
+			//var intristics = NativeMethods.GetDepthCameraIntrinsics();
 			//if (intristics == null)
 				return new DepthCameraParams(86, 57, 645.715759f, 645.715759f, 637.416138f, 362.886597f, 300, 10000);
 
@@ -64,7 +64,7 @@ namespace FrameProviders.D435
 			if (IsColorStreamSuspended)
 				return;
 
-			DllWrapper.UnsubscribeFromColorFrames(_colorFrameCallback);
+			NativeMethods.UnsubscribeFromColorFrames(_colorFrameCallback);
 
 			IsColorStreamSuspended = true;
 		}
@@ -74,7 +74,7 @@ namespace FrameProviders.D435
 			if (!IsColorStreamSuspended)
 				return;
 
-			DllWrapper.SubscribeToColorFrames(_colorFrameCallback);
+			NativeMethods.SubscribeToColorFrames(_colorFrameCallback);
 
 			IsColorStreamSuspended = false;
 		}
@@ -84,7 +84,7 @@ namespace FrameProviders.D435
 			if (IsDepthStreamSuspended)
 				return;
 
-			DllWrapper.UnsubscribeFromDepthFrames(_depthFramesCallback);
+			NativeMethods.UnsubscribeFromDepthFrames(_depthFramesCallback);
 
 			IsDepthStreamSuspended = true;
 		}
@@ -94,7 +94,7 @@ namespace FrameProviders.D435
 			if (!IsDepthStreamSuspended)
 				return;
 
-			DllWrapper.SubscribeToDepthFrames(_depthFramesCallback);
+			NativeMethods.SubscribeToDepthFrames(_depthFramesCallback);
 
 			IsDepthStreamSuspended = false;
 		}

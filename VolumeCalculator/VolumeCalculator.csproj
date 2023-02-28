@@ -1,18 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{08B98C3A-C054-464C-9594-F4EB7F7B2333}</ProjectGuid>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>VolumeCalculator</RootNamespace>
-    <AssemblyName>VolumeCalculator</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -28,229 +17,39 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile />
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\!!bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <OutputPath>..\!!bin\AnyCPU\Debug\</OutputPath>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>CS0067</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>..\!!bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>..\!!bin\AnyCPU\Release\</OutputPath>
     <DebugType>none</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>CS0067</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>ISlogo.ico</ApplicationIcon>
   </PropertyGroup>
-  <PropertyGroup />
-  <PropertyGroup />
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Management" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-  </ItemGroup>
-  <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Compile Include="GUI\AutoClosingMessageBox.xaml.cs">
-      <DependentUpon>AutoClosingMessageBox.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\MaskPolygonControl.xaml.cs">
-      <DependentUpon>MaskPolygonControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\MiscSettingsControl.xaml.cs">
-      <DependentUpon>MiscSettingsControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\WorkAreaSettingsControl.xaml.cs">
-      <DependentUpon>WorkAreaSettingsControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Utils\GuiUtils.cs" />
-    <Compile Include="ViewModels\CalculationDashboardControlVm.cs" />
-    <Compile Include="ViewModels\MainWindowVm.cs" />
-    <Compile Include="ViewModels\MaskPolygonControlVm.cs" />
-    <Compile Include="ViewModels\MiscSettingsControlVm.cs" />
-    <Compile Include="ViewModels\SettingsWindowVm.cs" />
-    <Compile Include="ViewModels\StatusWindowVm.cs" />
-    <Compile Include="ViewModels\StreamViewControlVm.cs" />
-    <Compile Include="ViewModels\TestDataGenerationControlVm.cs" />
-    <Compile Include="ViewModels\WorkAreaSettingsControlVm.cs" />
-    <Compile Include="GUI\StatusWindow.xaml.cs">
-      <DependentUpon>StatusWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\CalculationDashboardControl.xaml.cs">
-      <DependentUpon>CalculationDashboardControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\StreamViewControl.xaml.cs">
-      <DependentUpon>StreamViewControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\TestDataGenerationControl.xaml.cs">
-      <DependentUpon>TestDataGenerationControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\SettingsWindow.xaml.cs">
-      <DependentUpon>SettingsWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ViewModels\WorkAreaSettingsVm.cs" />
-    <Page Include="GUI\AutoClosingMessageBox.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="GUI\CalculationDashboardControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="GUI\MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="GUI\MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Page Include="GUI\MaskPolygonControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="GUI\MiscSettingsControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="GUI\StatusWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="GUI\SettingsWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="GUI\StreamViewControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="GUI\TestDataGenerationControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="GUI\WorkAreaSettingsControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Themes\Metro\Metro.MSControls.Core.Implicit.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Themes\Metro\Styles.Shared.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Themes\Metro\Styles.WPF.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Themes\Metro\Theme.Colors.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <None Include="app.manifest" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ExtIntegration\ExtIntegration.csproj">
-      <Project>{847C984F-67EB-4391-89C3-E70671DB5570}</Project>
-      <Name>ExtIntegration</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\FrameProcessor\FrameProcessor.csproj">
-      <Project>{b824300e-8ff0-4dd7-bd9d-1483e86025d4}</Project>
-      <Name>FrameProcessor</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\GuiCommon\GuiCommon.csproj">
-      <Project>{9d608412-edb0-4010-8e90-7e45f0607cc4}</Project>
-      <Name>GuiCommon</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Primitives\Primitives.csproj">
-      <Project>{90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B}</Project>
-      <Name>Primitives</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\DeviceIntegration\DeviceIntegration.csproj">
-      <Project>{508afe7e-b27b-4245-8fe3-a04944678115}</Project>
-      <Name>DeviceIntegration</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\FrameProviders\FrameProviders.csproj">
-      <Project>{f9973dc5-0d7c-4805-a622-e99492cd3714}</Project>
-      <Name>FrameProviders</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\ProcessingUtils\ProcessingUtils.csproj">
-      <Project>{7f073083-eec1-4ab9-8b4b-e68c944715a3}</Project>
-      <Name>ProcessingUtils</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\VCServer\VCServer.csproj">
-      <Project>{b7303e0e-bc1c-4af6-b253-1b73f18e7c3f}</Project>
-      <Name>VCServer</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\ExtIntegration\ExtIntegration.csproj" />
+    <ProjectReference Include="..\FrameProcessor\FrameProcessor.csproj" />
+    <ProjectReference Include="..\GuiCommon\GuiCommon.csproj" />
+    <ProjectReference Include="..\Primitives\Primitives.csproj" />
+    <ProjectReference Include="..\DeviceIntegration\DeviceIntegration.csproj" />
+    <ProjectReference Include="..\FrameProviders\FrameProviders.csproj" />
+    <ProjectReference Include="..\ProcessingUtils\ProcessingUtils.csproj" />
+    <ProjectReference Include="..\VCServer\VCServer.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="ISlogo.ico" />
@@ -267,5 +66,13 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <PackageReference Include="System.Management" Version="7.0.0" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.410601">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Remove="Themes\Metro\Metro.MSControls.Toolkit.Implicit.xaml" />
+  </ItemGroup>
 </Project>

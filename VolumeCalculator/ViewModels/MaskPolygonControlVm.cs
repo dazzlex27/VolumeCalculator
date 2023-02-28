@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using GuiCommon;
+using Primitives;
 
 namespace VolumeCalculator.ViewModels
 {
@@ -18,7 +20,7 @@ namespace VolumeCalculator.ViewModels
 		private double _canvasWidth;
 		private double _canvasHeight;
 
-		private IReadOnlyList<Point> _relPoints;
+		private IReadOnlyList<RelPoint> _relPoints;
 
 		public List<Ellipse> PolygonNodes { get; }
 
@@ -46,24 +48,24 @@ namespace VolumeCalculator.ViewModels
 			set => SetField(ref _canvasHeight, value, nameof(CanvasHeight));
 		}
 
-		public MaskPolygonControlVm(IReadOnlyList<Point> points)
+		public MaskPolygonControlVm(IReadOnlyList<RelPoint> points)
 		{
 			PolygonNodes = new List<Ellipse>();
 
 			SetPolygonPoints(points);
 		}
 
-		public void SetPolygonPoints(IReadOnlyList<Point> relPoints)
+		public void SetPolygonPoints(IReadOnlyList<RelPoint> relPoints)
 		{
-			_relPoints = new List<Point>(relPoints);
+			_relPoints = new List<RelPoint>(relPoints);
 			var absPoints = GetAbsPoints(relPoints);
 			PolygonPoints = new PointCollection(absPoints);
 			PolygonPointsChanged?.Invoke(absPoints);
 		}
 
-		public IReadOnlyList<Point> GetPolygonPoints()
+		public IReadOnlyList<RelPoint> GetPolygonPoints()
 		{
-			return _relPoints; 
+			return _relPoints;
 				//GetRelPoints(_polygonPoints.ToList());
 		}
 
@@ -74,7 +76,7 @@ namespace VolumeCalculator.ViewModels
 			SetPolygonPoints(_relPoints);
 		}
 
-		private IReadOnlyList<Point> GetAbsPoints(IReadOnlyCollection<Point> relPoints)
+		private IReadOnlyList<Point> GetAbsPoints(IReadOnlyCollection<RelPoint> relPoints)
 		{
 			var absPoints = new List<Point>(relPoints.Count);
 
@@ -85,19 +87,6 @@ namespace VolumeCalculator.ViewModels
 			}
 
 			return absPoints;
-		}
-
-		private IReadOnlyList<Point> GetRelPoints(IReadOnlyCollection<Point> absPoints)
-		{
-			var relPoints = new List<Point>(absPoints.Count);
-
-			foreach (var point in absPoints)
-			{
-				var relPoint = new Point(point.X / CanvasWidth, point.Y / CanvasHeight);
-				relPoints.Add(relPoint);
-			}
-
-			return relPoints;
 		}
 	}
 }

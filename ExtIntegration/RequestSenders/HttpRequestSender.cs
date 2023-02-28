@@ -4,15 +4,15 @@ using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using System.Web;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings.Integration;
 using ProcessingUtils;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace ExtIntegration.RequestSenders
 {
-	public class HttpRequestSender : IRequestSender
+	public sealed class HttpRequestSender : IRequestSender
 	{
 		private readonly ILogger _logger;
 		private readonly HttpClient _httpClient;
@@ -76,7 +76,7 @@ namespace ExtIntegration.RequestSenders
 
 						var builder = new UriBuilder(address);
 
-						var query = HttpUtility.ParseQueryString(builder.Query);
+						var query = QueryHelpers.ParseQuery(builder.Query);
 						query["bar"] = result.Barcode;
 						query["wt"] = result.ObjectWeight.ToString(CultureInfo.InvariantCulture);
 						query["l"] = result.ObjectLengthMm.ToString();

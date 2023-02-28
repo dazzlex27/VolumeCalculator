@@ -1,95 +1,38 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{508AFE7E-B27B-4245-8FE3-A04944678115}</ProjectGuid>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DeviceIntegration</RootNamespace>
-    <AssemblyName>DeviceIntegration</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\!!bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <OutputPath>..\!!bin\AnyCPU\Debug\</OutputPath>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>..\!!bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>..\!!bin\AnyCPU\Release\</OutputPath>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="LibUsbDotNet.LibUsbDotNet">
       <HintPath>..\packages\LibUsbDotNet\LibUsbDotNet.LibUsbDotNet.dll</HintPath>
     </Reference>
-    <Reference Include="PresentationCore" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cameras\IIpCamera.cs" />
-    <Compile Include="Cameras\Proline2520Camera.cs" />
-    <Compile Include="Cameras\Proline2520Controller.cs" />
-    <Compile Include="DeviceIntegrationCommon.cs" />
-    <Compile Include="IoCircuits\IIoCircuit.cs" />
-    <Compile Include="IoCircuits\KeUsb24RCircuit.cs" />
-    <Compile Include="IoCircuits\LineRequestStatus.cs" />
-    <Compile Include="RangeMeters\FakeRangeMater.cs" />
-    <Compile Include="RangeMeters\TeslaM70RangeMeter.cs" />
-    <Compile Include="RangeMeters\IRangeMeter.cs" />
-    <Compile Include="Scales\OkaScales.cs" />
-    <Compile Include="Scales\CasMScales.cs" />
-    <Compile Include="Scales\Ci2001AScales.cs" />
-    <Compile Include="Scales\FakeScales.cs" />
-    <Compile Include="Scales\IScales.cs" />
-    <Compile Include="Scales\MassaKScales.cs" />
-    <Compile Include="Scales\MeasurementStatus.cs" />
-    <Compile Include="Scales\ScaleMeasurementData.cs" />
-    <Compile Include="Scanners\IBarcodeScanner.cs" />
-    <Compile Include="Scanners\GenericKeyboardBarcodeScanner.cs" />
-    <Compile Include="Scanners\GenericSerialPortBarcodeScanner.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Primitives\Primitives.csproj">
-      <Project>{90c0cc4f-e7d1-4a68-801b-fa4bdfc4a55b}</Project>
-      <Name>Primitives</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\ProcessingUtils\ProcessingUtils.csproj">
-      <Project>{7f073083-eec1-4ab9-8b4b-e68c944715a3}</Project>
-      <Name>ProcessingUtils</Name>
-      <Private>False</Private>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="Properties\DataSources\System.Xml.XmlElement.datasource" />
+    <ProjectReference Include="..\Primitives\Primitives.csproj" />
+    <ProjectReference Include="..\ProcessingUtils\ProcessingUtils.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="GodSharp.SerialPort">
       <Version>1.2.0.6</Version>
+		<PrivateAssets>none</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.ServiceModel.Federation" Version="4.8.1" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.410601">
+      <PrivateAssets>none</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.0" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

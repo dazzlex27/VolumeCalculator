@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Windows;
 
 namespace Primitives.Settings
 {
@@ -16,11 +15,11 @@ namespace Primitives.Settings
 
 		public bool UseColorMask { get; set; }
 
-		public IReadOnlyList<Point> ColorMaskContour { get; set; }
+		public IReadOnlyList<RelPoint> ColorMaskContour { get; set; }
 
 		public bool UseDepthMask { get; set; }
 
-		public IReadOnlyList<Point> DepthMaskContour { get; set; }
+		public IReadOnlyList<RelPoint> DepthMaskContour { get; set; }
 
 		public bool EnableDmAlgorithm { get; set; }
 
@@ -30,8 +29,8 @@ namespace Primitives.Settings
 		
 		public int RangeMeterCorrectionValueMm { get; set; }
 
-		public WorkAreaSettings(short floorDepth, short minObjectHeight, bool useColorMask, IReadOnlyList<Point> colorMaskContour,
-			bool useDepthMask, IReadOnlyList<Point> depthMaskContour, int rangeMeterCorrectionValueMm)
+		public WorkAreaSettings(short floorDepth, short minObjectHeight, bool useColorMask, IReadOnlyList<RelPoint> colorMaskContour,
+			bool useDepthMask, IReadOnlyList<RelPoint> depthMaskContour, int rangeMeterCorrectionValueMm)
 		{
 			FloorDepth = floorDepth;
 			MinObjectHeight = minObjectHeight;
@@ -82,14 +81,14 @@ namespace Primitives.Settings
 				GetDefaultAreaContour(), true, GetDefaultAreaContour(), 0);
 		}
 
-		private static List<Point> GetDefaultAreaContour()
+		private static List<RelPoint> GetDefaultAreaContour()
 		{
-			return new List<Point>
+			return new List<RelPoint>
 			{
-				new Point(0.2, 0.2),
-				new Point(0.2, 0.8),
-				new Point(0.8, 0.8),
-				new Point(0.8, 0.2)
+				new RelPoint(0.2, 0.2),
+				new RelPoint(0.2, 0.8),
+				new RelPoint(0.8, 0.8),
+				new RelPoint(0.8, 0.2)
 			};
 		}
 	}

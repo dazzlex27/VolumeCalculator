@@ -8,7 +8,7 @@ using DepthMap = Primitives.DepthMap;
 
 namespace FrameProcessor
 {
-	public class DepthMapProcessor : IDisposable
+	public sealed class DepthMapProcessor : IDisposable
 	{
 		private readonly ILogger _logger;
 		private readonly object _lock;
@@ -24,7 +24,7 @@ namespace FrameProcessor
 			var colorIntrinsics = TypeConverter.ColorParamsToIntrinsics(colorCameraParams);
 			var depthIntrinsics = TypeConverter.DepthParamsToIntrinsics(depthCameraParams);
 
-			DepthMapProcessorDll.CreateDepthMapProcessor(colorIntrinsics, depthIntrinsics);
+			NativeMethods.CreateDepthMapProcessor(colorIntrinsics, depthIntrinsics);
 		}
 
 		public ObjectVolumeData CalculateVolume(DepthMap depthMap, ImageData colorImage, short calculatedDistance, 
@@ -55,11 +55,11 @@ namespace FrameProcessor
 							CalculatedDistance = calculatedDistance
 						};
 
-						var nativeResult = DepthMapProcessorDll.CalculateObjectVolume(volumeCalculationData);
+						var nativeResult = NativeMethods.CalculateObjectVolume(volumeCalculationData);
 
 						var result = nativeResult == null ?
 							null : new ObjectVolumeData(nativeResult->LengthMm, nativeResult->WidthMm, nativeResult->HeightMm);
-						DepthMapProcessorDll.DisposeCalculationResult(nativeResult);
+						NativeMethods.DisposeCalculationResult(nativeResult);
 
 						return result;
 					}
@@ -77,7 +77,7 @@ namespace FrameProcessor
 					{
 						var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
 
-						return DepthMapProcessorDll.CalculateFloorDepth(nativeDepthMap);
+						return NativeMethods.CalculateFloorDepth(nativeDepthMap);
 					}
 				}
 			}
@@ -129,7 +129,7 @@ namespace FrameProcessor
 									: debugFilename
 							};
 
-							var nativeResult = (NativeAlgorithmSelectionResult*)DepthMapProcessorDll.SelectAlgorithm(algorithmSelectionData);
+							var nativeResult = (NativeAlgorithmSelectionResult*)NativeMethods.SelectAlgorithm(algorithmSelectionData);
 
 							var status = nativeResult->Status;
 							var isSelected = IsAlgorithmSelected(status);
@@ -137,7 +137,7 @@ namespace FrameProcessor
 
 							var result = new AlgorithmSelectionResult(isSelected, nativeResult->Status, rangeMeterWasUsed);
 							
-							DepthMapProcessorDll.DisposeAlgorithmSelectionResult(nativeResult);
+							NativeMethods.DisposeAlgorithmSelectionResult(nativeResult);
 							
 							return result; 
 						}
@@ -159,7 +159,7 @@ namespace FrameProcessor
 				SetWorkAreaSettings(settings.AlgorithmSettings.WorkArea);
 
 				var terminatedPath = settings.GeneralSettings.PhotosDirectoryPath + "\0";
-				DepthMapProcessorDll.SetDebugPath(terminatedPath, false);
+				NativeMethods.SetDebugPath(terminatedPath, false);
 			}
 		}
 
@@ -170,16 +170,16 @@ namespace FrameProcessor
 
 			unsafe
 			{
-				var relPoints = new RelPoint[workAreaSettings.DepthMaskContour.Count];
+				var relPoints = new Native.RelPoint[workAreaSettings.DepthMaskContour.Count];
 				for (var i = 0; i < relPoints.Length; i++)
 				{
 					relPoints[i].X = (float) workAreaSettings.DepthMaskContour[i].X;
 					relPoints[i].Y = (float) workAreaSettings.DepthMaskContour[i].Y;
 				}
 
-				fixed (RelPoint* points = relPoints)
+				fixed (Native.RelPoint* points = relPoints)
 				{
-					DepthMapProcessorDll.SetAlgorithmSettings(workAreaSettings.FloorDepth, cutOffDepth,
+					NativeMethods.SetAlgorithmSettings(workAreaSettings.FloorDepth, cutOffDepth,
 						points, relPoints.Length, colorRoiRect);
 				}
 			}
@@ -188,7 +188,7 @@ namespace FrameProcessor
 		public void Dispose()
 		{
 			_logger.LogInfo("Disposing depth map processor...");
-			DepthMapProcessorDll.DestroyDepthMapProcessor();
+			NativeMethods.DestroyDepthMapProcessor();
 		}
 
 		private static unsafe Native.DepthMap GetNativeDepthMapFromDepthMap(DepthMap depthMap, short* depthData)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Primitives;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -257,13 +258,13 @@ namespace VolumeCalculator.GUI
 			_vm?.SetCanvasSize(CvMain.ActualWidth, CvMain.ActualHeight);
 		}
 		
-		private IReadOnlyList<Point> GetRelPoints(IReadOnlyCollection<Point> absPoints)
+		private IReadOnlyList<RelPoint> GetRelPoints(IReadOnlyCollection<Point> absPoints)
 		{
-			var relPoints = new List<Point>(absPoints.Count);
+			var relPoints = new List<RelPoint>(absPoints.Count);
 
 			foreach (var point in absPoints)
 			{
-				var relPoint = new Point(point.X / CvMain.ActualWidth, point.Y / CvMain.ActualHeight);
+				var relPoint = new RelPoint(point.X / CvMain.ActualWidth, point.Y / CvMain.ActualHeight);
 				relPoints.Add(relPoint);
 			}
 

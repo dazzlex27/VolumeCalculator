@@ -3,7 +3,7 @@ using Primitives;
 
 namespace FrameProviders.D435
 {
-	internal static class DllWrapper
+	internal static class NativeMethods
 	{
 		private const string LibName = "libD435FrameProvider.dll";
 

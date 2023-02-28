@@ -36,6 +36,11 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 			_connection.Close();
 		}
 
+		public void Dispose()
+		{
+			_connection?.Dispose();
+		}
+
 		public string GetConnectionString()
 		{
 			return _connection.ConnectionString;
