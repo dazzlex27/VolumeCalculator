@@ -91,5 +91,20 @@ namespace Primitives
 
 			return (byte) (255 - 255 * (depth - minValue) / maxValue);
 		}
+
+		public static byte[] GetColorizedDepthMapDataBgr(DepthMap map, short minDepth, short maxDepth)
+		{
+			var resultBytes = new byte[map.Data.Length * 3];
+
+			var byteIndex = 0;
+			foreach (var depthValue in map.Data)
+			{
+				resultBytes[byteIndex++] = GetIntensityFromDepth(depthValue, minDepth, maxDepth);
+				resultBytes[byteIndex++] = GetIntensityFromDepth(depthValue, minDepth, maxDepth);
+				resultBytes[byteIndex++] = GetIntensityFromDepth(depthValue, minDepth, maxDepth);
+			}
+
+			return resultBytes;
+		}
 	}
 }
