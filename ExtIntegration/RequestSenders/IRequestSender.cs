@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Primitives;
 
 namespace ExtIntegration.RequestSenders
 {
 	public interface IRequestSender : IDisposable
 	{
-		void Connect();
+		Task ConnectAsync();
 
-		bool Send(CalculationResultData resultData);
+		Task<bool> SendAsync(CalculationResultData resultData);
 	}
 }

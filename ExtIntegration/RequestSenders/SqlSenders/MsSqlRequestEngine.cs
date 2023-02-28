@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Data.SqlClient;
+using System.Threading.Tasks;
 using Primitives;
 using Primitives.Settings.Integration;
 
@@ -25,15 +26,15 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 			_connection = new SqlConnection(builder.ConnectionString);
 		}
 
-		public void Connect()
+		public async Task ConnectAsync()
 		{
 			if (_connection.State != ConnectionState.Open)
-				_connection.Open();
+				await _connection.OpenAsync();
 		}
 
-		public void Disconnect()
+		public async Task DisconnectAsync()
 		{
-			_connection.Close();
+			await _connection.CloseAsync();
 		}
 
 		public void Dispose()
@@ -46,7 +47,7 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 			return _connection.ConnectionString;
 		}
 
-		public int Send(CalculationResultData resultData)
+		public async Task<int> SendAsync(CalculationResultData resultData)
 		{
 			var result = resultData.Result;
 
@@ -60,7 +61,7 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 				command.Parameters.AddWithValue("@height", result.ObjectHeightMm);
 				command.Parameters.AddWithValue("@unitcount", result.UnitCount);
 				command.Parameters.AddWithValue("@comment", result.CalculationComment);
-				return command.ExecuteNonQuery();
+				return await command.ExecuteNonQueryAsync();
 			}
 		}
 	}

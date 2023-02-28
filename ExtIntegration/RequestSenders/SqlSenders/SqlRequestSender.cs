@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings.Integration;
 
 namespace ExtIntegration.RequestSenders.SqlSenders
 {
-	public class SqlRequestSender : IRequestSender
+	public sealed class SqlRequestSender : IRequestSender
 	{
 		private readonly ILogger _logger;
 
@@ -25,41 +26,39 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 		public void Dispose()
 		{
 			_logger.LogInfo($"Disconnecting from {_connectionString}...");
-			_engine.Disconnect();
+			_engine.Dispose();
 			_logger.LogInfo($"Disconnected from {_connectionString}");
 		}
 
-		public void Connect()
+		public async Task ConnectAsync()
 		{
-			_logger.LogInfo($"Connecting to {_connectionString}...");
-			_engine.Connect();
-			_logger.LogInfo($"Connected to {_connectionString}");
+			await _logger.LogInfo($"Connecting to {_connectionString}...");
+			await _engine.ConnectAsync();
+			await _logger.LogInfo($"Connected to {_connectionString}");
 		}
 
-		public bool Send(CalculationResultData resultData)
+		public async Task<bool> SendAsync(CalculationResultData resultData)
 		{
 			if (resultData.Status != CalculationStatus.Successful)
 			{
-				_logger.LogError($"The result was not successful ({resultData.Status}), will not send SQL request");
+				await _logger.LogError($"The result was not successful ({resultData.Status}), will not send SQL request");
 				return false;
 			}
 
 			try
 			{
-				_logger.LogInfo($"Sending SQL request to {_connectionString}...");
+				await _logger.LogInfo($"Sending SQL request to {_connectionString}...");
 
-				_engine.Connect();
+				await _engine.ConnectAsync();
 
-				var result = resultData.Result;
-
-				var affectedRowsCount = _engine.Send(resultData);
-				_logger.LogInfo($"Sent SQL request to {_connectionString}, {affectedRowsCount} rows affected");
+				var affectedRowsCount = await _engine.SendAsync(resultData);
+				await _logger.LogInfo($"Sent SQL request to {_connectionString}, {affectedRowsCount} rows affected");
 
 				return true;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException($"Failed to send an SQL request ({_connectionString})", ex);
+				await _logger.LogException($"Failed to send an SQL request ({_connectionString})", ex);
 				return false;
 			}
 		}

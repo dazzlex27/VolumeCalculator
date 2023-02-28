@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using VolumeCalculator.ViewModels;
 
 namespace VolumeCalculator.GUI
@@ -16,7 +17,7 @@ namespace VolumeCalculator.GUI
 
 		private void OnWindowClosing(object sender, CancelEventArgs e)
 		{
-			if (!_vm.ShutDown(_vm.ShutDownByDefault, false))
+			if (!Task.Run(async () => await _vm.ShutDownAsync(_vm.ShutDownByDefault, false)).Result)
 				e.Cancel = true;
 		}
 

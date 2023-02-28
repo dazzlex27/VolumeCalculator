@@ -12,13 +12,13 @@ namespace Primitives.Logging
 		private readonly string _filePath;
 		private readonly string _archiveFilePath;
 
-		public TxtLogger(string logName)
+		public TxtLogger(string appName, string logName)
 		{
 			var logFileName = $"{logName}.log";
 			var archivedLogFileName = $"{logFileName}1";
 
 			var currentInstanceFolder = StartupTime.ToString("yyyy-MM-dd-HH-mm-ss");
-			var logDirectory = Path.Combine(GlobalConstants.AppLogsPath, currentInstanceFolder);
+			var logDirectory = Path.Combine(GlobalConstants.AppLogsPath, appName, currentInstanceFolder);
 			Directory.CreateDirectory(logDirectory);
 			_filePath = Path.Combine(logDirectory, logFileName);
 			_archiveFilePath = Path.Combine(logDirectory, archivedLogFileName);

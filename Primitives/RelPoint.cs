@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Primitives
 {
+	[JsonConverter(typeof(RelPointConverter))]
 	public class RelPoint
 	{
 		public double X { get; set; }
@@ -18,4 +17,23 @@ namespace Primitives
 			Y = y;
 		}
 	}
+
+	public class RelPointConverter : JsonConverter<RelPoint>
+	{
+		public override void WriteJson(JsonWriter writer, RelPoint value, JsonSerializer serializer)
+		{
+			writer.WriteValue($"{value.X},{value.Y}");
+		}
+
+		public override RelPoint ReadJson(JsonReader reader, Type objectType, RelPoint existingValue,
+			bool hasExistingValue, JsonSerializer serializer)
+		{
+			var str = (string)reader.Value;
+			var tokens = 
+				str.Split(',').Select(t => double.Parse(t, System.Globalization.NumberStyles.Float)).ToArray();
+
+			return new RelPoint(tokens[0], tokens[1]);
+		}
+	}
+
 }

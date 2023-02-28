@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Net;
 using System.Security.Authentication;
+using System.Threading.Tasks;
 using FluentFTP;
 using Primitives;
 using Primitives.Logging;
@@ -10,66 +10,55 @@ using ProcessingUtils;
 
 namespace ExtIntegration.RequestSenders
 {
-	public class FtpRequestSender : IRequestSender
+	public sealed class FtpRequestSender : IRequestSender
 	{
 		private readonly ILogger _logger;
-		private readonly string _hostname;
-		private readonly int _port;
 		private readonly string _baseDirectory;
 		private readonly bool _includeObjectPhoto;
-		private readonly FtpClient _client;
+		private readonly AsyncFtpClient _client;
 		private readonly bool _useSeparateFolders;
 
 		public FtpRequestSender(ILogger logger, FtpRequestSettings settings)
 		{
 			logger.LogInfo($"Creating an FTP request handler for host {settings.Host}");
 			_logger = logger;
-
-			_hostname = settings.Host;
-			_port = settings.Port;
 			_baseDirectory = settings.BaseDirectory;
 			_includeObjectPhoto = settings.IncludeObjectPhotos;
 			_useSeparateFolders = settings.UseSeparateFolders;
-			var credentials = new NetworkCredential(settings.Login, settings.Password);
 
-			var useSecureConnection = settings.IsSecure;
-			_client = new FtpClient(_hostname, _port, credentials)
+			var useEncryption = settings.IsSecure;
+			var config = new FtpConfig()
 			{
-				EncryptionMode = useSecureConnection ? FtpEncryptionMode.Explicit : FtpEncryptionMode.None,
-				DataConnectionEncryption = useSecureConnection,
-				SslProtocols = SslProtocols.Default | SslProtocols.Tls11 | SslProtocols.Tls12
+				EncryptionMode = useEncryption ? FtpEncryptionMode.Explicit : FtpEncryptionMode.None,
+				DataConnectionEncryption = useEncryption,
+				SslProtocols = SslProtocols.Default | SslProtocols.Tls11 | SslProtocols.Tls12,
+				ValidateAnyCertificate = true
 			};
-			_client.ValidateCertificate += OnValidateCertificate;
-		}
-
-		private void OnValidateCertificate(FtpClient control, FtpSslValidationEventArgs e)
-		{
-			e.Accept = true;
+			_client = new AsyncFtpClient(settings.Host, settings.Login, settings.Password, settings.Port, config);
 		}
 
 		public void Dispose()
 		{
-			_client.ValidateCertificate -= OnValidateCertificate;
 			_client.Dispose();
 		}
 
-		public void Connect()
+		public async Task ConnectAsync()
 		{
-			_client.Connect();
+			await _client.Connect();
 		}
 
-		public bool Send(CalculationResultData resultData)
+		public async Task<bool> SendAsync(CalculationResultData resultData)
 		{
 			if (resultData.Status != CalculationStatus.Successful)
 			{
-				_logger.LogInfo($"The result was not successful ({resultData.Status}), will not send FTP request");
+				await _logger.LogInfo($"The result was not successful ({resultData.Status}), will not send FTP request");
 
 				return false;
 			}
 
 			try
 			{
-				_logger.LogInfo($"Sending files via FTP to {_hostname}:{_port}...");
+				await _logger.LogInfo($"Sending files via FTP to {_client.Host}:{_client.Port}...");
 
 				var calculationResult = resultData.Result;
 
@@ -93,9 +82,9 @@ namespace ExtIntegration.RequestSenders
 
 					var remoteFileName = Path.Combine(_baseDirectory, $"{fileName}.txt");
 
-					var result = _client.UploadAsync(memoryStream, remoteFileName, FtpExists.Overwrite, true).GetAwaiter().GetResult();
-					if (result)
-						_logger.LogInfo("Uploaded text file to FTP");
+					var result = await _client.UploadBytes(memoryStream.ToArray(), remoteFileName, FtpRemoteExists.Overwrite, true);
+					if (result == FtpStatus.Success)
+						await _logger.LogInfo("Uploaded text file to FTP");
 				}
 
 				if (_includeObjectPhoto)
@@ -107,19 +96,19 @@ namespace ExtIntegration.RequestSenders
 
 						var remoteFileName = Path.Combine(_baseDirectory, $"{fileName}.png");
 
-						var result = _client.UploadAsync(memoryStream, remoteFileName, FtpExists.Overwrite, true).GetAwaiter().GetResult();
-						if (result)
-							_logger.LogInfo("Uploaded photo file to FTP");
+						var result = await _client.UploadBytes(memoryStream.ToArray(), remoteFileName, FtpRemoteExists.Overwrite, true);
+						if (result == FtpStatus.Success)
+							await _logger.LogInfo("Uploaded photo file to FTP");
 					}
 				}
 
-				_logger.LogInfo($"Uploaded files to FTP server at {_hostname}");
+				await _logger.LogInfo($"Uploaded files to FTP server at {_client.Host}");
 
 				return true;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException($"Failed to upload data to FTP server at {_hostname}", ex);
+				await _logger.LogException($"Failed to upload data to FTP server at {_client.Host}", ex);
 				return false;
 			}
 		}

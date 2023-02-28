@@ -1,15 +1,16 @@
 ﻿using Primitives;
 using System;
+using System.Threading.Tasks;
 
 namespace ExtIntegration.RequestSenders.SqlSenders
 {
 	internal interface ISqlRequestSenderEngine : IDisposable
 	{
-		void Connect();
+		Task ConnectAsync();
 
-		void Disconnect();
+		Task DisconnectAsync();
 
-		int Send(CalculationResultData resultData);
+		Task<int> SendAsync(CalculationResultData resultData);
 
 		string GetConnectionString();
 	}

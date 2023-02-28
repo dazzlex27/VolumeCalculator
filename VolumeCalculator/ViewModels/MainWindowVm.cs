@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using DeviceIntegration.Scales;
@@ -38,7 +39,7 @@ namespace VolumeCalculator.ViewModels
 		private CalculationDashboardControlVm _dashboardControlVm;
 		private TestDataGenerationControlVm _testDataGenerationControlVm;
 		
-		private bool _shutDownInProgress;
+		private volatile bool _shutDownInProgress;
 		
 		public string WindowTitle => GlobalConstants.AppHeaderString;
 
@@ -105,26 +106,27 @@ namespace VolumeCalculator.ViewModels
 		{
 			try
 			{
-				_httpClient = new HttpClient();
-
-				_fatalErrorMessages = new List<string>();
-				_logger = new TxtLogger("main");
-
+				_logger = new TxtLogger("Client", "main");
 				_logger.LogInfo($"Starting up \"{GlobalConstants.AppHeaderString}\"...");
 				AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-				InitializeSettings();
-				InitializeIoDevices();
-				InitializeSubSystems();
-				InitializeSubViewModels();
-
-				OpenSettingsCommand = new CommandHandler(OpenSettingsWindow, true);
-				OpenStatusCommand = new CommandHandler(OpenStatusWindow, true);
-				OpenConfiguratorCommand = new CommandHandler(OpenConfigurator, true);
-				ShutDownCommand = new CommandHandler(() => { ShutDown(true, false); }, true);
+				// TODO: AsyncCommand (replace async void)
+				// TODO: producer-consumer based logging
+				_fatalErrorMessages = new List<string>();
+				OpenSettingsCommand = new CommandHandler(OpenSettingsWindowAsync, true);
+				OpenStatusCommand = new CommandHandler(OpenStatusWindowAsync, true);
+				OpenConfiguratorCommand = new CommandHandler(OpenConfiguratorAsync, true);
+				ShutDownCommand = new CommandHandler(() => { ShutDownAsync(true, false); }, true);
 				StartMeasurementCommand = new CommandHandler(() => { OnCalculationStartRequested(null); }, true);
 
-				_calculator.ValidateStatus();
+				_httpClient = new HttpClient();
+
+				// TODO: async startup
+				InitializeSettingsAsync();
+				InitializeIoDevicesAsync();
+				InitializeSubSystemsAsync();
+				InitializeSubViewModelsAsync();
+
 				_logger.LogInfo("Application is initalized");
 			}
 			catch (Exception ex)
@@ -134,7 +136,7 @@ namespace VolumeCalculator.ViewModels
 			}
 		}
 
-		public bool ShutDown(bool shutPcDown, bool force)
+		public async Task<bool> ShutDownAsync(bool shutPcDown, bool force)
 		{
 			if (_shutDownInProgress)
 				return true;
@@ -145,7 +147,7 @@ namespace VolumeCalculator.ViewModels
 			{
 				if (force)
 				{
-					DisposeSubSystems();
+					await DisposeSubSystemsAsync();
 					Process.GetCurrentProcess().Kill();
 					return true;
 				}
@@ -154,28 +156,28 @@ namespace VolumeCalculator.ViewModels
 						MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
 					return false;
 
-				_logger.LogInfo("Disposing the application...");
+				await _logger.LogInfo("Disposing the application...");
 
-				SaveSettings();
-				DisposeSubViewModels();
-				DisposeSubSystems();
+				await SaveSettingsAsync();
+				await DisposeSubViewModelsAsync();
+				await DisposeSubSystemsAsync();
 				
 				_deviceManager.Dispose();
 				_httpClient.Dispose();
 
-				_logger.LogInfo("Application stopped");
+				await _logger.LogInfo("Application stopped");
 
 				if (!shutPcDown)
 					return true;
 
-				_logger.LogInfo("Shutting down the system...");
+				await _logger.LogInfo("Shutting down the system...");
 				IoUtils.ShutPcDown();
 
 				return true;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException("Failed to close the application", ex);
+				await _logger.LogException("Failed to close the application", ex);
 				return false;
 			}
 			finally
@@ -184,50 +186,125 @@ namespace VolumeCalculator.ViewModels
 			}
 		}
 
-		private void InitializeSettings()
+		private async Task InitializeSettingsAsync()
 		{
 			try
 			{
-				_logger.LogInfo("Reading settings...");
-				var settingsFromFile = IoUtils.DeserializeSettings<ApplicationSettings>();
+				await _logger.LogInfo("Reading settings...");
+				var settingsFromFile = await IoUtils.DeserializeSettingsAsync<ApplicationSettings>();
 				if (settingsFromFile == null)
 				{
-					_logger.LogError("Failed to read settings from file, will use default settings");
+					await _logger.LogError("Failed to read settings from file, will use default settings");
 					Settings = ApplicationSettings.GetDefaultSettings();
-					IoUtils.SerializeSettings(Settings);
+					await IoUtils.SerializeSettingsAsync(Settings);
 				}
 				else
 					Settings = settingsFromFile;
 
-				_logger.LogInfo("Settings - ok");
+				await _logger.LogInfo("Settings - ok");
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException("FATAL: Failed to initialize application settings!", ex);
+				await _logger.LogException("FATAL: Failed to initialize application settings!", ex);
 
 				_fatalErrorMessages.Add("Не удалось инициализировать настройки приложения");
 				throw;
 			}
 		}
 
-		private void InitializeIoDevices()
+		private async Task InitializeIoDevicesAsync()
 		{
 			try
 			{
-				_logger.LogInfo("Initializing IO devices...");
-				var deviceLogger = new TxtLogger("devices");
+				await _logger.LogInfo("Initializing IO devices...");
+				var deviceLogger = new TxtLogger("Client", "devices");
 
 				_deviceManager = new HardwareManager(deviceLogger, _httpClient, Settings.IoSettings);
 				_deviceManager.BarcodeReady += OnBarcodeReady;
 				_deviceManager.WeightMeasurementReady += OnWeightMeasurementReady;
 
-				_logger.LogInfo("IO devices- ok");
+				await _logger.LogInfo("IO devices- ok");
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException("FATAL: Failed to initialize IO devices!", ex);
+				await _logger.LogException("FATAL: Failed to initialize IO devices!", ex);
 
 				var message = "Не удалось инициализировать внешние устройства";
+				_fatalErrorMessages.Add(message);
+				throw;
+			}
+		}
+
+		private async Task InitializeSubSystemsAsync()
+		{
+			try
+			{
+				await _logger.LogInfo("Initializing sub systems...");
+
+				var frameProvider = _deviceManager.FrameProvider;
+
+				var colorCameraParams = frameProvider.GetColorCameraParams();
+				var depthCameraParams = frameProvider.GetDepthCameraParams();
+
+				_dmProcessor = new DepthMapProcessor(_logger, colorCameraParams, depthCameraParams);
+				_dmProcessor.SetProcessorSettings(Settings);
+
+				var integrationLogger = new TxtLogger("Client", "integration");
+				_requestProcessor = new RequestProcessor(integrationLogger, _httpClient, _settings.IntegrationSettings);
+				_requestProcessor.StartRequestReceived += OnCalculationStartRequested;
+				await _requestProcessor.StartAsync();
+				var outputPath = _settings.GeneralSettings.OutputPath;
+				_calculationResultFileProcessor = new CalculationResultFileProcessor(integrationLogger, outputPath);
+
+				_calculator = new CalculationRequestHandler(_logger, _dmProcessor, _deviceManager);
+				_calculator.UpdateSettings(Settings);
+				_calculator.CalculationFinished += OnCalculationFinished;
+				_calculator.CalculationStatusChanged += OnStatusChanged;
+
+				await _logger.LogInfo("Sub systems - ok");
+			}
+			catch (Exception ex)
+			{
+				await _logger.LogException("FATAL: Failed to initialize sub systems!", ex);
+
+				var message = "Не удалось инициализировать дополнительные подсистемы";
+				_fatalErrorMessages.Add(message);
+				throw;
+			}
+		}
+
+		private async Task InitializeSubViewModelsAsync()
+		{
+			try
+			{
+				await _logger.LogInfo("Initializing GUI handlers...");
+
+				var frameProvider = _deviceManager.FrameProvider;
+
+				_streamViewControlVm = new StreamViewControlVm(_logger, _settings, frameProvider);
+
+				_dashboardControlVm = new CalculationDashboardControlVm(_logger);
+				_dashboardControlVm.UpdateSettings(_settings);
+				_dashboardControlVm.WeightResetRequested += _deviceManager.ResetWeight;
+				_deviceManager.WeightMeasurementReady += _dashboardControlVm.UpdateWeight;
+				_deviceManager.BarcodeReady += _dashboardControlVm.UpdateBarcode;
+				_dashboardControlVm.CalculationCancellationRequested += _calculator.CancelPendingCalculation;
+				_dashboardControlVm.CalculationRequested += OnCalculationStartRequested;
+				_dashboardControlVm.LockingStatusChanged += _calculator.UpdateLockingStatus;
+				_calculator.LastAlgorithmUsedChanged += _dashboardControlVm.UpdateLastAlgorithm;
+				_calculator.ValidateStatus();
+
+				_testDataGenerationControlVm = new TestDataGenerationControlVm(_logger, _settings, frameProvider);
+
+				ApplicationSettingsChanged += OnApplicationSettingsChanged;
+
+				await _logger.LogInfo("GUI handlers - ok");
+			}
+			catch (Exception ex)
+			{
+				await _logger.LogException("FATAL: Failed to initialize GUI!", ex);
+
+				var message = "Не удалось инициализировать основные программные компоненты системы";
 				_fatalErrorMessages.Add(message);
 				throw;
 			}
@@ -245,82 +322,9 @@ namespace VolumeCalculator.ViewModels
 			_dashboardControlVm?.UpdateWeight(data);
 		}
 
-		private void InitializeSubSystems()
-		{
-			try
-			{
-				_logger.LogInfo("Initializing sub systems...");
-
-				var frameProvider = _deviceManager.FrameProvider;
-
-				var colorCameraParams = frameProvider.GetColorCameraParams();
-				var depthCameraParams = frameProvider.GetDepthCameraParams();
-
-				_dmProcessor = new DepthMapProcessor(_logger, colorCameraParams, depthCameraParams);
-				_dmProcessor.SetProcessorSettings(Settings);
-
-				var integrationLogger = new TxtLogger("integration");
-				_requestProcessor = new RequestProcessor(integrationLogger, _httpClient, _settings.IntegrationSettings);
-				_requestProcessor.StartRequestReceived += OnCalculationStartRequested;
-				var outputPath = _settings.GeneralSettings.OutputPath;
-				_calculationResultFileProcessor = new CalculationResultFileProcessor(integrationLogger, outputPath);
-
-				_calculator = new CalculationRequestHandler(_logger, _dmProcessor, _deviceManager);
-				_calculator.UpdateSettings(Settings);
-				_calculator.CalculationFinished += OnCalculationFinished;
-				_calculator.CalculationStatusChanged += OnStatusChanged;
-
-				_logger.LogInfo("Sub systems - ok");
-			}
-			catch (Exception ex)
-			{
-				_logger.LogException("FATAL: Failed to initialize sub systems!", ex);
-
-				var message = "Не удалось инициализировать дополнительные подсистемы";
-				_fatalErrorMessages.Add(message);
-				throw;
-			}
-		}
-
-		private void InitializeSubViewModels()
-		{
-			try
-			{
-				_logger.LogInfo("Initializing GUI handlers...");
-
-				var frameProvider = _deviceManager.FrameProvider;
-
-				_streamViewControlVm = new StreamViewControlVm(_logger, _settings, frameProvider);
-				
-				_dashboardControlVm = new CalculationDashboardControlVm(_logger);
-				_dashboardControlVm.UpdateSettings(_settings);
-				_dashboardControlVm.WeightResetRequested += _deviceManager.ResetWeight;
-				_deviceManager.WeightMeasurementReady += _dashboardControlVm.UpdateWeight;
-				_deviceManager.BarcodeReady += _dashboardControlVm.UpdateBarcode;
-				_dashboardControlVm.CalculationCancellationRequested += _calculator.CancelPendingCalculation;
-				_dashboardControlVm.CalculationRequested += OnCalculationStartRequested;
-				_dashboardControlVm.LockingStatusChanged += _calculator.UpdateLockingStatus;
-				_calculator.LastAlgorithmUsedChanged += _dashboardControlVm.UpdateLastAlgorithm;
-
-				_testDataGenerationControlVm = new TestDataGenerationControlVm(_logger, _settings, frameProvider);
-
-				ApplicationSettingsChanged += OnApplicationSettingsChanged;
-
-				_logger.LogInfo("GUI handlers - ok");
-			}
-			catch (Exception ex)
-			{
-				_logger.LogException("FATAL: Failed to initialize GUI!", ex);
-
-				var message = "Не удалось инициализировать основные программные компоненты системы";
-				_fatalErrorMessages.Add(message);
-				throw;
-			}
-		}
-
 		private void OnCalculationFinished(CalculationResultData resultData)
 		{
-			_requestProcessor.SendRequests(resultData);
+			_requestProcessor.SendRequestsAsync(resultData);
 			_calculationResultFileProcessor.WriteCalculationResult(resultData);
 			_dashboardControlVm.UpdateDataUponCalculationFinish(resultData);
 		}
@@ -337,13 +341,13 @@ namespace VolumeCalculator.ViewModels
 			_deviceManager.UpdateCalculationStatus(status);
 		}
 
-		private void SaveSettings()
+		private async Task SaveSettingsAsync()
 		{
-			_logger.LogInfo("Saving settings...");
-			IoUtils.SerializeSettings(Settings);
+			await _logger.LogInfo("Saving settings...");
+			await IoUtils.SerializeSettingsAsync(Settings);
 		}
 
-		private void OpenSettingsWindow()
+		private async void OpenSettingsWindowAsync()
 		{
 			try
 			{
@@ -366,12 +370,12 @@ namespace VolumeCalculator.ViewModels
 						return;
 
 					Settings = settingsWindowVm.GetSettings();
-					SaveSettings();
-					_logger.LogInfo($"New settings have been applied: {Settings}");
+					await SaveSettingsAsync();
+					await _logger.LogInfo($"New settings have been applied: {Settings}");
 				}
 				catch (Exception ex)
 				{
-					_logger.LogException("Error occured while changing settings", ex);
+					await _logger.LogException("Error occured while changing settings", ex);
 				}
 				finally
 				{
@@ -383,12 +387,12 @@ namespace VolumeCalculator.ViewModels
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException("Exception occured during a settings change", ex);
+				await _logger.LogException("Exception occured during a settings change", ex);
 				AutoClosingMessageBox.Show("Во время задания настроек произошла ошибка. Информация записана в журнал", "Ошибка");
 			}
 		}
 
-		private void OpenStatusWindow()
+		private async void OpenStatusWindowAsync()
 		{
 			try
 			{
@@ -404,11 +408,11 @@ namespace VolumeCalculator.ViewModels
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException("Error occured while displaying status window", ex);
+				await _logger.LogException("Error occured while displaying status window", ex);
 			}
 		}
 
-		private void OpenConfigurator()
+		private async void OpenConfiguratorAsync()
 		{
 			try
 			{
@@ -418,24 +422,24 @@ namespace VolumeCalculator.ViewModels
 					return;
 
 				IoUtils.StartProcess("VCConfigurator.exe", true);
-				ShutDown(false, true);
+				await ShutDownAsync(false, true);
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException("Failed to launch configurator", ex);
+				await _logger.LogException("Failed to launch configurator", ex);
 			}
 		}
 
-		private void DisposeSubViewModels()
+		private async Task DisposeSubViewModelsAsync()
 		{
-			_logger.LogInfo("Disposing sub view models...");
+			await _logger.LogInfo("Disposing sub view models...");
 			
 			_streamViewControlVm?.Dispose();
 		}
 
-		private void DisposeSubSystems()
+		private async Task DisposeSubSystemsAsync()
 		{
-			_logger.LogInfo("Disposing sub systems...");
+			await _logger.LogInfo("Disposing sub systems...");
 			
 			_calculator?.Dispose();
 			_requestProcessor?.Dispose();
@@ -461,7 +465,7 @@ namespace VolumeCalculator.ViewModels
 			DisplayFatalErrorsAndCloseApplication();
 		}
 
-		private void DisplayFatalErrorsAndCloseApplication()
+		private async Task DisplayFatalErrorsAndCloseApplication()
 		{
 			var builder = new StringBuilder();
 			builder.AppendLine("Произошли критические ошибки:");
@@ -474,7 +478,7 @@ namespace VolumeCalculator.ViewModels
 
 			var settingsAreOk = Settings?.IoSettings != null;
 			var needToshutDownPc = !settingsAreOk || Settings.GeneralSettings.ShutDownPcByDefault;
-			ShutDown(needToshutDownPc, true);
+			await ShutDownAsync(needToshutDownPc, true);
 		}
 	}
 }

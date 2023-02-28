@@ -42,7 +42,7 @@ namespace CameraTest
 			var httpClient = new HttpClient();
 			_controller = new Proline2520Controller(httpClient);
 
-			var settings = ReadSettingsFromFile();
+			var settings = Task.Run(ReadSettingsFromFileAsync).Result;
 			var ipCameraSettings = settings.IoSettings.IpCameraSettings;
 			IpBox.Text = ipCameraSettings.Ip;
 			LoginBox.Text = ipCameraSettings.Login;
@@ -50,13 +50,13 @@ namespace CameraTest
 			PresetBox.Text = (ipCameraSettings.ActivePreset + 1).ToString();
 		}
 
-		private static ApplicationSettings ReadSettingsFromFile()
+		private static async Task<ApplicationSettings> ReadSettingsFromFileAsync()
 		{
 			ApplicationSettings settings;
 
 			try
 			{
-				var settingsFromFile = IoUtils.DeserializeSettings<ApplicationSettings>();
+				var settingsFromFile = await IoUtils.DeserializeSettingsAsync<ApplicationSettings>();
 				if (settingsFromFile != null)
 					return settingsFromFile;
 			}

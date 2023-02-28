@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Primitives;
 
@@ -14,7 +15,7 @@ namespace ProcessingUtils
 	{
 		private static readonly object CounterLock = new object();
 		
-		public static void SerializeSettings<T>(T settings)
+		public static async Task SerializeSettingsAsync<T>(T settings)
 		{
 			var logFileInfo = new FileInfo(GlobalConstants.ConfigFileName);
 			if (!string.IsNullOrEmpty(logFileInfo.DirectoryName))
@@ -24,10 +25,10 @@ namespace ProcessingUtils
 				return;
 
 			var settingsText = JsonConvert.SerializeObject(settings);
-			File.WriteAllText(GlobalConstants.ConfigFileName, settingsText);
+			await File.WriteAllTextAsync(GlobalConstants.ConfigFileName, settingsText);
 		}
 
-		public static T DeserializeSettings<T>()
+		public static async Task<T> DeserializeSettingsAsync<T>()
 		{
 			var configFileInfo = new FileInfo(GlobalConstants.ConfigFileName);
 			if (!string.IsNullOrEmpty(configFileInfo.DirectoryName))
@@ -36,7 +37,7 @@ namespace ProcessingUtils
 			if (!configFileInfo.Exists)
 				return default;
 
-			var settingsText = File.ReadAllText(configFileInfo.FullName);
+			var settingsText = await File.ReadAllTextAsync(configFileInfo.FullName);
 			return JsonConvert.DeserializeObject<T>(settingsText);
 		}
 
@@ -123,11 +124,11 @@ namespace ProcessingUtils
 			return Dns.GetHostName();
 		}
 
-		public static IReadOnlyList<string> GetLocalIpAddresses()
+		public static async Task<IReadOnlyList<string>> GetLocalIpAddressesAsync()
 		{
 			var addresses = new List<string>();
 
-			var localIPs = Dns.GetHostAddresses(Dns.GetHostName());
+			var localIPs = await Dns.GetHostAddressesAsync(Dns.GetHostName());
 			foreach (IPAddress addr in localIPs)
 			{
 				if (addr.AddressFamily == AddressFamily.InterNetwork)
@@ -146,13 +147,6 @@ namespace ProcessingUtils
 			};
 
 			Process.Start(process);
-		}
-
-		public static byte[] GetL()
-		{
-			// Path to license file: C:/Program Files/MOXA/USBDriver/v2.txt
-			return new byte[] { 67, 58, 47, 80, 114, 111, 103, 114, 97, 109, 32, 70, 105, 108, 101, 115, 47, 77, 79,
-				88, 65, 47, 85, 83, 66, 68, 114, 105, 118, 101, 114, 47, 118, 50, 46, 116, 120, 116 };
 		}
 	}
 }

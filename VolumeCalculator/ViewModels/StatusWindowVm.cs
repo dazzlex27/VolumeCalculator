@@ -53,7 +53,7 @@ namespace VolumeCalculator.ViewModels
 			{
 				HostName = IoUtils.GetHostName();
 
-				var ipAddresses = IoUtils.GetLocalIpAddresses();
+				var ipAddresses = Task.Run(IoUtils.GetLocalIpAddressesAsync);
 
 				AppVersion = GlobalConstants.AppVersion;
 

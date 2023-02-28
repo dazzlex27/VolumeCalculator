@@ -1,11 +1,12 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Timers;
 using System.Windows;
 
-namespace VolumeCalculator.GUI
+namespace GuiCommon
 {
-	internal sealed partial class AutoClosingMessageBox : INotifyPropertyChanged
+	public sealed partial class AutoClosingMessageBox : INotifyPropertyChanged, IDisposable
 	{
 		private const int DefaultClosingTimeMs = 3000;
 		private const string DefaultCaptionText = "Сообщение";
@@ -60,6 +61,12 @@ namespace VolumeCalculator.GUI
 		{
 			var messageBox = new AutoClosingMessageBox(text, caption, timeBeforeClosing);
 			messageBox.ShowDialog();
+			messageBox.Dispose();
+		}
+
+		public void Dispose()
+		{
+			_closingTimer?.Dispose();
 		}
 
 		private void OnClosingTimerElapsed(object sender, ElapsedEventArgs e)
@@ -80,7 +87,7 @@ namespace VolumeCalculator.GUI
 
 		private void OnWindowLoaded(object sender, RoutedEventArgs e)
 		{
-			_closingTimer.Start();
+			_closingTimer?.Start();
 		}
 	}
 }

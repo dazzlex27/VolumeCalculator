@@ -161,12 +161,5 @@ namespace FrameProcessor
 			CleanUp();
 			FinishedSaving?.Invoke(false);
 		}
-
-		public static string GetF2()
-		{
-			var l2 = IoUtils.GetL();
-			var bytesString = Encoding.ASCII.GetString(l2);
-			return File.ReadAllText(bytesString);
-		}
 	}
 }

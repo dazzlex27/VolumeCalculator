@@ -13,12 +13,13 @@ namespace FTPSender
 
 		public FtpSender(string host, ushort port, string login, string password, bool useEncryption)
 		{
-			var config = new FtpConfig();
-			config.EncryptionMode = useEncryption ? FtpEncryptionMode.Explicit : FtpEncryptionMode.None;
-			config.DataConnectionEncryption = useEncryption;
-			config.SslProtocols = SslProtocols.Default | SslProtocols.Tls11 | SslProtocols.Tls12;
-			config.ValidateAnyCertificate = true;
-
+			var config = new FtpConfig()
+			{
+				EncryptionMode = useEncryption ? FtpEncryptionMode.Explicit : FtpEncryptionMode.None,
+				DataConnectionEncryption = useEncryption,
+				SslProtocols = SslProtocols.Default | SslProtocols.Tls11 | SslProtocols.Tls12,
+				ValidateAnyCertificate = true
+			};
 			_client = new AsyncFtpClient(host, login, password, port, config);
 		}
 

@@ -1,6 +1,11 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using GuiCommon;
+using Primitives;
+using Primitives.Logging;
 using Primitives.Settings;
 using ProcessingUtils;
 
@@ -8,6 +13,7 @@ namespace VCConfigurator
 {
 	internal class MainWindowVm : BaseViewModel
 	{
+		private readonly ILogger _logger;
 		private readonly ApplicationSettings _settings;
 
 		private DeviceSettingsVm _deviceSettingsVm;
@@ -31,25 +37,33 @@ namespace VCConfigurator
 
 		public MainWindowVm()
 		{
+			_logger = new TxtLogger("Configurator", "configurator");
+			_logger.LogInfo($"Starting up Configurator app...");
+			AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+
 			DeviceSettingsVm = new DeviceSettingsVm();
 			IntegrationSettingsVm = new IntegrationSettingsVm();
 
-			_settings = ReadSettingsFromFile();
+			_settings = Task.Run(async () => await ReadSettingsFromFileAsync()).Result;
 			FillValuesFromSettings(_settings);
 
-			ApplySettingsAndRunVCalcCommand = new CommandHandler(() => ApplySettings(true), true);
-			ApplySettingsCommand = new CommandHandler(() => ApplySettings(false), true);
+			ApplySettingsAndRunVCalcCommand = new CommandHandler(async () => await ApplySettings(true), true);
+			ApplySettingsCommand = new CommandHandler(async () => await ApplySettings(false), true);
 		}
 
-		private static ApplicationSettings ReadSettingsFromFile()
+		private async Task<ApplicationSettings> ReadSettingsFromFileAsync()
 		{
 			ApplicationSettings settings;
 
 			try
 			{
-				var settingsFromFile = IoUtils.DeserializeSettings<ApplicationSettings>();
+				var settingsFromFile = await IoUtils.DeserializeSettingsAsync<ApplicationSettings>();
 				if (settingsFromFile != null)
 					return settingsFromFile;
+			}
+			catch (Exception ex)
+			{
+				await _logger.LogException("Failed to read settings from file", ex);
 			}
 			finally
 			{
@@ -65,18 +79,44 @@ namespace VCConfigurator
 			_integrationSettingsVm.FillValuesFromSettings(settings.IntegrationSettings);
 		}
 
-		private void ApplySettings(bool closeApplication)
+		private async Task ApplySettings(bool closeApplication)
 		{
-			_deviceSettingsVm.FillSettingsFromValues(_settings.IoSettings);
-			_integrationSettingsVm.FillSettingsFromValues(_settings.IntegrationSettings);
-
-			IoUtils.SerializeSettings(_settings);
-
-			if (closeApplication)
+			try
 			{
-				IoUtils.StartProcess("VolumeCalculator.exe", true);
-				Process.GetCurrentProcess().Kill();
+				await _logger.LogInfo("Applying settings...");
+
+				_deviceSettingsVm.FillSettingsFromValues(_settings.IoSettings);
+				_integrationSettingsVm.FillSettingsFromValues(_settings.IntegrationSettings);
+
+				await IoUtils.SerializeSettingsAsync(_settings);
+
+				if (closeApplication)
+				{
+					IoUtils.StartProcess("VolumeCalculator.exe", true);
+					Process.GetCurrentProcess().Kill();
+				}
 			}
+			catch (Exception ex)
+			{
+				await _logger.LogException("Failed to apply settings", ex);
+			}
+		}
+
+		private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+		{
+			_logger.LogException("Unhandled exception in application domain occured, app terminates...",
+				(Exception)e.ExceptionObject);
+
+			DisplayFatalErrorsAndCloseApplication();
+		}
+
+		private void DisplayFatalErrorsAndCloseApplication()
+		{
+			var builder = new StringBuilder();
+			builder.AppendLine("Произошли критические ошибки");
+			builder.AppendLine("Приложение будет закрыто, информация записана в журнал");
+
+			AutoClosingMessageBox.Show(builder.ToString(), "Аварийное завершение", 5000);
 		}
 	}
 }

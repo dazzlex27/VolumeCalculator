@@ -47,11 +47,12 @@ namespace ExtIntegration.RequestSenders
 		{
 		}
 
-		public void Connect()
+		public async Task ConnectAsync()
 		{
+			await Task.FromResult(true);
 		}
 
-		public bool Send(CalculationResultData resultData)
+		public async Task<bool> SendAsync(CalculationResultData resultData)
 		{
 			try
 			{
@@ -59,7 +60,7 @@ namespace ExtIntegration.RequestSenders
 				if (!resultIsOk)
 				{
 					var message = resultData == null ? "result was null" : resultData.Status.ToString();
-					_logger.LogError($"HttpRequestSender: result was invalid: {message}, will not send request");
+					await _logger.LogError($"HttpRequestSender: result was invalid: {message}, will not send request");
 
 					return false;
 				}
@@ -72,7 +73,7 @@ namespace ExtIntegration.RequestSenders
 				{
 					try
 					{
-						_logger.LogInfo($"Sending GET request to {address}...");
+						await _logger.LogInfo($"Sending GET request to {address}...");
 
 						var builder = new UriBuilder(address);
 
@@ -92,20 +93,18 @@ namespace ExtIntegration.RequestSenders
 
 						if (_authenticationHeaderData != null)
 						{
-							using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, finalUrl))
-							{
-								requestMessage.Headers.Authorization = _authenticationHeaderData;
-								response = Task.Run(() => _httpClient.SendAsync(requestMessage)).Result;
-							}
+							using var requestMessage = new HttpRequestMessage(HttpMethod.Get, finalUrl);
+							requestMessage.Headers.Authorization = _authenticationHeaderData;
+							response = await _httpClient.SendAsync(requestMessage);
 						}
 						else
-							response = Task.Run(() => _httpClient.GetAsync(finalUrl)).Result;
+							response = await _httpClient.GetAsync(finalUrl);
 
-						_logger.LogInfo($"Sent GET request - {finalUrl}, response was {response}");
+						await _logger.LogInfo($"Sent GET request - {finalUrl}, response was {response}");
 					}
 					catch (Exception ex)
 					{
-						_logger.LogException($"Failed to send GET request to {address}", ex);
+						await _logger.LogException($"Failed to send GET request to {address}", ex);
 
 						oneOfTheRequestsFailed = true;
 					}
@@ -115,7 +114,7 @@ namespace ExtIntegration.RequestSenders
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException($"Failed to send GET request", ex);
+				await _logger.LogException($"Failed to send GET request", ex);
 
 				return false;
 			}

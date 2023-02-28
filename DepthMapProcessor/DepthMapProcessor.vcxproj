@@ -44,12 +44,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(ProjectDir)..\!!bin\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(ProjectDir)..\!!bin\AnyCPU\$(Configuration)\net7.0-windows\</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>libDepthMapProcessor</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(ProjectDir)..\!!bin\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(ProjectDir)..\!!bin\AnyCPU\$(Configuration)\net7.0-windows\</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>libDepthMapProcessor</TargetName>
   </PropertyGroup>

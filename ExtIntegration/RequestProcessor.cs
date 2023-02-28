@@ -12,7 +12,7 @@ using Primitives.Settings.Integration;
 
 namespace ExtIntegration
 {
-	public class RequestProcessor : IDisposable
+	public sealed class RequestProcessor : IDisposable
 	{
 		public event Action<CalculationRequestData> StartRequestReceived;
 
@@ -53,16 +53,19 @@ namespace ExtIntegration
 
 			if (settings.FtpRequestSettings.EnableRequests)
 				_requestSenders.Add(new FtpRequestSender(_logger, settings.FtpRequestSettings));
+		}
 
+		public async Task StartAsync()
+		{
 			foreach (var sender in _requestSenders)
 			{
 				try
 				{
-					sender.Connect();
+					await sender.ConnectAsync();
 				}
 				catch (Exception ex)
 				{
-					_logger.LogException("RequestProcessor: a request sender failed to connect to requered destination", ex);
+					await _logger.LogException("RequestProcessor: a request sender failed to connect to requered destination", ex);
 				}
 			}
 		}
@@ -86,7 +89,7 @@ namespace ExtIntegration
 				sender?.Dispose();
 		}
 
-		public void SendRequests(CalculationResultData resultData)
+		public async Task SendRequestsAsync(CalculationResultData resultData)
 		{
 			if (_httpRequestHandler != null)
 			{
@@ -101,17 +104,16 @@ namespace ExtIntegration
 
 			foreach (var sender in _requestSenders)
 			{
-				Task.Run(() =>
+				await Task.Run(async () =>
 				{
 					try
 					{
-						var sent = sender.Send(resultData);
+						var sent = await sender.SendAsync(resultData);
 					}
 					catch (Exception ex)
 					{
-						_logger.LogException("Failed to send a request!", ex);
+						await _logger.LogException("Failed to send a request!", ex);
 					}
-
 				});
 			}
 		}
