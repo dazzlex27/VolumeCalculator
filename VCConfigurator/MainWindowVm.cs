@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using GuiCommon;
-using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 using ProcessingUtils;
@@ -37,7 +36,7 @@ namespace VCConfigurator
 
 		public MainWindowVm()
 		{
-			_logger = new TxtLogger("Configurator", "configurator");
+			_logger = new TxtLogger("VCConfigurator", "configurator");
 			_logger.LogInfo($"Starting up Configurator app...");
 			AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
@@ -92,7 +91,7 @@ namespace VCConfigurator
 
 				if (closeApplication)
 				{
-					IoUtils.StartProcess("VolumeCalculator.exe", true);
+					IoUtils.StartProcess("VCClient.exe", true);
 					Process.GetCurrentProcess().Kill();
 				}
 			}

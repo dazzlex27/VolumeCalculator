@@ -7,7 +7,7 @@
 /DepthMapProcessor/obj
 /DepthMapProcessor/libDepthMapProcessor.vcxproj.user
 /FrameProcessor/obj
-/VolumeCalculator/obj
+/VCClient/obj
 /VCConfigurator/obj
 /VCServer/obj
 /DeviceIntegration/obj

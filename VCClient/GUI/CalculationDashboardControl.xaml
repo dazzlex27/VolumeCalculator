@@ -1,0 +1,246 @@
+﻿<UserControl x:Class="VCClient.GUI.CalculationDashboardControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:viewModels="clr-namespace:VCClient.ViewModels"
+			 mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             x:ClassModifier="internal"
+             d:DataContext="{d:DesignInstance viewModels:CalculationDashboardControlVm}"
+             DataContextChanged="CalculationDashboardControl_OnDataContextChanged"
+			 KeyboardNavigation.TabNavigation="Cycle">
+	<Grid IsEnabled="{Binding CalculationInProgress, Converter={StaticResource InverseBooleanConverter}}">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition />
+			<ColumnDefinition />
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+		<StackPanel Margin="3" Background="{StaticResource BackgroundKey}">
+			<Grid Margin="2,2,2,0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition MinWidth="180"
+					                  Width="Auto" />
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition />
+				</Grid.ColumnDefinitions>
+				<TextBlock Style="{StaticResource TextBlockStyle}"
+				           HorizontalAlignment="Center"
+				           VerticalAlignment="Center"
+				           Margin="2,0"
+				           Text="Код"
+				           FontSize="24" />
+				<TextBox Style="{StaticResource TextBoxStyle}"
+				         Grid.Column="1"
+				         GotKeyboardFocus="OnCodeBoxGotFocus"
+				         LostKeyboardFocus="OnCodeBoxLostFocus"
+						 TabIndex="0"
+				         Margin="2"
+				         FontSize="24"
+				         Text="{Binding Path=ObjectCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+				         MaxLength="50"
+				         MaxLines="1"
+				         AcceptsReturn="False"/>
+				<Button Grid.Column="2" Content="OK" IsDefault="{Binding CodeBoxFocused}" Visibility="{Binding CodeBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="ButtonBase_OnClick"/>
+			</Grid>
+			<Grid Margin="2,2,2,0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition MinWidth="180"
+					                  Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition />
+				</Grid.ColumnDefinitions>
+				<TextBlock HorizontalAlignment="Center"
+				           VerticalAlignment="Center"
+				           Style="{StaticResource TextBlockStyle}"
+				           Margin="2,0"
+				           Text="Вес"
+				           FontSize="24" />
+				<TextBlock Style="{StaticResource TextBlockStyle}"
+				           Grid.Column="1"
+				           Margin="2"
+				           Text="{Binding Path=ObjectWeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+				           FontSize="24" />
+				<TextBlock Grid.Column="2"
+				           Margin="2"
+				           HorizontalAlignment="Center"
+				           VerticalAlignment="Center"
+				           Text="{Binding WeightLabelText}"
+				           FontSize="24" />
+				<StackPanel KeyboardNavigation.TabNavigation="None" Grid.Column="3">
+					<Button Margin="10,2"
+
+				        HorizontalAlignment="Center"
+				        VerticalAlignment="Center"
+				        IsTabStop="False"
+				        Content="Сбросить весы"
+				        Command="{Binding ResetWeightCommand}" 
+				        Focusable="False"
+				        FontSize="24"/>
+				</StackPanel>
+			</Grid>
+			<Grid Margin="2,2,2,0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition MinWidth="180"
+					                  Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+				</Grid.ColumnDefinitions>
+				<TextBlock HorizontalAlignment="Center"
+				           VerticalAlignment="Center"
+				           Style="{StaticResource TextBlockStyle}"
+				           Margin="2,0"
+				           Text="Единиц"
+				           FontSize="24" />
+				<TextBox Style="{StaticResource TextBoxStyle}"
+				         Grid.Column="1"
+				         GotKeyboardFocus="OnUnitBoxGotFocus"
+				         LostKeyboardFocus="OnUnitBoxLostFocus"
+				         Margin="2"
+						 TabIndex="1"
+				         FontSize="24"
+				         MinWidth="50"
+				         Text="{Binding Path=UnitCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+				         AcceptsReturn="False"
+				         MaxLength="4"
+				         MaxLines="1"/>
+				<Button Grid.Column="2" Content="OK" IsDefault="{Binding UnitCountBoxFocused}" Visibility="{Binding UnitCountBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="ButtonBase_OnClick"/>
+			</Grid>
+			<Grid Margin="2,2,2,0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition MinWidth="180"
+					                  Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+				</Grid.ColumnDefinitions>
+				<TextBlock HorizontalAlignment="Center"
+				           VerticalAlignment="Center"
+				           Style="{StaticResource TextBlockStyle}"
+				           Margin="2,0"
+				           Text="Размеры"
+				           FontSize="24" />
+				<StackPanel Grid.Column="1" Orientation="Horizontal">
+					<TextBlock Style="{StaticResource TextBlockStyle}"
+				           Margin="2"
+				           Text="{Binding Path=ObjectLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+				           FontSize="24" />
+					<TextBlock Style="{StaticResource TextBlockStyle}"
+					           Margin="0,2"
+					           Text="x"
+					           FontSize="24" />
+					<TextBlock Style="{StaticResource TextBlockStyle}"
+				           Margin="2"
+				           Text="{Binding Path=ObjectWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+				           FontSize="24" />
+					<TextBlock Style="{StaticResource TextBlockStyle}"
+					           Margin="0,2"
+					           Text="x"
+					           FontSize="24" />
+					<TextBlock Style="{StaticResource TextBlockStyle}"
+				           Margin="2"
+				           Text="{Binding Path=ObjectHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+				           FontSize="24" />
+					<TextBlock Margin="2"
+				           HorizontalAlignment="Center"
+				           VerticalAlignment="Center"
+				           Text="мм ("
+				           FontSize="24" />
+					<TextBlock Margin="2"
+					           HorizontalAlignment="Center"
+					           VerticalAlignment="Center"
+					           Text="{Binding Path=ObjectVolume}"
+					           FontSize="24" />
+					<TextBlock Margin="2"
+					           HorizontalAlignment="Center"
+					           VerticalAlignment="Center"
+					           Text="см³)"
+					           FontSize="24" />
+				</StackPanel>
+			</Grid>
+			<Grid Margin="2,2,2,0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition MinWidth="180"
+					                  Width="Auto" />
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="Auto" />
+				</Grid.ColumnDefinitions>
+				<TextBlock Style="{StaticResource TextBlockStyle}"
+				           HorizontalAlignment="Center"
+				           VerticalAlignment="Center"
+				           Margin="2,0"
+				           Text="Комментарий"
+				           FontSize="24" />
+				<TextBox Style="{StaticResource TextBoxStyle}"
+				         Grid.Column="1"
+				         GotKeyboardFocus="OnCommentBoxGotFocus"
+				         LostKeyboardFocus="OnCommentBoxLostFocus"
+				         Margin="2"
+						 TabIndex="2"
+				         FontSize="24"
+				         Text="{Binding Path=Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="256"
+				         AcceptsReturn="False"/>
+				<Button Grid.Column="2" Content="OK" IsDefault="{Binding CodeBoxFocused}" Visibility="{Binding CommentBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="ButtonBase_OnClick"/>
+			</Grid>
+		</StackPanel>
+		<StackPanel Grid.Column="1"
+		            Grid.Row="0"
+		            Margin="3"
+					KeyboardNavigation.TabNavigation="None">
+			<Button Margin="2"
+			        Content="Открыть файл с результатами"
+			        Command="{Binding OpenResultsFileCommand}" 
+			        Focusable="False"
+			        FontSize="24" 
+					IsTabStop="False"
+			        MinHeight="50"/>
+			<Button Margin="2"
+			        Content="Открыть папку с фото"
+			        Command="{Binding OpenPhotosFolderCommand}" 
+			        Focusable="False"
+			        FontSize="24" 
+					IsTabStop="False"
+			        MinHeight="50"/>
+			<TextBlock Text="{Binding LastAlgorithmUsed}"/>
+		</StackPanel>
+		<Grid Grid.Row="1"
+		      Grid.Column="0"
+		      Margin="2">
+			<Button Grid.Column="0"
+			        Margin="2"
+			        MinHeight="50"
+					TabIndex="3"
+			        Content="Измерить объект"
+			        Command="{Binding RunVolumeCalculationCommand}"
+			        FontSize="24" 
+					Style="{StaticResource ButtonStyle}"/>
+		</Grid>
+		<Grid Margin="3"
+		            Grid.Row="2"
+		            Grid.Column="0"
+		            Background="{Binding StatusBrush}"
+		      MinHeight="50">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="Auto"/>
+			</Grid.ColumnDefinitions>
+			<TextBlock Padding="3"
+			           Text="{Binding StatusText}"
+			           Foreground="White"
+			           FontSize="20"
+			           VerticalAlignment="Center"/>
+			<Button Grid.Column="1" 
+					MinWidth="70"
+			        MinHeight="50"
+			        Content="Отменить запуск" 
+			        Visibility="{Binding CalculationPending, Converter={StaticResource BooleanToVisibilityConverter}}"
+			        Command="{Binding CancelPendingCalculationCommand}"
+			        FontSize="20" />
+		</Grid>
+	</Grid>
+</UserControl>

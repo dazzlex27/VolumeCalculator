@@ -1,0 +1,57 @@
+﻿<Window x:Class="VCClient.GUI.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:gui="clr-namespace:VCClient.GUI"
+        xmlns:main="clr-namespace:VCClient"
+        xmlns:viewModels="clr-namespace:VCClient.ViewModels"
+        mc:Ignorable="d"
+        x:ClassModifier="internal"
+        Title="Настройки приложения"
+        Height="Auto"
+        Width="Auto"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        SizeChanged="SettingsWindow_OnSizeChanged"
+        d:DataContext="{d:DesignInstance viewModels:SettingsWindowVm}">
+    <Window.Resources>
+        
+    </Window.Resources>
+    <StackPanel Margin="10">
+        <TabControl>
+            <TabItem Header="Общие настройки"
+                     TabIndex="0">
+                <StackPanel>
+                    <gui:WorkAreaSettingsControl DataContext="{Binding WorkAreaControlVm}"
+                                                 x:Name="UcWorkAreaSettings"/>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Дополнительные настройки"
+                     TabIndex="1">
+                <gui:MiscSettingsControl DataContext="{Binding MiscControlVm}"
+                                         x:Name="UcMiscSettings"/>
+            </TabItem>
+        </TabControl>
+        <StackPanel Name="SpParent" Margin="5">
+            <!--OK and Cancel buttons-->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Margin="5"
+                        MinWidth="100"
+                        Content="OK"
+                        Click="BtOk_Click"
+                        IsDefault="True" />
+                <Button Margin="5"
+                        MinWidth="100"
+                        Content="Отмена"
+                        Click="BtCancel_Click"
+                        IsCancel="True" />
+                <Button Margin="5"
+                        MinWidth="100"
+                        Content="По умолчанию"
+                        Command="{Binding ResetSettingsCommand}" />
+            </StackPanel>
+        </StackPanel>
+    </StackPanel>
+</Window>

@@ -8,15 +8,13 @@ namespace Primitives
 	{
 		public const string ManufacturerName = "IS";
 
-		public const string AppTitle = "VolumeCalculator";
+		public const string ProductTitle = "VolumeCalculator";
 
 		public static readonly string CommonFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
 
 		public static readonly string AppVersion = $"v1.70";
 
-		public static readonly string AppHeaderString = $@"{ManufacturerName} {AppTitle} {AppVersion}";
-
-		public static readonly string AppDataPath = Path.Combine(CommonFolderPath, AppTitle);
+		public static readonly string AppDataPath = Path.Combine(CommonFolderPath, ProductTitle);
 
 		public static readonly string AppLogsPath = Path.Combine(AppDataPath, "logs");
 

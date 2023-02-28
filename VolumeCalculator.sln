@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCalculator", "VolumeCalculator\VolumeCalculator.csproj", "{08B98C3A-C054-464C-9594-F4EB7F7B2333}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VCClient", "VCClient\VCClient.csproj", "{08B98C3A-C054-464C-9594-F4EB7F7B2333}"
 	ProjectSection(ProjectDependencies) = postProject
 		{90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B} = {90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B}
 		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB} = {EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}
