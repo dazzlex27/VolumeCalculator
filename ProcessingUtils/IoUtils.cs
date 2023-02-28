@@ -78,7 +78,15 @@ namespace ProcessingUtils
 
 		public static void OpenFile(string filepath)
 		{
-			Process.Start(filepath);
+			var process = new Process();
+			process.StartInfo.FileName = filepath;
+			process.StartInfo.UseShellExecute = true;
+			process.Start();
+		}
+
+		public static void OpenFolder(string pathToFolder)
+		{
+			Process.Start("explorer.exe", pathToFolder);
 		}
 
 		public static bool IsProcessRunning(string processName)

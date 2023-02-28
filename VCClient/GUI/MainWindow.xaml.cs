@@ -1,7 +1,6 @@
 ﻿using Primitives.Logging;
 using System;
 using System.ComponentModel;
-using System.Threading.Tasks;
 using VCClient.Utils;
 using VCClient.ViewModels;
 
@@ -15,14 +14,25 @@ namespace VCClient.GUI
 		public MainWindow()
 		{
 			InitializeComponent();
+
 			_logger = new TxtLogger(GuiUtils.AppTitle, "main");
 			_vm = new MainWindowVm(_logger);
+			DataContext = _vm;
 		}
 
-		private void OnWindowClosing(object sender, CancelEventArgs e)
+		private async void OnWindowClosing(object sender, CancelEventArgs e)
 		{
-			if (!Task.Run(async () => await _vm.ShutDownAsync(_vm.ShutDownByDefault, false)).Result)
-				e.Cancel = true;
+			try
+			{
+				if (!await _vm.ShutDownAsync(_vm.ShutDownByDefault, false))
+					e.Cancel = true;
+
+				_vm.Dispose();
+			}
+			catch (Exception ex) 
+			{
+				_logger.LogException("failed to run teartown routine", ex);
+			}
 		}
 
 		private async void OnContentRendered(object sender, EventArgs e)

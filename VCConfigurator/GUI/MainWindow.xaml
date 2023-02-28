@@ -14,33 +14,33 @@
         WindowStartupLocation="CenterScreen"
         SizeToContent="WidthAndHeight"
         ResizeMode="CanMinimize">
-	<Window.DataContext>
-		<local:MainWindowVm/>
-	</Window.DataContext>
-	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-		</Grid.RowDefinitions>
-		<TabControl>
-			<TabItem Header="Устройства">
-				<gui:DeviceSettingsControl DataContext="{Binding DeviceSettingsVm}"/>
-			</TabItem>
-			<TabItem Header="Интеграции">
-				<gui:IntergrationSettingsControl DataContext="{Binding IntegrationSettingsVm}"/>
-			</TabItem>
-		</TabControl>
-		<StackPanel Grid.Row="1" 
-	            Orientation="Horizontal" 
-	            HorizontalAlignment="Center">
-			<Button Margin="5" 
-		        MinWidth="130" 
-		        Content="Сохранить и запустить VolumeCalculator" 
-		        Command="{Binding ApplySettingsAndRunVCalcCommand}"/>
-			<Button Margin="5" 
-		        Width="70" 
-		        Content="Сохранить" 
-		        Command="{Binding ApplySettingsCommand}"/>
-		</StackPanel>
-	</Grid>
+    <Window.DataContext>
+        <local:MainWindowVm/>
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TabControl>
+            <TabItem Header="Устройства">
+                <gui:DeviceSettingsControl DataContext="{Binding DeviceSettingsVm}"/>
+            </TabItem>
+            <TabItem Header="Интеграции">
+                <gui:IntergrationSettingsControl DataContext="{Binding IntegrationSettingsVm}"/>
+            </TabItem>
+        </TabControl>
+        <StackPanel Grid.Row="1" 
+                Orientation="Horizontal" 
+                HorizontalAlignment="Center">
+            <Button Margin="5" 
+                MinWidth="170" 
+                Content="Сохранить и запустить клиент" 
+                Command="{Binding ApplySettingsAndRunVCalcCommand}"/>
+            <Button Margin="5" 
+                Width="170" 
+                Content="Сохранить и закрыть" 
+                Command="{Binding ApplySettingsCommand}"/>
+        </StackPanel>
+    </Grid>
 </Window>

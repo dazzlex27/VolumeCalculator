@@ -46,8 +46,8 @@ namespace VCConfigurator
 			_settings = Task.Run(async () => await ReadSettingsFromFileAsync()).Result;
 			FillValuesFromSettings(_settings);
 
-			ApplySettingsAndRunVCalcCommand = new CommandHandler(async () => await ApplySettings(true), true);
-			ApplySettingsCommand = new CommandHandler(async () => await ApplySettings(false), true);
+			ApplySettingsAndRunVCalcCommand = new CommandHandler(async () => await ApplySettingsAndClose(true), true);
+			ApplySettingsCommand = new CommandHandler(async () => await ApplySettingsAndClose(false), true);
 		}
 
 		private async Task<ApplicationSettings> ReadSettingsFromFileAsync()
@@ -78,7 +78,7 @@ namespace VCConfigurator
 			_integrationSettingsVm.FillValuesFromSettings(settings.IntegrationSettings);
 		}
 
-		private async Task ApplySettings(bool closeApplication)
+		private async Task ApplySettingsAndClose(bool startClient)
 		{
 			try
 			{
@@ -89,11 +89,10 @@ namespace VCConfigurator
 
 				await IoUtils.SerializeSettingsAsync(_settings);
 
-				if (closeApplication)
-				{
+				if (startClient)
 					IoUtils.StartProcess("VCClient.exe", true);
-					Process.GetCurrentProcess().Kill();
-				}
+
+				Process.GetCurrentProcess().Kill();
 			}
 			catch (Exception ex)
 			{

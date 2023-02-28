@@ -391,7 +391,7 @@ namespace VCClient.ViewModels
 				if (!photosDirectoryInfo.Exists)
 					return;
 
-				IoUtils.OpenFile(_photosDirectoryPath);
+				IoUtils.OpenFolder(_photosDirectoryPath);
 			}
 			catch (Exception ex)
 			{

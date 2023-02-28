@@ -66,7 +66,7 @@ namespace VCClient.GUI
 			Keyboard.ClearFocus();
 		}
 
-		private void CalculationDashboardControl_OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+		private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
 		{
 			if (!(DataContext is CalculationDashboardControlVm vm))
 				return;

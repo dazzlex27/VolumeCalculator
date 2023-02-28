@@ -21,7 +21,7 @@ using VCClient.Utils;
 
 namespace VCClient.ViewModels
 {
-	internal class MainWindowVm : BaseViewModel
+	internal class MainWindowVm : BaseViewModel, IDisposable
 	{
 		private event Action<ApplicationSettings> ApplicationSettingsChanged;
 
@@ -129,6 +129,27 @@ namespace VCClient.ViewModels
 			}
 		}
 
+		public async Task InitializeAsync()
+		{
+			try
+			{
+				// TODO: splash screen until this finishes
+				_httpClient = new HttpClient();
+
+				await InitializeSettingsAsync();
+				InitializeIoDevices();
+				await InitializeSubSystemsAsync();
+				InitializeSubViewModels();
+
+				_logger.LogInfo("Application is initalized");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to initialize, terminating...", ex);
+				await DisplayFatalErrorsAndCloseApplication();
+			}
+		}
+
 		public async Task<bool> ShutDownAsync(bool shutPcDown, bool force)
 		{
 			if (_shutDownInProgress)
@@ -179,24 +200,9 @@ namespace VCClient.ViewModels
 			}
 		}
 
-		public async Task InitializeAsync()
+		public void Dispose()
 		{
-			try
-			{
-				_httpClient = new HttpClient();
-
-				await InitializeSettingsAsync();
-				InitializeIoDevices();
-				await InitializeSubSystemsAsync();
-				InitializeSubViewModels();
-
-				_logger.LogInfo("Application is initalized");
-			}
-			catch (Exception ex)
-			{
-				_logger.LogException("Failed to initialize, terminating...", ex);
-				await DisplayFatalErrorsAndCloseApplication();
-			}
+			_httpClient.Dispose();
 		}
 
 		private async Task InitializeSettingsAsync()
@@ -294,9 +300,10 @@ namespace VCClient.ViewModels
 
 				var frameProvider = _deviceManager.FrameProvider;
 
-				_streamViewControlVm = new StreamViewControlVm(_logger, _settings, frameProvider);
+				StreamViewControlVm = new StreamViewControlVm(_logger, _settings, frameProvider);
+				CalculationDashboardControlVm = new CalculationDashboardControlVm(_logger);
+				TestDataGenerationControlVm = new TestDataGenerationControlVm(_logger, _settings, frameProvider);
 
-				_dashboardControlVm = new CalculationDashboardControlVm(_logger);
 				_dashboardControlVm.UpdateSettings(_settings);
 				_dashboardControlVm.WeightResetRequested += _deviceManager.ResetWeight;
 				_deviceManager.WeightMeasurementReady += _dashboardControlVm.UpdateWeight;
@@ -306,9 +313,7 @@ namespace VCClient.ViewModels
 				_dashboardControlVm.LockingStatusChanged += _calculator.UpdateLockingStatus;
 				_calculator.LastAlgorithmUsedChanged += _dashboardControlVm.UpdateLastAlgorithm;
 				_calculator.ValidateStatus();
-
-				_testDataGenerationControlVm = new TestDataGenerationControlVm(_logger, _settings, frameProvider);
-
+				
 				ApplicationSettingsChanged += OnApplicationSettingsChanged;
 
 				_logger.LogInfo("GUI handlers - ok");
@@ -393,7 +398,6 @@ namespace VCClient.ViewModels
 				finally
 				{
 					_deviceManager.TogglePause(false);
-
 					_deviceManager.FrameProvider.ColorFrameReady -= settingsWindowVm.ColorFrameUpdated;
 					_deviceManager.FrameProvider.DepthFrameReady -= settingsWindowVm.DepthFrameUpdated;
 				}
