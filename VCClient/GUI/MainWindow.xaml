@@ -14,11 +14,9 @@
 		WindowState="Maximized"
         ResizeMode="NoResize"
         ContentRendered="OnContentRendered"
+        d:DataContext="{d:DesignInstance viewModels:MainWindowVm}"
 		KeyboardNavigation.TabNavigation="Cycle">
-	<Window.DataContext>
-		<viewModels:MainWindowVm/>
-	</Window.DataContext>
-	<Window.InputBindings>
+    <Window.InputBindings>
 		<KeyBinding Key="Enter" Modifiers="Control" Command="{Binding StartMeasurementCommand}"/>
 	</Window.InputBindings>
 	<Grid Width="Auto" Height="Auto">

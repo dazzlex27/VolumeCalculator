@@ -1,18 +1,22 @@
-﻿using System;
+﻿using Primitives.Logging;
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using VCClient.Utils;
 using VCClient.ViewModels;
 
 namespace VCClient.GUI
 {
 	internal partial class MainWindow
 	{
+		private readonly ILogger _logger;
 		private readonly MainWindowVm _vm;
 
 		public MainWindow()
 		{
 			InitializeComponent();
-			_vm = (MainWindowVm) DataContext;
+			_logger = new TxtLogger(GuiUtils.AppTitle, "main");
+			_vm = new MainWindowVm(_logger);
 		}
 
 		private void OnWindowClosing(object sender, CancelEventArgs e)
@@ -21,10 +25,19 @@ namespace VCClient.GUI
 				e.Cancel = true;
 		}
 
-		private void OnContentRendered(object sender, EventArgs e)
+		private async void OnContentRendered(object sender, EventArgs e)
 		{
-			Focus();
-			Activate();
+			try
+			{
+				await _vm.InitializeAsync();
+				Focus();
+				Activate();
+
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("failed to run initialization routine", ex);
+			}
 		}
 	}
 }

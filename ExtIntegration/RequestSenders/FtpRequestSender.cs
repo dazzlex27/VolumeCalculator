@@ -51,14 +51,14 @@ namespace ExtIntegration.RequestSenders
 		{
 			if (resultData.Status != CalculationStatus.Successful)
 			{
-				await _logger.LogInfo($"The result was not successful ({resultData.Status}), will not send FTP request");
+				_logger.LogInfo($"The result was not successful ({resultData.Status}), will not send FTP request");
 
 				return false;
 			}
 
 			try
 			{
-				await _logger.LogInfo($"Sending files via FTP to {_client.Host}:{_client.Port}...");
+				_logger.LogInfo($"Sending files via FTP to {_client.Host}:{_client.Port}...");
 
 				var calculationResult = resultData.Result;
 
@@ -84,7 +84,7 @@ namespace ExtIntegration.RequestSenders
 
 					var result = await _client.UploadBytes(memoryStream.ToArray(), remoteFileName, FtpRemoteExists.Overwrite, true);
 					if (result == FtpStatus.Success)
-						await _logger.LogInfo("Uploaded text file to FTP");
+						_logger.LogInfo("Uploaded text file to FTP");
 				}
 
 				if (_includeObjectPhoto)
@@ -98,17 +98,17 @@ namespace ExtIntegration.RequestSenders
 
 						var result = await _client.UploadBytes(memoryStream.ToArray(), remoteFileName, FtpRemoteExists.Overwrite, true);
 						if (result == FtpStatus.Success)
-							await _logger.LogInfo("Uploaded photo file to FTP");
+							_logger.LogInfo("Uploaded photo file to FTP");
 					}
 				}
 
-				await _logger.LogInfo($"Uploaded files to FTP server at {_client.Host}");
+				_logger.LogInfo($"Uploaded files to FTP server at {_client.Host}");
 
 				return true;
 			}
 			catch (Exception ex)
 			{
-				await _logger.LogException($"Failed to upload data to FTP server at {_client.Host}", ex);
+				_logger.LogException($"Failed to upload data to FTP server at {_client.Host}", ex);
 				return false;
 			}
 		}

@@ -1,11 +1,16 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Primitives.Logging
 {
-	public class TxtLogger : ILogger
+	public sealed class TxtLogger : ILogger
 	{
+		private readonly ConcurrentQueue<LogData> _messageQueue;
+		private readonly CancellationTokenSource _tokenSource;
+
 		private const int MaxLogSizeBytes = 5 * 1000 * 1000;
 		private static readonly DateTime StartupTime = DateTime.Now;
 
@@ -16,36 +21,52 @@ namespace Primitives.Logging
 		{
 			var logFileName = $"{logName}.log";
 			var archivedLogFileName = $"{logFileName}1";
-
 			var currentInstanceFolder = StartupTime.ToString("yyyy-MM-dd-HH-mm-ss");
 			var logDirectory = Path.Combine(GlobalConstants.AppLogsPath, appName, currentInstanceFolder);
+
 			Directory.CreateDirectory(logDirectory);
 			_filePath = Path.Combine(logDirectory, logFileName);
 			_archiveFilePath = Path.Combine(logDirectory, archivedLogFileName);
+
+			_tokenSource = new CancellationTokenSource();
+			_messageQueue = new ConcurrentQueue<LogData>();
+			Task.Factory.StartNew(
+				async (o) => await ProcessLoggingToFile(), TaskCreationOptions.LongRunning, _tokenSource.Token);
 		}
 
-		public async Task LogInfo(string message)
+		public void LogInfo(string message)
 		{
-			await WriteMessageToLog("INFO", message);
+			EnqueueMessage("INFO", message);
 		}
 
-		public async Task LogError(string message)
+		public void LogError(string message)
 		{
-			await WriteMessageToLog("ERROR", message);
+			EnqueueMessage("ERROR", message);
 		}
 
-		public async Task LogException(string message, Exception ex)
+		public void LogException(string message, Exception ex)
 		{
-			await WriteMessageToLog("EXCEPTION", $"{message} {ex}");
+			EnqueueMessage("EXCEPTION", $"{message} {ex}");
 			
 			#if DEBUG
 			Console.Beep();
 			#endif
 		}
 
-		public async Task LogDebug(string message)
+		public void LogDebug(string message)
 		{
-			await WriteMessageToLog("DEBUG", message);
+			EnqueueMessage("DEBUG", message);
+		}
+
+		public void Dispose()
+		{
+			_tokenSource.Cancel();
+			_tokenSource.Dispose();
+		}
+
+		private void EnqueueMessage(string type, string message)
+		{
+			_messageQueue.Enqueue(new LogData(type, message));
 		}
 
 		private async Task WriteMessageToLog(string type, string message)
@@ -62,10 +83,10 @@ namespace Primitives.Logging
 			if (!needToArchiveLogFile)
 				return;
 
-			await ArchiveLogFile();
+			ArchiveLogFile();
 		}
 
-		private async Task ArchiveLogFile()
+		private void ArchiveLogFile()
 		{
 			try
 			{
@@ -77,8 +98,26 @@ namespace Primitives.Logging
 			}
 			catch (Exception ex)
 			{
-				await LogException("Failed to archive log file", ex);
+				LogException("Failed to archive log file", ex);
 			}
+		}
+
+		private async Task ProcessLoggingToFile()
+		{
+			try
+			{
+				while (!_tokenSource.IsCancellationRequested)
+				{
+					while (!_messageQueue.IsEmpty)
+					{
+						bool success = _messageQueue.TryDequeue(out LogData data);
+						if (success)
+							await WriteMessageToLog(data.Type, data.Message);
+					}
+					await Task.Delay(50);
+				}
+			}
+			finally { }
 		}
 	}
 }

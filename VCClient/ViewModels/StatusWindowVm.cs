@@ -77,7 +77,7 @@ namespace VCClient.ViewModels
 					}
 					catch (Exception ex)
 					{
-						await logger.LogException("Web server request for info failed", ex);
+						logger.LogException("Web server request for info failed", ex);
 					}
 				});
 

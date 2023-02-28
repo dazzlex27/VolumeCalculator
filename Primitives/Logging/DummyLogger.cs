@@ -1,28 +1,27 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 namespace Primitives.Logging
 {
-	public class DummyLogger : ILogger
+	public sealed class DummyLogger : ILogger
 	{
-		public async Task LogDebug(string message)
+		public void LogDebug(string _)
 		{
-			await Task.FromResult(0);
 		}
 
-		public async Task LogError(string message)
+		public void LogError(string _)
 		{
-			await Task.FromResult(0);
 		}
 
-		public async Task LogException(string message, Exception ex)
+		public void LogException(string _, Exception __)
 		{
-			await Task.FromResult(0);
 		}
 
-		public async Task LogInfo(string message)
+		public void LogInfo(string _)
 		{
-			await Task.FromResult(0);
+		}
+
+		public void Dispose()
+		{
 		}
 	}
 }

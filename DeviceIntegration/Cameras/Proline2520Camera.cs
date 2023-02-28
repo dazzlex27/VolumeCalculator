@@ -35,16 +35,16 @@ namespace DeviceIntegration.Cameras
 
 			try
 			{
-				await _logger.LogInfo($"Connecting to Proline2520 camera on address {_settings.Ip}... ");
+				_logger.LogInfo($"Connecting to Proline2520 camera on address {_settings.Ip}... ");
 
 				await _controller.ConnectAsync( _settings.Ip, _settings.Login, _settings.Password);
 
-				await _logger.LogInfo($"Connected to Proline2520 camera on address {_settings.Ip} ");
+				_logger.LogInfo($"Connected to Proline2520 camera on address {_settings.Ip} ");
 				_initialized = true;
 			}
 			catch (Exception ex)
 			{
-				await _logger.LogException($"Failed to connect to Proline2520 camera on address {_settings.Ip} ", ex);
+				_logger.LogException($"Failed to connect to Proline2520 camera on address {_settings.Ip} ", ex);
 				_initialized = false;
 			}
 
@@ -55,7 +55,7 @@ namespace DeviceIntegration.Cameras
 		{
 			await Task.Delay(1);
 
-			await _logger.LogInfo($"Disconnecting from Proline2520 camera on address {_settings.Ip}... ");
+			_logger.LogInfo($"Disconnecting from Proline2520 camera on address {_settings.Ip}... ");
 			_initialized = false;
 			return true;
 		}
@@ -74,7 +74,7 @@ namespace DeviceIntegration.Cameras
 			}
 			catch (Exception ex)
 			{
-				await _logger.LogException($"Failed to go to preset {presetIndex}", ex);
+				_logger.LogException($"Failed to go to preset {presetIndex}", ex);
 				return false;
 			}
 		}

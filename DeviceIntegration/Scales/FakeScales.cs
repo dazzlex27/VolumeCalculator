@@ -46,7 +46,7 @@ namespace DeviceIntegration.Scales
 				}
 				catch (Exception ex)
 				{
-					await logger.LogException("Failed to send FakeScales data", ex);
+					logger.LogException("Failed to send FakeScales data", ex);
 				}}, _tokenSource.Token);
 		}
 

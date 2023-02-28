@@ -32,33 +32,33 @@ namespace ExtIntegration.RequestSenders.SqlSenders
 
 		public async Task ConnectAsync()
 		{
-			await _logger.LogInfo($"Connecting to {_connectionString}...");
+			_logger.LogInfo($"Connecting to {_connectionString}...");
 			await _engine.ConnectAsync();
-			await _logger.LogInfo($"Connected to {_connectionString}");
+			_logger.LogInfo($"Connected to {_connectionString}");
 		}
 
 		public async Task<bool> SendAsync(CalculationResultData resultData)
 		{
 			if (resultData.Status != CalculationStatus.Successful)
 			{
-				await _logger.LogError($"The result was not successful ({resultData.Status}), will not send SQL request");
+				_logger.LogError($"The result was not successful ({resultData.Status}), will not send SQL request");
 				return false;
 			}
 
 			try
 			{
-				await _logger.LogInfo($"Sending SQL request to {_connectionString}...");
+				_logger.LogInfo($"Sending SQL request to {_connectionString}...");
 
 				await _engine.ConnectAsync();
 
 				var affectedRowsCount = await _engine.SendAsync(resultData);
-				await _logger.LogInfo($"Sent SQL request to {_connectionString}, {affectedRowsCount} rows affected");
+				_logger.LogInfo($"Sent SQL request to {_connectionString}, {affectedRowsCount} rows affected");
 
 				return true;
 			}
 			catch (Exception ex)
 			{
-				await _logger.LogException($"Failed to send an SQL request ({_connectionString})", ex);
+				_logger.LogException($"Failed to send an SQL request ({_connectionString})", ex);
 				return false;
 			}
 		}

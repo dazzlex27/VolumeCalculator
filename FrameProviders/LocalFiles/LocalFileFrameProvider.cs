@@ -53,7 +53,7 @@ namespace FrameProviders.LocalFiles
 				var colorFrames = LocalFrameProviderUtils.ReadImages();
 				if (colorFrames == null)
 				{
-					await Logger.LogError(@"Directory for color frames in local frame provider was not found!");
+					Logger.LogError(@"Directory for color frames in local frame provider was not found!");
 					return;
 				}
 				
@@ -84,7 +84,7 @@ namespace FrameProviders.LocalFiles
 			}
 			catch (Exception ex)
 			{
-				await Logger.LogException("LocalFrameProvider: Failed to push color frames", ex);
+				Logger.LogException("LocalFrameProvider: Failed to push color frames", ex);
 			}
 		}
 
@@ -95,7 +95,7 @@ namespace FrameProviders.LocalFiles
 				var depthFrames = LocalFrameProviderUtils.ReadDepthMaps();
 				if (depthFrames == null)
 				{
-					await Logger.LogError(@"Directory for depth frames in local frame provider was not found!");
+					Logger.LogError(@"Directory for depth frames in local frame provider was not found!");
 					return;
 				}
 
@@ -126,7 +126,7 @@ namespace FrameProviders.LocalFiles
 			}
 			catch (Exception ex)
 			{
-				await Logger.LogException("Error in local frame provider", ex);
+				Logger.LogException("Error in local frame provider", ex);
 			}
 		}
 	}

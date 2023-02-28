@@ -25,10 +25,10 @@ namespace VCClient.ViewModels
 	{
 		private event Action<ApplicationSettings> ApplicationSettingsChanged;
 
-		private readonly HttpClient _httpClient;
 		private readonly ILogger _logger;
 		private readonly List<string> _fatalErrorMessages;
 
+		private HttpClient _httpClient;
 		private ApplicationSettings _settings;
 		private CalculationRequestHandler _calculator;
 		private DepthMapProcessor _dmProcessor;
@@ -103,36 +103,28 @@ namespace VCClient.ViewModels
 
 		public ICommand StartMeasurementCommand { get; }
 		
-		public MainWindowVm()
+		public MainWindowVm(ILogger logger)
 		{
 			try
 			{
-				_logger = new TxtLogger(GuiUtils.AppTitle, "main");
-				_logger.LogInfo($"Starting up \"{GuiUtils.AppHeaderString}\"...");
+				_logger = logger;
+				_logger?.LogInfo($"Starting up \"{GuiUtils.AppHeaderString}\"...");
 				AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
 				// TODO: AsyncCommand (replace async void)
-				// TODO: producer-consumer based logging
 				_fatalErrorMessages = new List<string>();
-				OpenSettingsCommand = new CommandHandler(OpenSettingsWindowAsync, true);
-				OpenStatusCommand = new CommandHandler(OpenStatusWindowAsync, true);
-				OpenConfiguratorCommand = new CommandHandler(OpenConfiguratorAsync, true);
-				ShutDownCommand = new CommandHandler(() => { ShutDownAsync(true, false); }, true);
+				OpenSettingsCommand = new CommandHandler(async () => await OpenSettingsWindowAsync(), true);
+				OpenStatusCommand = new CommandHandler(OpenStatusWindow, true);
+				OpenConfiguratorCommand = new CommandHandler(async () => await OpenConfiguratorAsync(), true);
+				ShutDownCommand = new CommandHandler(async () =>  await ShutDownAsync(true, false), true);
 				StartMeasurementCommand = new CommandHandler(() => { OnCalculationStartRequested(null); }, true);
 
-				_httpClient = new HttpClient();
-
 				// TODO: async startup
-				InitializeSettingsAsync();
-				InitializeIoDevicesAsync();
-				InitializeSubSystemsAsync();
-				InitializeSubViewModelsAsync();
-
-				_logger.LogInfo("Application is initalized");
+				_logger?.LogInfo("Application is created");
 			}
 			catch (Exception ex)
 			{
-				_logger.LogException("Application is terminating...", ex);
+				_logger?.LogException("Failed to start application, terminating...", ex);
 				DisplayFatalErrorsAndCloseApplication();
 			}
 		}
@@ -148,7 +140,7 @@ namespace VCClient.ViewModels
 			{
 				if (force)
 				{
-					await DisposeSubSystemsAsync();
+					DisposeSubSystems();
 					Process.GetCurrentProcess().Kill();
 					return true;
 				}
@@ -157,28 +149,28 @@ namespace VCClient.ViewModels
 						MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
 					return false;
 
-				await _logger.LogInfo("Disposing the application...");
+				_logger?.LogInfo("Disposing the application...");
 
 				await SaveSettingsAsync();
-				await DisposeSubViewModelsAsync();
-				await DisposeSubSystemsAsync();
+				DisposeSubViewModels();
+				DisposeSubSystems();
 				
-				_deviceManager.Dispose();
-				_httpClient.Dispose();
+				_deviceManager?.Dispose();
+				_httpClient?.Dispose();
 
-				await _logger.LogInfo("Application stopped");
+				_logger?.LogInfo("Application stopped");
 
 				if (!shutPcDown)
 					return true;
 
-				await _logger.LogInfo("Shutting down the system...");
+				_logger?.LogInfo("Shutting down the system...");
 				IoUtils.ShutPcDown();
 
 				return true;
 			}
 			catch (Exception ex)
 			{
-				await _logger.LogException("Failed to close the application", ex);
+				_logger.LogException("Failed to close the application", ex);
 				return false;
 			}
 			finally
@@ -187,48 +179,68 @@ namespace VCClient.ViewModels
 			}
 		}
 
+		public async Task InitializeAsync()
+		{
+			try
+			{
+				_httpClient = new HttpClient();
+
+				await InitializeSettingsAsync();
+				InitializeIoDevices();
+				await InitializeSubSystemsAsync();
+				InitializeSubViewModels();
+
+				_logger.LogInfo("Application is initalized");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to initialize, terminating...", ex);
+				await DisplayFatalErrorsAndCloseApplication();
+			}
+		}
+
 		private async Task InitializeSettingsAsync()
 		{
 			try
 			{
-				await _logger.LogInfo("Reading settings...");
+				_logger.LogInfo("Reading settings...");
 				var settingsFromFile = await IoUtils.DeserializeSettingsAsync<ApplicationSettings>();
 				if (settingsFromFile == null)
 				{
-					await _logger.LogError("Failed to read settings from file, will use default settings");
+					_logger.LogError("Failed to read settings from file, will use default settings");
 					Settings = ApplicationSettings.GetDefaultSettings();
 					await IoUtils.SerializeSettingsAsync(Settings);
 				}
 				else
 					Settings = settingsFromFile;
 
-				await _logger.LogInfo("Settings - ok");
+				_logger.LogInfo("Settings - ok");
 			}
 			catch (Exception ex)
 			{
-				await _logger.LogException("FATAL: Failed to initialize application settings!", ex);
+				_logger.LogException("FATAL: Failed to initialize application settings!", ex);
 
 				_fatalErrorMessages.Add("Не удалось инициализировать настройки приложения");
 				throw;
 			}
 		}
 
-		private async Task InitializeIoDevicesAsync()
+		private void InitializeIoDevices()
 		{
 			try
 			{
-				await _logger.LogInfo("Initializing IO devices...");
+				_logger.LogInfo("Initializing IO devices...");
 				var deviceLogger = new TxtLogger(GuiUtils.AppTitle, "devices");
 
 				_deviceManager = new HardwareManager(deviceLogger, _httpClient, Settings.IoSettings);
 				_deviceManager.BarcodeReady += OnBarcodeReady;
 				_deviceManager.WeightMeasurementReady += OnWeightMeasurementReady;
 
-				await _logger.LogInfo("IO devices- ok");
+				_logger.LogInfo("IO devices- ok");
 			}
 			catch (Exception ex)
 			{
-				await _logger.LogException("FATAL: Failed to initialize IO devices!", ex);
+				_logger.LogException("FATAL: Failed to initialize IO devices!", ex);
 
 				var message = "Не удалось инициализировать внешние устройства";
 				_fatalErrorMessages.Add(message);
@@ -240,7 +252,7 @@ namespace VCClient.ViewModels
 		{
 			try
 			{
-				await _logger.LogInfo("Initializing sub systems...");
+				_logger.LogInfo("Initializing sub systems...");
 
 				var frameProvider = _deviceManager.FrameProvider;
 
@@ -262,11 +274,11 @@ namespace VCClient.ViewModels
 				_calculator.CalculationFinished += OnCalculationFinished;
 				_calculator.CalculationStatusChanged += OnStatusChanged;
 
-				await _logger.LogInfo("Sub systems - ok");
+				_logger.LogInfo("Sub systems - ok");
 			}
 			catch (Exception ex)
 			{
-				await _logger.LogException("FATAL: Failed to initialize sub systems!", ex);
+				_logger.LogException("FATAL: Failed to initialize sub systems!", ex);
 
 				var message = "Не удалось инициализировать дополнительные подсистемы";
 				_fatalErrorMessages.Add(message);
@@ -274,11 +286,11 @@ namespace VCClient.ViewModels
 			}
 		}
 
-		private async Task InitializeSubViewModelsAsync()
+		private void InitializeSubViewModels()
 		{
 			try
 			{
-				await _logger.LogInfo("Initializing GUI handlers...");
+				_logger.LogInfo("Initializing GUI handlers...");
 
 				var frameProvider = _deviceManager.FrameProvider;
 
@@ -299,11 +311,11 @@ namespace VCClient.ViewModels
 
 				ApplicationSettingsChanged += OnApplicationSettingsChanged;
 
-				await _logger.LogInfo("GUI handlers - ok");
+				_logger.LogInfo("GUI handlers - ok");
 			}
 			catch (Exception ex)
 			{
-				await _logger.LogException("FATAL: Failed to initialize GUI!", ex);
+				_logger.LogException("FATAL: Failed to initialize GUI!", ex);
 
 				var message = "Не удалось инициализировать основные программные компоненты системы";
 				_fatalErrorMessages.Add(message);
@@ -344,11 +356,11 @@ namespace VCClient.ViewModels
 
 		private async Task SaveSettingsAsync()
 		{
-			await _logger.LogInfo("Saving settings...");
+			_logger.LogInfo("Saving settings...");
 			await IoUtils.SerializeSettingsAsync(Settings);
 		}
 
-		private async void OpenSettingsWindowAsync()
+		private async Task OpenSettingsWindowAsync()
 		{
 			try
 			{
@@ -372,11 +384,11 @@ namespace VCClient.ViewModels
 
 					Settings = settingsWindowVm.GetSettings();
 					await SaveSettingsAsync();
-					await _logger.LogInfo($"New settings have been applied: {Settings}");
+					_logger.LogInfo($"New settings have been applied: {Settings}");
 				}
 				catch (Exception ex)
 				{
-					await _logger.LogException("Error occured while changing settings", ex);
+					_logger.LogException("Error occured while changing settings", ex);
 				}
 				finally
 				{
@@ -388,17 +400,16 @@ namespace VCClient.ViewModels
 			}
 			catch (Exception ex)
 			{
-				await _logger.LogException("Exception occured during a settings change", ex);
+				_logger.LogException("Exception occured during a settings change", ex);
 				AutoClosingMessageBox.Show("Во время задания настроек произошла ошибка. Информация записана в журнал", "Ошибка");
 			}
 		}
 
-		private async void OpenStatusWindowAsync()
+		private void OpenStatusWindow()
 		{
 			try
 			{
 				var statusWindowVm = new StatusWindowVm(_logger, _httpClient);
-
 				var statusWindow = new StatusWindow
 				{
 					Owner = Application.Current.Windows.OfType<Window>().SingleOrDefault(x => x.IsActive),
@@ -409,11 +420,11 @@ namespace VCClient.ViewModels
 			}
 			catch (Exception ex)
 			{
-				await _logger.LogException("Error occured while displaying status window", ex);
+				_logger.LogException("Error occured while displaying status window", ex);
 			}
 		}
 
-		private async void OpenConfiguratorAsync()
+		private async Task OpenConfiguratorAsync()
 		{
 			try
 			{
@@ -427,20 +438,20 @@ namespace VCClient.ViewModels
 			}
 			catch (Exception ex)
 			{
-				await _logger.LogException("Failed to launch configurator", ex);
+				_logger.LogException("Failed to launch configurator", ex);
 			}
 		}
 
-		private async Task DisposeSubViewModelsAsync()
+		private void DisposeSubViewModels()
 		{
-			await _logger.LogInfo("Disposing sub view models...");
+			_logger.LogInfo("Disposing sub view models...");
 			
 			_streamViewControlVm?.Dispose();
 		}
 
-		private async Task DisposeSubSystemsAsync()
+		private void DisposeSubSystems()
 		{
-			await _logger.LogInfo("Disposing sub systems...");
+			_logger?.LogInfo("Disposing sub systems...");
 			
 			_calculator?.Dispose();
 			_requestProcessor?.Dispose();

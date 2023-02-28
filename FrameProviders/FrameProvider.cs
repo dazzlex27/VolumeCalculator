@@ -211,7 +211,7 @@ namespace FrameProviders
 			}
 			catch (Exception ex)
 			{
-				await Logger.LogException("failed to handle color frame", ex);
+				Logger.LogException("failed to handle color frame", ex);
 			}
 		}
 
@@ -242,7 +242,7 @@ namespace FrameProviders
 			}
 			catch (Exception ex)
 			{
-				await Logger.LogException("failed to handle depth frame", ex);
+				Logger.LogException("failed to handle depth frame", ex);
 			}
 		}
 	}

@@ -1,16 +1,15 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 namespace Primitives.Logging
 {
-	public interface ILogger
+	public interface ILogger : IDisposable
 	{
-		Task LogInfo(string message);
+		void LogInfo(string message);
 
-		Task LogError(string message);
+		void LogError(string message);
 
-		Task LogException(string message, Exception ex);
+		void LogException(string message, Exception ex);
 
-		Task LogDebug(string message);
+		void LogDebug(string message);
 	}
 }

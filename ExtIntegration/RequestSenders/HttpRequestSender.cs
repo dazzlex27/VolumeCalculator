@@ -60,7 +60,7 @@ namespace ExtIntegration.RequestSenders
 				if (!resultIsOk)
 				{
 					var message = resultData == null ? "result was null" : resultData.Status.ToString();
-					await _logger.LogError($"HttpRequestSender: result was invalid: {message}, will not send request");
+					_logger.LogError($"HttpRequestSender: result was invalid: {message}, will not send request");
 
 					return false;
 				}
@@ -73,7 +73,7 @@ namespace ExtIntegration.RequestSenders
 				{
 					try
 					{
-						await _logger.LogInfo($"Sending GET request to {address}...");
+						_logger.LogInfo($"Sending GET request to {address}...");
 
 						var builder = new UriBuilder(address);
 
@@ -100,11 +100,11 @@ namespace ExtIntegration.RequestSenders
 						else
 							response = await _httpClient.GetAsync(finalUrl);
 
-						await _logger.LogInfo($"Sent GET request - {finalUrl}, response was {response}");
+						_logger.LogInfo($"Sent GET request - {finalUrl}, response was {response}");
 					}
 					catch (Exception ex)
 					{
-						await _logger.LogException($"Failed to send GET request to {address}", ex);
+						_logger.LogException($"Failed to send GET request to {address}", ex);
 
 						oneOfTheRequestsFailed = true;
 					}
@@ -114,7 +114,7 @@ namespace ExtIntegration.RequestSenders
 			}
 			catch (Exception ex)
 			{
-				await _logger.LogException($"Failed to send GET request", ex);
+				_logger.LogException($"Failed to send GET request", ex);
 
 				return false;
 			}

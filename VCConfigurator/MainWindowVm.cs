@@ -62,7 +62,7 @@ namespace VCConfigurator
 			}
 			catch (Exception ex)
 			{
-				await _logger.LogException("Failed to read settings from file", ex);
+				_logger.LogException("Failed to read settings from file", ex);
 			}
 			finally
 			{
@@ -82,7 +82,7 @@ namespace VCConfigurator
 		{
 			try
 			{
-				await _logger.LogInfo("Applying settings...");
+				_logger.LogInfo("Applying settings...");
 
 				_deviceSettingsVm.FillSettingsFromValues(_settings.IoSettings);
 				_integrationSettingsVm.FillSettingsFromValues(_settings.IntegrationSettings);
@@ -97,7 +97,7 @@ namespace VCConfigurator
 			}
 			catch (Exception ex)
 			{
-				await _logger.LogException("Failed to apply settings", ex);
+				_logger.LogException("Failed to apply settings", ex);
 			}
 		}
 

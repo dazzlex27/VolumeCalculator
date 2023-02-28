@@ -65,7 +65,7 @@ namespace ExtIntegration
 				}
 				catch (Exception ex)
 				{
-					await _logger.LogException("RequestProcessor: a request sender failed to connect to requered destination", ex);
+					_logger.LogException("RequestProcessor: a request sender failed to connect to requered destination", ex);
 				}
 			}
 		}
@@ -112,7 +112,7 @@ namespace ExtIntegration
 					}
 					catch (Exception ex)
 					{
-						await _logger.LogException("Failed to send a request!", ex);
+						_logger.LogException("Failed to send a request!", ex);
 					}
 				});
 			}

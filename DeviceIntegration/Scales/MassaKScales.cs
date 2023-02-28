@@ -63,7 +63,7 @@ namespace DeviceIntegration.Scales
 				}
 				catch (Exception ex)
 				{
-					await _logger.LogException("Exception in MassaKScales polling loop", ex);
+					_logger.LogException("Exception in MassaKScales polling loop", ex);
 				}
 			});
 		}
@@ -103,7 +103,7 @@ namespace DeviceIntegration.Scales
 				}
 				catch (Exception ex)
 				{
-					await _logger.LogException("Failed to poll data from MassaKScales", ex);
+					_logger.LogException("Failed to poll data from MassaKScales", ex);
 					await Task.Delay(errorTimeOutMs);
 				}
 			}
