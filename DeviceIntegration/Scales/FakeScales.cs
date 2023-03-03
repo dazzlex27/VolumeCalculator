@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Primitives.Logging;
@@ -7,22 +6,24 @@ using Primitives.Logging;
 namespace DeviceIntegration.Scales
 {
 	internal class FakeScales : IScales
-	{
-		private static readonly ConcurrentQueue<int> Values = new ConcurrentQueue<int>(new[] {135, 407});
+	{ 
+		public event Action<ScaleMeasurementData> MeasurementReady;
+
+		private const int MaxWeight = 15000;
+		private readonly Random _rand;
+		private double _nextWeight;
 		
 		private readonly CancellationTokenSource _tokenSource;
 
-		public event Action<ScaleMeasurementData> MeasurementReady;
-
 		private volatile bool _applyPayload;
-
-		private bool _paused;
+		private volatile bool _paused;
 
 		public FakeScales(ILogger logger)
 		{
+			_rand = new Random();
 			_tokenSource = new CancellationTokenSource();
 			_applyPayload = true;
-			Values.TryDequeue(out var value);
+			_nextWeight = _rand.Next(MaxWeight);
 
 			Task.Run(async () => {
 				try
@@ -36,7 +37,7 @@ namespace DeviceIntegration.Scales
 						if (!_paused)
 						{
 							var data = _applyPayload
-								? new ScaleMeasurementData(MeasurementStatus.Measured, value)
+								? new ScaleMeasurementData(MeasurementStatus.Measured, _nextWeight)
 								: new ScaleMeasurementData(MeasurementStatus.Ready, 0);
 
 							MeasurementReady?.Invoke(data);
@@ -53,6 +54,7 @@ namespace DeviceIntegration.Scales
 		public void Dispose()
 		{
 			_tokenSource.Cancel();
+			_tokenSource.Dispose();
 		}
 
 		public void ResetWeight()
@@ -67,6 +69,7 @@ namespace DeviceIntegration.Scales
 
 		private void OnstatusSwitchTimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
 		{
+			_nextWeight = _rand.Next(MaxWeight);
 			_applyPayload = !_applyPayload;
 		}
 	}
