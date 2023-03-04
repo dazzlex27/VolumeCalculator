@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Windows.Media.Imaging;
-using FrameProviders;
+using DeviceIntegration.FrameProviders;
 using GuiCommon;
 using Primitives;
 using Primitives.Logging;

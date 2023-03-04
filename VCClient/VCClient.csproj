@@ -6,6 +6,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <ApplicationIcon>ISlogo.ico</ApplicationIcon>
   </PropertyGroup>
@@ -18,7 +19,7 @@
     <ProjectReference Include="..\GuiCommon\GuiCommon.csproj" />
     <ProjectReference Include="..\Primitives\Primitives.csproj" />
     <ProjectReference Include="..\DeviceIntegration\DeviceIntegration.csproj" />
-    <ProjectReference Include="..\Devices\FrameProviders\FrameProviders.csproj" />
+    <ProjectReference Include="..\Devices\FrameProviders\FrameProviders.Local.csproj" />
     <ProjectReference Include="..\ProcessingUtils\ProcessingUtils.csproj" />
     <ProjectReference Include="..\VCServer\VCServer.csproj" />
   </ItemGroup>

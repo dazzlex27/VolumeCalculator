@@ -17,7 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\FrameProcessor\FrameProcessor.csproj" />
     <ProjectReference Include="..\..\Primitives\Primitives.csproj" />
-    <ProjectReference Include="..\..\Devices\FrameProviders\FrameProviders.csproj" />
+    <ProjectReference Include="..\..\Devices\FrameProviders\FrameProviders.Local.csproj" />
     <ProjectReference Include="..\..\ProcessingUtils\ProcessingUtils.csproj" />
   </ItemGroup>
 </Project>

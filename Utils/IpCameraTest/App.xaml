@@ -1,7 +1,6 @@
-﻿<Application x:Class="CameraTest.App"
+﻿<Application x:Class="IpCameraTest.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:CameraTest"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <OutputPath>$(SolutionDir)!!bin\$(Platform)\$(Configuration)\Plugins\</OutputPath>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\DeviceIntegration\DeviceIntegration.csproj" />
+    <ProjectReference Include="..\..\Primitives\Primitives.csproj" />
+    <ProjectReference Include="..\..\ProcessingUtils\ProcessingUtils.csproj" />
+  </ItemGroup>
+</Project>

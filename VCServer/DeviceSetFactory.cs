@@ -6,8 +6,6 @@ using DeviceIntegration;
 using DeviceIntegration.IoCircuits;
 using DeviceIntegration.RangeMeters;
 using DeviceIntegration.Scales;
-using DeviceIntegration.Scanners;
-using FrameProviders;
 using Primitives.Logging;
 using Primitives.Settings;
 
@@ -24,7 +22,7 @@ namespace VCServer
 
 			var frameProviderName = settings.ActiveCameraName;
 			logger.LogInfo($"Creating frame provider \"{frameProviderName}\"...");
-			var frameProvider = FrameProvidersCommon.CreateRequestedFrameProvider(frameProviderName, logger);
+			var frameProvider = DeviceIntegrationCommon.CreateRequestedFrameProvider(frameProviderName, logger);
 			frameProvider.ColorCameraFps = 5;
 			frameProvider.DepthCameraFps = 5;
 			frameProvider.Start();
@@ -45,7 +43,7 @@ namespace VCServer
 			var scalesDataIsCorrect = !string.IsNullOrEmpty(scalesName) && !string.IsNullOrEmpty(scalesPort);
 			if (scalesDataIsCorrect)
 			{
-                var minWeight = settings.ActiveScales.MinWeight;
+				var minWeight = settings.ActiveScales.MinWeight;
 
 				logger.LogInfo($"Creating scales \"{scalesName}\", minWeight={minWeight}...");
 				scales = DeviceIntegrationCommon.CreateRequestedScales(scalesName, logger, scalesPort, minWeight);

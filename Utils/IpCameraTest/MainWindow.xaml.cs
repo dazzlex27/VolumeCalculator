@@ -7,11 +7,11 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
-using DeviceIntegration.Cameras;
+using IpCameras;
 using Primitives.Logging;
 using GuiCommon;
 
-namespace CameraTest
+namespace IpCameraTest
 {
 	public partial class MainWindow : INotifyPropertyChanged
 	{

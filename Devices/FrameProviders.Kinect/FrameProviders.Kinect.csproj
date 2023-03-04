@@ -1,21 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net7.0-windows</TargetFramework>
-    <OutputType>WinExe</OutputType>
-    <OutputPath>$(SolutionDir)!!bin\$(Platform)\$(Configuration)\</OutputPath>
+    <OutputType>Library</OutputType>
+    <OutputPath>$(SolutionDir)!!bin\$(Platform)\$(Configuration)\Plugins\</OutputPath>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <UseWPF>True</UseWPF>
-    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\DeviceIntegration\DeviceIntegration.csproj" />
-    <ProjectReference Include="..\..\Devices\IpCameras\IpCameras.csproj" />
-    <ProjectReference Include="..\..\GuiCommon\GuiCommon.csproj" />
-    <ProjectReference Include="..\..\Primitives\Primitives.csproj" />
-    <ProjectReference Include="..\..\ProcessingUtils\ProcessingUtils.csproj" />
+    <Reference Include="Microsoft.Kinect">
+      <HintPath>..\..\packages\Kinect\Microsoft.Kinect.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.0.0" />
+    <ProjectReference Include="..\..\DeviceIntegration\DeviceIntegration.csproj" />
+    <ProjectReference Include="..\..\Primitives\Primitives.csproj" />
+    <ProjectReference Include="..\..\ProcessingUtils\ProcessingUtils.csproj" />
+    <ProjectReference Include="..\FrameProviders\FrameProviders.Local.csproj" />
   </ItemGroup>
 </Project>

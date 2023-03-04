@@ -4,8 +4,8 @@ using DeviceIntegration.Cameras;
 using DeviceIntegration.IoCircuits;
 using DeviceIntegration.RangeMeters;
 using DeviceIntegration.Scales;
-using DeviceIntegration.Scanners;
-using FrameProviders;
+using DeviceIntegration;
+using DeviceIntegration.FrameProviders;
 
 namespace VCServer
 {

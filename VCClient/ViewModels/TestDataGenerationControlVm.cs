@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 using FrameProcessor;
-using FrameProviders;
+using DeviceIntegration.FrameProviders;
 using GuiCommon;
 using Primitives.Logging;
 using Primitives.Settings;

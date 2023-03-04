@@ -239,6 +239,7 @@ namespace VCClient.ViewModels
 				var deviceLogger = new TxtLogger(GuiUtils.AppTitle, "devices");
 
 				_deviceManager = new HardwareManager(deviceLogger, _httpClient, Settings.IoSettings);
+				_deviceManager.LoadPlugins(); // TODO: make nicer
 				_deviceManager.BarcodeReady += OnBarcodeReady;
 				_deviceManager.WeightMeasurementReady += OnWeightMeasurementReady;
 

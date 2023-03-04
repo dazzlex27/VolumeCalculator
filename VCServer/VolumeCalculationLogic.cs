@@ -7,7 +7,7 @@ using System.Timers;
 using DeviceIntegration.Cameras;
 using DeviceIntegration.RangeMeters;
 using FrameProcessor;
-using FrameProviders;
+using DeviceIntegration.FrameProviders;
 using Primitives;
 using Primitives.Logging;
 using ProcessingUtils;

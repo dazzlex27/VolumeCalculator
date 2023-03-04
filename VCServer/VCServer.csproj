@@ -7,10 +7,13 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Primitives\Primitives.csproj" />
     <ProjectReference Include="..\ProcessingUtils\ProcessingUtils.csproj" />
     <ProjectReference Include="..\DeviceIntegration\DeviceIntegration.csproj" />
     <ProjectReference Include="..\FrameProcessor\FrameProcessor.csproj" />
-    <ProjectReference Include="..\Devices\FrameProviders\FrameProviders.csproj" />
+    <ProjectReference Include="..\Devices\FrameProviders\FrameProviders.Local.csproj" />
   </ItemGroup>
 </Project>

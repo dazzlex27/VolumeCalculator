@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <OutputPath>$(SolutionDir)!!bin\$(Platform)\$(Configuration)\Plugins\</OutputPath>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\DeviceIntegration\DeviceIntegration.csproj" />
+    <ProjectReference Include="..\..\Primitives\Primitives.csproj" />
+    <ProjectReference Include="..\..\ProcessingUtils\ProcessingUtils.csproj" />
+    <ProjectReference Include="..\FrameProviders\FrameProviders.Local.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <PreBuildEvent>xcopy $(SolutionDir)\packages\realsense2\x64\bin\realsense2.dll /Y /D</PreBuildEvent>
+  </PropertyGroup>
+</Project>
