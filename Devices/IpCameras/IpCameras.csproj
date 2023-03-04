@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFrameworks>net7.0;net7.0-windows</TargetFrameworks>
     <OutputType>Library</OutputType>
     <OutputPath>$(SolutionDir)!!bin\$(Platform)\$(Configuration)\Plugins\</OutputPath>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>

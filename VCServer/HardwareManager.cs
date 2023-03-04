@@ -4,6 +4,7 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.Linq;
 using System.Net.Http;
+using DeviceIntegration;
 using DeviceIntegration.Cameras;
 using DeviceIntegration.FrameProviders;
 using DeviceIntegration.IoCircuits;
@@ -48,6 +49,17 @@ namespace VCServer
 			_ioSettings = settings;
 		}
 
+		// TODO: put this into a separate entity
+		public void LoadPlugins()
+		{
+			var catalog = new DirectoryCatalog("Plugins");
+			using var container = new CompositionContainer(catalog);
+			container.ComposeParts(this);
+
+			foreach (var plugin in Plugins)
+				plugin.Initialize();
+		}
+
 		public void CreateDevices()
 		{
 			_logger.LogInfo("Creating device manager...");
@@ -85,16 +97,6 @@ namespace VCServer
 				scales.MeasurementReady -= OnScalesWeightReady;
 
 			_logger.LogInfo("Device manager disposed");
-		}
-
-		public void LoadPlugins()
-		{
-			var catalog = new DirectoryCatalog("Plugins");
-			using var container = new CompositionContainer(catalog);
-			container.ComposeParts(this);
-
-			foreach (var plugin in Plugins)
-				plugin.Initialize();
 		}
 
 		public void TogglePause(bool pause)

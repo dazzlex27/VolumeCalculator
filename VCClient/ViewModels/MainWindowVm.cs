@@ -240,6 +240,7 @@ namespace VCClient.ViewModels
 
 				_deviceManager = new HardwareManager(deviceLogger, _httpClient, Settings.IoSettings);
 				_deviceManager.LoadPlugins(); // TODO: make nicer
+				_deviceManager.CreateDevices();
 				_deviceManager.BarcodeReady += OnBarcodeReady;
 				_deviceManager.WeightMeasurementReady += OnWeightMeasurementReady;
 

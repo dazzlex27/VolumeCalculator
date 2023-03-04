@@ -1,9 +1,11 @@
 ﻿using DeviceIntegration;
 using DeviceIntegration.Scales;
 using Primitives;
+using System.ComponentModel.Composition;
 
 namespace Scales
 {
+	[Export(typeof(IPlugin))]
 	internal class PluginDefinition : IPlugin
 	{
 		public void Initialize()

@@ -14,6 +14,5 @@
     <ProjectReference Include="..\ProcessingUtils\ProcessingUtils.csproj" />
     <ProjectReference Include="..\DeviceIntegration\DeviceIntegration.csproj" />
     <ProjectReference Include="..\FrameProcessor\FrameProcessor.csproj" />
-    <ProjectReference Include="..\Devices\FrameProviders\FrameProviders.Local.csproj" />
   </ItemGroup>
 </Project>

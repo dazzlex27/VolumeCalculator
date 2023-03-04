@@ -43,7 +43,7 @@ namespace BarcodeScanners
 
         private bool _paused;
 
-        public GenericKeyboardBarcodeScanner(ILogger logger)
+        public GenericKeyboardBarcodeScanner(ILogger logger, string _)
         {
             _logger = logger;
 
