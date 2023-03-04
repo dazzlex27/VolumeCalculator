@@ -12,10 +12,10 @@
 /VCServer/obj
 /DeviceIntegration/obj
 /ExtIntegration/obj
-/FrameProviders/obj
+/Devices/FrameProviders/obj
 /GuiCommon/obj
-/D435FrameProvider/obj
-/D435FrameProvider/D435FrameProvider.vcxproj.user
+/Devices/D435FrameProvider/obj
+/Devices/D435FrameProvider/D435FrameProvider.vcxproj.user
 /Tests/DepthMapProcessorTests/DepthMapProcessorTests.vcxproj.user
 /Tests/DepthMapProcessorTests/obj
 /Tests/DepthMapProcessorTests/samples
@@ -44,8 +44,8 @@
 /Utils/MReader/obj
 /Utils/ProBuilder/obj
 /Utils/WmsEmulator/obj
-/Utils/CameraTest/bin
-/Utils/CameraTest/obj
+/Utils/IpCameraTest/bin
+/Utils/IpCameraTest/obj
 /Tools/Build/logs
 /Externals
 /VolumeCalculator.sln.DotSettings.user
