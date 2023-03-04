@@ -7,6 +7,7 @@ using Primitives;
 using Primitives.Logging;
 using Primitives.Settings.Integration;
 using ProcessingUtils;
+using SixLabors.ImageSharp.Formats.Jpeg;
 
 namespace ExtIntegration.RequestSenders
 {
@@ -90,9 +91,9 @@ namespace ExtIntegration.RequestSenders
 				if (_includeObjectPhoto)
 				{
 					using (var memoryStream = new MemoryStream())
-					using (var bitmap = ImageUtils.GetBitmapFromImageData(resultData.ObjectPhoto))
+					using (var image = ImageUtils.GetImageFromImageData(resultData.ObjectPhoto))
 					{
-						bitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
+						image.Save(memoryStream, new JpegEncoder { Quality = 80 });
 
 						var remoteFileName = Path.Combine(_baseDirectory, $"{fileName}.png");
 

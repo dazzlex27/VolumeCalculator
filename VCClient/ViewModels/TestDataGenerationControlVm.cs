@@ -5,6 +5,7 @@ using FrameProviders;
 using GuiCommon;
 using Primitives.Logging;
 using Primitives.Settings;
+using VCServer;
 
 namespace VCClient.ViewModels
 {

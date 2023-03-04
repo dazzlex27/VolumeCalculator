@@ -1,4 +1,4 @@
-﻿namespace FrameProviders
+﻿namespace Primitives.CameraParams
 {
 	public abstract class CameraParams
 	{

@@ -1,8 +1,8 @@
 ﻿using Primitives;
 using Primitives.Logging;
 using ProcessingUtils;
+using SixLabors.ImageSharp;
 using System;
-using System.Drawing;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -59,13 +59,9 @@ namespace DeviceIntegration.Cameras
 					if (response.StatusCode != HttpStatusCode.OK)
 						return null;
 
-					using (var inputStream = await response.Content.ReadAsStreamAsync())
-					{
-						using (var bmp = new Bitmap(inputStream))
-						{
-							return ImageUtils.GetImageDataFromBitmap(bmp);
-						}
-					}
+					using var inputStream = await response.Content.ReadAsStreamAsync();
+					using var image = Image.Load(inputStream);
+					return ImageUtils.GetImageDataFromImage(image);
 				}
 			}
 			catch (Exception ex)

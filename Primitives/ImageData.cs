@@ -19,5 +19,10 @@
 			Data = data;
 			BytesPerPixel = bytesPerPixel;
 		}
+
+		public ImageData(int width, int height, byte bytesPerPixel)
+			: this(width, height, new byte[width * height * bytesPerPixel], bytesPerPixel)
+		{
+		}
 	}
 }

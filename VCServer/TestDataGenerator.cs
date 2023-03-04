@@ -2,13 +2,14 @@
 using System.IO;
 using System.Text;
 using System.Timers;
+using FrameProcessor;
 using FrameProviders;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 using ProcessingUtils;
 
-namespace FrameProcessor
+namespace VCServer
 {
 	public class TestDataGenerator
 	{

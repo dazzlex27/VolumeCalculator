@@ -1,7 +1,7 @@
-﻿using System.Drawing;
-using System.Drawing.Imaging;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
-using System.Runtime.InteropServices;
 
 namespace Primitives
 {
@@ -30,32 +30,23 @@ namespace Primitives
 			if (File.Exists(filepath))
 				File.Delete(filepath);
 
-			using (var fs = File.AppendText(filepath))
-			{
-				fs.WriteLine(depthMap.Width);
-				fs.WriteLine(depthMap.Height);
+			using var fs = File.AppendText(filepath);
+			fs.WriteLine(depthMap.Width);
+			fs.WriteLine(depthMap.Height);
 
-				foreach(var pixel in depthMap.Data)
-					fs.WriteLine(pixel);
-			}
+			foreach (var pixel in depthMap.Data)
+				fs.WriteLine(pixel);
 		}
 
-		public static void SaveDepthMapImageToFile(DepthMap map, string filepath, short minDepth, short maxDepth, short cutOffDepth)
+		public static void SaveDepthMapImageToFile(DepthMap map, string filepath,
+			short minDepth, short maxDepth, short cutOffDepth)
 		{
-			var bitmap = new Bitmap(map.Width, map.Height, PixelFormat.Format8bppIndexed);
-
-			var fullRect = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
-			var bmpData = bitmap.LockBits(fullRect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
-
 			var copyMap = new DepthMap(map);
 			FilterDepthMapByDepthtLimit(copyMap, cutOffDepth);
 
-			var data = GetColorizedDepthMapData(copyMap, minDepth, maxDepth);
-			Marshal.Copy(data, 0, bmpData.Scan0, data.Length);
-
-			bitmap.UnlockBits(bmpData);
-
-			bitmap.Save(filepath);
+			var filteredData = GetColorizedDepthMapData(copyMap, minDepth, maxDepth);
+			var image = Image.LoadPixelData<L8>(filteredData, map.Width, map.Height);
+			image.Save(filepath);
 		}
 
 		public static byte[] GetColorizedDepthMapData(DepthMap map, short minDepth, short maxDepth)
@@ -92,17 +83,13 @@ namespace Primitives
 			return (byte) (255 - 255 * (depth - minValue) / maxValue);
 		}
 
-		public static byte[] GetColorizedDepthMapDataBgr(DepthMap map, short minDepth, short maxDepth)
+		public static byte[] GetGrayscaleDepthMapDataBgr(DepthMap map, short minDepth, short maxDepth)
 		{
-			var resultBytes = new byte[map.Data.Length * 3];
+			var resultBytes = new byte[map.Data.Length];
 
 			var byteIndex = 0;
 			foreach (var depthValue in map.Data)
-			{
 				resultBytes[byteIndex++] = GetIntensityFromDepth(depthValue, minDepth, maxDepth);
-				resultBytes[byteIndex++] = GetIntensityFromDepth(depthValue, minDepth, maxDepth);
-				resultBytes[byteIndex++] = GetIntensityFromDepth(depthValue, minDepth, maxDepth);
-			}
 
 			return resultBytes;
 		}

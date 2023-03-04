@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VCClient", "VCClient\VCClient.csproj", "{08B98C3A-C054-464C-9594-F4EB7F7B2333}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VCClient", "VCClient\VCClient.csproj", "{08B98C3A-C054-464C-9594-F4EB7F7B2333}"
 	ProjectSection(ProjectDependencies) = postProject
 		{90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B} = {90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B}
 		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB} = {EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}
@@ -11,11 +11,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VCClient", "VCClient\VCClie
 		{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D} = {0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VCConfigurator", "VCConfigurator\VCConfigurator.csproj", "{531B0C63-A397-4BC0-9BA3-6F35B440FDE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VCConfigurator", "VCConfigurator\VCConfigurator.csproj", "{531B0C63-A397-4BC0-9BA3-6F35B440FDE4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "D435FrameProvider", "D435FrameProvider\D435FrameProvider.vcxproj", "{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameProviders", "FrameProviders\FrameProviders.csproj", "{F9973DC5-0D7C-4805-A622-E99492CD3714}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FrameProviders", "FrameProviders\FrameProviders.csproj", "{F9973DC5-0D7C-4805-A622-E99492CD3714}"
 	ProjectSection(ProjectDependencies) = postProject
 		{90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B} = {90C0CC4F-E7D1-4A68-801B-FA4BDFC4A55B}
 		{0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D} = {0AF4FDDC-71DE-4BA6-9543-D8D78AECD84D}
@@ -32,15 +32,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DepthMapProcessorTests", "T
 		{EB8889AF-FD13-4D2E-8FFC-71FE18D237BB} = {EB8889AF-FD13-4D2E-8FFC-71FE18D237BB}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCalculatorTests", "Tests\VolumeCalculatorTests\VolumeCalculatorTests.csproj", "{4EBE3F89-1320-4565-8F28-C9B6AB9C0797}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VolumeCalculationRunner", "Tests\VolumeCalculationRunner\VolumeCalculationRunner.csproj", "{6F312ABD-BCA5-4F2D-A5CE-BACCE2A47EDE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCalculationRunner", "Tests\VolumeCalculationRunner\VolumeCalculationRunner.csproj", "{6F312ABD-BCA5-4F2D-A5CE-BACCE2A47EDE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceIntegration", "DeviceIntegration\DeviceIntegration.csproj", "{508AFE7E-B27B-4245-8FE3-A04944678115}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceIntegration", "DeviceIntegration\DeviceIntegration.csproj", "{508AFE7E-B27B-4245-8FE3-A04944678115}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FrameProcessor", "FrameProcessor\FrameProcessor.csproj", "{B824300E-8FF0-4DD7-BD9D-1483E86025D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameProcessor", "FrameProcessor\FrameProcessor.csproj", "{B824300E-8FF0-4DD7-BD9D-1483E86025D4}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtIntegration", "ExtIntegration\ExtIntegration.csproj", "{847C984F-67EB-4391-89C3-E70671DB5570}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExtIntegration", "ExtIntegration\ExtIntegration.csproj", "{847C984F-67EB-4391-89C3-E70671DB5570}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utils", "Utils", "{6662A328-9321-4460-B32A-D8D20A42541C}"
 EndProject
@@ -48,7 +46,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VersionWriter", "Utils\Vers
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WmsEmulator", "Utils\WmsEmulator\WmsEmulator.csproj", "{16A200EE-28EC-4F21-BC3E-6D55CC1C9326}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessingUtils", "ProcessingUtils\ProcessingUtils.csproj", "{7F073083-EEC1-4AB9-8B4B-E68C944715A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessingUtils", "ProcessingUtils\ProcessingUtils.csproj", "{7F073083-EEC1-4AB9-8B4B-E68C944715A3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComTestApp", "Utils\ComTestApp\ComTestApp.csproj", "{49898DC6-FF45-4CD7-84ED-DD92489ADB2D}"
 EndProject
@@ -70,9 +68,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CameraTest", "Utils\CameraT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSender", "Utils\SqlSender\SqlSender.csproj", "{456CB7CB-E45D-427F-B072-DDB0BF7FED09}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GuiCommon", "GuiCommon\GuiCommon.csproj", "{9D608412-EDB0-4010-8E90-7E45F0607CC4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GuiCommon", "GuiCommon\GuiCommon.csproj", "{9D608412-EDB0-4010-8E90-7E45F0607CC4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VCServer", "VCServer\VCServer.csproj", "{B7303E0E-BC1C-4AF6-B253-1B73F18E7C3F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VCServer", "VCServer\VCServer.csproj", "{B7303E0E-BC1C-4AF6-B253-1B73F18E7C3F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeCalculatorTests", "Tests\VolumeCalculatorTests\VolumeCalculatorTests.csproj", "{F3FE15EF-C78A-4F5D-B863-FAE0A117173D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -188,6 +188,10 @@ Global
 		{B7303E0E-BC1C-4AF6-B253-1B73F18E7C3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7303E0E-BC1C-4AF6-B253-1B73F18E7C3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7303E0E-BC1C-4AF6-B253-1B73F18E7C3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3FE15EF-C78A-4F5D-B863-FAE0A117173D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3FE15EF-C78A-4F5D-B863-FAE0A117173D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3FE15EF-C78A-4F5D-B863-FAE0A117173D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3FE15EF-C78A-4F5D-B863-FAE0A117173D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -208,6 +212,7 @@ Global
 		{284E3272-FF0A-489A-89C1-A762F4E84E0C} = {6662A328-9321-4460-B32A-D8D20A42541C}
 		{BED4B3ED-5072-4D4A-B4D5-BEC986101254} = {6662A328-9321-4460-B32A-D8D20A42541C}
 		{456CB7CB-E45D-427F-B072-DDB0BF7FED09} = {6662A328-9321-4460-B32A-D8D20A42541C}
+		{F3FE15EF-C78A-4F5D-B863-FAE0A117173D} = {6AF5FFB4-9230-437F-B802-E0122EB628D3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2C1AE4EA-452B-4AFD-A6A6-98D4514E4441}

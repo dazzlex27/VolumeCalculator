@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
-using System.Runtime.InteropServices;
 using Primitives;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Advanced;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace ProcessingUtils
 {
@@ -11,27 +12,26 @@ namespace ProcessingUtils
 	{
 		public static ImageData ReadImageDataFromFile(string filepath)
 		{
-			var bitmap = new Bitmap(filepath);
+			var image = Image.Load(filepath);
 
-			return GetImageDataFromBitmap(bitmap);
+			return GetImageDataFromImage(image);
 		}
 
-		public static void SaveImageDataToFile(ImageData image, string filepath)
+		public static void SaveImageDataToFile(ImageData imageData, string filepath)
 		{
-			var bitmap = GetBitmapFromImageData(image);
-
-			bitmap.Save(filepath);
+			var image = GetImageFromImageData(imageData);
+			image.Save(filepath);
 		}
 
-		public static string GetBase64StringFromImageData(ImageData image)
+		public static string GetBase64StringFromImageData(ImageData imageData)
 		{
-			if (image == null)
+			if (imageData == null)
 				return string.Empty;
 
-			var bitmap = GetBitmapFromImageData(image);
-
+			var image = GetImageFromImageData(imageData);
+			var encoder = new JpegEncoder { Quality = 80 };
 			var stream = new MemoryStream();
-			bitmap.Save(stream, ImageFormat.Jpeg);
+			image.Save(stream, encoder);
 			var bytes = stream.ToArray();
 
 			return Convert.ToBase64String(bytes);
@@ -44,66 +44,43 @@ namespace ProcessingUtils
 
 			var bytes = Convert.FromBase64String(base64String);
 			var stream = new MemoryStream(bytes);
-			var bmp = (Bitmap)Image.FromStream(stream);
+			var image = Image.Load(stream);
 
-			return GetImageDataFromBitmap(bmp);
+			return GetImageDataFromImage(image);
 		}
 
-		public static Bitmap GetBitmapFromImageData(ImageData image)
+		public static Image GetImageFromImageData(ImageData imageData)
 		{
-			var format = GetPixelFormatFromBpp(image.BytesPerPixel);
+			var bpp = imageData.BytesPerPixel;
+			var data = imageData.Data;
+			var w = imageData.Width;
+			var h = imageData.Height;
 
-			var bitmap = new Bitmap(image.Width, image.Height, format);
-
-			var fullRect = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
-			var bmpData = bitmap.LockBits(fullRect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
-
-			Marshal.Copy(image.Data, 0, bmpData.Scan0, image.Data.Length);
-
-			bitmap.UnlockBits(bmpData);
-
-			return bitmap;
-		}
-
-		public static ImageData GetImageDataFromBitmap(Bitmap bitmap)
-		{
-			byte bytesPerPixel = 1;
-			switch (bitmap.PixelFormat)
-			{
-				case PixelFormat.Format24bppRgb:
-					bytesPerPixel = 3;
-					break;
-				case PixelFormat.Format32bppArgb:
-					bytesPerPixel = 4;
-					break;
-			}
-
-			var data = new byte[bitmap.Width * bitmap.Height * bytesPerPixel];
-			var image = new ImageData(bitmap.Width, bitmap.Height, data, bytesPerPixel);
-
-			var fullRect = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
-			var bmpData = bitmap.LockBits(fullRect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
-
-			Marshal.Copy(bmpData.Scan0, image.Data, 0, image.Data.Length);
-
-			bitmap.UnlockBits(bmpData);
-
-			return image;
-		}
-
-		private static PixelFormat GetPixelFormatFromBpp(int bytesPerPixel)
-		{
-			switch (bytesPerPixel)
+			switch (bpp)
 			{
 				case 1:
-					return PixelFormat.Format8bppIndexed;
+					return Image.LoadPixelData<L8>(data, w, h);
 				case 3:
-					return PixelFormat.Format24bppRgb;
+					return Image.LoadPixelData<Bgr24>(data, w, h);
 				case 4:
-					return PixelFormat.Format32bppArgb;
+					return Image.LoadPixelData<Bgra32>(data, w, h);
 				default:
-					return PixelFormat.Canonical;
+					throw new NotImplementedException(
+						$"Bytes per pixel value {bpp} is not supported as a pixel format");
 			}
+		}
+
+		public static ImageData GetImageDataFromImage(Image image)
+		{
+			int bytesPerPixel = image.PixelType.BitsPerPixel / 8;
+			var imageData = new ImageData(image.Width, image.Height, (byte)bytesPerPixel);
+
+			// TODO: this copies the entire image at once
+			// TODO: copy one row at a time
+			var visitor = new PixelCopyVisitor(imageData.Data);
+			image.AcceptVisitor(visitor); // copy pixel data
+			
+			return imageData;
 		}
 	}
 }

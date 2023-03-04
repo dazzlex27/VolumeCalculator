@@ -11,7 +11,7 @@ namespace VolumeCalculatorTests
 		[Test]
 		public void FilterDepthMapByMaxDepth_WhenGivenA1x1DepthMap_ReturnsMapWithAllZeroes()
 		{
-			var depthMap = new DepthMap(1, 1, new short[] {30});
+			var depthMap = new DepthMap(1, 1, new short[] { 30 });
 			DepthMapUtils.FilterDepthMapByDepthtLimit(depthMap, 20);
 
 			Assert.IsTrue(depthMap.Data.All(a => a == 0));

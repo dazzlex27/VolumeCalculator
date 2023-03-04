@@ -1,4 +1,8 @@
-﻿using System;
+﻿using ExtIntegration.RequestSenders;
+using Primitives;
+using Primitives.Logging;
+using Primitives.Settings.Integration;
+using System;
 using System.Threading.Tasks;
 
 namespace FTPSender
@@ -44,8 +48,22 @@ namespace FTPSender
 				return;
 			}
 
-			var sender = new FtpSender(host, port, login, password, true);
-			await sender.UploadAsync();
+			var settings = new FtpRequestSettings(true, host, port, login, password, true, "istest", false, false);
+			using var sender = new FtpRequestSender(new ConsoleLogger(), settings);
+			try
+			{
+				var result = new CalculationResult(DateTime.Now, "test", 0, WeightUnits.Kg,
+					0, 0, 0, 0, 0, "test", false);
+				var imageData = new ImageData(40, 30, 3);
+				var resultData = new CalculationResultData(result, CalculationStatus.Successful, imageData);
+
+				await sender.ConnectAsync();
+				await sender.SendAsync(resultData);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Failed to upload! {ex}");
+			}
 
 			Console.WriteLine("Application finished");
 		}

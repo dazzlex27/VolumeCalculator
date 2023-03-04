@@ -1,18 +1,24 @@
-﻿using FrameProcessor;
-using NUnit.Framework;
+using FrameProcessor;
 using Primitives;
 using Primitives.Logging;
 
 namespace VolumeCalculatorTests
 {
 	[TestFixture]
-	internal class DepthMapProcessorTest
+	internal class DepthMapProcessorTest : IDisposable
 	{
-		private readonly ILogger _logger;
+		private ILogger _logger;
 
-		public DepthMapProcessorTest()
+		[SetUp]
+		public void Setup()
 		{
 			_logger = new DummyLogger();
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			Dispose();
 		}
 
 		[Test]
@@ -23,12 +29,10 @@ namespace VolumeCalculatorTests
 			var mapData = new short[mapWidth * mapHeight];
 			var emptyMap = new DepthMap(mapWidth, mapHeight, mapData);
 
-			using (var processor = new DepthMapProcessor(_logger,
-				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams()))
-			{
-				var floorDepth = processor.CalculateFloorDepth(emptyMap);
-				Assert.IsTrue(floorDepth == 0);
-			}
+			using var processor = new DepthMapProcessor(_logger,
+				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
+			var floorDepth = processor.CalculateFloorDepth(emptyMap);
+			Assert.IsTrue(floorDepth == 0);
 		}
 
 		[Test]
@@ -41,12 +45,10 @@ namespace VolumeCalculatorTests
 			mapData[0] = validDepthValue;
 			var map = new DepthMap(mapWidth, mapHeight, mapData);
 
-			using (var processor = new DepthMapProcessor(_logger, 
-				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams()))
-			{
-				var floorDepth = processor.CalculateFloorDepth(map);
-				Assert.IsTrue(floorDepth == validDepthValue);
-			}
+			using var processor = new DepthMapProcessor(_logger,
+				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
+			var floorDepth = processor.CalculateFloorDepth(map);
+			Assert.IsTrue(floorDepth == validDepthValue);
 		}
 
 		[Test]
@@ -61,12 +63,10 @@ namespace VolumeCalculatorTests
 			mapData[2] = 2;
 			var map = new DepthMap(mapWidth, mapHeight, mapData);
 
-			using (var processor = new DepthMapProcessor(_logger, 
-				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams()))
-			{
-				var floorDepth = processor.CalculateFloorDepth(map);
-				Assert.IsTrue(floorDepth == modeDepthValue);
-			}
+			using var processor = new DepthMapProcessor(_logger,
+				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
+			var floorDepth = processor.CalculateFloorDepth(map);
+			Assert.IsTrue(floorDepth == modeDepthValue);
 		}
 
 		[Test]
@@ -75,13 +75,11 @@ namespace VolumeCalculatorTests
 			var image = new ImageData(1, 1, new byte[3], 3);
 			var map = new DepthMap(1, 1, new short[1]);
 
-			using (var processor = new DepthMapProcessor(_logger,
-				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams()))
-			{
-				var data = new AlgorithmSelectionData(map, image, 0, true, true, true, "");
-				var algorithmSelectionResult = processor.SelectAlgorithm(data);
-				Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoObjectFound);
-			}
+			using var processor = new DepthMapProcessor(_logger,
+				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
+			var data = new AlgorithmSelectionData(map, image, 0, true, true, true, "");
+			var algorithmSelectionResult = processor.SelectAlgorithm(data);
+			Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoObjectFound);
 		}
 
 		[Test]
@@ -90,13 +88,11 @@ namespace VolumeCalculatorTests
 			var image = new ImageData(1, 1, new byte[3], 3);
 			var map = new DepthMap(1, 1, new short[1]);
 
-			using (var processor = new DepthMapProcessor(_logger,
-				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams()))
-			{
-				var data = new AlgorithmSelectionData(map, image, 0, false, false, false, "");
-				var algorithmSelectionResult = processor.SelectAlgorithm(data);
-				Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoAlgorithmsAllowed);
-			}
+			using var processor = new DepthMapProcessor(_logger,
+				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
+			var data = new AlgorithmSelectionData(map, image, 0, false, false, false, "");
+			var algorithmSelectionResult = processor.SelectAlgorithm(data);
+			Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoAlgorithmsAllowed);
 		}
 
 		[Test]
@@ -105,13 +101,11 @@ namespace VolumeCalculatorTests
 			var image = new ImageData(1, 1, new byte[3], 3);
 			var map = new DepthMap(1, 1, new short[1]);
 
-			using (var processor = new DepthMapProcessor(_logger,
-				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams()))
-			{
-				var data = new AlgorithmSelectionData(map, image, 0, true, false, false, "");
-				var algorithmSelectionResult = processor.SelectAlgorithm(data);
-				Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoObjectFound);
-			}
+			using var processor = new DepthMapProcessor(_logger,
+				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
+			var data = new AlgorithmSelectionData(map, image, 0, true, false, false, "");
+			var algorithmSelectionResult = processor.SelectAlgorithm(data);
+			Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoObjectFound);
 		}
 
 		[Test]
@@ -120,13 +114,11 @@ namespace VolumeCalculatorTests
 			var image = new ImageData(1, 1, new byte[3], 3);
 			var map = new DepthMap(1, 1, new short[1]);
 
-			using (var processor = new DepthMapProcessor(_logger,
-				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams()))
-			{
-				var data = new AlgorithmSelectionData(map, image, 0, false, true, false, "");
-				var algorithmSelectionResult = processor.SelectAlgorithm(data);
-				Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoObjectFound);
-			}
+			using var processor = new DepthMapProcessor(_logger,
+				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
+			var data = new AlgorithmSelectionData(map, image, 0, false, true, false, "");
+			var algorithmSelectionResult = processor.SelectAlgorithm(data);
+			Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoObjectFound);
 		}
 
 		[Test]
@@ -135,25 +127,26 @@ namespace VolumeCalculatorTests
 			var image = new ImageData(1, 1, new byte[3], 3);
 			var map = new DepthMap(1, 1, new short[1]);
 
-			using (var processor = new DepthMapProcessor(_logger,
-				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams()))
-			{
-				var data = new AlgorithmSelectionData(map, image, 0, false, false, true, "");
-				var algorithmSelectionResult = processor.SelectAlgorithm(data);
-				Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoObjectFound);
-			}
+			using var processor = new DepthMapProcessor(_logger,
+				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
+			var data = new AlgorithmSelectionData(map, image, 0, false, false, true, "");
+			var algorithmSelectionResult = processor.SelectAlgorithm(data);
+			Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoObjectFound);
 		}
 
 		[Test]
 		public void SelectAlgorithm_WhenDataIsInvalid_ReturnsDataIsInvalidResult()
 		{
-			using (var processor = new DepthMapProcessor(_logger,
-				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams()))
-			{
-				var data = new AlgorithmSelectionData(null, null, 0, false, false, true, "");
-				var algorithmSelectionResult = processor.SelectAlgorithm(data);
-				Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.DataIsInvalid);
-			}
+			using var processor = new DepthMapProcessor(_logger,
+				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
+			var data = new AlgorithmSelectionData(null, null, 0, false, false, true, "");
+			var algorithmSelectionResult = processor.SelectAlgorithm(data);
+			Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.DataIsInvalid);
+		}
+
+		public void Dispose()
+		{
+			_logger?.Dispose();
 		}
 	}
 }

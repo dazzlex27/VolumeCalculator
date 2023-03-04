@@ -7,6 +7,9 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using DeviceIntegration.Cameras;
+using Primitives.Logging;
+using GuiCommon;
 
 namespace CameraTest
 {
@@ -40,7 +43,7 @@ namespace CameraTest
 			InitializeComponent();
 
 			var httpClient = new HttpClient();
-			_controller = new Proline2520Controller(httpClient);
+			_controller = new Proline2520Controller(new DummyLogger(), httpClient);
 
 			var settings = Task.Run(ReadSettingsFromFileAsync).Result;
 			var ipCameraSettings = settings.IoSettings.IpCameraSettings;
@@ -137,8 +140,8 @@ namespace CameraTest
 				var ip = IpBox.Text;
 				var login = LoginBox.Text;
 				var password = PasswordBox.Text;
-				var status = await _controller.InitializeAsync(ip, login, password);
-				MessageBox.Show(status.ToString());
+				await _controller.ConnectAsync(ip, login, password);
+				MessageBox.Show("OK");
 			}
 			catch(Exception ex)
 			{
@@ -192,7 +195,7 @@ namespace CameraTest
 			{
 				var index = int.Parse(PresetBox.Text);
 				var presetIndex = index - 1;
-				var presetOk = await _controller.SetPresetAsync(presetIndex);
+				var presetOk = await _controller.GoToPresetAsync(presetIndex);
 				if (!presetOk)
 					MessageBox.Show($"Preset {index} was not found");
 			}

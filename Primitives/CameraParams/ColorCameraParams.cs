@@ -1,4 +1,6 @@
-﻿namespace FrameProviders
+﻿using Primitives.CameraParams;
+
+namespace FrameProviders
 {
 	public class ColorCameraParams : CameraParams
 	{

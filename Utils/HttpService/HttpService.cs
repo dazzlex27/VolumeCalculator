@@ -84,10 +84,8 @@ namespace HttpService
 			string documentContents;
 			using (Stream receiveStream = request.InputStream)
 			{
-				using (StreamReader readStream = new StreamReader(receiveStream, Encoding.UTF8))
-				{
-					documentContents = readStream.ReadToEnd();
-				}
+				using var readStream = new StreamReader(receiveStream, Encoding.UTF8);
+				documentContents = readStream.ReadToEnd();
 			}
 			return documentContents;
 		}
@@ -105,11 +103,9 @@ namespace HttpService
 					new XElement("comment", "this is a sample calculation result")
 				));
 
-			using (var writer = new StringWriter())
-			{
-				doc.Save(writer);
-				return writer.ToString();
-			}
+			using var writer = new StringWriter();
+			doc.Save(writer);
+			return writer.ToString();
 		}
 	}
 }
