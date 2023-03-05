@@ -82,26 +82,25 @@ namespace ExtIntegration
 
 					var safeWeight = result.ObjectWeight.ToString(CultureInfo.InvariantCulture);
 
+					var resultString = new StringBuilder();
+					resultString.Append(calculationIndex);
+					resultString.Append($@"{GlobalConstants.CsvSeparator}{result.CalculationTime.ToShortDateString()}");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}{result.CalculationTime.ToShortTimeString()}");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}{safeName}");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}{safeWeight}");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}{result.UnitCount}");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}{result.ObjectLengthMm}");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}{result.ObjectWidthMm}");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}{result.ObjectHeightMm}");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}{result.ObjectVolumeMm}");
+					resultString.Append($@"{GlobalConstants.CsvSeparator}{result.CalculationComment}");
+					if (result.PalletSubtractionEnabled)
+						resultString.Append($@"{GlobalConstants.CsvSeparator}pallet");
+
 					Directory.CreateDirectory(_outputFolderPath);
-					using (var resultFile = new StreamWriter(FullOutputPath, true, Encoding.Default))
-					{
-						var resultString = new StringBuilder();
-						resultString.Append(calculationIndex);
-						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.CalculationTime.ToShortDateString()}");
-						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.CalculationTime.ToShortTimeString()}");
-						resultString.Append($@"{GlobalConstants.CsvSeparator}{safeName}");
-						resultString.Append($@"{GlobalConstants.CsvSeparator}{safeWeight}");
-						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.UnitCount}");
-						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.ObjectLengthMm}");
-						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.ObjectWidthMm}");
-						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.ObjectHeightMm}");
-						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.ObjectVolumeMm}");
-						resultString.Append($@"{GlobalConstants.CsvSeparator}{result.CalculationComment}");
-						if (result.PalletSubtractionEnabled)
-							resultString.Append($@"{GlobalConstants.CsvSeparator}pallet");	
-						resultFile.WriteLine(resultString);
-						resultFile.Flush();
-					}
+					using var resultFile = new StreamWriter(FullOutputPath, true, Encoding.Default);
+					resultFile.WriteLine(resultString);
+					resultFile.Flush();
 				}
 				catch (Exception ex)
 				{

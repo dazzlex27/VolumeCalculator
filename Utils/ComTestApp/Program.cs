@@ -16,6 +16,7 @@ namespace ComTestApp
 	{
 		private static void Main()
 		{
+			// TODO: turn this into proper device tests
 			var logger = new ConsoleLogger();
 
 			//TestOkaScales(logger);
@@ -141,12 +142,12 @@ namespace ComTestApp
 				portToUse = Console.ReadLine();
 			}
 
-			return DeviceIntegrationCommon.CreateRequestedScales(id, logger, portToUse, minWeight);
+			return DeviceFactory.CreateRequestedScales(id, logger, portToUse, minWeight);
 		}
 
 		private static void TestKeUsb24R(ILogger logger)
 		{
-			var ioCircuit = DeviceIntegrationCommon.CreateRequestedIoCircuit("keusb24r", logger, "COM5");
+			var ioCircuit = DeviceFactory.CreateRequestedIoCircuit("keusb24r", logger, "COM5");
 			ioCircuit.WriteData(",AFR,0");
 			while (true)
 			{

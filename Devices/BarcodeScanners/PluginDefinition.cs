@@ -9,8 +9,8 @@ namespace BarcodeScanners
 	{
 		public void Initialize()
 		{
-			DeviceIntegrationCommon.RegisterBarcodeScanner("generic", typeof(GenericSerialPortBarcodeScanner));
-			DeviceIntegrationCommon.RegisterBarcodeScanner("keyboard", typeof(GenericKeyboardBarcodeScanner));
+			DeviceRegistrator.RegisterBarcodeScanner("generic", typeof(GenericSerialPortBarcodeScanner));
+			DeviceRegistrator.RegisterBarcodeScanner("keyboard", typeof(GenericKeyboardBarcodeScanner));
 		}
 	}
 }

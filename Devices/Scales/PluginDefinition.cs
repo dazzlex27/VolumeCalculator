@@ -10,11 +10,11 @@ namespace Scales
 	{
 		public void Initialize()
 		{
-			DeviceIntegrationCommon.RegisterScales("fakescales", typeof(FakeScales));
-			DeviceIntegrationCommon.RegisterScales("massak", typeof(MassaKScales));
-			DeviceIntegrationCommon.RegisterScales("casm", typeof(CasMScales));
-			DeviceIntegrationCommon.RegisterScales("ci2001a", typeof(Ci2001AScales));
-			DeviceIntegrationCommon.RegisterScales("oka", typeof(OkaScales));
+			DeviceRegistrator.RegisterScales("fakescales", typeof(FakeScales));
+			DeviceRegistrator.RegisterScales("massak", typeof(MassaKScales));
+			DeviceRegistrator.RegisterScales("casm", typeof(CasMScales));
+			DeviceRegistrator.RegisterScales("ci2001a", typeof(Ci2001AScales));
+			DeviceRegistrator.RegisterScales("oka", typeof(OkaScales));
 		}
 	}
 }

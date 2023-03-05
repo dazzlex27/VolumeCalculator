@@ -8,6 +8,7 @@ using ExtIntegration.RequestSenders;
 using ExtIntegration.RequestSenders.SqlSenders;
 using Primitives;
 using Primitives.Logging;
+using Primitives.Settings;
 using Primitives.Settings.Integration;
 
 namespace ExtIntegration
@@ -22,11 +23,13 @@ namespace ExtIntegration
 		private readonly Queue<HttpRequestData> _activeHttpRequests;
 		private readonly List<IRequestSender> _requestSenders;
 
-		public RequestProcessor(ILogger logger, HttpClient httpClient, IntegrationSettings settings)
+		public RequestProcessor(ILogger logger, HttpClient httpClient, IntegrationSettings settings, string outputPath)
 		{
 			_logger = logger;
 			_requestSenders = new List<IRequestSender>();
 			_activeHttpRequests = new Queue<HttpRequestData>(1);
+
+			ExcelFileProcessor = new CalculationResultFileProcessor(logger, outputPath);
 
 			_logger.LogInfo("Creating request processor...");
 
@@ -54,6 +57,8 @@ namespace ExtIntegration
 			if (settings.FtpRequestSettings.EnableRequests)
 				_requestSenders.Add(new FtpRequestSender(_logger, settings.FtpRequestSettings));
 		}
+
+		public CalculationResultFileProcessor ExcelFileProcessor { get; }
 
 		public async Task StartAsync()
 		{
@@ -91,12 +96,14 @@ namespace ExtIntegration
 
 		public async Task SendRequestsAsync(CalculationResultData resultData)
 		{
+			ExcelFileProcessor.WriteCalculationResult(resultData, GlobalConstants.CountersFileName);
+
 			if (_httpRequestHandler != null)
 			{
 				while (_activeHttpRequests.Any())
 				{
 					var httpContext = _activeHttpRequests.Dequeue();
-					_httpRequestHandler.SendResponse(httpContext, resultData);
+					await _httpRequestHandler.SendResponse(httpContext, resultData);
 				}
 			}
 
@@ -116,6 +123,11 @@ namespace ExtIntegration
 					}
 				});
 			}
+		}
+
+		public void UpdateSettings(ApplicationSettings settings)
+		{
+			ExcelFileProcessor.UpdateSettings(settings);
 		}
 
 		public void UpdateCalculationStatus(CalculationStatus status)

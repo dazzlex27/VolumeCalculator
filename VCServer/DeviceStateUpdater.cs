@@ -1,29 +1,26 @@
 ﻿using System;
 using System.Timers;
-using DeviceIntegration.IoCircuits;
-using DeviceIntegration.RangeMeters;
 using Primitives;
 
 namespace VCServer
 {
-	public class StateController : IDisposable
+	public sealed class DeviceStateUpdater : IDisposable
 	{
-		private readonly IIoCircuit _circuit;
-		private readonly IRangeMeter _rangeMeter;
+		private readonly DeviceSet _deviceSet;
 		private readonly Timer _laserUpdateTimer;
 		
 		private DashboardStatus _dashStatus;
 
-		public StateController(IIoCircuit circuit, IRangeMeter rangeMeter)
+		public DeviceStateUpdater(DeviceSet deviceSet)
 		{
-			_circuit = circuit;
-			_rangeMeter = rangeMeter;
+			_deviceSet = deviceSet;
 
-			if (_rangeMeter == null)
+			if (_deviceSet.RangeMeter == null)
 				return;
 			
 			_laserUpdateTimer = new Timer(TimeSpan.FromSeconds(120).TotalMilliseconds) {AutoReset = true};
 			_laserUpdateTimer.Elapsed += OnLaserUpdateTimerElapsed;
+			_laserUpdateTimer.Start();
 		}
 		
 		public void Dispose()
@@ -31,7 +28,7 @@ namespace VCServer
 			_laserUpdateTimer?.Dispose();
 		}
 
-		public void Update(CalculationStatus status)
+		public void UpdateCalculationStatus(CalculationStatus status)
 		{
 			var dashStatus = StatusUtils.GetDashboardStatus(status);
 			_dashStatus = dashStatus;
@@ -54,10 +51,27 @@ namespace VCServer
 					break;
 			}
 		}
-		
+
+		public void TogglePause(bool pause)
+		{
+			_deviceSet.Scales?.TogglePause(pause);
+
+			var scanners = _deviceSet.Scanners;
+			if (scanners != null && scanners.Count > 0)
+			{
+				foreach (var scanner in scanners)
+					scanner?.TogglePause(pause);
+			}
+		}
+
+		public void ResetWeight()
+		{
+			_deviceSet.Scales?.ResetWeight();
+		}
+
 		private void UpdateLaser(bool enable)
 		{
-			_rangeMeter?.ToggleLaser(enable);
+			_deviceSet.RangeMeter?.ToggleLaser(enable);
 			//_circuit?.ToggleRelay(1, enable);
 		}
 
@@ -102,23 +116,23 @@ namespace VCServer
 		
 		private void ToggleReady()
 		{
-			_circuit?.ToggleRelay(2, false);
-			_circuit?.ToggleRelay(3, true);
-			_circuit?.ToggleRelay(4, true);
+			_deviceSet.IoCircuit?.ToggleRelay(2, false);
+			_deviceSet.IoCircuit?.ToggleRelay(3, true);
+			_deviceSet.IoCircuit?.ToggleRelay(4, true);
 		}
 
 		private void ToggleError()
 		{
-			_circuit?.ToggleRelay(2, true);
-			_circuit?.ToggleRelay(3, true);
-			_circuit?.ToggleRelay(4, false);
+			_deviceSet.IoCircuit?.ToggleRelay(2, true);
+			_deviceSet.IoCircuit?.ToggleRelay(3, true);
+			_deviceSet.IoCircuit?.ToggleRelay(4, false);
 		}
 
 		private void ToggleMeasuring()
 		{
-			_circuit?.ToggleRelay(2, true);
-			_circuit?.ToggleRelay(3, false);
-			_circuit?.ToggleRelay(4, true);
+			_deviceSet.IoCircuit?.ToggleRelay(2, true);
+			_deviceSet.IoCircuit?.ToggleRelay(3, false);
+			_deviceSet.IoCircuit?.ToggleRelay(4, true);
 		}
 	}
 }

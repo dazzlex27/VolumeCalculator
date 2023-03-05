@@ -20,14 +20,12 @@ namespace VCClient.GUI
 			DataContext = _vm;
 		}
 
-		private async void OnWindowClosing(object sender, CancelEventArgs e)
+		private void OnWindowClosing(object sender, CancelEventArgs e)
 		{
 			try
 			{
-				if (!await _vm.ShutDownAsync(_vm.ShutDownByDefault, false))
+				if (!_vm.ShutDown(_vm.ShutDownByDefault, false))
 					e.Cancel = true;
-
-				_vm.Dispose();
 			}
 			catch (Exception ex) 
 			{

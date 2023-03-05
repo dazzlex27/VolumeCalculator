@@ -14,7 +14,7 @@ namespace VCServer
 	{
 		private readonly ILogger _logger;
 		private readonly DepthMapProcessor _dmProcessor;
-		private readonly HardwareManager _deviceManager;
+		private readonly DeviceSet _deviceManager;
 		
 		private readonly Timer _autoStartingCheckingTimer;
 
@@ -46,11 +46,11 @@ namespace VCServer
 		private bool _waitingForReset;
 
 		public CalculationRequestHandler(ILogger logger, DepthMapProcessor dmProcessor,
-			HardwareManager deviceManager)
+			DeviceSet deviceSet)
 		{
 			_logger = logger;
 			_dmProcessor = dmProcessor;
-			_deviceManager = deviceManager;
+			_deviceManager = deviceSet;
 
 			_autoStartingCheckingTimer = new Timer(200) {AutoReset = true};
 			_autoStartingCheckingTimer.Elapsed += RunUpdateRoutine;

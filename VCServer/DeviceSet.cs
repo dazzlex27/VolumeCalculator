@@ -9,7 +9,7 @@ using DeviceIntegration.FrameProviders;
 
 namespace VCServer
 {
-	internal class DeviceSet : IDisposable
+	public sealed class DeviceSet : IDisposable
 	{
 		public IFrameProvider FrameProvider { get; }
 
@@ -48,17 +48,6 @@ namespace VCServer
 
 			IoCircuit?.Dispose();
 			RangeMeter?.Dispose();
-		}
-
-		public void TogglePause(bool pause)
-		{
-			Scales?.TogglePause(pause);
-
-			if (Scanners != null && Scanners.Count > 0)
-			{
-				foreach (var scanner in Scanners)
-					scanner?.TogglePause(pause);
-			}
 		}
 	}
 }

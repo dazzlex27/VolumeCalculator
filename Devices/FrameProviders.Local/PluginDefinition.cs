@@ -9,7 +9,7 @@ namespace FrameProviders.Local
 	{
 		public void Initialize()
 		{
-			DeviceIntegrationCommon.RegisterFrameProvider("local", typeof(LocalFileFrameProvider));
+			DeviceRegistrator.RegisterFrameProvider("local", typeof(LocalFileFrameProvider));
 		}
 	}
 }

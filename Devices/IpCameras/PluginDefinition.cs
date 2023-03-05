@@ -9,7 +9,7 @@ namespace IpCameras
 	{
 		public void Initialize()
 		{
-			DeviceIntegrationCommon.RegisterIpCamera("proline2520", typeof(Proline2520Camera));
+			DeviceRegistrator.RegisterIpCamera("proline2520", typeof(Proline2520Camera));
 		}
 	}
 }

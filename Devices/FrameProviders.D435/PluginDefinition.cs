@@ -9,7 +9,7 @@ namespace FrameProviders.D435
 	{
 		public void Initialize()
 		{
-			DeviceIntegrationCommon.RegisterFrameProvider("d435", typeof(RealsenseD435FrameProvider));
+			DeviceRegistrator.RegisterFrameProvider("d435", typeof(RealsenseD435FrameProvider));
 		}
 	}
 }

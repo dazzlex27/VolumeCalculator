@@ -9,7 +9,7 @@ namespace FrameProviders.Kinect
 	{
 		public void Initialize()
 		{
-			DeviceIntegrationCommon.RegisterFrameProvider("kinectv2", typeof(KinectV2FrameProvider));
+			DeviceRegistrator.RegisterFrameProvider("kinectv2", typeof(KinectV2FrameProvider));
 		}
 	}
 }

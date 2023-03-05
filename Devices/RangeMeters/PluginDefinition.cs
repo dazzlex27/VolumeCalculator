@@ -9,8 +9,8 @@ namespace RangeMeters
 	{
 		public void Initialize()
 		{
-			DeviceIntegrationCommon.RegisterRangeMeter("custom", typeof(TeslaM70RangeMeter));
-			DeviceIntegrationCommon.RegisterRangeMeter("fake", typeof(FakeRangeMeter));
+			DeviceRegistrator.RegisterRangeMeter("custom", typeof(TeslaM70RangeMeter));
+			DeviceRegistrator.RegisterRangeMeter("fake", typeof(FakeRangeMeter));
 		}
 	}
 }

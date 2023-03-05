@@ -213,7 +213,8 @@ namespace VCClient.ViewModels
 			set => SetField(ref _lastAlgorithmUsed, value, nameof(LastAlgorithmUsed));
 		}
 
-		public CalculationDashboardControlVm(ILogger logger)
+		public CalculationDashboardControlVm(ILogger logger, ApplicationSettings settings,
+			DeviceManager deviceManager, CalculationRequestHandler calculator)
 		{
 			_logger = logger;
 
@@ -222,6 +223,18 @@ namespace VCClient.ViewModels
 			OpenResultsFileCommand = new CommandHandler(OpenResultsFile, !CalculationInProgress);
 			OpenPhotosFolderCommand = new CommandHandler(OpenPhotosFolder, !CalculationInProgress);
 			CancelPendingCalculationCommand = new CommandHandler(OnPendingCalculationCancellationRequired, !CalculationInProgress);
+
+			// TODO: move this into a separate method to enable hot reload
+			UpdateSettings(settings);
+			WeightResetRequested += deviceManager.DeviceStateUpdater.ResetWeight;
+			deviceManager.DeviceEventGenerator.WeightMeasurementReady += UpdateWeight;
+			deviceManager.DeviceEventGenerator.BarcodeReady += UpdateBarcode;
+			CalculationCancellationRequested += calculator.CancelPendingCalculation;
+			CalculationRequested += calculator.StartCalculation;
+			LockingStatusChanged += calculator.UpdateLockingStatus;
+			calculator.CalculationFinished += UpdateDataUponCalculationFinish;
+			calculator.LastAlgorithmUsedChanged += UpdateLastAlgorithm;
+			calculator.CalculationStatusChanged += UpdateCalculationStatus;
 
 			_barcodeResetTimer = new Timer(20000) { AutoReset = false };
 			_barcodeResetTimer.Elapsed += OnBarcodeResetElapsed;
