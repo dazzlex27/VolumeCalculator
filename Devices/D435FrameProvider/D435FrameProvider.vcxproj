@@ -83,7 +83,7 @@
       <AdditionalDependencies>realsense2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy $(CommonPackagesDir)\realsense\x64\bin\realsense.dll $(OutDir) /Y /D</Command>
+      <Command>xcopy $(CommonPackagesDir)\realsense2\x64\bin\realsense2.dll $(OutDir) /Y /D</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
