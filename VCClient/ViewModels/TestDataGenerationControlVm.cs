@@ -192,7 +192,7 @@ namespace VCClient.ViewModels
 				_logger.LogInfo($"Finished saving test case data, success={success}");
 
 				_testDataGenerator.FinishedSaving -= OnSavingFinished;
-				_testDataGenerator = null;
+				_testDataGenerator?.Dispose();
 			}
 			finally
 			{

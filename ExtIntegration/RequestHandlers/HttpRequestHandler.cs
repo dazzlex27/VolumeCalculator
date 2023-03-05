@@ -10,7 +10,7 @@ using Primitives.Settings.Integration;
 
 namespace ExtIntegration.RequestHandlers
 {
-	public class HttpRequestHandler : IDisposable
+	public sealed class HttpRequestHandler : IDisposable
 	{
 		public event Action<HttpRequestData> CalculationStartRequested;
 		public event Action CalculationStartRequestTimedOut;
@@ -64,7 +64,7 @@ namespace ExtIntegration.RequestHandlers
 			_running = false;
 		}
 
-		public void SendResponse(HttpRequestData data, CalculationResultData resultData)
+		public async Task SendResponse(HttpRequestData data, CalculationResultData resultData)
 		{
 			try
 			{
@@ -74,7 +74,7 @@ namespace ExtIntegration.RequestHandlers
 				_requestHandlingTimeoutTimer.Stop();
 
 				_logger.LogInfo($"Generating HTTP response for {_address}...");
-				var responseString = RequestUtils.GenerateXmlResponseText(resultData, data.SendPhoto);
+				var responseString = await RequestUtils.GenerateXmlResponseTextAsync(resultData, data.SendPhoto);
 				_logger.LogInfo($"Response text is the following: {Environment.NewLine}{responseString}");
 
 				var response = data.Context.Response;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Primitives;
 using ProcessingUtils;
@@ -8,7 +9,7 @@ namespace ExtIntegration
 {
 	public static class RequestUtils
 	{
-		public static string GenerateXmlResponseText(CalculationResultData resultData, bool includePhoto)
+		public static async Task<string> GenerateXmlResponseTextAsync(CalculationResultData resultData, bool includePhoto)
 		{
 			XElement content;
 
@@ -29,7 +30,7 @@ namespace ExtIntegration
 
 					if (includePhoto)
 					{
-						var photo = ImageUtils.GetBase64StringFromImageData(resultData.ObjectPhoto);
+						var photo = await ImageUtils.GetBase64StringFromImageDataAsync(resultData.ObjectPhoto);
 						content.Add(new XElement("photo", photo));
 					}
 					break;
@@ -74,12 +75,9 @@ namespace ExtIntegration
 			}
 
 			var doc = new XDocument(new XDeclaration("1.0", "us-utf8", null), content);
-
-			using (var writer = new StringWriter())
-			{
-				doc.Save(writer);
-				return writer.ToString();
-			}
+			using var writer = new StringWriter();
+			doc.Save(writer);
+			return writer.ToString();
 		}
 	}
 }

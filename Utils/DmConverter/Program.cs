@@ -1,6 +1,7 @@
 ﻿using Primitives;
 using ProcessingUtils;
 using SixLabors.ImageSharp;
+using System.Threading.Tasks;
 
 namespace DmConverter
 {
@@ -9,34 +10,25 @@ namespace DmConverter
 		const int MinDepth = 600;
 		const int MaxDepth = 10000;
 
-		static void Main(string[] args)
+		static async Task Main(string[] args)
 		{
-			TestDmLoading();
-			TestDmCulling();
-			TestImageLoading();
+			await TestDmLoading();
+			//await TestDmCulling();
 		}
 
-		private static void TestDmLoading()
+		private static async Task TestDmLoading()
 		{
-			var dm = DepthMapUtils.ReadDepthMapFromRawFile("0.dm");
-
-			var colorizedData = DepthMapUtils.GetGrayscaleDepthMapDataBgr(dm, MinDepth, MaxDepth);
-			var image = new ImageData(dm.Width, dm.Height, colorizedData, 1);
-			ImageUtils.SaveImageDataToFile(image, "0.png");
+			var dm = await DepthMapUtils.ReadDepthMapFromRawFileAsync("0.dm");
+			var imageData = DepthMapUtils.GetGrayscaleImageDataFromfDepthMap(dm, MinDepth, MaxDepth);
+			await imageData.SaveAsync("0.png");
 		}
 
-		private static void TestDmCulling()
+
+		private static async Task TestDmCulling()
 		{
-			var dm = DepthMapUtils.ReadDepthMapFromRawFile("0.dm");
-			DepthMapUtils.SaveDepthMapImageToFile(dm, "1.png", MinDepth, 750, MaxDepth);
+			var dm = await DepthMapUtils.ReadDepthMapFromRawFileAsync("0.dm");
+			await DepthMapUtils.SaveDepthMapImageToFile(dm, "1.png", MinDepth, MaxDepth, 750);
 		}
 
-		private static void TestImageLoading()
-		{
-			var image = Image.Load("1.png");
-			var imageData = ImageUtils.GetImageDataFromImage(image);
-			ImageUtils.SaveImageDataToFile(imageData, "2.png");
-
-		}
 	}
 }

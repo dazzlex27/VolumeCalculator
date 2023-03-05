@@ -7,7 +7,6 @@ using GuiCommon;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
-using VCClient.GUI;
 
 namespace VCClient.ViewModels
 {
@@ -130,13 +129,10 @@ namespace VCClient.ViewModels
 			WorkAreaVm.DepthMaskPolygonControlVm.CanEditPolygon = true;
 			_latestDepthMap = depthMap;
 
-			var mapCopy = new DepthMap(depthMap);
 			var cutOffDepth = (short)(WorkAreaVm.FloorDepth - WorkAreaVm.MinObjHeight);
-			DepthMapUtils.FilterDepthMapByDepthtLimit(mapCopy, cutOffDepth);
+			var filteredMap = DepthMapUtils.GetDepthFilteredDepthMap(depthMap, cutOffDepth);
 
-			var depthMapData = DepthMapUtils.GetColorizedDepthMapData(mapCopy, MinDepth, WorkAreaVm.FloorDepth);
-			var depthMapImage = new ImageData(depthMap.Width, depthMap.Height, depthMapData, 1);
-		    
+			var depthMapImage = DepthMapUtils.GetColorizedDepthMapData(filteredMap, MinDepth, WorkAreaVm.FloorDepth);
 			DepthImageBitmap = GraphicsUtils.GetWriteableBitmapFromImageData(depthMapImage);
 		}
 

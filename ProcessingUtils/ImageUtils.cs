@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Primitives;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
@@ -10,43 +11,49 @@ namespace ProcessingUtils
 {
 	public static class ImageUtils
 	{
-		public static ImageData ReadImageDataFromFile(string filepath)
+		public static async Task<ImageData> ReadImageDataFromFileAsync(string filepath)
 		{
-			var image = Image.Load(filepath);
+			var image = await Image.LoadAsync(filepath);
 
-			return GetImageDataFromImage(image);
+			return await GetImageDataFromImageAsync(image);
 		}
 
-		public static void SaveImageDataToFile(ImageData imageData, string filepath)
+		public static async Task SaveImageDataToFileAsync(ImageData imageData, string filepath)
 		{
 			var image = GetImageFromImageData(imageData);
-			image.Save(filepath);
+			await image.SaveAsync(filepath);
 		}
 
-		public static string GetBase64StringFromImageData(ImageData imageData)
+		public static async Task<string> GetBase64StringFromImageDataAsync(ImageData imageData)
 		{
 			if (imageData == null)
 				return string.Empty;
 
 			var image = GetImageFromImageData(imageData);
-			var encoder = new JpegEncoder { Quality = 80 };
+			var encoder = new JpegEncoder { Quality = 75 };
 			var stream = new MemoryStream();
-			image.Save(stream, encoder);
+			await image.SaveAsync(stream, encoder);
 			var bytes = stream.ToArray();
 
-			return Convert.ToBase64String(bytes);
+			var headerString = $"data:{JpegFormat.Instance.DefaultMimeType};base64";
+			var contentString = Convert.ToBase64String(bytes);
+
+			return $"{headerString},{contentString}";
 		}
 
-		public static ImageData GetImageDataFromBase64String(string base64String)
+		public static async Task<ImageData> GetImageDataFromBase64StringAsync(string base64String)
 		{
 			if (string.IsNullOrWhiteSpace(base64String))
 				return null;
 
-			var bytes = Convert.FromBase64String(base64String);
+			const string headerEnd = "base64,";
+			var dataSubstringStartIndex = base64String.IndexOf("base64,");
+			var dataSubstring = base64String.Substring(dataSubstringStartIndex + headerEnd.Length);
+			var bytes = Convert.FromBase64String(dataSubstring);
 			var stream = new MemoryStream(bytes);
-			var image = Image.Load(stream);
+			var image = await Image.LoadAsync(stream);
 
-			return GetImageDataFromImage(image);
+			return await GetImageDataFromImageAsync(image);
 		}
 
 		public static Image GetImageFromImageData(ImageData imageData)
@@ -70,7 +77,7 @@ namespace ProcessingUtils
 			}
 		}
 
-		public static ImageData GetImageDataFromImage(Image image)
+		public static async Task<ImageData> GetImageDataFromImageAsync(Image image)
 		{
 			int bytesPerPixel = image.PixelType.BitsPerPixel / 8;
 			var imageData = new ImageData(image.Width, image.Height, (byte)bytesPerPixel);
@@ -78,7 +85,7 @@ namespace ProcessingUtils
 			// TODO: this copies the entire image at once
 			// TODO: copy one row at a time
 			var visitor = new PixelCopyVisitor(imageData.Data);
-			image.AcceptVisitor(visitor); // copy pixel data
+			await image.AcceptVisitorAsync(visitor); // copy pixel data
 			
 			return imageData;
 		}

@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Text;
 using FrameProcessor;
-using FrameProcessor.Native;
 using FrameProviders;
 using Primitives.Logging;
 using Primitives.Settings;
 
 namespace VolumeCalculationRunner
 {
-	internal class VolumeCalculationRunner
+	internal sealed class VolumeCalculationRunner : IDisposable
 	{
 		private const string TabChar = "\t";
 		private const string OutputFolderName = "TestOutput";
@@ -32,14 +27,14 @@ namespace VolumeCalculationRunner
 			WriteHeadersToDataLog();
 		}
 		
-		public void TestAllCases()
+		public async Task TestAllCasesAsync()
 		{
-			LogVerbose(@"Starting all cases test...");
+			await LogVerbose(@"Starting all cases test...");
 
 			var testDirectory = new DirectoryInfo(TestFolderFullPath);
 			if (!testDirectory.Exists)
 			{
-				LogVerbose($@"The main working directory ({TestFolderFullPath}) was not found! Program terminates");
+				await LogVerbose($@"The main working directory ({TestFolderFullPath}) was not found! Program terminates");
 				return;
 			}
 
@@ -48,46 +43,51 @@ namespace VolumeCalculationRunner
 
 			var testCaseFolders = testDirectory.EnumerateDirectories().Where(d => d != null && d.Exists).ToList();
 			var totalCaseCount = testCaseFolders.Count;
-			LogVerbose($@"{totalCaseCount} test cases were found");
+			await LogVerbose($@"{totalCaseCount} test cases were found");
 
 			using (var processor = new DepthMapProcessor(_logger, GetDefaultKinectV2ColorCameraParams(), GetDefaultKinectV2DepthCameraParams()))
 			{
 				var testIndex = 1;
 				foreach (var testCaseDirectory in testCaseFolders)
 				{
-					LogVerbose($@"== [{testIndex++}/{totalCaseCount}] testcase: {testCaseDirectory.Name} ==");
+					await LogVerbose($@"== [{testIndex++}/{totalCaseCount}] testcase: {testCaseDirectory.Name} ==");
 
 					try
 					{
-						TestOneCase(testCaseDirectory, processor);
+						await TestOneCaseAsync(testCaseDirectory, processor);
 					}
 					catch (Exception e)
 					{
-						LogVerbose(e.ToString());
+						await LogVerbose(e.ToString());
 					}
 				}
 			}
 
 			sw.Stop();
 
-			LogVerbose($@"All cases test finished. Time elapsed: {sw.Elapsed:c}");
+			await LogVerbose($@"All cases test finished. Time elapsed: {sw.Elapsed:c}");
 		}
 
-		private void TestOneCase(DirectoryInfo testCaseDirectory, DepthMapProcessor processor)
+		public void Dispose()
 		{
-			var testCaseData = TestDataReader.ReadTestData(testCaseDirectory);
+			_logger?.Dispose();
+		}
+
+		private async Task TestOneCaseAsync(DirectoryInfo testCaseDirectory, DepthMapProcessor processor)
+		{
+			var testCaseData = await TestDataReader.ReadTestDataAsync(testCaseDirectory);
 			var descriptionOneLine = testCaseData.Description.Replace(Environment.NewLine, " ").Replace(TabChar, " ");
-			LogVerbose($@"Description: {descriptionOneLine}");
-			LogVerbose($@"Floor depth = {testCaseData.FloorDepth}, min obj height = {testCaseData.MinObjHeight}");
+			await LogVerbose($@"Description: {descriptionOneLine}");
+			await LogVerbose($@"Floor depth = {testCaseData.FloorDepth}, min obj height = {testCaseData.MinObjHeight}");
 
 			if (testCaseData.DepthMaps == null || testCaseData.DepthMaps.Length == 0)
 			{
-				LogVerbose(@"Skipping the test case as no maps were found");
+				await LogVerbose(@"Skipping the test case as no maps were found");
 				return;
 			}
-			LogVerbose($@"Found {testCaseData.DepthMaps.Length} maps");
+			await LogVerbose($@"Found {testCaseData.DepthMaps.Length} maps");
 
-			LogVerbose("Calculating volume...");
+			await LogVerbose("Calculating volume...");
 			var settings = ApplicationSettings.GetDefaultSettings();
 			processor.SetProcessorSettings(settings);
 
@@ -123,80 +123,73 @@ namespace VolumeCalculationRunner
 			var widthDispersion = maxWidth - minWidth;
 			var heightDispersion = maxHeight - minHeight;
 
-			LogVerbose($@"GT = {{{testCaseData.ObjLength} {testCaseData.ObjWidth} {testCaseData.ObjHeight}}}");
-			LogVerbose($@"Mode = {{{modeLength} {modeWidth} {modeHeight}}}");
-			LogVerbose($@"Min: L={minLength} W={minWidth} H={minHeight}");
-			LogVerbose($@"Max: L={maxLength} W={maxWidth} H={maxHeight}");
-			LogVerbose($@"Deviation: L={lengthDeviation}, W={widthDeviation}, H={heightDeviation}");
-			LogVerbose($@"Dispersion: L={lengthDispersion}, W={widthDispersion}, H={heightDispersion}");
+			await LogVerbose($@"GT = {{{testCaseData.ObjLength} {testCaseData.ObjWidth} {testCaseData.ObjHeight}}}");
+			await LogVerbose($@"Mode = {{{modeLength} {modeWidth} {modeHeight}}}");
+			await LogVerbose($@"Min: L={minLength} W={minWidth} H={minHeight}");
+			await LogVerbose($@"Max: L={maxLength} W={maxWidth} H={maxHeight}");
+			await LogVerbose($@"Deviation: L={lengthDeviation}, W={widthDeviation}, H={heightDeviation}");
+			await LogVerbose($@"Dispersion: L={lengthDispersion}, W={widthDispersion}, H={heightDispersion}");
 
-			using (var logData = File.AppendText(_logRawDataName))
-			{
-				var rawDataString = new StringBuilder(testCaseData.CaseName);
-				rawDataString.Append($@"{TabChar}{testCaseData.Description}");
-				rawDataString.Append($@"{TabChar}{testCaseData.FloorDepth}");
-				rawDataString.Append($@"{TabChar}{testCaseData.MinObjHeight}");
-				rawDataString.Append($@"{TabChar}{testCaseData.DepthMaps.Length}");
-				rawDataString.Append($@"{TabChar}{testCaseData.ObjLength}");
-				rawDataString.Append($@"{TabChar}{testCaseData.ObjWidth}");
-				rawDataString.Append($@"{TabChar}{testCaseData.ObjHeight}");
-				rawDataString.Append($@"{TabChar}{modeLength}");
-				rawDataString.Append($@"{TabChar}{modeWidth}");
-				rawDataString.Append($@"{TabChar}{modeHeight}");
-				rawDataString.Append($@"{TabChar}{lengthDeviation}");
-				rawDataString.Append($@"{TabChar}{widthDeviation}");
-				rawDataString.Append($@"{TabChar}{heightDeviation}");
-				rawDataString.Append($@"{TabChar}{minLength}");
-				rawDataString.Append($@"{TabChar}{minWidth}");
-				rawDataString.Append($@"{TabChar}{minHeight}");
-				rawDataString.Append($@"{TabChar}{maxLength}");
-				rawDataString.Append($@"{TabChar}{maxWidth}");
-				rawDataString.Append($@"{TabChar}{maxHeight}");
-				rawDataString.Append($@"{TabChar}{lengthDispersion}");
-				rawDataString.Append($@"{TabChar}{widthDispersion}");
-				rawDataString.Append($@"{TabChar}{heightDispersion}");
-				logData.WriteLine(rawDataString);
-			}
+			using var logData = File.AppendText(_logRawDataName);
+			var rawDataString = new StringBuilder(testCaseData.CaseName);
+			rawDataString.Append($@"{TabChar}{testCaseData.Description}");
+			rawDataString.Append($@"{TabChar}{testCaseData.FloorDepth}");
+			rawDataString.Append($@"{TabChar}{testCaseData.MinObjHeight}");
+			rawDataString.Append($@"{TabChar}{testCaseData.DepthMaps.Length}");
+			rawDataString.Append($@"{TabChar}{testCaseData.ObjLength}");
+			rawDataString.Append($@"{TabChar}{testCaseData.ObjWidth}");
+			rawDataString.Append($@"{TabChar}{testCaseData.ObjHeight}");
+			rawDataString.Append($@"{TabChar}{modeLength}");
+			rawDataString.Append($@"{TabChar}{modeWidth}");
+			rawDataString.Append($@"{TabChar}{modeHeight}");
+			rawDataString.Append($@"{TabChar}{lengthDeviation}");
+			rawDataString.Append($@"{TabChar}{widthDeviation}");
+			rawDataString.Append($@"{TabChar}{heightDeviation}");
+			rawDataString.Append($@"{TabChar}{minLength}");
+			rawDataString.Append($@"{TabChar}{minWidth}");
+			rawDataString.Append($@"{TabChar}{minHeight}");
+			rawDataString.Append($@"{TabChar}{maxLength}");
+			rawDataString.Append($@"{TabChar}{maxWidth}");
+			rawDataString.Append($@"{TabChar}{maxHeight}");
+			rawDataString.Append($@"{TabChar}{lengthDispersion}");
+			rawDataString.Append($@"{TabChar}{widthDispersion}");
+			rawDataString.Append($@"{TabChar}{heightDispersion}");
+			logData.WriteLine(rawDataString);
 		}
 
-		private void LogVerbose(string message)
+		private async Task LogVerbose(string message)
 		{
 			Console.WriteLine(message);
-			using (var logVerbose = File.AppendText(_logVerboseName))
-			{
-				logVerbose.WriteLine(message);
-			}
+			await File.AppendAllTextAsync(_logVerboseName, message);
 		}
 
 		private void WriteHeadersToDataLog()
 		{
-			using (var logData = File.AppendText(_logRawDataName))
-			{
-				var rawDataHeadersString = new StringBuilder("Name");
-				rawDataHeadersString.Append($@"{TabChar}Description");
-				rawDataHeadersString.Append($@"{TabChar}FloorDepth");
-				rawDataHeadersString.Append($@"{TabChar}MinObjHeight");
-				rawDataHeadersString.Append($@"{TabChar}Measurements count");
-				rawDataHeadersString.Append($@"{TabChar}GT length");
-				rawDataHeadersString.Append($@"{TabChar}GT width");
-				rawDataHeadersString.Append($@"{TabChar}GT height");
-				rawDataHeadersString.Append($@"{TabChar}Measured length");
-				rawDataHeadersString.Append($@"{TabChar}Measured width");
-				rawDataHeadersString.Append($@"{TabChar}Measured height");
-				rawDataHeadersString.Append($@"{TabChar}Delta length");
-				rawDataHeadersString.Append($@"{TabChar}Delta width");
-				rawDataHeadersString.Append($@"{TabChar}Delta height");
-				rawDataHeadersString.Append($@"{TabChar}Min length");
-				rawDataHeadersString.Append($@"{TabChar}Min width");
-				rawDataHeadersString.Append($@"{TabChar}Min height");
-				rawDataHeadersString.Append($@"{TabChar}Max length");
-				rawDataHeadersString.Append($@"{TabChar}Max width");
-				rawDataHeadersString.Append($@"{TabChar}Max height");
-				rawDataHeadersString.Append($@"{TabChar}Length dispersion");
-				rawDataHeadersString.Append($@"{TabChar}Width dispersion");
-				rawDataHeadersString.Append($@"{TabChar}Height dispersion");
-				logData.WriteLine(rawDataHeadersString);
-			}
+			using var logData = File.AppendText(_logRawDataName);
+			var rawDataHeadersString = new StringBuilder("Name");
+			rawDataHeadersString.Append($@"{TabChar}Description");
+			rawDataHeadersString.Append($@"{TabChar}FloorDepth");
+			rawDataHeadersString.Append($@"{TabChar}MinObjHeight");
+			rawDataHeadersString.Append($@"{TabChar}Measurements count");
+			rawDataHeadersString.Append($@"{TabChar}GT length");
+			rawDataHeadersString.Append($@"{TabChar}GT width");
+			rawDataHeadersString.Append($@"{TabChar}GT height");
+			rawDataHeadersString.Append($@"{TabChar}Measured length");
+			rawDataHeadersString.Append($@"{TabChar}Measured width");
+			rawDataHeadersString.Append($@"{TabChar}Measured height");
+			rawDataHeadersString.Append($@"{TabChar}Delta length");
+			rawDataHeadersString.Append($@"{TabChar}Delta width");
+			rawDataHeadersString.Append($@"{TabChar}Delta height");
+			rawDataHeadersString.Append($@"{TabChar}Min length");
+			rawDataHeadersString.Append($@"{TabChar}Min width");
+			rawDataHeadersString.Append($@"{TabChar}Min height");
+			rawDataHeadersString.Append($@"{TabChar}Max length");
+			rawDataHeadersString.Append($@"{TabChar}Max width");
+			rawDataHeadersString.Append($@"{TabChar}Max height");
+			rawDataHeadersString.Append($@"{TabChar}Length dispersion");
+			rawDataHeadersString.Append($@"{TabChar}Width dispersion");
+			rawDataHeadersString.Append($@"{TabChar}Height dispersion");
+			logData.WriteLine(rawDataHeadersString);
 		}
 
 		private static ColorCameraParams GetDefaultKinectV2ColorCameraParams()

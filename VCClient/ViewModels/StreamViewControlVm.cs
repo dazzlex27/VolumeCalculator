@@ -115,11 +115,8 @@ namespace VCClient.ViewModels
 		{
 			try
 			{
-				var maskedMap = new DepthMap(depthMap);
-				DepthMapUtils.FilterDepthMapByDepthtLimit(maskedMap, CutOffDepth);
-				var depthMapData = DepthMapUtils.GetColorizedDepthMapData(maskedMap, _minDepth, FloorDepth);
-				var depthMapImage = new ImageData(maskedMap.Width, maskedMap.Height, depthMapData, 1);
-
+				var filteredMap = DepthMapUtils.GetDepthFilteredDepthMap(depthMap, CutOffDepth);
+				var depthMapImage = DepthMapUtils.GetColorizedDepthMapData(filteredMap, _minDepth, FloorDepth);
 				DepthImageBitmap = GraphicsUtils.GetWriteableBitmapFromImageData(depthMapImage);
 			}
 			catch (Exception ex)

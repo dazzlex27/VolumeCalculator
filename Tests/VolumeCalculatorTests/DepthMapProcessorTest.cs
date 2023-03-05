@@ -32,7 +32,7 @@ namespace VolumeCalculatorTests
 			using var processor = new DepthMapProcessor(_logger,
 				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
 			var floorDepth = processor.CalculateFloorDepth(emptyMap);
-			Assert.IsTrue(floorDepth == 0);
+			Assert.That(floorDepth, Is.EqualTo(0));
 		}
 
 		[Test]
@@ -48,7 +48,7 @@ namespace VolumeCalculatorTests
 			using var processor = new DepthMapProcessor(_logger,
 				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
 			var floorDepth = processor.CalculateFloorDepth(map);
-			Assert.IsTrue(floorDepth == validDepthValue);
+			Assert.That(floorDepth, Is.EqualTo(validDepthValue));
 		}
 
 		[Test]
@@ -66,7 +66,7 @@ namespace VolumeCalculatorTests
 			using var processor = new DepthMapProcessor(_logger,
 				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
 			var floorDepth = processor.CalculateFloorDepth(map);
-			Assert.IsTrue(floorDepth == modeDepthValue);
+			Assert.That(floorDepth, Is.EqualTo(modeDepthValue));
 		}
 
 		[Test]
@@ -79,7 +79,7 @@ namespace VolumeCalculatorTests
 				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
 			var data = new AlgorithmSelectionData(map, image, 0, true, true, true, "");
 			var algorithmSelectionResult = processor.SelectAlgorithm(data);
-			Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoObjectFound);
+			Assert.That(algorithmSelectionResult.Status, Is.EqualTo(AlgorithmSelectionStatus.NoObjectFound));
 		}
 
 		[Test]
@@ -92,7 +92,7 @@ namespace VolumeCalculatorTests
 				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
 			var data = new AlgorithmSelectionData(map, image, 0, false, false, false, "");
 			var algorithmSelectionResult = processor.SelectAlgorithm(data);
-			Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoAlgorithmsAllowed);
+			Assert.That(algorithmSelectionResult.Status, Is.EqualTo(AlgorithmSelectionStatus.NoAlgorithmsAllowed));
 		}
 
 		[Test]
@@ -105,7 +105,7 @@ namespace VolumeCalculatorTests
 				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
 			var data = new AlgorithmSelectionData(map, image, 0, true, false, false, "");
 			var algorithmSelectionResult = processor.SelectAlgorithm(data);
-			Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoObjectFound);
+			Assert.That(algorithmSelectionResult.Status, Is.EqualTo(AlgorithmSelectionStatus.NoObjectFound));
 		}
 
 		[Test]
@@ -118,7 +118,7 @@ namespace VolumeCalculatorTests
 				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
 			var data = new AlgorithmSelectionData(map, image, 0, false, true, false, "");
 			var algorithmSelectionResult = processor.SelectAlgorithm(data);
-			Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoObjectFound);
+			Assert.That(algorithmSelectionResult.Status, Is.EqualTo(AlgorithmSelectionStatus.NoObjectFound));
 		}
 
 		[Test]
@@ -131,7 +131,7 @@ namespace VolumeCalculatorTests
 				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
 			var data = new AlgorithmSelectionData(map, image, 0, false, false, true, "");
 			var algorithmSelectionResult = processor.SelectAlgorithm(data);
-			Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.NoObjectFound);
+			Assert.That(algorithmSelectionResult.Status, Is.EqualTo(AlgorithmSelectionStatus.NoObjectFound));
 		}
 
 		[Test]
@@ -141,7 +141,7 @@ namespace VolumeCalculatorTests
 				TestUtils.GetDummyColorCameraParams(), TestUtils.GetDummyDepthCameraParams());
 			var data = new AlgorithmSelectionData(null, null, 0, false, false, true, "");
 			var algorithmSelectionResult = processor.SelectAlgorithm(data);
-			Assert.IsTrue(algorithmSelectionResult.Status == AlgorithmSelectionStatus.DataIsInvalid);
+			Assert.That(algorithmSelectionResult.Status, Is.EqualTo(AlgorithmSelectionStatus.DataIsInvalid));
 		}
 
 		public void Dispose()

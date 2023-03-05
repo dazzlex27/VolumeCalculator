@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Timers;
 using FrameProcessor;
 using DeviceIntegration.FrameProviders;
@@ -8,10 +7,11 @@ using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 using ProcessingUtils;
+using System.Threading.Tasks;
 
 namespace VCServer
 {
-	public class TestDataGenerator
+	public sealed class TestDataGenerator : IDisposable
 	{
 		public event Action<bool> FinishedSaving;
 
@@ -62,6 +62,11 @@ namespace VCServer
 			IsRunning = true;
 		}
 
+		public void Dispose()
+		{
+			_timer?.Dispose();
+		}
+
 		private void CleanUp()
 		{
 			_timer.Stop();
@@ -70,7 +75,7 @@ namespace VCServer
 			IsRunning = false;
 		}
 
-		private void AdvanceDataSaving(ImageData image, DepthMap map)
+		private async Task AdvanceDataSavingAsync(ImageData image, DepthMap map)
 		{
 			_timer.Stop();
 
@@ -79,12 +84,11 @@ namespace VCServer
 
 			var itemIndex = _basicCaseInfo.TimesToSave - _samplesLeft;
 
-
 			var fullImagePath = Path.Combine(_imageSavingPath, $"{itemIndex}.png");
-			ImageUtils.SaveImageDataToFile(image, fullImagePath);
+			await ImageUtils.SaveImageDataToFileAsync(image, fullImagePath);
 
 			var fullMapPath = Path.Combine(_mapSavingPath, $"{itemIndex}.dm");
-			DepthMapUtils.SaveDepthMapToRawFile(map, fullMapPath);
+			await DepthMapUtils.SaveDepthMapToRawFileAsync(map, fullMapPath);
 
 			_samplesLeft--;
 
@@ -110,7 +114,7 @@ namespace VCServer
 			if (!_depthFrameReady)
 				return;
 
-			AdvanceDataSaving(_latestColorFrame, _latestDepthMap);
+			Task.Run(() => AdvanceDataSavingAsync(_latestColorFrame, _latestDepthMap)).RunSynchronously();
 		}
 
 		private void OnDepthFrameReady(DepthMap depthMap)
@@ -122,7 +126,7 @@ namespace VCServer
 			if (!_colorFrameReady)
 				return;
 
-			AdvanceDataSaving(_latestColorFrame, _latestDepthMap);
+			Task.Run(() => AdvanceDataSavingAsync(_latestColorFrame, _latestDepthMap)).RunSynchronously();
 		}
 
 		private void SaveInitialData()

@@ -58,7 +58,7 @@ namespace ExtIntegration
 			}
 		}
 
-		public void WriteCalculationResult(CalculationResultData resultData)
+		public void WriteCalculationResult(CalculationResultData resultData, string countersFilepath)
 		{
 			if (resultData.Status != CalculationStatus.Successful)
 				return;
@@ -69,8 +69,8 @@ namespace ExtIntegration
 				{
 					var result = resultData.Result;
 
-					var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter();
-					IoUtils.IncrementUniversalObjectCounter();
+					var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter(countersFilepath);
+					IoUtils.IncrementUniversalObjectCounter(countersFilepath);
 					_logger.LogInfo($"Global object ID incremented to {calculationIndex + 1}");
 
 					var safeName = result.Barcode;

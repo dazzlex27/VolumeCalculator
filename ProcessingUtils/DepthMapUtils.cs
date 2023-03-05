@@ -1,15 +1,16 @@
 ﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Primitives
 {
 	public static class DepthMapUtils
 	{
-		public static DepthMap ReadDepthMapFromRawFile(string filepath)
+		public static async Task<DepthMap> ReadDepthMapFromRawFileAsync(string filepath)
 		{
-			var fileLines = File.ReadAllLines(filepath);
+			var fileLines = await File.ReadAllLinesAsync(filepath);
 
 			if (fileLines.Length < 3)
 				throw new InvalidDataException("Invalid depth map format");
@@ -25,31 +26,28 @@ namespace Primitives
 			return new DepthMap(width, height, data);
 		}
 
-		public static void SaveDepthMapToRawFile(DepthMap depthMap, string filepath)
+		public static async Task SaveDepthMapToRawFileAsync(DepthMap depthMap, string filepath)
 		{
-			if (File.Exists(filepath))
-				File.Delete(filepath);
-
-			using var fs = File.AppendText(filepath);
-			fs.WriteLine(depthMap.Width);
-			fs.WriteLine(depthMap.Height);
+			var builder = new StringBuilder();
+			builder.AppendLine(depthMap.Width.ToString());
+			builder.AppendLine(depthMap.Height.ToString());
 
 			foreach (var pixel in depthMap.Data)
-				fs.WriteLine(pixel);
+				builder.AppendLine(pixel.ToString());
+
+			await File.WriteAllTextAsync(filepath, builder.ToString());
 		}
 
-		public static void SaveDepthMapImageToFile(DepthMap map, string filepath,
-			short minDepth, short maxDepth, short cutOffDepth)
+		public static async Task SaveDepthMapImageToFile(DepthMap map, string filepath,
+			short minDepth, short maxDepth, short cutOffDepth = short.MaxValue)
 		{
-			var copyMap = new DepthMap(map);
-			FilterDepthMapByDepthtLimit(copyMap, cutOffDepth);
-
-			var filteredData = GetColorizedDepthMapData(copyMap, minDepth, maxDepth);
-			var image = Image.LoadPixelData<L8>(filteredData, map.Width, map.Height);
-			image.Save(filepath);
+			var filteredMap = GetDepthFilteredDepthMap(map, cutOffDepth);
+			var filteredMapImageData = GetColorizedDepthMapData(filteredMap, minDepth, maxDepth);
+			var image = Image.LoadPixelData<L8>(filteredMapImageData.Data, map.Width, map.Height);
+			await image.SaveAsync(filepath);
 		}
 
-		public static byte[] GetColorizedDepthMapData(DepthMap map, short minDepth, short maxDepth)
+		public static ImageData GetColorizedDepthMapData(DepthMap map, short minDepth, short maxDepth)
 		{
 			var resultBytes = new byte[map.Data.Length];
 
@@ -57,16 +55,20 @@ namespace Primitives
 			foreach (var depthValue in map.Data)
 				resultBytes[byteIndex++] = GetIntensityFromDepth(depthValue, minDepth, maxDepth);
 
-			return resultBytes;
+			return new ImageData(map.Width, map.Height, resultBytes, 1);
 		}
 
-		public static void FilterDepthMapByDepthtLimit(DepthMap depthMap, short maxDepth)
+		public static DepthMap GetDepthFilteredDepthMap(DepthMap depthMap, short thresholdDepth)
 		{
-			for (var i = 0; i < depthMap.Data.Length; i++)
+			var filteredMap = new DepthMap(depthMap);
+
+			for (var i = 0; i < filteredMap.Data.Length; i++)
 			{
-				if (depthMap.Data[i] > maxDepth)
-					depthMap.Data[i] = 0;
+				if (filteredMap.Data[i] > thresholdDepth)
+					filteredMap.Data[i] = 0;
 			}
+
+			return filteredMap;
 		}
 
 		public static byte GetIntensityFromDepth(short depth, short minValue, short maxValue)
@@ -83,7 +85,7 @@ namespace Primitives
 			return (byte) (255 - 255 * (depth - minValue) / maxValue);
 		}
 
-		public static byte[] GetGrayscaleDepthMapDataBgr(DepthMap map, short minDepth, short maxDepth)
+		public static ImageData GetGrayscaleImageDataFromfDepthMap(DepthMap map, short minDepth, short maxDepth)
 		{
 			var resultBytes = new byte[map.Data.Length];
 
@@ -91,7 +93,7 @@ namespace Primitives
 			foreach (var depthValue in map.Data)
 				resultBytes[byteIndex++] = GetIntensityFromDepth(depthValue, minDepth, maxDepth);
 
-			return resultBytes;
+			return new ImageData(map.Width, map.Height, resultBytes, 1);
 		}
 	}
 }

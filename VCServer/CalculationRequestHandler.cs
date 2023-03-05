@@ -10,7 +10,7 @@ using ProcessingUtils;
 
 namespace VCServer
 {
-	public class CalculationRequestHandler : IDisposable
+	public sealed class CalculationRequestHandler : IDisposable
 	{
 		private readonly ILogger _logger;
 		private readonly DepthMapProcessor _dmProcessor;
@@ -86,6 +86,7 @@ namespace VCServer
 		public void Dispose()
 		{
 			_autoStartingCheckingTimer?.Dispose();
+			_pendingTimer?.Dispose();
 		}
 
 		public event Action<CalculationResultData> CalculationFinished;
@@ -144,7 +145,7 @@ namespace VCServer
 					var algStatus = $"dm={dm1Enabled} dm2={dm2Enabled} rgb={rgbEnabled}";
 					_logger.LogInfo($"Starting a volume calculation... {algStatus}");
 
-					var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter();
+					var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter(GlobalConstants.CountersFileName);
 					var cutOffDepth = (short) (activeWorkArea.FloorDepth - activeWorkArea.MinObjectHeight);
 
 					var calculationData = new VolumeCalculationData(_settings.AlgorithmSettings.SampleDepthMapCount,

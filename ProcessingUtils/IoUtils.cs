@@ -7,72 +7,71 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Primitives;
 
 namespace ProcessingUtils
 {
 	public static class IoUtils
 	{
-		private static readonly object CounterLock = new object();
+		private static readonly object CounterLock = new();
 		
-		public static async Task SerializeSettingsAsync<T>(T settings)
+		public static async Task SerializeSettingsToFileAsync<T>(T settings, string filepath)
 		{
-			var logFileInfo = new FileInfo(GlobalConstants.ConfigFileName);
-			if (!string.IsNullOrEmpty(logFileInfo.DirectoryName))
-				Directory.CreateDirectory(logFileInfo.DirectoryName);
-			
 			if (settings == null)
 				return;
 
+			var fileInfo = new FileInfo(filepath);
+			if (!string.IsNullOrEmpty(fileInfo.DirectoryName))
+				Directory.CreateDirectory(fileInfo.DirectoryName);
+			
 			var settingsText = JsonConvert.SerializeObject(settings);
-			await File.WriteAllTextAsync(GlobalConstants.ConfigFileName, settingsText);
+			await File.WriteAllTextAsync(fileInfo.FullName, settingsText);
 		}
 
-		public static async Task<T> DeserializeSettingsAsync<T>()
+		public static async Task<T> DeserializeSettingsFromFileAsync<T>(string filepath)
 		{
-			var configFileInfo = new FileInfo(GlobalConstants.ConfigFileName);
-			if (!string.IsNullOrEmpty(configFileInfo.DirectoryName))
-				Directory.CreateDirectory(configFileInfo.DirectoryName);
-			
-			if (!configFileInfo.Exists)
+			var fileInfo = new FileInfo(filepath);
+			if (!fileInfo.Exists)
 				return default;
 
-			var settingsText = await File.ReadAllTextAsync(configFileInfo.FullName);
+			if (!string.IsNullOrEmpty(fileInfo.DirectoryName))
+				Directory.CreateDirectory(fileInfo.DirectoryName);
+
+			var settingsText = await File.ReadAllTextAsync(fileInfo.FullName);
 			return JsonConvert.DeserializeObject<T>(settingsText);
 		}
 
-		public static int GetCurrentUniversalObjectCounter()
+		public static int GetCurrentUniversalObjectCounter(string countersFileName)
 		{
 			lock (CounterLock)
 			{
-				if (!File.Exists(GlobalConstants.CountersFileName))
+				if (!File.Exists(countersFileName))
 				{
-					File.WriteAllText(GlobalConstants.CountersFileName, 0.ToString());
+					File.WriteAllText(countersFileName, 0.ToString());
 					return 0;
 				}
 
-				var fileContents = File.ReadAllText(GlobalConstants.CountersFileName);
+				var fileContents = File.ReadAllText(countersFileName);
 				var previousCounter = int.Parse(fileContents);
 
 				return previousCounter;
 			}
 		}
 
-		public static void IncrementUniversalObjectCounter()
+		public static void IncrementUniversalObjectCounter(string countersFileName)
 		{
 			lock (CounterLock)
 			{
-				if (!File.Exists(GlobalConstants.CountersFileName))
+				if (!File.Exists(countersFileName))
 				{
-					File.WriteAllText(GlobalConstants.CountersFileName, 1.ToString());
+					File.WriteAllText(countersFileName, 1.ToString());
 					return;
 				}
 
-				var fileContents = File.ReadAllText(GlobalConstants.CountersFileName);
+				var fileContents = File.ReadAllText(countersFileName);
 				var previousCounter = int.Parse(fileContents);
 
 				var nextCounter = previousCounter + 1;
-				File.WriteAllText(GlobalConstants.CountersFileName, nextCounter.ToString());
+				File.WriteAllText(countersFileName, nextCounter.ToString());
 			}
 		}
 

@@ -102,9 +102,9 @@ namespace VCServer
 			CalculationFinished?.Invoke(resultData);
 		}
 
-		private void PerformCalculation()
+		private async Task PerformCalculation()
 		{
-			SaveDebugData($"{_barcode}_{_calculationIndex}");
+			await SaveDebugDataAsync($"{_barcode}_{_calculationIndex}");
 			var calculatedDistance = GetCalculatedDistance();
 			
 			var result = _calculator.Calculate(_images, _depthMaps, _calculationData, calculatedDistance);
@@ -174,7 +174,7 @@ namespace VCServer
 			AbortInternal(CalculationStatus.TimedOut);
 		}
 
-		private void SaveDebugData(string debugFileName)
+		private async Task SaveDebugDataAsync(string debugFileName)
 		{
 			try
 			{
@@ -184,7 +184,7 @@ namespace VCServer
 				if (_latestColorFrame != null)
 				{
 					var colorFileName = $"{baseFilePath}_color.png";
-					ImageUtils.SaveImageDataToFile(_latestColorFrame, colorFileName);
+					await ImageUtils.SaveImageDataToFileAsync(_latestColorFrame, colorFileName);
 				}
 
 				if (_latestDepthMap != null)
@@ -192,7 +192,7 @@ namespace VCServer
 					var depthFileName = $"{baseFilePath}_depth.png";
 					var depthCameraParams = _frameProvider.GetDepthCameraParams();
 
-					DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, depthFileName,
+					await DepthMapUtils.SaveDepthMapImageToFile(_latestDepthMap, depthFileName,
 						depthCameraParams.MinDepth, depthCameraParams.MaxDepth, _cutOffDepth);
 				}
 				
@@ -203,8 +203,8 @@ namespace VCServer
 				try
 				{
 					var cameraFileName = $"{baseFilePath}_camera.png";
-					var ipCameraFrame = Task.Run(() => _ipCamera.GetSnaphostAsync()).Result;
-					ImageUtils.SaveImageDataToFile(ipCameraFrame, cameraFileName);
+					var ipCameraFrame = await _ipCamera.GetSnaphostAsync();
+					await ImageUtils.SaveImageDataToFileAsync(ipCameraFrame, cameraFileName);
 				}
 				catch (Exception ex)
 				{

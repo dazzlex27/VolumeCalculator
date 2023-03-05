@@ -2,8 +2,6 @@
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
-using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,7 +9,7 @@ namespace ProcessingUtils
 {
 	internal class PixelCopyVisitor : IImageVisitor, IImageVisitorAsync
 	{
-		private byte[] _targetBytes;
+		private readonly byte[] _targetBytes;
 
 		public PixelCopyVisitor(byte[] targetBytes)
 		{
@@ -27,7 +25,9 @@ namespace ProcessingUtils
 		public Task VisitAsync<TPixel>(Image<TPixel> image, CancellationToken cancellationToken)
 			where TPixel : unmanaged, IPixel<TPixel>
 		{
-			throw new NotImplementedException();
+			image.CopyPixelDataTo(_targetBytes);
+
+			return Task.CompletedTask;
 		}
 	}
 }

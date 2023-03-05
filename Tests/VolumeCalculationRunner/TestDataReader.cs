@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Primitives;
+﻿using Primitives;
 
 namespace VolumeCalculationRunner
 {
 	internal class TestDataReader
 	{
-		public static VolumeTestCaseData ReadTestData(DirectoryInfo testCaseDirectory)
+		public static async Task<VolumeTestCaseData> ReadTestDataAsync(DirectoryInfo testCaseDirectory)
 		{
 			var directoryFiles = testCaseDirectory.EnumerateFiles().ToList();
 			var testCaseName = testCaseDirectory.Name;
@@ -22,7 +18,7 @@ namespace VolumeCalculationRunner
 			if (depthMapsFolder == null || !depthMapsFolder.Exists)
 				throw new IOException($"Folder with depthMaps for {testCaseName} does no exists");
 
-			var depthMaps = ReadDepthMapsFromFolder(testCaseName, depthMapsFolder);
+			var depthMaps = await ReadDepthMapsFromFolderAsync(testCaseName, depthMapsFolder);
 
 			var testDataFile = directoryFiles.FirstOrDefault(f => f.Name == "testdata.txt");
 			if (testDataFile == null || !testDataFile.Exists)
@@ -41,14 +37,14 @@ namespace VolumeCalculationRunner
 			return new VolumeTestCaseData(testCaseName, description, depthMaps, width, height, depth, floorDepth, objMinHeight);
 		}
 
-		private static DepthMap[] ReadDepthMapsFromFolder(string testCaseName, DirectoryInfo directory)
+		private static async Task<DepthMap[]> ReadDepthMapsFromFolderAsync(string testCaseName, DirectoryInfo directory)
 		{
 			var files = directory.EnumerateFiles().Where(f => f.Extension == ".dm").ToList();
 
 			var depthMaps = new List<DepthMap>(files.Count);
 			foreach (var file in files)
 			{
-				var depthMap = DepthMapUtils.ReadDepthMapFromRawFile(file.FullName);
+				var depthMap = await DepthMapUtils.ReadDepthMapFromRawFileAsync(file.FullName);
 				if (depthMap == null)
 				{
 					Console.WriteLine($@"Failed to read depth map from {file.Name} for {testCaseName}");

@@ -4,9 +4,10 @@
 	internal class VolumeCalculationIntegrationTest
 	{
 		[Test]
-		public void TestVolumeCalculation_WhenGivenManyTestCases_ReturnWithNoExceptions()
+		public async Task TestAllCasesAsync_WhenGivenManyTestCases_ReturnWithNoExceptions()
 		{
-			new VolumeCalculationRunner().TestAllCases();
+			using var runner = new VolumeCalculationRunner();
+			await runner.TestAllCasesAsync();
 		}
 	}
 }

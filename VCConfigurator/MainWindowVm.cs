@@ -4,13 +4,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using GuiCommon;
+using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 using ProcessingUtils;
 
 namespace VCConfigurator
 {
-	internal class MainWindowVm : BaseViewModel
+	internal class MainWindowVm : BaseViewModel, IDisposable
 	{
 		private readonly ILogger _logger;
 		private readonly ApplicationSettings _settings;
@@ -50,13 +51,19 @@ namespace VCConfigurator
 			ApplySettingsCommand = new CommandHandler(async () => await ApplySettingsAndClose(false), true);
 		}
 
+		public void Dispose()
+		{
+			_logger?.Dispose();
+		}
+
 		private async Task<ApplicationSettings> ReadSettingsFromFileAsync()
 		{
 			ApplicationSettings settings;
 
 			try
 			{
-				var settingsFromFile = await IoUtils.DeserializeSettingsAsync<ApplicationSettings>();
+				var settingsFromFile =
+					await IoUtils.DeserializeSettingsFromFileAsync<ApplicationSettings>(GlobalConstants.ConfigFileName);
 				if (settingsFromFile != null)
 					return settingsFromFile;
 			}
@@ -87,7 +94,7 @@ namespace VCConfigurator
 				_deviceSettingsVm.FillSettingsFromValues(_settings.IoSettings);
 				_integrationSettingsVm.FillSettingsFromValues(_settings.IntegrationSettings);
 
-				await IoUtils.SerializeSettingsAsync(_settings);
+				await IoUtils.SerializeSettingsToFileAsync(_settings, GlobalConstants.ConfigFileName);
 
 				if (startClient)
 					IoUtils.StartProcess("VCClient.exe", true);

@@ -10,6 +10,7 @@ using System.Windows.Media.Imaging;
 using IpCameras;
 using Primitives.Logging;
 using GuiCommon;
+using Primitives;
 
 namespace IpCameraTest
 {
@@ -59,7 +60,8 @@ namespace IpCameraTest
 
 			try
 			{
-				var settingsFromFile = await IoUtils.DeserializeSettingsAsync<ApplicationSettings>();
+				var settingsFromFile =
+					await IoUtils.DeserializeSettingsFromFileAsync<ApplicationSettings>(GlobalConstants.ConfigFileName);
 				if (settingsFromFile != null)
 					return settingsFromFile;
 			}

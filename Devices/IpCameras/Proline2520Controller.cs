@@ -61,7 +61,7 @@ namespace IpCameras
 
 					using var inputStream = await response.Content.ReadAsStreamAsync();
 					using var image = Image.Load(inputStream);
-					return ImageUtils.GetImageDataFromImage(image);
+					return await ImageUtils.GetImageDataFromImageAsync(image);
 				}
 			}
 			catch (Exception ex)

@@ -210,12 +210,13 @@ namespace VCClient.ViewModels
 			try
 			{
 				_logger.LogInfo("Reading settings...");
-				var settingsFromFile = await IoUtils.DeserializeSettingsAsync<ApplicationSettings>();
+				var settingsFromFile =
+					await IoUtils.DeserializeSettingsFromFileAsync<ApplicationSettings>(GlobalConstants.ConfigFileName);
 				if (settingsFromFile == null)
 				{
 					_logger.LogError("Failed to read settings from file, will use default settings");
 					Settings = ApplicationSettings.GetDefaultSettings();
-					await IoUtils.SerializeSettingsAsync(Settings);
+					await IoUtils.SerializeSettingsToFileAsync(Settings, GlobalConstants.ConfigFileName);
 				}
 				else
 					Settings = settingsFromFile;
@@ -345,7 +346,7 @@ namespace VCClient.ViewModels
 		private void OnCalculationFinished(CalculationResultData resultData)
 		{
 			_requestProcessor.SendRequestsAsync(resultData);
-			_calculationResultFileProcessor.WriteCalculationResult(resultData);
+			_calculationResultFileProcessor.WriteCalculationResult(resultData, GlobalConstants.CountersFileName);
 			_dashboardControlVm.UpdateDataUponCalculationFinish(resultData);
 		}
 
@@ -364,7 +365,7 @@ namespace VCClient.ViewModels
 		private async Task SaveSettingsAsync()
 		{
 			_logger.LogInfo("Saving settings...");
-			await IoUtils.SerializeSettingsAsync(Settings);
+			await IoUtils.SerializeSettingsToFileAsync(Settings, GlobalConstants.ConfigFileName);
 		}
 
 		private async Task OpenSettingsWindowAsync()
