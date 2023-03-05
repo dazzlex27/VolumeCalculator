@@ -44,12 +44,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(ProjectDir)..\!!bin\AnyCPU\$(Configuration)\net7.0-windows\</OutDir>
+    <OutDir>$(SolutionDir)!!bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>libDepthMapProcessor</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(ProjectDir)..\!!bin\AnyCPU\$(Configuration)\net7.0-windows\</OutDir>
+    <OutDir>$(SolutionDir)!!bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>libDepthMapProcessor</TargetName>
   </PropertyGroup>
@@ -59,14 +59,14 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)packages\opencv\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CommonPackagesDir)\opencv\include\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)packages\opencv\x64\vc14\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CommonPackagesDir)\opencv\x64\vc14\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>opencv_world310d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy $(ProjectDir)..\packages\opencv\x64\vc14\bin\opencv_world310d.dll $(OutDir) /Y /D</Command>
+      <Command>xcopy $(CommonPackagesDir)\opencv\x64\vc14\bin\opencv_world310d.dll $(OutDir) /Y /D</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -77,7 +77,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)packages\opencv\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CommonPackagesDir)\opencv\include\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -86,7 +86,7 @@
       <AdditionalDependencies>opencv_world310.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy $(ProjectDir)..\packages\opencv\x64\vc14\bin\opencv_world310.dll $(OutDir) /Y /D</Command>
+      <Command>xcopy $(CommonPackagesDir)\opencv\x64\vc14\bin\opencv_world310.dll $(OutDir) /Y /D</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -41,8 +41,8 @@ namespace VolumeCalculatorTests
 		public async Task ReadDepthMapFromRawFileAsync_WhenGivenValidDmFile_ReturnsValidDm()
 		{
 			const string dmFile = "data/frames/depth/0.dm";
-			const int gtWidth = 512;
-			const int gtHeight = 424;
+			const int gtWidth = 16;
+			const int gtHeight = 9;
 			const int gtDataLength = gtWidth * gtHeight;
 
 			var dm = await DepthMapUtils.ReadDepthMapFromRawFileAsync(dmFile);

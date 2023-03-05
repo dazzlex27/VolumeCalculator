@@ -12,7 +12,4 @@
     <ProjectReference Include="..\..\Primitives\Primitives.csproj" />
     <ProjectReference Include="..\..\ProcessingUtils\ProcessingUtils.csproj" />
   </ItemGroup>
-  <PropertyGroup>
-    <PreBuildEvent>xcopy $(SolutionDir)\packages\realsense2\x64\bin\realsense2.dll /Y /D</PreBuildEvent>
-  </PropertyGroup>
 </Project>

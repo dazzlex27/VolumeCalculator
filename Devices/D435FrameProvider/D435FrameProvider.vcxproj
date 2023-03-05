@@ -44,12 +44,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)!!bin\AnyCPU\$(Configuration)\net7.0-windows\</OutDir>
+    <OutDir>$(SolutionDir)!!bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>libD435FrameProvider</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)!!bin\AnyCPU\$(Configuration)\net7.0-windows\</OutDir>
+    <OutDir>$(SolutionDir)!!bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>libD435FrameProvider</TargetName>
   </PropertyGroup>
@@ -59,10 +59,10 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)packages\realsense2\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CommonPackagesDir)\realsense2\include\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)packages\realsense2\x64\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CommonPackagesDir)\realsense2\x64\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>realsense2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -74,14 +74,17 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)packages\realsense2\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CommonPackagesDir)\realsense2\include\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)packages\realsense2\x64\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CommonPackagesDir)\realsense2\x64\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>realsense2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>xcopy $(CommonPackagesDir)\realsense\x64\bin\realsense.dll $(OutDir) /Y /D</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="D435FrameProviderAPI.cpp" />
