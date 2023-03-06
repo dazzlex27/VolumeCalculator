@@ -1,32 +1,39 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 
 namespace Primitives
 {
-	public class FixedSizeQueue<T>
+	public sealed class FixedSizeQueue<T> : IDisposable
 	{
-		private readonly ConcurrentQueue<T> _internalQueue;
+		private readonly BlockingCollection<T> _internalQueue;
 
 		public int Size { get; }
+
+		public int Count => _internalQueue.Count;
 
 		public FixedSizeQueue(int size)
 		{
 			Size = size;
-			_internalQueue = new ConcurrentQueue<T>();
+			_internalQueue = new BlockingCollection<T>();
+		}
+
+		public void Dispose()
+		{
+			if (_internalQueue != null)
+				_internalQueue.Dispose();
 		}
 
 		public void Enqueue(T item)
 		{
-			_internalQueue.Enqueue(item);
+			_internalQueue.Add(item);
 
 			while (_internalQueue.Count > Size)
-				_internalQueue.TryDequeue(out _);
+				_internalQueue.Take();
 		}
 
 		public T Dequeue()
 		{
-			var success = _internalQueue.TryDequeue(out var value);
-
-			return success ? value : default;
+			return _internalQueue.Take();
 		}
 	}
 }

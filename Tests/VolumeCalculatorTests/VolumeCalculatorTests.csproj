@@ -15,6 +15,7 @@
     <PackageReference Include="coverlet.collector" Version="3.1.2" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\DeviceIntegration\DeviceIntegration.csproj" />
     <ProjectReference Include="..\..\Primitives\Primitives.csproj" />
 	<ProjectReference Include="..\..\FrameProcessor\FrameProcessor.csproj" />
   </ItemGroup>

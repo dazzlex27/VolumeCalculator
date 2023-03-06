@@ -14,6 +14,12 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="obj\**" />
+    <EmbeddedResource Remove="obj\**" />
+    <None Remove="obj\**" />
+    <Page Remove="obj\**" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\ExtIntegration\ExtIntegration.csproj" />
     <ProjectReference Include="..\FrameProcessor\FrameProcessor.csproj" />
     <ProjectReference Include="..\GuiCommon\GuiCommon.csproj" />

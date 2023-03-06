@@ -45,6 +45,7 @@ namespace FrameProviders.Local
 		{
 			_started = false;
 			TokenSource.Cancel();
+			base.Dispose();
 		}
 
 		private async Task PushColorFrames(CancellationTokenSource tokenSource)
@@ -63,13 +64,13 @@ namespace FrameProviders.Local
 
 				while (!tokenSource.IsCancellationRequested)
 				{
-					if (IsColorStreamSuspended || colorFrames.Count <= 0)
+					if (ColorFrameStream.IsSuspended || colorFrames.Count <= 0)
 					{
 						await Task.Delay(5);
 						continue;
 					}
 
-					if (!NeedUnrestrictedColorFrame && !NeedColorFrame)
+					if (!ColorFrameStream.NeedAnyFrame)
 					{
 						await Task.Delay(5);
 						continue;
@@ -79,7 +80,7 @@ namespace FrameProviders.Local
 						colorFrameIndex = 0;
 
 					var image = colorFrames[colorFrameIndex++];
-					PushColorFrame(image);
+					ColorFrameStream.PushFrame(image);
 
 					await Task.Delay(33); // ~30 FPS
 				}
@@ -105,13 +106,13 @@ namespace FrameProviders.Local
 
 				while (!tokenSource.IsCancellationRequested)
 				{
-					if (IsDepthStreamSuspended || depthFrames.Count <= 0)
+					if (DepthFrameStream.IsSuspended || depthFrames.Count <= 0)
 					{
 						await Task.Delay(5);
 						continue;
 					}
 
-					if (!NeedUnrestrictedDepthFrame && !NeedDepthFrame)
+					if (!DepthFrameStream.NeedAnyFrame)
 					{
 						await Task.Delay(5);
 						continue;
@@ -121,7 +122,7 @@ namespace FrameProviders.Local
 						depthFrameIndex = 0;
 
 					var depthMap = depthFrames[depthFrameIndex++];
-					PushDepthFrame(depthMap);
+					DepthFrameStream.PushFrame(depthMap);
 
 					await Task.Delay(33); // ~30 FPS
 				}

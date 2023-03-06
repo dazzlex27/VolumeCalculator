@@ -7,6 +7,11 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="obj\**" />
+    <EmbeddedResource Remove="obj\**" />
+    <None Remove="obj\**" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="LibUsbDotNet.LibUsbDotNet">
       <HintPath>..\..\packages\LibUsbDotNet\LibUsbDotNet.LibUsbDotNet.dll</HintPath>
     </Reference>

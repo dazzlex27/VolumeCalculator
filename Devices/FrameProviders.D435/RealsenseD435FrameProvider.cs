@@ -43,6 +43,7 @@ namespace FrameProviders.D435
 			NativeMethods.UnsubscribeFromColorFrames(_colorFrameCallback);
 			NativeMethods.UnsubscribeFromDepthFrames(_depthFramesCallback);
 			NativeMethods.DestroyFrameProvider();
+			base.Dispose();
 		}
 
 		public override ColorCameraParams GetColorCameraParams()
@@ -62,42 +63,42 @@ namespace FrameProviders.D435
 
 		public override void SuspendColorStream()
 		{
-			if (IsColorStreamSuspended)
+			if (ColorFrameStream.IsSuspended)
 				return;
 
 			NativeMethods.UnsubscribeFromColorFrames(_colorFrameCallback);
 
-			IsColorStreamSuspended = true;
+			ColorFrameStream.IsSuspended = true;
 		}
 
 		public override void ResumeColorStream()
 		{
-			if (!IsColorStreamSuspended)
+			if (!ColorFrameStream.IsSuspended)
 				return;
 
 			NativeMethods.SubscribeToColorFrames(_colorFrameCallback);
 
-			IsColorStreamSuspended = false;
+			ColorFrameStream.IsSuspended = false;
 		}
 
 		public override void SuspendDepthStream()
 		{
-			if (IsDepthStreamSuspended)
+			if (DepthFrameStream.IsSuspended)
 				return;
 
 			NativeMethods.UnsubscribeFromDepthFrames(_depthFramesCallback);
 
-			IsDepthStreamSuspended = true;
+			DepthFrameStream.IsSuspended = true;
 		}
 
 		public override void ResumeDepthStream()
 		{
-			if (!IsDepthStreamSuspended)
+			if (!DepthFrameStream.IsSuspended)
 				return;
 
 			NativeMethods.SubscribeToDepthFrames(_depthFramesCallback);
 
-			IsDepthStreamSuspended = false;
+			DepthFrameStream.IsSuspended = false;
 		}
 
 		private unsafe void ColorFrameCallback(ColorFrame* frame)
@@ -107,8 +108,7 @@ namespace FrameProviders.D435
 
 			lock (_colorFrameProcessingLock)
 			{
-				var needToProcess = NeedUnrestrictedColorFrame || NeedColorFrame;
-				if (!needToProcess)
+				if (!ColorFrameStream.NeedAnyFrame)
 					return;
 
 				try
@@ -120,7 +120,7 @@ namespace FrameProviders.D435
 
 					var image = new ImageData(frame->Width, frame->Height, data, 3);
 
-					PushColorFrame(image);
+					ColorFrameStream.PushFrame(image);
 				}
 				catch (Exception ex)
 				{
@@ -136,8 +136,7 @@ namespace FrameProviders.D435
 
 			lock (_depthFrameProcessingLock)
 			{
-				var needToProcess = NeedUnrestrictedDepthFrame || NeedDepthFrame;
-				if (!needToProcess)
+				if (!DepthFrameStream.NeedAnyFrame)
 					return;
 
 				try
@@ -147,7 +146,7 @@ namespace FrameProviders.D435
 					Marshal.Copy(new IntPtr(frame->Data), data, 0, data.Length);
 					var depthMap = new DepthMap(frame->Width, frame->Height, data);
 
-					PushDepthFrame(depthMap);
+					DepthFrameStream.PushFrame(depthMap);
 				}
 				catch (Exception ex)
 				{

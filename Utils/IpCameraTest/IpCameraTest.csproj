@@ -9,6 +9,12 @@
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="obj\**" />
+    <EmbeddedResource Remove="obj\**" />
+    <None Remove="obj\**" />
+    <Page Remove="obj\**" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\DeviceIntegration\DeviceIntegration.csproj" />
     <ProjectReference Include="..\..\Devices\IpCameras\IpCameras.csproj" />
     <ProjectReference Include="..\..\GuiCommon\GuiCommon.csproj" />

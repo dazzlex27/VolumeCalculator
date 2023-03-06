@@ -12,6 +12,12 @@
     <ApplicationIcon>gearIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="obj\**" />
+    <EmbeddedResource Remove="obj\**" />
+    <None Remove="obj\**" />
+    <Page Remove="obj\**" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Primitives\Primitives.csproj" />
     <ProjectReference Include="..\GuiCommon\GuiCommon.csproj" />
     <ProjectReference Include="..\ProcessingUtils\ProcessingUtils.csproj" />

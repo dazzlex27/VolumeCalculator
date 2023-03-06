@@ -5,7 +5,7 @@ using Primitives.Logging;
 
 namespace FrameProviders.Kinect
 {
-    internal class KinectV2FrameProvider : FrameProvider
+    internal sealed class KinectV2FrameProvider : FrameProvider
 	{
 		private readonly KinectSensor _kinectSensor;
 		private readonly ColorFrameReader _colorFrameReader;
@@ -55,6 +55,7 @@ namespace FrameProviders.Kinect
 			_colorFrameReader.Dispose();
 			_depthFrameReader.Dispose();
 			_kinectSensor.Close();
+			base.Dispose();
 		}
 
 		public override ColorCameraParams GetColorCameraParams()
@@ -77,8 +78,7 @@ namespace FrameProviders.Kinect
 		{
 			lock (_colorFrameProcessingLock)
 			{
-				var needToProcess = NeedUnrestrictedColorFrame || NeedColorFrame;
-				if (!needToProcess)
+				if (!ColorFrameStream.NeedAnyFrame)
 					return;
 
 				ImageData image;
@@ -90,7 +90,7 @@ namespace FrameProviders.Kinect
 						return;
 				}
 
-				PushColorFrame(image);
+				ColorFrameStream.PushFrame(image);
 			}
 		}
 
@@ -98,8 +98,7 @@ namespace FrameProviders.Kinect
 		{
 			lock (_depthFrameProcessingLock)
 			{
-				var needToProcess = NeedUnrestrictedDepthFrame || NeedDepthFrame;
-				if (!needToProcess)
+				if (!DepthFrameStream.NeedAnyFrame)
 					return;
 
 				DepthMap map;
@@ -111,7 +110,7 @@ namespace FrameProviders.Kinect
 						return;
 				}
 
-				PushDepthFrame(map);
+				DepthFrameStream.PushFrame(map);
 			}
 		}
 	}
