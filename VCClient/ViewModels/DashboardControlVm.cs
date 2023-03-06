@@ -14,7 +14,7 @@ using VCClient.Utils;
 
 namespace VCClient.ViewModels
 {
-	internal class CalculationDashboardControlVm : BaseViewModel
+	internal class DashboardControlVm : BaseViewModel
 	{
 		public event Action<bool> LockingStatusChanged;
 		public event Action<CalculationRequestData> CalculationRequested;
@@ -213,7 +213,7 @@ namespace VCClient.ViewModels
 			set => SetField(ref _lastAlgorithmUsed, value, nameof(LastAlgorithmUsed));
 		}
 
-		public CalculationDashboardControlVm(ILogger logger, ApplicationSettings settings,
+		public DashboardControlVm(ILogger logger, ApplicationSettings settings,
 			DeviceManager deviceManager, CalculationRequestHandler calculator)
 		{
 			_logger = logger;

@@ -17,7 +17,7 @@ namespace VCServer
 {
 	public class VolumeCalculationLogic
 	{
-		public event Action<VolumeCalculatorResultData> CalculationFinished;
+		public event Action<VolumeCalculationResultData> CalculationFinished;
 
 		private readonly ILogger _logger;
 		private readonly IFrameProvider _frameProvider;
@@ -97,7 +97,7 @@ namespace VCServer
 		{
 			CleanUp();
 			var result = new ObjectVolumeData(0, 0, 0);
-			var resultData = new VolumeCalculatorResultData(result, status, _latestColorFrame,
+			var resultData = new VolumeCalculationResultData(result, status, _latestColorFrame,
 					AlgorithmSelectionStatus.Undefined, false);
 			CalculationFinished?.Invoke(resultData);
 		}

@@ -3,7 +3,7 @@ using Primitives;
 
 namespace VCServer
 {
-	public class VolumeCalculatorResultData
+	public class VolumeCalculationResultData
 	{
 		public ObjectVolumeData Result { get; }
 		
@@ -15,7 +15,7 @@ namespace VCServer
 		
 		public bool WasRangeMeterUsed { get; }
 
-		public VolumeCalculatorResultData(ObjectVolumeData result, CalculationStatus status, ImageData objectPhoto,
+		public VolumeCalculationResultData(ObjectVolumeData result, CalculationStatus status, ImageData objectPhoto,
 			AlgorithmSelectionStatus lastAlgorithmUsed, bool wasRangeMeterUsed)
 		{
 			Result = result;

@@ -248,7 +248,7 @@ namespace VCServer
 			StartCalculation(null);
 		}
 
-		private void OnCalculationFinished(VolumeCalculatorResultData resultData)
+		private void OnCalculationFinished(VolumeCalculationResultData resultData)
 		{
 			try
 			{

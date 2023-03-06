@@ -5,48 +5,48 @@ using VCClient.ViewModels;
 
 namespace VCClient.GUI
 {
-	internal partial class CalculationDashboardControl
+	internal partial class DashboardControl
 	{
-		private CalculationDashboardControlVm _vm;
+		private DashboardControlVm _vm;
 
-		public CalculationDashboardControl()
+		public DashboardControl()
 		{
 			InitializeComponent();
 		}
 
 		private void OnCodeBoxGotFocus(object sender, KeyboardFocusChangedEventArgs e)
 		{
-			var vm = (CalculationDashboardControlVm)DataContext;
+			var vm = (DashboardControlVm)DataContext;
 			vm.CodeBoxFocused = true;
 		}
 
 		private void OnCodeBoxLostFocus(object sender, KeyboardFocusChangedEventArgs e)
 		{
-			var vm = (CalculationDashboardControlVm)DataContext;
+			var vm = (DashboardControlVm)DataContext;
 			vm.CodeBoxFocused = false;
 		}
 
 		private void OnUnitBoxGotFocus(object sender, KeyboardFocusChangedEventArgs e)
 		{
-			var vm = (CalculationDashboardControlVm)DataContext;
+			var vm = (DashboardControlVm)DataContext;
 			vm.UnitCountBoxFocused = true;
 		}
 
 		private void OnUnitBoxLostFocus(object sender, KeyboardFocusChangedEventArgs e)
 		{
-			var vm = (CalculationDashboardControlVm)DataContext;
+			var vm = (DashboardControlVm)DataContext;
 			vm.UnitCountBoxFocused = false;
 		}
 
 		private void OnCommentBoxGotFocus(object sender, KeyboardFocusChangedEventArgs e)
 		{
-			var vm = (CalculationDashboardControlVm)DataContext;
+			var vm = (DashboardControlVm)DataContext;
 			vm.CommentBoxFocused = true;
 		}
 
 		private void OnCommentBoxLostFocus(object sender, RoutedEventArgs e)
 		{
-			var vm = (CalculationDashboardControlVm)DataContext;
+			var vm = (DashboardControlVm)DataContext;
 			vm.CommentBoxFocused = false;
 		}
 
@@ -68,7 +68,7 @@ namespace VCClient.GUI
 
 		private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
 		{
-			if (!(DataContext is CalculationDashboardControlVm vm))
+			if (!(DataContext is DashboardControlVm vm))
 				return;
 
 			_vm = vm;

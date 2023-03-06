@@ -18,7 +18,7 @@ namespace VCServer
 			_processor = processor;
 		}
 
-		public VolumeCalculatorResultData Calculate(IReadOnlyList<ImageData> images, IReadOnlyList<DepthMap> depthMaps,
+		public VolumeCalculationResultData Calculate(IReadOnlyList<ImageData> images, IReadOnlyList<DepthMap> depthMaps,
 			VolumeCalculationData data, short calculatedDistance)
 		{
 			if (images.Count == 0 || depthMaps.Count == 0)
@@ -33,7 +33,7 @@ namespace VCServer
 			var algorithm = algorithmSelectionResult.Status;
 			var rangeMeterWasUsed = algorithmSelectionResult.RangeMeterWasUsed;
 			if (!algorithmSelectionResult.IsSelected)
-				return new VolumeCalculatorResultData(null, CalculationStatus.FailedToSelectAlgorithm, 
+				return new VolumeCalculationResultData(null, CalculationStatus.FailedToSelectAlgorithm, 
 					firstImage, algorithm, algorithmSelectionResult.RangeMeterWasUsed);
 			
 			var results = new List<ObjectVolumeData>();
@@ -49,7 +49,7 @@ namespace VCServer
 				? CalculationStatus.Successful
 				: CalculationStatus.CalculationError;
 			
-			return new VolumeCalculatorResultData(aggregatedResult, resultStatus, firstImage, algorithm, rangeMeterWasUsed);
+			return new VolumeCalculationResultData(aggregatedResult, resultStatus, firstImage, algorithm, rangeMeterWasUsed);
 		}
 
 		private ObjectVolumeData AggregateCalculationsData(IReadOnlyList<ObjectVolumeData> results)

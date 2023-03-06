@@ -37,4 +37,7 @@
   <ItemGroup>
     <Page Remove="Themes\Metro\Metro.MSControls.Toolkit.Implicit.xaml" />
   </ItemGroup>
+  <ItemGroup>
+    <SplashScreen Include="splash.jpg" />
+  </ItemGroup>
 </Project>

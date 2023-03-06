@@ -5,11 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:gui="clr-namespace:VCClient.GUI"
         xmlns:viewModels="clr-namespace:VCClient.ViewModels"
+        xmlns:utils="clr-namespace:VCClient.Utils"
         mc:Ignorable="d"
         x:ClassModifier="internal"
-        Title="{Binding WindowTitle}" 
+        Title="{x:Static utils:GuiUtils.AppHeaderString}" 
         WindowStartupLocation="CenterScreen" 
-        Closing="OnWindowClosing"
         WindowStyle="None"
         WindowState="Maximized"
         ResizeMode="NoResize"
@@ -54,10 +54,10 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <gui:StreamViewControl DataContext="{Binding StreamViewControlVm, Mode=TwoWay}"/>
-            <gui:CalculationDashboardControl Grid.Row="1" 
+            <gui:DashboardControl Grid.Row="1" 
                                              VerticalAlignment="Stretch" 
                                              HorizontalAlignment="Stretch" 
-                                             DataContext="{Binding CalculationDashboardControlVm, Mode=TwoWay}"/>
+                                             DataContext="{Binding DashboardControlVm, Mode=TwoWay}"/>
             <gui:TestDataGenerationControl Grid.Row="2" 
                                            DataContext="{Binding TestDataGenerationControlVm, Mode=TwoWay}" 
                                            KeyboardNavigation.TabNavigation="None"/>
