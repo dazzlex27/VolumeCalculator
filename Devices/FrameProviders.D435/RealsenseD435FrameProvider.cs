@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using DeviceIntegration.FrameProviders;
+using DeviceIntegration.Native;
 using Primitives;
 using Primitives.Logging;
 

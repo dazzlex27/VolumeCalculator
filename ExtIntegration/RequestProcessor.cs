@@ -7,6 +7,7 @@ using ExtIntegration.RequestHandlers;
 using ExtIntegration.RequestSenders;
 using ExtIntegration.RequestSenders.SqlSenders;
 using Primitives;
+using Primitives.Calculation;
 using Primitives.Logging;
 using Primitives.Settings;
 using Primitives.Settings.Integration;
@@ -111,11 +112,11 @@ namespace ExtIntegration
 
 			foreach (var sender in _requestSenders)
 			{
-				await Task.Run(async () =>
+				await Task.FromResult(async () =>
 				{
 					try
 					{
-						var sent = await sender.SendAsync(resultData);
+						_ = await sender.SendAsync(resultData);
 					}
 					catch (Exception ex)
 					{

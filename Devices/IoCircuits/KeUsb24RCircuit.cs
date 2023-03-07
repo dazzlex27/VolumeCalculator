@@ -76,7 +76,7 @@ namespace IoCircuits
 
 		public void ToggleRelay(int relayNum, bool state)
 		{
-			Task.Run(() =>
+			Task.FromResult(() =>
 			{
 				try
 				{

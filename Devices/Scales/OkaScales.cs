@@ -55,7 +55,7 @@ namespace DeviceIntegration.Scales
 
 			var data = new byte[32];
 
-			Task.Run(async () =>
+			Task.Factory.StartNew(async (o) =>
 			{
 				try
 				{
@@ -65,12 +65,14 @@ namespace DeviceIntegration.Scales
 				{
 					_logger.LogException("Exception in OkaScales polling loop", ex);
 				}
-			});
+			}, TaskCreationOptions.LongRunning, _tokenSource.Token);
 		}
 
 		public void Dispose()
 		{
 			_logger.LogInfo($"Disposing OkaScales scales on port {_port}...");
+			_tokenSource.Dispose();
+			_requestTimer.Dispose();
 			_serialPort.Close();
 		}
 

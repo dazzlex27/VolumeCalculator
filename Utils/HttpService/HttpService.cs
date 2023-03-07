@@ -15,7 +15,7 @@ namespace HttpService
 		public HttpService(string ip, ushort port)
 		{
 			_prefix = $"http://{ip}:{port}/";
-			Task.Run(() =>
+			Task.Factory.StartNew((o) =>
 			{
 				try
 				{
@@ -25,7 +25,7 @@ namespace HttpService
 				{
 					Console.WriteLine($"ERROR: request handler failed! {Environment.NewLine}{ex}");
 				}
-			});
+			}, TaskCreationOptions.LongRunning);
 		}
 
 		private void RunTask()

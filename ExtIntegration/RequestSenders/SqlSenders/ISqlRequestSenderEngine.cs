@@ -1,4 +1,4 @@
-﻿using Primitives;
+﻿using Primitives.Calculation;
 using System;
 using System.Threading.Tasks;
 

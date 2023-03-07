@@ -6,21 +6,23 @@ using Primitives.Logging;
 namespace DeviceIntegration.Scales
 {
 	internal class FakeScales : IScales
-	{ 
+	{
 		public event Action<ScaleMeasurementData> MeasurementReady;
 
 		private const int MaxWeight = 15000;
 		private readonly Random _rand;
-		private double _nextWeight;
-		private double _minWeight;
-		
+
+		private readonly double _minWeight;
+		private readonly ILogger _logger;
 		private readonly CancellationTokenSource _tokenSource;
 
+		private double _nextWeight;
 		private volatile bool _applyPayload;
 		private volatile bool _paused;
 
 		public FakeScales(ILogger logger, string port, double minWeight)
 		{
+			_logger = logger;
 			_minWeight = minWeight;
 			_rand = new Random();
 			_tokenSource = new CancellationTokenSource();
@@ -29,30 +31,7 @@ namespace DeviceIntegration.Scales
 
 			logger.LogInfo($"Creating FakeScales on 'port' {port}");
 
-			Task.Run(async () => {
-				try
-				{
-					var statusSwitchTimer = new System.Timers.Timer(10000) { AutoReset = true };
-					statusSwitchTimer.Elapsed += OnstatusSwitchTimerElapsed;
-					statusSwitchTimer.Start();
-
-					while (!_tokenSource.IsCancellationRequested)
-					{
-						if (!_paused)
-						{
-							var data = _applyPayload
-								? new ScaleMeasurementData(MeasurementStatus.Measured, _nextWeight)
-								: new ScaleMeasurementData(MeasurementStatus.Ready, 0);
-
-							MeasurementReady?.Invoke(data);
-						}
-						await Task.Delay(500);
-					}
-				}
-				catch (Exception ex)
-				{
-					logger.LogException("Failed to send FakeScales data", ex);
-				}}, _tokenSource.Token);
+			Task.Factory.StartNew(async (o) => await RunScales(), TaskCreationOptions.LongRunning, _tokenSource.Token);
 		}
 
 		public void Dispose()
@@ -75,6 +54,33 @@ namespace DeviceIntegration.Scales
 		{
 			_nextWeight = _rand.Next(MaxWeight);
 			_applyPayload = !_applyPayload;
+		}
+
+		private async Task RunScales()
+		{
+			try
+			{
+				var statusSwitchTimer = new System.Timers.Timer(10000) { AutoReset = true };
+				statusSwitchTimer.Elapsed += OnstatusSwitchTimerElapsed;
+				statusSwitchTimer.Start();
+
+				while (!_tokenSource.IsCancellationRequested)
+				{
+					if (!_paused)
+					{
+						var data = _applyPayload && (_nextWeight > _minWeight)
+							? new ScaleMeasurementData(MeasurementStatus.Measured, _nextWeight)
+							: new ScaleMeasurementData(MeasurementStatus.Ready, 0);
+
+						MeasurementReady?.Invoke(data);
+					}
+					await Task.Delay(500);
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to send FakeScales data", ex);
+			}
 		}
 	}
 }

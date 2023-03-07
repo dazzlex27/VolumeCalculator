@@ -53,6 +53,7 @@ namespace VCClient.ViewModels
 			{
 				HostName = IoUtils.GetHostName();
 
+				// TODO: verify that this is ok
 				var ipAddresses = Task.Run(IoUtils.GetLocalIpAddressesAsync);
 
 				AppVersion = GlobalConstants.AppVersion;

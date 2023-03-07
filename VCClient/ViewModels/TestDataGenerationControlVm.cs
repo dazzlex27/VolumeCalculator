@@ -162,7 +162,7 @@ namespace VCClient.ViewModels
 
 		public void Dispose()
 		{
-			_testDataGenerator.Dispose();
+			_testDataGenerator?.Dispose();
 		}
 
 		public void UpdateSettings(ApplicationSettings settings)

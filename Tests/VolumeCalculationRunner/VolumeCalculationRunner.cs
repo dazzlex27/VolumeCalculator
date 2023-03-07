@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using CommonUtils.Logging;
 using FrameProcessor;
 using FrameProviders;
 using Primitives.Logging;

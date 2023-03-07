@@ -1,4 +1,5 @@
-﻿using GuiCommon;
+﻿using CommonUtils.Logging;
+using GuiCommon;
 using Primitives.Logging;
 using Primitives.Settings;
 using System;
@@ -109,13 +110,9 @@ namespace VCClient
 
 				_serverLogger?.LogInfo("Disposing the application...");
 
+				_mainWindow.Close();
 				_mainWindowVm?.Dispose();
 				_server?.Dispose();
-				_clientLogger?.Dispose();
-				_integrationLogger?.Dispose();
-				_deviceLogger?.Dispose();
-				_serverLogger?.Dispose();
-				_httpClient?.Dispose();
 
 				_serverLogger?.LogInfo("Application stopped");
 
@@ -132,6 +129,11 @@ namespace VCClient
 			finally
 			{
 				_shutDownInProgress = false;
+				_serverLogger?.Dispose();
+				_clientLogger?.Dispose();
+				_integrationLogger?.Dispose();
+				_deviceLogger?.Dispose();
+				_httpClient?.Dispose();
 			}
 		}
 

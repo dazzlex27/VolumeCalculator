@@ -4,13 +4,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
-using Primitives;
+using Primitives.Calculation;
 using Primitives.Logging;
 using Primitives.Settings.Integration;
 
 namespace ExtIntegration.RequestHandlers
 {
-	public sealed class HttpRequestHandler : IDisposable
+	internal sealed class HttpRequestHandler : IDisposable
 	{
 		public event Action<HttpRequestData> CalculationStartRequested;
 		public event Action CalculationStartRequestTimedOut;
@@ -24,6 +24,8 @@ namespace ExtIntegration.RequestHandlers
 		private readonly string _address;
 		private readonly string _login;
 		private readonly string _password;
+
+		private readonly CancellationTokenSource _tokenSource;
 
 		private bool _running;
 		private bool _sessionInProgress;
@@ -45,23 +47,28 @@ namespace ExtIntegration.RequestHandlers
 			_requestHandlingTimeoutTimer = new System.Timers.Timer(RequestTimeoutMs) { AutoReset = false };
 			_requestHandlingTimeoutTimer.Elapsed += OnTimeoutTimerElapsed;
 
-			Task.Run(() =>
+			_tokenSource = new CancellationTokenSource();
+
+			Task.Factory.StartNew(async (o) =>
 			{
 				try
 				{
-					ListenToRequests();
+					await ListenToRequestsAsync();
 				}
 				catch (Exception ex)
 				{
 					_logger.LogException("Http listening failed", ex);
 				}
-			});
+			}, TaskCreationOptions.LongRunning, _tokenSource.Token);
 		}
 
 		public void Dispose()
 		{
 			_logger.LogInfo($"Disposing http listener for {_address} ...");
 			_running = false;
+			_tokenSource.Dispose();
+			_requestHandlingTimeoutTimer?.Dispose();
+			_logger?.LogInfo($"Disposed http listener for {_address}");
 		}
 
 		public async Task SendResponse(HttpRequestData data, CalculationResultData resultData)
@@ -98,7 +105,7 @@ namespace ExtIntegration.RequestHandlers
 			}
 		}
 
-		private void SendPingResponse(HttpRequestData data)
+		private async Task SendPingResponseAsync(HttpRequestData data)
 		{
 			try
 			{
@@ -110,7 +117,7 @@ namespace ExtIntegration.RequestHandlers
 
 				response.ContentLength64 = buffer.Length;
 				var output = response.OutputStream;
-				output.Write(buffer, 0, buffer.Length);
+				await output.WriteAsync(buffer);
 
 				output.Close();
 
@@ -150,17 +157,17 @@ namespace ExtIntegration.RequestHandlers
 			}
 		}
 
-		private void ListenToRequests()
+		private async Task ListenToRequestsAsync()
 		{
 			_listener.Start();
 
 			while (_running)
 			{
 				if (_sessionInProgress)
-					Thread.Sleep(ThreadIdleTimeSpan);
+					await Task.Delay(ThreadIdleTimeSpan);
 
 				_logger.LogInfo($"Awaiting HTTP requests from {_address}...");
-				var context = _listener.GetContext();
+				var context = await _listener.GetContextAsync();
 				var request = context.Request;
 				var credentialsAreOk = CheckCredentials(request);
 				if (!credentialsAreOk)
@@ -170,9 +177,9 @@ namespace ExtIntegration.RequestHandlers
 				}
 
 				var url = request.RawUrl;
-				var command = url.Contains("?")
+				var command = url.Contains('?')
 					? url.Substring(1, url.IndexOf("?", StringComparison.Ordinal))
-					: url.Substring(1);
+					: url[1..];
 				var method = request.HttpMethod;
 				_logger.LogInfo($"HTTP request accepted from {_address} containing {url}, the method is {method}");
 
@@ -181,7 +188,7 @@ namespace ExtIntegration.RequestHandlers
 				switch (command)
 				{
 					case "ping":
-						SendPingResponse(new HttpRequestData(context, false));
+						await SendPingResponseAsync(new HttpRequestData(context, false));
 						break;
 					case "calculate":
 						RaiseCalculationStartRequestedEvent(context, false);
@@ -195,7 +202,7 @@ namespace ExtIntegration.RequestHandlers
 				}
 			}
 
-			_listener.Stop();
+			_listener.Close();
 		}
 
 		private void RaiseCalculationStartRequestedEvent(HttpListenerContext context, bool sendPhoto)
@@ -229,8 +236,8 @@ namespace ExtIntegration.RequestHandlers
 			var usernamePassword = encoding.GetString(Convert.FromBase64String(encodedUsernamePassword));
 			var separatorIndex = usernamePassword.IndexOf(':');
 
-			var login = usernamePassword.Substring(0, separatorIndex);
-			var password = usernamePassword.Substring(separatorIndex + 1);
+			var login = usernamePassword[..separatorIndex];
+			var password = usernamePassword[(separatorIndex + 1)..];
 
 			var loginIsOk = _login == login;
 			if (!loginIsOk)

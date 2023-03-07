@@ -88,6 +88,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoCircuits", "Devices\IoCir
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IpCameras", "Devices\IpCameras\IpCameras.csproj", "{75099459-BA46-4A49-A112-8BD090C1CC6C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonUtils", "CommonUtils\CommonUtils.csproj", "{299084BF-3FAA-44A5-98A9-DC8811713C37}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -226,6 +228,10 @@ Global
 		{75099459-BA46-4A49-A112-8BD090C1CC6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75099459-BA46-4A49-A112-8BD090C1CC6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75099459-BA46-4A49-A112-8BD090C1CC6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{299084BF-3FAA-44A5-98A9-DC8811713C37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{299084BF-3FAA-44A5-98A9-DC8811713C37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{299084BF-3FAA-44A5-98A9-DC8811713C37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{299084BF-3FAA-44A5-98A9-DC8811713C37}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

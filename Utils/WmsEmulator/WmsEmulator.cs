@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WmsEmulator
 {
-	internal class WmsEmulator
+	internal class WmsEmulator : IDisposable
 	{
 		private readonly HttpClient _httpClient;
 		private readonly string _address;
@@ -28,6 +28,11 @@ namespace WmsEmulator
 					throw;
 				}
 			});
+		}
+
+		public void Dispose()
+		{
+			_httpClient.Dispose();
 		}
 
 		private void RunTask()

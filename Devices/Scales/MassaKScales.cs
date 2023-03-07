@@ -55,7 +55,7 @@ namespace DeviceIntegration.Scales
 
 			_serialPort.Open();
 
-			Task.Run(async () =>
+			Task.Factory.StartNew(async (o) =>
 			{
 				try
 				{
@@ -65,14 +65,14 @@ namespace DeviceIntegration.Scales
 				{
 					_logger.LogException("Exception in MassaKScales polling loop", ex);
 				}
-			});
+			}, TaskCreationOptions.LongRunning, _tokenSource.Token);
 		}
 
 		public void Dispose()
 		{
 			_logger.LogInfo($"Disposing MassaKScales on port {_port}...");
 
-			_tokenSource.Cancel();
+			_tokenSource.Dispose();
 			_serialPort.Close();
 		}
 

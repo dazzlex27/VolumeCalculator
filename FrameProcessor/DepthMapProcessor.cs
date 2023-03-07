@@ -189,6 +189,7 @@ namespace FrameProcessor
 		{
 			_logger.LogInfo("Disposing depth map processor...");
 			NativeMethods.DestroyDepthMapProcessor();
+			_logger.LogInfo("Disposed depth map processor");
 		}
 
 		private static unsafe Native.DepthMap GetNativeDepthMapFromDepthMap(DepthMap depthMap, short* depthData)

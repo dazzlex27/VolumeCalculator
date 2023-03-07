@@ -11,6 +11,9 @@ using Primitives.Settings;
 using ProcessingUtils;
 using VCServer;
 using VCClient.Utils;
+using VCServer.VolumeCalculation;
+using VCServer.DeviceHandling;
+using Primitives.Calculation;
 
 namespace VCClient.ViewModels
 {

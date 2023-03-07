@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using CommonUtils.Logging;
 using GuiCommon;
 using Primitives;
 using Primitives.Logging;

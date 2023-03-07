@@ -5,12 +5,13 @@ using Fleck;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Primitives;
+using Primitives.Calculation;
 using Primitives.Logging;
 using Primitives.Settings.Integration;
 
 namespace ExtIntegration.RequestHandlers
 {
-	public class WebClientHandler : IDisposable
+	public sealed class WebClientHandler : IDisposable
 	{
 		public event Action<CalculationRequestData> CalculationStartRequested;
 

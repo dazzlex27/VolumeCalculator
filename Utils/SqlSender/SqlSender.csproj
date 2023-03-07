@@ -7,11 +7,8 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="obj\**" />
-    <EmbeddedResource Remove="obj\**" />
-    <None Remove="obj\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MySql.Data" Version="8.0.32" />
+    <ProjectReference Include="..\..\ExtIntegration\ExtIntegration.csproj" />
   </ItemGroup>
 </Project>

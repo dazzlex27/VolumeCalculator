@@ -1,5 +1,5 @@
 ﻿using System.Runtime.InteropServices;
-using Primitives;
+using DeviceIntegration.Native;
 
 namespace FrameProviders.D435
 {

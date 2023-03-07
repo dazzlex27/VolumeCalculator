@@ -1,5 +1,5 @@
-﻿using ExtIntegration.RequestHandlers;
-using Primitives.Logging;
+﻿using CommonUtils.Logging;
+using ExtIntegration.RequestHandlers;
 using Primitives.Settings.Integration;
 using System;
 

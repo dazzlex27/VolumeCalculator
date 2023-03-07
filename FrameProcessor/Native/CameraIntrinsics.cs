@@ -3,7 +3,7 @@
 namespace FrameProcessor.Native
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct CameraIntrinsics
+	internal struct CameraIntrinsics
 	{
 		public float FovX;
 		public float FovY;

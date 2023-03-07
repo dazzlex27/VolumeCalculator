@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Primitives;
+using Primitives.Calculation;
 using Primitives.Logging;
 using Primitives.Settings.Integration;
 

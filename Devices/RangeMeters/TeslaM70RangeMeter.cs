@@ -18,7 +18,9 @@ namespace RangeMeters
 
 		private readonly ILogger _logger;
 
+#pragma warning disable CA2213 // Disposable fields should be disposed
 		private UsbDevice _teslaM70;
+#pragma warning restore CA2213 // Disposable fields should be disposed
 		private UsbEndpointWriter _writeEndpoint;
 		private UsbEndpointReader _readEnpoint;
 
@@ -38,7 +40,9 @@ namespace RangeMeters
 
 		public void Dispose()
 		{
-			_teslaM70?.Close();
+			_teslaM70.Close();
+			_writeEndpoint.Dispose();
+			_readEnpoint.Dispose();
 		}
 
 		public long GetReading()

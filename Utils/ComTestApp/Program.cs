@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonUtils.Logging;
 using DeviceIntegration;
 using DeviceIntegration.Scales;
 using Primitives.Logging;
@@ -93,10 +94,10 @@ namespace ComTestApp
 
 		private static void SaveRawData()
 		{
-			Task.Run(() =>
+			Task.Factory.StartNew((o) =>
 			{
 				var saver = new RawDataSaver(Console.ReadLine());
-			});
+			}, TaskCreationOptions.LongRunning);
 			while (true)
 			{
 				Thread.Sleep(100);

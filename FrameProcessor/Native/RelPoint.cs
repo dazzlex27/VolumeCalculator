@@ -3,7 +3,7 @@
 namespace FrameProcessor.Native
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct RelPoint
+	internal struct RelPoint
 	{
 		public float X;
 		public float Y;

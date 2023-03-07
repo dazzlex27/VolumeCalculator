@@ -9,11 +9,7 @@
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="obj\**" />
-    <EmbeddedResource Remove="obj\**" />
-    <None Remove="obj\**" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\..\CommonUtils\CommonUtils.csproj" />
     <ProjectReference Include="..\..\Devices\BarcodeScanners\BarcodeScanners.csproj" />
     <ProjectReference Include="..\..\Primitives\Primitives.csproj" />
   </ItemGroup>

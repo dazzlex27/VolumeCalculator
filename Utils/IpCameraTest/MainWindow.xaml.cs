@@ -11,6 +11,7 @@ using IpCameras;
 using Primitives.Logging;
 using GuiCommon;
 using Primitives;
+using CommonUtils.Logging;
 
 namespace IpCameraTest
 {
@@ -152,7 +153,7 @@ namespace IpCameraTest
 			}
 
 			if (initialized)
-				await Task.Run(async () => { await RunSnapshotFetchingLoop(); });
+				await Task.FromResult(RunSnapshotFetchingLoop);
 		}
 
 		private async Task RunSnapshotFetchingLoop()

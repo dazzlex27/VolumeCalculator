@@ -4,6 +4,7 @@ using System.Security.Authentication;
 using System.Threading.Tasks;
 using FluentFTP;
 using Primitives;
+using Primitives.Calculation;
 using Primitives.Logging;
 using Primitives.Settings.Integration;
 using ProcessingUtils;
@@ -32,7 +33,7 @@ namespace ExtIntegration.RequestSenders
 			{
 				EncryptionMode = useEncryption ? FtpEncryptionMode.Explicit : FtpEncryptionMode.None,
 				DataConnectionEncryption = useEncryption,
-				SslProtocols = SslProtocols.Default | SslProtocols.Tls11 | SslProtocols.Tls12,
+				SslProtocols = SslProtocols.None,
 				ValidateAnyCertificate = true
 			};
 			_client = new AsyncFtpClient(settings.Host, settings.Login, settings.Password, settings.Port, config);

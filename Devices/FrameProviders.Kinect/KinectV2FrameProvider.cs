@@ -8,8 +8,10 @@ namespace FrameProviders.Kinect
 	internal sealed class KinectV2FrameProvider : FrameProvider
 	{
 		private readonly KinectSensor _kinectSensor;
+#pragma warning disable CA2213 // Disposable fields should be disposed
 		private readonly ColorFrameReader _colorFrameReader;
 		private readonly DepthFrameReader _depthFrameReader;
+#pragma warning restore CA2213 // Disposable fields should be disposed
 
 		private readonly object _colorFrameProcessingLock;
 		private readonly object _depthFrameProcessingLock;

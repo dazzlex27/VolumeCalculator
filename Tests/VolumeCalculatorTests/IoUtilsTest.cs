@@ -18,12 +18,14 @@ namespace VolumeCalculatorTests
 		[Test]
 		public async Task SerializeSettingsToFile_GivenDefaultApplicationSettings_NoThrow()
 		{
-			var settings = ApplicationSettings.GetDefaultSettings();
-			var settingsFileInfo = new string("data/test.cfg");
+			var gtSettings = ApplicationSettings.GetDefaultSettings();
+			var settingsFilepath = "data/test.cfg";
 
-			await IoUtils.SerializeSettingsToFileAsync(settings, settingsFileInfo);
+			await IoUtils.SerializeSettingsToFileAsync(gtSettings, settingsFilepath);
+			var settings = await IoUtils.DeserializeSettingsFromFileAsync<ApplicationSettings>(settingsFilepath);
 
-			Assert.That(true, Is.True); // no exception occurred
+			Assert.That(settings, Is.Not.EqualTo(null));
+			// TODO: check equality piece-wise
 		}
 
 		[Test]
