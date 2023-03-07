@@ -46,7 +46,7 @@
                          MaxLength="50"
                          MaxLines="1"
                          AcceptsReturn="False"/>
-                <Button Grid.Column="2" Content="OK" IsDefault="{Binding CodeBoxFocused}" Visibility="{Binding CodeBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="ButtonBase_OnClick"/>
+                <Button Grid.Column="2" Content="OK" IsDefault="{Binding CodeBoxFocused}" Visibility="{Binding CodeBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="OnButtonClicked"/>
             </Grid>
             <Grid Margin="2,2,2,0">
                 <Grid.ColumnDefinitions>
@@ -110,7 +110,7 @@
                          AcceptsReturn="False"
                          MaxLength="4"
                          MaxLines="1"/>
-                <Button Grid.Column="2" Content="OK" IsDefault="{Binding UnitCountBoxFocused}" Visibility="{Binding UnitCountBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="ButtonBase_OnClick"/>
+                <Button Grid.Column="2" Content="OK" IsDefault="{Binding UnitCountBoxFocused}" Visibility="{Binding UnitCountBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="OnButtonClicked"/>
             </Grid>
             <Grid Margin="2,2,2,0">
                 <Grid.ColumnDefinitions>
@@ -184,7 +184,7 @@
                          FontSize="24"
                          Text="{Binding Path=Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="256"
                          AcceptsReturn="False"/>
-                <Button Grid.Column="2" Content="OK" IsDefault="{Binding CodeBoxFocused}" Visibility="{Binding CommentBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="ButtonBase_OnClick"/>
+                <Button Grid.Column="2" Content="OK" IsDefault="{Binding CodeBoxFocused}" Visibility="{Binding CommentBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}" Click="OnButtonClicked"/>
             </Grid>
         </StackPanel>
         <StackPanel Grid.Column="1"

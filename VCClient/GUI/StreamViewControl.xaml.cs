@@ -1,10 +1,10 @@
 ﻿namespace VCClient.GUI
 {
-    internal partial class StreamViewControl
-    {
-        public StreamViewControl()
-        {
-            InitializeComponent();
-        }
-    }
+	internal partial class StreamViewControl
+	{
+		public StreamViewControl()
+		{
+			InitializeComponent();
+		}
+	}
 }

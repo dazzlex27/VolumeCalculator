@@ -44,11 +44,7 @@ namespace VCClient.GUI
 		public bool RectangleOnly
 		{
 			get => (bool)GetValue(RectangleOnlyProperty);
-			set
-			{
-				SetValue(RectangleOnlyProperty, value);
-				//SetPoints(value ? new List<Point>() : _vm.PolygonPoints.ToList());
-			}
+			set => SetValue(RectangleOnlyProperty, value);
 		}
 
 		public static readonly DependencyProperty MainCanvasProperty =
@@ -130,7 +126,7 @@ namespace VCClient.GUI
 			}
 		}
 
-		private void CvMain_MouseDown(object sender, MouseButtonEventArgs e)
+		private void OnCvMainMouseDown(object sender, MouseButtonEventArgs e)
 		{
 			if (IsReadOnly)
 				return;
@@ -150,7 +146,7 @@ namespace VCClient.GUI
 			_clickPoint = e.GetPosition(_selectedShape);
 		}
 
-		private void CvMain_MouseMove(object sender, MouseEventArgs e)
+		private void OnCvMainMouseMove(object sender, MouseEventArgs e)
 		{
 			if (_selectedShape == null)
 				return;
@@ -164,13 +160,10 @@ namespace VCClient.GUI
 			Canvas.SetLeft(_selectedShape, newPoint.X - _clickPoint.X);
 			Canvas.SetTop(_selectedShape, newPoint.Y - _clickPoint.Y);
 
-			// var newPoints = GetPoints();
-			// _vm.SetPolygonPoints(GetRelPoints(newPoints));
-			//
 			_vm.PolygonPoints = new PointCollection(GetPoints());
 		}
 
-		private void CvMain_MouseUp(object sender, MouseButtonEventArgs e)
+		private void OnCvMainMouseUp(object sender, MouseButtonEventArgs e)
 		{
 			if (IsReadOnly)
 				return;
@@ -181,10 +174,18 @@ namespace VCClient.GUI
 			_selectedShape = null;
 		}
 
-		private void MaskPolygonControl_OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+		private void OnCvMainMouseLeave(object sender, MouseEventArgs e)
+		{
+			if (IsReadOnly)
+				return;
+
+			_selectedShape = null;
+		}
+
+		private void OnMaskPolygonControlDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
 		{
 			_vm = (MaskPolygonControlVm)DataContext;
-			_vm.PolygonPointsChanged += Vm_PolygonPointsChanged;
+			_vm.PolygonPointsChanged += OnPolygonPointsChanged;
 			_vm.SetCanvasSize(CvMain.ActualWidth, CvMain.ActualHeight);
 		}
 
@@ -240,20 +241,12 @@ namespace VCClient.GUI
 			}
 		}
 
-		private void Vm_PolygonPointsChanged(IReadOnlyList<Point> obj)
+		private void OnPolygonPointsChanged(IReadOnlyList<Point> obj)
 		{
 			SetPoints(_vm.PolygonPoints.ToList());
 		}
 
-		private void CvMain_OnMouseLeave(object sender, MouseEventArgs e)
-		{
-			if (IsReadOnly)
-				return;
-
-			_selectedShape = null;
-		}
-
-		private void MaskPolygonControl_OnSizeChanged(object sender, SizeChangedEventArgs e)
+		private void OnMaskPolygonControSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			_vm?.SetCanvasSize(CvMain.ActualWidth, CvMain.ActualHeight);
 		}

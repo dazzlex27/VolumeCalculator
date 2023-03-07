@@ -9,7 +9,7 @@
              x:ClassModifier="internal"
              Height="Auto"
              Width="Auto"
-             SizeChanged="SettingsWindow_OnSizeChanged"
+             SizeChanged="OnSettingsWindowSizeChanged"
              d:DataContext="{d:DesignInstance viewModels:WorkAreaSettingsControlVm}">
     <StackPanel Margin="10">
         <!--Video-->

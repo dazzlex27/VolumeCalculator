@@ -13,7 +13,7 @@
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
-        SizeChanged="SettingsWindow_OnSizeChanged"
+        SizeChanged="OnSettingsWindowSizeChanged"
         d:DataContext="{d:DesignInstance viewModels:SettingsWindowVm}">
     <Window.Resources>
         
@@ -39,12 +39,12 @@
                 <Button Margin="5"
                         MinWidth="100"
                         Content="OK"
-                        Click="BtOk_Click"
+                        Click="OnOkButtonClicked"
                         IsDefault="True" />
                 <Button Margin="5"
                         MinWidth="100"
                         Content="Отмена"
-                        Click="BtCancel_Click"
+                        Click="OnCancelButtonClicked"
                         IsCancel="True" />
                 <Button Margin="5"
                         MinWidth="100"

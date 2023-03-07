@@ -16,41 +16,35 @@ namespace VCClient.GUI
 
 		private void OnCodeBoxGotFocus(object sender, KeyboardFocusChangedEventArgs e)
 		{
-			var vm = (DashboardControlVm)DataContext;
-			vm.CodeBoxFocused = true;
+			_vm.CodeBoxFocused = true;
 		}
 
 		private void OnCodeBoxLostFocus(object sender, KeyboardFocusChangedEventArgs e)
 		{
-			var vm = (DashboardControlVm)DataContext;
-			vm.CodeBoxFocused = false;
+			_vm.CodeBoxFocused = false;
 		}
 
 		private void OnUnitBoxGotFocus(object sender, KeyboardFocusChangedEventArgs e)
 		{
-			var vm = (DashboardControlVm)DataContext;
-			vm.UnitCountBoxFocused = true;
+			_vm.UnitCountBoxFocused = true;
 		}
 
 		private void OnUnitBoxLostFocus(object sender, KeyboardFocusChangedEventArgs e)
 		{
-			var vm = (DashboardControlVm)DataContext;
-			vm.UnitCountBoxFocused = false;
+			_vm.UnitCountBoxFocused = false;
 		}
 
 		private void OnCommentBoxGotFocus(object sender, KeyboardFocusChangedEventArgs e)
 		{
-			var vm = (DashboardControlVm)DataContext;
-			vm.CommentBoxFocused = true;
+			_vm.CommentBoxFocused = true;
 		}
 
 		private void OnCommentBoxLostFocus(object sender, RoutedEventArgs e)
 		{
-			var vm = (DashboardControlVm)DataContext;
-			vm.CommentBoxFocused = false;
+			_vm.CommentBoxFocused = false;
 		}
 
-		private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+		private void OnButtonClicked(object sender, RoutedEventArgs e)
 		{
 			ResetFocus();
 
