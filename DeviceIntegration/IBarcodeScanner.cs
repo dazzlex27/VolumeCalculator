@@ -2,10 +2,10 @@
 
 namespace DeviceIntegration
 {
-    public interface IBarcodeScanner : IDisposable
-    {
-        event Action<string> CharSequenceFormed;
+	public interface IBarcodeScanner : IDisposable
+	{
+		event Action<string> CharSequenceFormed;
 
-        void TogglePause(bool pause);
-    }
+		void TogglePause(bool pause);
+	}
 }

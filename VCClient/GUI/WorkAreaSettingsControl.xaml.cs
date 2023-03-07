@@ -22,7 +22,7 @@ namespace VCClient.GUI
 
 			if (ReferenceEquals(textBox, TbMinObjHeight))
 			{
-			    e.Handled = !RegexInstances.IntegerValidator.IsMatch(e.Text);
+				e.Handled = !RegexInstances.IntegerValidator.IsMatch(e.Text);
 				return;
 			}
 

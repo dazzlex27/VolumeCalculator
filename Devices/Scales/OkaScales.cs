@@ -14,7 +14,7 @@ namespace DeviceIntegration.Scales
 
 		private readonly ILogger _logger;
 		private readonly string _port;
-        private readonly int _minWeight;
+		private readonly int _minWeight;
 
 		private readonly GodSerialPort _serialPort;
 		private readonly CancellationTokenSource _tokenSource;
@@ -29,7 +29,7 @@ namespace DeviceIntegration.Scales
 		{
 			_logger = logger;
 			_port = port;
-            _minWeight = minWeight;
+			_minWeight = minWeight;
 
 			_tokenSource = new CancellationTokenSource();
 
@@ -93,7 +93,7 @@ namespace DeviceIntegration.Scales
 
 			try
 			{
-				if (messageBytes== null || messageBytes.Length == 0)
+				if (messageBytes == null || messageBytes.Length == 0)
 					return;
 
 				var weight = GetWeightFromMessage(messageBytes);

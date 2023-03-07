@@ -17,22 +17,22 @@ namespace DeviceIntegration.Scales
 
 		private readonly ILogger _logger;
 		private readonly string _port;
-        private readonly int _minWeight;
+		private readonly int _minWeight;
 
-        private readonly CancellationTokenSource _tokenSource;
+		private readonly CancellationTokenSource _tokenSource;
 		private readonly GodSerialPort _serialPort;
 
 		private readonly bool _deepLoggingOn;
-		
+
 		private bool _paused;
 
 		public MassaKScales(ILogger logger, string port, int minWeight)
 		{
 			_logger = logger;
 			_port = port;
-            _minWeight = minWeight;
+			_minWeight = minWeight;
 
-            _tokenSource = new CancellationTokenSource();
+			_tokenSource = new CancellationTokenSource();
 
 			_logger.LogInfo($"Starting MassaKScales on port {_port}...");
 
@@ -116,29 +116,29 @@ namespace DeviceIntegration.Scales
 
 			if (_deepLoggingOn)
 				_logger.LogInfo($"MassaKScales ({_port}) message: {string.Join(" ", messageBytes)}");
-			
+
 			try
 			{
 				if (messageBytes.Count < 5)
 					return;
-				
-                var status = GetStatusFromMessage(messageBytes);
+
+				var status = GetStatusFromMessage(messageBytes);
 				if (status == MeasurementStatus.Invalid)
 					return;
-				
-                var weight = GetWeightFromMessage(messageBytes);
-                if (weight < _minWeight)
-                {
-                    status = MeasurementStatus.Ready;
-                    weight = 0;
-                }
+
+				var weight = GetWeightFromMessage(messageBytes);
+				if (weight < _minWeight)
+				{
+					status = MeasurementStatus.Ready;
+					weight = 0;
+				}
 
 				if (_deepLoggingOn)
 					_logger.LogInfo($"MassaKScales ({_port}) weight data: {status} {weight}");
 
-                var measurementData = new ScaleMeasurementData(status, weight);
-                MeasurementReady?.Invoke(measurementData);
-            }
+				var measurementData = new ScaleMeasurementData(status, weight);
+				MeasurementReady?.Invoke(measurementData);
+			}
 			catch (Exception ex)
 			{
 				_logger.LogException($"Failed to read data from MassaKScales on serial port {_port}", ex);
@@ -192,7 +192,7 @@ namespace DeviceIntegration.Scales
 					break;
 			}
 
-			return (int) Math.Floor(weight * multiplier * 1000);
+			return (int)Math.Floor(weight * multiplier * 1000);
 		}
 	}
 }

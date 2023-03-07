@@ -5,7 +5,7 @@ using Primitives.Logging;
 
 namespace FrameProviders.Kinect
 {
-    internal sealed class KinectV2FrameProvider : FrameProvider
+	internal sealed class KinectV2FrameProvider : FrameProvider
 	{
 		private readonly KinectSensor _kinectSensor;
 		private readonly ColorFrameReader _colorFrameReader;

@@ -13,17 +13,17 @@ namespace DeviceIntegration.Scales
 	internal class CasMScales : IScales
 	{
 		private static readonly TimeSpan StabilizationTimeDelta = TimeSpan.FromMilliseconds(300);
-		
+
 		public event Action<ScaleMeasurementData> MeasurementReady;
 
 		private readonly ILogger _logger;
 		private readonly string _port;
-        private readonly int _minWeight;
+		private readonly int _minWeight;
 
 		private readonly GodSerialPort _serialPort;
 
 		private readonly bool _deepLoggingOn;
-		
+
 		private bool _paused;
 
 		private double _lastWeightGr;
@@ -34,8 +34,8 @@ namespace DeviceIntegration.Scales
 		{
 			_logger = logger;
 			_port = port;
-            _minWeight = minWeight;
-			
+			_minWeight = minWeight;
+
 			_logger.LogInfo($"Starting CasMScales on port {_port}...");
 
 			_deepLoggingOn = File.Exists("SCALESLOGGING");
@@ -64,7 +64,7 @@ namespace DeviceIntegration.Scales
 		{
 			if (_lastWeightGr < _minWeight)
 				return;
-			
+
 			_lastWeightGr = 0;
 			_lastMeasurementStatus = MeasurementStatus.Ready;
 		}

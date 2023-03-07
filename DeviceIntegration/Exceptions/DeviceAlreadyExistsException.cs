@@ -2,23 +2,23 @@
 
 namespace DeviceIntegration.Exceptions
 {
-    [Serializable]
-    internal class DeviceAlreadyExistsException : Exception
-    {
-        public string DeviceName { get; set; }
+	[Serializable]
+	internal class DeviceAlreadyExistsException : Exception
+	{
+		public string DeviceName { get; set; }
 
-        public DeviceAlreadyExistsException() { }
+		public DeviceAlreadyExistsException() { }
 
-        public DeviceAlreadyExistsException(string message)
-            : base(message) { }
+		public DeviceAlreadyExistsException(string message)
+			: base(message) { }
 
-        public DeviceAlreadyExistsException(string message, Exception inner)
-            : base(message, inner) { }
+		public DeviceAlreadyExistsException(string message, Exception inner)
+			: base(message, inner) { }
 
-        public DeviceAlreadyExistsException(string message, string deviceName)
-            : base(message)
-        {
-            DeviceName = deviceName;
-        }
-    }
+		public DeviceAlreadyExistsException(string message, string deviceName)
+			: base(message)
+		{
+			DeviceName = deviceName;
+		}
+	}
 }

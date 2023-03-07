@@ -12,9 +12,9 @@ namespace DeviceIntegration.Scales
 
 		private readonly ILogger _logger;
 		private readonly string _port;
-        private readonly int _minWeight;
+		private readonly int _minWeight;
 
-        private readonly GodSerialPort _serialPort;
+		private readonly GodSerialPort _serialPort;
 
 		private bool _paused;
 
@@ -22,7 +22,7 @@ namespace DeviceIntegration.Scales
 		{
 			_logger = logger;
 			_port = port;
-            _minWeight = minWeight;
+			_minWeight = minWeight;
 
 			_logger.LogInfo($"Creating Ci2001A scales on port {port}...");
 
@@ -92,13 +92,13 @@ namespace DeviceIntegration.Scales
 					multiplier = 453.59237;
 					break;
 				default:
-				{
-					_logger.LogError("CasMScales: failed to parse multiplier");
-					return 0;
-				}
+					{
+						_logger.LogError("CasMScales: failed to parse multiplier");
+						return 0;
+					}
 			}
 
-			return (int) Math.Floor(weight * multiplier);
+			return (int)Math.Floor(weight * multiplier);
 		}
 
 		private MeasurementStatus GetStatusFromMessage(string firstMessageToken)

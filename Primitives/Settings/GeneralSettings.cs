@@ -4,37 +4,37 @@ using System.Text;
 
 namespace Primitives.Settings
 {
-    public class GeneralSettings
-    {
-        public string OutputPath { get; set; }
+	public class GeneralSettings
+	{
+		public string OutputPath { get; set; }
 
-        public bool ShutDownPcByDefault { get; set; }
-        
-        public string ResultsFilePath => Path.Combine(OutputPath, GlobalConstants.ResultsFileName);
+		public bool ShutDownPcByDefault { get; set; }
 
-        public string PhotosDirectoryPath => Path.Combine(OutputPath, GlobalConstants.ResultPhotosFolder);
+		public string ResultsFilePath => Path.Combine(OutputPath, GlobalConstants.ResultsFileName);
 
-        public GeneralSettings(string outputPath, bool shutDownPcByDefault)
-        {
-            OutputPath = outputPath;
-            ShutDownPcByDefault = shutDownPcByDefault;
-        }
-        
-        public static GeneralSettings GetDefaultSettings()
-        {
-            var documentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            var outputPath = Path.Combine(documentsFolder, "VolumeCalculationResults");
+		public string PhotosDirectoryPath => Path.Combine(OutputPath, GlobalConstants.ResultPhotosFolder);
 
-            return new GeneralSettings(outputPath, false);
-        }
+		public GeneralSettings(string outputPath, bool shutDownPcByDefault)
+		{
+			OutputPath = outputPath;
+			ShutDownPcByDefault = shutDownPcByDefault;
+		}
 
-        public override string ToString()
-        {
-            var builder = new StringBuilder("GeneralSettings:");
-            builder.Append($"OutputPath={OutputPath}");
-            builder.Append($",ShutDownPcByDefault={ShutDownPcByDefault}");
+		public static GeneralSettings GetDefaultSettings()
+		{
+			var documentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+			var outputPath = Path.Combine(documentsFolder, "VolumeCalculationResults");
 
-            return builder.ToString();
-        }
-    }
+			return new GeneralSettings(outputPath, false);
+		}
+
+		public override string ToString()
+		{
+			var builder = new StringBuilder("GeneralSettings:");
+			builder.Append($"OutputPath={OutputPath}");
+			builder.Append($",ShutDownPcByDefault={ShutDownPcByDefault}");
+
+			return builder.ToString();
+		}
+	}
 }

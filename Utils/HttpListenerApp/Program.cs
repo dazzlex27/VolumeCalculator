@@ -30,7 +30,7 @@ namespace HttpListenerApp
 				// Add the prefixes.
 				//foreach (string s in prefixes)
 				//{
-					listener.Prefixes.Add(prefix);
+				listener.Prefixes.Add(prefix);
 				//}
 				listener.Start();
 
@@ -41,7 +41,7 @@ namespace HttpListenerApp
 				var response = context.Response;
 				// Construct a response.
 				string xmlMessage = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\r\n" +
-				                    "construct your xml request message as required by that method along with parameters";
+									"construct your xml request message as required by that method along with parameters";
 				//string url = "http://XXXX.YYYY/ZZZZ/ABCD.aspx";
 
 				byte[] requestInFormOfBytes = System.Text.Encoding.ASCII.GetBytes(xmlMessage);

@@ -15,7 +15,7 @@ using VCServer;
 
 namespace VCClient
 {
-	public partial class App
+	internal partial class App
 	{
 		private readonly HttpClient _httpClient;
 		private readonly List<string> _fatalErrorMessages;

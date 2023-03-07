@@ -71,6 +71,6 @@ namespace VCConfigurator
 			settings.IpCameraSettings.Login= IpCameraLogin;
 			settings.IpCameraSettings.Password = IpCameraPassword;
 			settings.IpCameraSettings.ActivePreset = IpCameraPreset - 1;
-        }
+		}
 	}
 }

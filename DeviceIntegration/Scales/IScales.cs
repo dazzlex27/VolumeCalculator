@@ -2,12 +2,12 @@
 
 namespace DeviceIntegration.Scales
 {
-    public interface IScales : IDisposable
-    {
-	    event Action<ScaleMeasurementData> MeasurementReady;
+	public interface IScales : IDisposable
+	{
+		event Action<ScaleMeasurementData> MeasurementReady;
 
-	    void ResetWeight();
+		void ResetWeight();
 
 		void TogglePause(bool pause);
-    }
+	}
 }

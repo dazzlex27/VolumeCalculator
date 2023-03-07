@@ -9,7 +9,7 @@ namespace VCConfigurator
 		private ObservableCollection<string> _scalesNames;
 		private string _activeScalesName;
 		private string _scalesPort;
-        private int _scalesMinWeight;
+		private int _scalesMinWeight;
 
 		public ObservableCollection<string> ScalesNames
 		{
@@ -28,14 +28,14 @@ namespace VCConfigurator
 			get => _scalesPort;
 			set => SetField(ref _scalesPort, value, nameof(ScalesPort));
 		}
-		
-        public int ScalesMinWeight
-        {
-            get => _scalesMinWeight;
-            set => SetField(ref _scalesMinWeight, value, nameof(ScalesMinWeight));
-        }
 
-        public ScalesSettingsVm()
+		public int ScalesMinWeight
+		{
+			get => _scalesMinWeight;
+			set => SetField(ref _scalesMinWeight, value, nameof(ScalesMinWeight));
+		}
+
+		public ScalesSettingsVm()
 		{
 			ScalesNames = new ObservableCollection<string> { "", "massak", "casm", "fakescales", "ci2001a", "oka" };
 		}
@@ -52,6 +52,6 @@ namespace VCConfigurator
 			settings.Name = ActiveScalesName;
 			settings.Port = ScalesPort;
 			settings.MinWeight = ScalesMinWeight;
-        }
+		}
 	}
 }

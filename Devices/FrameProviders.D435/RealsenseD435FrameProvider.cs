@@ -6,7 +6,7 @@ using Primitives.Logging;
 
 namespace FrameProviders.D435
 {
-    internal class RealsenseD435FrameProvider : FrameProvider
+	internal class RealsenseD435FrameProvider : FrameProvider
 	{
 		private readonly NativeMethods.ColorFrameCallback _colorFrameCallback;
 		private readonly NativeMethods.DepthFrameCallback _depthFramesCallback;
