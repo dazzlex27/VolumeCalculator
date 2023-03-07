@@ -2,7 +2,7 @@
 
 namespace HttpService
 {
-	internal class HttpServiceApp
+	internal class Program
 	{
 		private static void Main()
 		{

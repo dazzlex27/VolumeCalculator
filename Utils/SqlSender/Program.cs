@@ -2,7 +2,7 @@
 
 namespace SqlSender
 {
-	internal class SqlSenderApp
+	internal class Program
 	{
 		private static void Main()
 		{

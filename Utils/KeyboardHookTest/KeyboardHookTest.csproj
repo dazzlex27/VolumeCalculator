@@ -14,6 +14,7 @@
     <None Remove="obj\**" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Devices\BarcodeScanners\BarcodeScanners.csproj" />
     <ProjectReference Include="..\..\Primitives\Primitives.csproj" />
   </ItemGroup>
 </Project>

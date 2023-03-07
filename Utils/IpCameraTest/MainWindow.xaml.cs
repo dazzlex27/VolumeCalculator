@@ -14,12 +14,12 @@ using Primitives;
 
 namespace IpCameraTest
 {
-	public partial class MainWindow : INotifyPropertyChanged
+	internal partial class MainWindow : INotifyPropertyChanged
 	{
+		public event PropertyChangedEventHandler PropertyChanged;
+
 		private WriteableBitmap _colorImageBitmap;
 		private readonly Proline2520Controller _controller;
-
-		public event PropertyChangedEventHandler PropertyChanged;
 
 		protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{

@@ -2,7 +2,7 @@
 
 namespace IpCameraTest
 {
-	public partial class App : Application
+	internal partial class App : Application
 	{
 	}
 }

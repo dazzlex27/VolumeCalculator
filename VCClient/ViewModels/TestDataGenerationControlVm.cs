@@ -9,7 +9,7 @@ using VCServer;
 
 namespace VCClient.ViewModels
 {
-	internal class TestDataGenerationControlVm : BaseViewModel
+	internal class TestDataGenerationControlVm : BaseViewModel, IDisposable
 	{
 		private readonly ILogger _logger;
 		private readonly IFrameProvider _frameProvider;
@@ -158,6 +158,11 @@ namespace VCClient.ViewModels
 			TimesToSave = 30;
 
 			RunTestDataGenerationCommand = new CommandHandler(RunTestDataGeneration, !GenerationInProgress);
+		}
+
+		public void Dispose()
+		{
+			_testDataGenerator.Dispose();
 		}
 
 		public void UpdateSettings(ApplicationSettings settings)

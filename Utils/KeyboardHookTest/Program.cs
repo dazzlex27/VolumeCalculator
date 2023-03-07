@@ -1,18 +1,19 @@
-﻿using Primitives.Logging;
+﻿using BarcodeScanners;
+using Primitives.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace KeyboardHookTest
 {
-	internal class InterceptKeys
+	internal class Program
 	{
 		public static void Main()
 		{
 			Task.Run(() =>
 			{
-				var interceptKeys = new InterceptKeys();
-				interceptKeys.Run();
+				var program = new Program();
+				program.Run();
 			});
 			while (true)
 			{
@@ -25,8 +26,8 @@ namespace KeyboardHookTest
 			Task.Run(() =>
 			{
 				var logger = new DummyLogger();
-				var scanner = new GenericKeyboardBarcodeScanner(logger);
-				scanner.CharSequenceFormed += Scanner_CharSequenceFormed;
+				var scanner = new GenericKeyboardBarcodeScanner(logger, "");
+				scanner.CharSequenceFormed += OnScannerCharSequenceFormed;
 			});
 			while (true)
 			{
@@ -34,7 +35,7 @@ namespace KeyboardHookTest
 			}
 		}
 
-		private void Scanner_CharSequenceFormed(string obj)
+		private void OnScannerCharSequenceFormed(string obj)
 		{
 			Console.WriteLine(obj);
 		}

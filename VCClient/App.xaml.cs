@@ -15,7 +15,7 @@ using VCServer;
 
 namespace VCClient
 {
-	internal partial class App
+	internal partial class App : IDisposable
 	{
 		private readonly HttpClient _httpClient;
 		private readonly List<string> _fatalErrorMessages;
@@ -47,6 +47,11 @@ namespace VCClient
 
 				return settings.IoSettings != null && settings.GeneralSettings.ShutDownPcByDefault;
 			}
+		}
+
+		public void Dispose()
+		{
+			ShutDown(false, false);
 		}
 
 		private async void OnApplicationStartup(object sender, StartupEventArgs e)

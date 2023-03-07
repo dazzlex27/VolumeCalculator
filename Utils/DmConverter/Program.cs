@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace DmConverter
 {
-	class Program
+	internal class Program
 	{
 		const int MinDepth = 600;
 		const int MaxDepth = 10000;
@@ -13,7 +13,7 @@ namespace DmConverter
 		static async Task Main(string[] args)
 		{
 			await TestDmLoading();
-			//await TestDmCulling();
+			await TestDmCulling();
 		}
 
 		private static async Task TestDmLoading()
@@ -23,12 +23,10 @@ namespace DmConverter
 			await imageData.SaveAsync("0.png");
 		}
 
-
 		private static async Task TestDmCulling()
 		{
 			var dm = await DepthMapUtils.ReadDepthMapFromRawFileAsync("0.dm");
 			await DepthMapUtils.SaveDepthMapImageToFile(dm, "1.png", MinDepth, MaxDepth, 750);
 		}
-
 	}
 }

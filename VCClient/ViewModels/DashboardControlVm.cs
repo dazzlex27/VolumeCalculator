@@ -14,7 +14,7 @@ using VCClient.Utils;
 
 namespace VCClient.ViewModels
 {
-	internal class DashboardControlVm : BaseViewModel
+	internal class DashboardControlVm : BaseViewModel, IDisposable
 	{
 		public event Action<bool> LockingStatusChanged;
 		public event Action<CalculationRequestData> CalculationRequested;
@@ -238,6 +238,11 @@ namespace VCClient.ViewModels
 
 			_barcodeResetTimer = new Timer(20000) { AutoReset = false };
 			_barcodeResetTimer.Elapsed += OnBarcodeResetElapsed;
+		}
+
+		public void Dispose()
+		{
+			_barcodeResetTimer.Dispose();
 		}
 
 		private void OnBarcodeResetElapsed(object sender, ElapsedEventArgs e)

@@ -86,6 +86,8 @@ namespace VCClient.ViewModels
 		public void Dispose()
 		{
 			_streamViewControlVm?.Dispose();
+			_dashboardControlVm?.Dispose();
+			_testDataGenerationControlVm?.Dispose();
 		}
 
 		public void InitializeSubViewModels()
