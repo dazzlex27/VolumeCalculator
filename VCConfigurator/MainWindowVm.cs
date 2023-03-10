@@ -59,21 +59,21 @@ namespace VCConfigurator
 
 		private async Task<ApplicationSettings> ReadSettingsFromFileAsync()
 		{
-			ApplicationSettings settings;
-
+#if DEBUG
+			var settings = ApplicationSettings.GetDefaultDebugSettings();
+#else
+			var settings = ApplicationSettings.GetDefaultSettings();
+#endif
 			try
 			{
 				var settingsFromFile =
 					await IoUtils.DeserializeSettingsFromFileAsync<ApplicationSettings>(GlobalConstants.ConfigFileName);
 				if (settingsFromFile != null)
-					return settingsFromFile;
+					settings = settingsFromFile;
 			}
 			catch (Exception ex)
 			{
 				_logger.LogException("Failed to read settings from file", ex);
-			}
-			finally
-			{
 				settings = ApplicationSettings.GetDefaultSettings();
 			}
 

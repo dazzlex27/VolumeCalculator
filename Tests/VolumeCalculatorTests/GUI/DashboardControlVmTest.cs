@@ -408,6 +408,5 @@ namespace VolumeCalculatorTests.GUI
 
 			Assert.That(vm.CodeReady, Is.EqualTo(resultValue));
 		}
-		// events
 	}
 }

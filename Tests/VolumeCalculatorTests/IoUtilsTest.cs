@@ -18,7 +18,7 @@ namespace VolumeCalculatorTests
 		[Test]
 		public async Task SerializeSettingsToFile_GivenDefaultApplicationSettings_NoThrow()
 		{
-			var gtSettings = ApplicationSettings.GetDefaultSettings();
+			var gtSettings = ApplicationSettings.GetDefaultDebugSettings();
 			var settingsFilepath = "data/test.cfg";
 
 			await IoUtils.SerializeSettingsToFileAsync(gtSettings, settingsFilepath);

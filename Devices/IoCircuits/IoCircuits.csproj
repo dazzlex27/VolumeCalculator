@@ -2,13 +2,14 @@
   <PropertyGroup>
     <TargetFrameworks>net7.0;net7.0-windows</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <OutputPath>$(SolutionDir)!!bin\$(Platform)\$(Configuration)\Plugins\</OutputPath>
+    <OutputPath>$(SolutionDir)!!bin\$(Platform)\$(Configuration)\$(TargetFramework)\Plugins\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\DeviceIntegration\DeviceIntegration.csproj" />
-    <ProjectReference Include="..\..\Primitives\Primitives.csproj" />
-    <ProjectReference Include="..\..\ProcessingUtils\ProcessingUtils.csproj" />
+    <ProjectReference Include="..\..\DeviceIntegration\DeviceIntegration.csproj" Private="False" />
+    <ProjectReference Include="..\..\Primitives\Primitives.csproj" Private="False" />
+    <ProjectReference Include="..\..\ProcessingUtils\ProcessingUtils.csproj" Private="False" />
   </ItemGroup>
 </Project>

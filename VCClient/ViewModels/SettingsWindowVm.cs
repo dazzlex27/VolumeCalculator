@@ -77,10 +77,13 @@ namespace VCClient.ViewModels
 			if (MessageBox.Show("Сбросить настройки?", "Подтверждение", MessageBoxButton.YesNo,
 					MessageBoxImage.Question) != MessageBoxResult.Yes)
 				return;
-
+#if DEBUG
+			FillValuesFromSettings(ApplicationSettings.GetDefaultDebugSettings());
+#else
 			FillValuesFromSettings(ApplicationSettings.GetDefaultSettings());
+#endif
 		}
-		
+
 		private void FillValuesFromSettings(ApplicationSettings settings)
 		{
 			WorkAreaControlVm.SetSettings(settings.AlgorithmSettings.WorkArea);

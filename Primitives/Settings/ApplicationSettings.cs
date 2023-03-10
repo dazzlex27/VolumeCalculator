@@ -28,6 +28,15 @@ namespace Primitives.Settings
 				AlgorithmSettings.GetDefaultSettings(), IntegrationSettings.GetDefaultSettings());
 		}
 
+		public static ApplicationSettings GetDefaultDebugSettings()
+		{
+			var ioSettings = IoSettings.GetDefaultSettings();
+			ioSettings.SetAllDevicesToEmulation();
+
+			return new ApplicationSettings(GeneralSettings.GetDefaultSettings(), ioSettings,
+				AlgorithmSettings.GetDefaultSettings(), IntegrationSettings.GetDefaultSettings());
+		}
+
 		public override string ToString()
 		{
 			return $"{IoSettings}; {AlgorithmSettings}; {IntegrationSettings}";

@@ -34,8 +34,7 @@ namespace VolumeCalculatorTests
 
 		public static ApplicationSettings GetSettingsWithEverythingDisabled()
 		{
-			var settings = ApplicationSettings.GetDefaultSettings();
-			settings.IoSettings.SetAllDevicesToEmulation();
+			var settings = ApplicationSettings.GetDefaultDebugSettings();
 			settings.IntegrationSettings.DisableAllIntegrations();
 
 			return settings;

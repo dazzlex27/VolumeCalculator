@@ -75,7 +75,11 @@ namespace VCServer
 			if (settingsFromHandler == null)
 			{
 				_logger.LogError("Failed to read settings from handler, will use default settings");
+#if DEBUG
+				settings = ApplicationSettings.GetDefaultDebugSettings();
+#else
 				settings = ApplicationSettings.GetDefaultSettings();
+#endif
 			}
 			else
 				settings = settingsFromHandler;

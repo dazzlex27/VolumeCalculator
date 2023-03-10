@@ -89,7 +89,7 @@ namespace VolumeCalculationRunner
 			await LogVerbose($@"Found {testCaseData.DepthMaps.Length} maps");
 
 			await LogVerbose("Calculating volume...");
-			var settings = ApplicationSettings.GetDefaultSettings();
+			var settings = ApplicationSettings.GetDefaultDebugSettings();
 			processor.SetProcessorSettings(settings);
 
 			var results = new List<ObjectVolumeData>();

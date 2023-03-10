@@ -10,7 +10,8 @@ namespace Primitives
 
 		public const string ProductTitle = "VolumeCalculator";
 
-		public static readonly string CommonFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+		public static readonly string CommonFolderPath =
+			Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
 
 		public static readonly string AppVersion = $"v1.70";
 

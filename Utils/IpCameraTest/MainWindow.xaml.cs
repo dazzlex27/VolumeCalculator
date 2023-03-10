@@ -68,7 +68,7 @@ namespace IpCameraTest
 			}
 			finally
 			{
-				settings = ApplicationSettings.GetDefaultSettings();
+				settings = ApplicationSettings.GetDefaultDebugSettings();
 			}
 
 			return settings;
