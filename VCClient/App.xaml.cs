@@ -1,5 +1,9 @@
 ﻿using CommonUtils.Logging;
+using CommonUtils.Plugins;
+using CommonUtils.SettingsLoaders;
+using DeviceIntegration;
 using GuiCommon;
+using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 using System;
@@ -23,6 +27,7 @@ namespace VCClient
 
 		private ILogger _serverLogger;
 		private ILogger _deviceLogger;
+		private ILogger _calculationLogger;
 		private ILogger _integrationLogger;
 		private ILogger _clientLogger;
 
@@ -63,6 +68,7 @@ namespace VCClient
 			{
 				_serverLogger = new TxtLogger(serverAppTitle, "main");
 				_deviceLogger = new TxtLogger(serverAppTitle, "devices");
+				_calculationLogger = new TxtLogger(serverAppTitle, "calculation");
 				_integrationLogger = new TxtLogger(serverAppTitle, "intergration");
 				_clientLogger = new TxtLogger(GuiUtils.AppTitle, "main");
 
@@ -132,6 +138,7 @@ namespace VCClient
 				_serverLogger?.Dispose();
 				_clientLogger?.Dispose();
 				_integrationLogger?.Dispose();
+				_calculationLogger?.Dispose();
 				_deviceLogger?.Dispose();
 				_httpClient?.Dispose();
 			}
@@ -151,7 +158,8 @@ namespace VCClient
 				logFatalMessage = "FATAL: Failed to initialize application settings!";
 				displayFatalMessage = "Не удалось инициализировать настройки приложения";
 
-				await _server.InitializeSettingsAsync();
+				var settingsHandler = new SettingsFromFileHandler(GlobalConstants.ConfigFileName);
+				await _server.InitializeSettingsAsync(settingsHandler);
 				_server.ApplicationSettingsChanged += OnApplicationSettingsUpdated;
 
 				_serverLogger.LogInfo("Settings - ok");
@@ -160,7 +168,14 @@ namespace VCClient
 				logFatalMessage = "FATAL: Failed to initialize IO devices!";
 				displayFatalMessage = "Не удалось инициализировать внешние устройства";
 
-				_server.InitializeIoDevicesAsync(_deviceLogger);
+				var deviceDefinitions = new DeviceDefinitions();
+				var deviceRegistrator = new DeviceRegistrator(deviceDefinitions);
+				var pluginToolset = new PluginToolset(deviceRegistrator);
+				var pluginContainer = new PluginFromDiskContainer(pluginToolset, GlobalConstants.PluginsFolder);
+				var deviceFactory = new DeviceFactory(deviceDefinitions);
+				pluginContainer.LoadPlugins();
+
+				_server.InitializeIoDevicesAsync(_deviceLogger, deviceFactory);
 
 				_serverLogger.LogInfo("IO devices- ok");
 				_serverLogger.LogInfo("Initializing calculation systems...");
@@ -168,7 +183,7 @@ namespace VCClient
 				logFatalMessage = "FATAL: Failed to initialize calculation systems!";
 				displayFatalMessage = "Не удалось инициализировать логику вычисления";
 
-				_server.InitializeCalculationSystems();
+				_server.InitializeCalculationSystems(_calculationLogger);
 
 				_serverLogger.LogInfo("Calculation systems - ok");
 				_serverLogger.LogInfo("Initializing interration systems...");
@@ -238,7 +253,7 @@ namespace VCClient
 
 		private void OnApplicationSettingsUpdated(ApplicationSettings settings)
 		{
-			_mainWindowVm.UpdateApplicationSettings(settings);
+			_mainWindowVm?.UpdateApplicationSettings(settings);
 		}
 
 		private void OnCalculationStartRequested()

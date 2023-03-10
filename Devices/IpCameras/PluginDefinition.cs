@@ -1,5 +1,5 @@
-﻿using DeviceIntegration;
-using Primitives;
+﻿using Primitives;
+using Primitives.Plugins;
 using System.ComponentModel.Composition;
 
 namespace IpCameras
@@ -7,9 +7,11 @@ namespace IpCameras
 	[Export(typeof(IPlugin))]
 	internal class PluginDefinition : IPlugin
 	{
-		public void Initialize()
+		public string Type => "device";
+
+		public void Initialize(IPluginToolset toolset)
 		{
-			DeviceRegistrator.RegisterIpCamera("proline2520", typeof(Proline2520Camera));
+			toolset.DeviceRegistrator.RegisterDevice(DeviceType.IpCamera, "proline2520", typeof(Proline2520Camera));
 		}
 	}
 }

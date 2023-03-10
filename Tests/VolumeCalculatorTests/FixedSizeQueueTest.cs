@@ -1,5 +1,4 @@
 ﻿using Primitives;
-using System.Linq;
 
 namespace VolumeCalculatorTests
 {

@@ -13,7 +13,8 @@ namespace VCServer.DeviceHandling
 {
 	internal static class DeviceSetFactory
 	{
-		public static DeviceSet CreateDeviceSet(ILogger logger, HttpClient httpClient, IoSettings settings)
+		public static DeviceSet CreateDeviceSet(ILogger logger, HttpClient httpClient, IoSettings settings,
+			DeviceFactory factory)
 		{
 			IScales scales = null;
 			var barcodeScanners = new List<IBarcodeScanner>();
@@ -22,7 +23,7 @@ namespace VCServer.DeviceHandling
 
 			var frameProviderName = settings.ActiveCameraName;
 			logger.LogInfo($"Creating frame provider \"{frameProviderName}\"...");
-			var frameProvider = DeviceFactory.CreateRequestedFrameProvider(frameProviderName, logger);
+			var frameProvider = factory.CreateRequestedFrameProvider(frameProviderName, logger);
 			frameProvider.ColorCameraFps = 5;
 			frameProvider.DepthCameraFps = 5;
 			frameProvider.Start();
@@ -34,7 +35,7 @@ namespace VCServer.DeviceHandling
 				if (entry.Port == string.Empty && entry.Name != "keyboard")
 					continue;
 
-				var scanner = DeviceFactory.CreateRequestedScanner(entry.Name, logger, entry.Port);
+				var scanner = factory.CreateRequestedScanner(entry.Name, logger, entry.Port);
 				barcodeScanners.Add(scanner);
 			}
 
@@ -46,7 +47,7 @@ namespace VCServer.DeviceHandling
 				var minWeight = settings.ActiveScales.MinWeight;
 
 				logger.LogInfo($"Creating scales \"{scalesName}\", minWeight={minWeight}...");
-				scales = DeviceFactory.CreateRequestedScales(scalesName, logger, scalesPort, minWeight);
+				scales = factory.CreateRequestedScales(scalesName, logger, scalesPort, minWeight);
 			}
 
 			var ioCircuitName = settings.ActiveIoCircuit.Name;
@@ -55,7 +56,7 @@ namespace VCServer.DeviceHandling
 			if (ioCircuitDataIsCorrect)
 			{
 				logger.LogInfo($"Creating IO circuit \"{ioCircuitName}\"...");
-				ioCircuit = DeviceFactory.CreateRequestedIoCircuit(ioCircuitName, logger, ioCircuitPort);
+				ioCircuit = factory.CreateRequestedIoCircuit(ioCircuitName, logger, ioCircuitPort);
 			}
 
 			var rangeMeterName = settings.ActiveRangeMeterName;
@@ -63,7 +64,7 @@ namespace VCServer.DeviceHandling
 			if (rangeMeterDataIsCorrect)
 			{
 				logger.LogInfo($"Creating range meter \"{rangeMeterName}\"");
-				rangeMeter = DeviceFactory.CreateRequestedRangeMeter(rangeMeterName, logger);
+				rangeMeter = factory.CreateRequestedRangeMeter(rangeMeterName, logger);
 			}
 
 			var cameraSettings = settings.IpCameraSettings;
@@ -71,7 +72,7 @@ namespace VCServer.DeviceHandling
 				return new DeviceSet(frameProvider, scales, barcodeScanners, ioCircuit, rangeMeter, null);
 
 			logger.LogInfo($"Creating IP camera \"{cameraSettings.CameraName}\"");
-			var ipCamera = DeviceFactory.CreateRequestedIpCamera(cameraSettings, httpClient, logger);
+			var ipCamera = factory.CreateRequestedIpCamera(cameraSettings, httpClient, logger);
 
 			var cameraFailed = false;
 			Exception cameraEx = null;

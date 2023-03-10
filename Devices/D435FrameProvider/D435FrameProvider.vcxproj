@@ -44,12 +44,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)!!bin\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)!!bin\AnyCPU\$(Configuration)\net7.0-windows\Plugins</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>libD435FrameProvider</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)!!bin\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)!!bin\AnyCPU\$(Configuration)\net7.0-windows\Plugins</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>libD435FrameProvider</TargetName>
   </PropertyGroup>

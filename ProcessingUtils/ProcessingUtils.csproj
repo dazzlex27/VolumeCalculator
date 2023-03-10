@@ -10,7 +10,6 @@
     <ProjectReference Include="..\Primitives\Primitives.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.0.0" />
   </ItemGroup>

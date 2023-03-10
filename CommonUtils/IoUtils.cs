@@ -8,12 +8,12 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace ProcessingUtils
+namespace CommonUtils
 {
 	public static class IoUtils
 	{
 		private static readonly object CounterLock = new();
-		
+
 		public static async Task SerializeSettingsToFileAsync<T>(T settings, string filepath)
 		{
 			if (settings == null)
@@ -22,7 +22,7 @@ namespace ProcessingUtils
 			var fileInfo = new FileInfo(filepath);
 			if (!string.IsNullOrEmpty(fileInfo.DirectoryName))
 				Directory.CreateDirectory(fileInfo.DirectoryName);
-			
+
 			var settingsText = JsonConvert.SerializeObject(settings);
 			await File.WriteAllTextAsync(fileInfo.FullName, settingsText);
 		}

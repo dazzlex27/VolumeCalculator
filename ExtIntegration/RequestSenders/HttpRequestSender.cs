@@ -6,7 +6,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Primitives.Logging;
 using Primitives.Settings.Integration;
-using ProcessingUtils;
+using CommonUtils;
 using Microsoft.AspNetCore.WebUtilities;
 using Primitives.Calculation;
 

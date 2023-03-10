@@ -51,6 +51,14 @@ namespace Primitives.Settings
 				"custom", defaultCameraSettings);
 		}
 
+		public void SetAllDevicesToEmulation()
+		{
+			ActiveCameraName = "local";
+			ActiveScales = new ScalesSettings("fakescales", "COM1", 10);
+			ActiveIoCircuit = new DeviceSettings("", "");
+			ActiveRangeMeterName = "";
+		}
+
 		[OnDeserialized]
 		private void OnDeserialized(StreamingContext context)
 		{

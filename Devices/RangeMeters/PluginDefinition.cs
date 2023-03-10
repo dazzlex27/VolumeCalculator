@@ -1,5 +1,5 @@
-﻿using DeviceIntegration;
-using Primitives;
+﻿using Primitives;
+using Primitives.Plugins;
 using System.ComponentModel.Composition;
 
 namespace RangeMeters
@@ -7,10 +7,13 @@ namespace RangeMeters
 	[Export(typeof(IPlugin))]
 	internal class PluginDefinition : IPlugin
 	{
-		public void Initialize()
+		public string Type => "device";
+
+		public void Initialize(IPluginToolset toolset)
 		{
-			DeviceRegistrator.RegisterRangeMeter("custom", typeof(TeslaM70RangeMeter));
-			DeviceRegistrator.RegisterRangeMeter("fake", typeof(FakeRangeMeter));
+			var registrator = toolset.DeviceRegistrator;
+			registrator.RegisterDevice(DeviceType.RangeMeter, "custom", typeof(TeslaM70RangeMeter));
+			registrator.RegisterDevice(DeviceType.RangeMeter, "fake", typeof(FakeRangeMeter));
 		}
 	}
 }

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using GuiCommon;
 using Primitives;
 using Primitives.Logging;
-using ProcessingUtils;
+using CommonUtils;
 
 namespace VCClient.ViewModels
 {

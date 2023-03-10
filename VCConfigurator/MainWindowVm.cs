@@ -8,7 +8,7 @@ using GuiCommon;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
-using ProcessingUtils;
+using CommonUtils;
 
 namespace VCConfigurator
 {

@@ -24,9 +24,6 @@
     <ProjectReference Include="..\VCServer\VCServer.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Management" Version="7.0.0" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="ISlogo.ico" />
   </ItemGroup>
   <ItemGroup>

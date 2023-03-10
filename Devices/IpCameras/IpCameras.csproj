@@ -10,5 +10,6 @@
     <ProjectReference Include="..\..\DeviceIntegration\DeviceIntegration.csproj" />
     <ProjectReference Include="..\..\Primitives\Primitives.csproj" />
     <ProjectReference Include="..\..\ProcessingUtils\ProcessingUtils.csproj" />
+    <ProjectReference Include="..\..\CommonUtils\CommonUtils.csproj" />
   </ItemGroup>
 </Project>

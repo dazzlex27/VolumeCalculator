@@ -5,7 +5,7 @@ namespace DeviceIntegration.Exceptions
 	[Serializable]
 	internal class DeviceNotFoundException : Exception
 	{
-		public string DeviceName { get; set; }
+		public string DeviceName { get; }
 
 		public DeviceNotFoundException() { }
 

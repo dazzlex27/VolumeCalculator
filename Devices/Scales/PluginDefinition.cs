@@ -1,6 +1,6 @@
-﻿using DeviceIntegration;
+﻿using Primitives;
 using DeviceIntegration.Scales;
-using Primitives;
+using Primitives.Plugins;
 using System.ComponentModel.Composition;
 
 namespace Scales
@@ -8,13 +8,16 @@ namespace Scales
 	[Export(typeof(IPlugin))]
 	internal class PluginDefinition : IPlugin
 	{
-		public void Initialize()
+		public string Type => "device";
+
+		public void Initialize(IPluginToolset toolset)
 		{
-			DeviceRegistrator.RegisterScales("fakescales", typeof(FakeScales));
-			DeviceRegistrator.RegisterScales("massak", typeof(MassaKScales));
-			DeviceRegistrator.RegisterScales("casm", typeof(CasMScales));
-			DeviceRegistrator.RegisterScales("ci2001a", typeof(Ci2001AScales));
-			DeviceRegistrator.RegisterScales("oka", typeof(OkaScales));
+			var registrator = toolset.DeviceRegistrator;
+			registrator.RegisterDevice(DeviceType.Scales, "fakescales", typeof(FakeScales));
+			registrator.RegisterDevice(DeviceType.Scales, "massak", typeof(MassaKScales));
+			registrator.RegisterDevice(DeviceType.Scales, "casm", typeof(CasMScales));
+			registrator.RegisterDevice(DeviceType.Scales, "ci2001a", typeof(Ci2001AScales));
+			registrator.RegisterDevice(DeviceType.Scales, "oka", typeof(OkaScales));
 		}
 	}
 }

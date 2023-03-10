@@ -36,6 +36,15 @@ namespace Primitives.Settings.Integration
 				sqlRequestSettings, ftpRequestSettings);
 		}
 
+		public void DisableAllIntegrations()
+		{
+			WebClientHandlerSettings.EnableRequests = false;
+			FtpRequestSettings.EnableRequests = false;
+			HttpRequestSettings.EnableRequests = false;
+			HttpApiSettings.EnableRequests = false;
+			SqlRequestSettings.EnableRequests = false;
+		}
+
 		[OnDeserialized]
 		private void OnDeserialized(StreamingContext context)
 		{

@@ -18,6 +18,7 @@
     <ProjectReference Include="..\..\DeviceIntegration\DeviceIntegration.csproj" />
     <ProjectReference Include="..\..\Primitives\Primitives.csproj" />
 	<ProjectReference Include="..\..\FrameProcessor\FrameProcessor.csproj" />
+	<ProjectReference Include="..\..\VCClient\VCClient.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="data\counters">

@@ -7,18 +7,29 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonUtils.Logging;
+using CommonUtils.Plugins;
 using DeviceIntegration;
 using DeviceIntegration.Scales;
+using Primitives;
 using Primitives.Logging;
 
 namespace ComTestApp
 {
 	internal class Program
 	{
+		private static DeviceFactory DeviceFactory;
+
 		private static void Main()
 		{
 			// TODO: turn this into proper device tests
 			var logger = new ConsoleLogger();
+
+			var definitions = new DeviceDefinitions();
+			var registrator = new DeviceRegistrator(definitions);
+			var toolset = new PluginToolset(registrator);
+			var pluginContainer = new PluginFromDiskContainer(toolset, GlobalConstants.PluginsFolder);
+			pluginContainer.LoadPlugins();
+			DeviceFactory = new DeviceFactory(definitions);
 
 			//TestOkaScales(logger);
 			//TestLaser(logger);

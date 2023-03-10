@@ -7,9 +7,10 @@ using System.Windows.Input;
 using GuiCommon;
 using Primitives.Logging;
 using Primitives.Settings;
-using ProcessingUtils;
-using VCServer;
+using CommonUtils;
+using System.IO;
 using VCClient.GUI;
+using VCServer;
 
 namespace VCClient.ViewModels
 {
@@ -100,13 +101,21 @@ namespace VCClient.ViewModels
 			StreamViewControlVm?.Dispose();
 			StreamViewControlVm = new StreamViewControlVm(_logger, settings, frameProvider);
 
-			DashboardControlVm = new DashboardControlVm(_logger, settings, deviceManager, calculator);
+			if (DashboardControlVm != null)
+			{
+				DashboardControlVm.ResultFileOpeningRequested -= OpenResultsFile;
+				DashboardControlVm.PhotosFolderOpeningRequested -= OpenPhotosFolder;
+			}
+			DashboardControlVm = new DashboardControlVm(settings.AlgorithmSettings, deviceManager, calculator);
+			DashboardControlVm.ResultFileOpeningRequested += OpenResultsFile;
+			DashboardControlVm.PhotosFolderOpeningRequested += OpenPhotosFolder;
+
 			TestDataGenerationControlVm = new TestDataGenerationControlVm(_logger, settings, frameProvider);
 		}
 
 		public void UpdateApplicationSettings(ApplicationSettings settings)
 		{
-			_dashboardControlVm.UpdateSettings(settings);
+			_dashboardControlVm.UpdateSettings(settings.AlgorithmSettings);
 			_streamViewControlVm.UpdateSettings(settings);
 			_testDataGenerationControlVm.UpdateSettings(settings);
 		}
@@ -194,6 +203,44 @@ namespace VCClient.ViewModels
 			catch (Exception ex)
 			{
 				_logger.LogException("Failed to launch configurator", ex);
+			}
+		}
+
+		private void OpenResultsFile()
+		{
+			try
+			{
+				var resultsFilepath = _server?.GetSettings().GeneralSettings?.ResultsFilePath;
+				if (resultsFilepath == null)
+					return;
+
+				var resultsFileInfo = new FileInfo(resultsFilepath);
+				if (!resultsFileInfo.Exists)
+					return;
+
+				IoUtils.OpenFile(resultsFilepath);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to open results file", ex);
+			}
+		}
+
+		private void OpenPhotosFolder()
+		{
+			try
+			{
+				var photosDirectoryPath = _server?.GetSettings().GeneralSettings?.PhotosDirectoryPath;
+
+				var photosDirectoryInfo = new DirectoryInfo(photosDirectoryPath);
+				if (!photosDirectoryInfo.Exists)
+					return;
+
+				IoUtils.OpenFolder(photosDirectoryPath);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException("Failed to open photos folder", ex);
 			}
 		}
 

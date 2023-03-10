@@ -1,15 +1,11 @@
 ﻿using System;
-using System.IO;
 using System.Timers;
 using System.Windows.Input;
 using System.Windows.Media;
 using DeviceIntegration.Scales;
 using GuiCommon;
 using Primitives;
-using Primitives.Logging;
 using Primitives.Settings;
-using ProcessingUtils;
-using VCServer;
 using VCClient.Utils;
 using VCServer.VolumeCalculation;
 using VCServer.DeviceHandling;
@@ -23,14 +19,13 @@ namespace VCClient.ViewModels
 		public event Action<CalculationRequestData> CalculationRequested;
 		public event Action CalculationCancellationRequested;
 		public event Action WeightResetRequested;
+		public event Action ResultFileOpeningRequested;
+		public event Action PhotosFolderOpeningRequested;
 
-		private readonly ILogger _logger;
 		private readonly Timer _barcodeResetTimer;
 
 		private bool _requireBarcode;
 		private WeightUnits _selectedWeightUnits;
-		private string _resultsFilePath;
-		private string _photosDirectoryPath;
 		
 		private string _objectCode;
 		private double _objectWeight;
@@ -50,8 +45,6 @@ namespace VCClient.ViewModels
 		private bool _codeBoxFocused;
 		private bool _unitCountBoxFocused;
 		private bool _commentBoxFocused;
-
-		private string _lastMessage;
 
 		private string _lastAlgorithmUsed;
 		
@@ -190,7 +183,7 @@ namespace VCClient.ViewModels
 			set => SetField(ref _weightLabelText, value, nameof(WeightLabelText));
 		}
 
-		private bool CanAcceptBarcodes
+		public bool CanAcceptBarcodes
 		{
 			get
 			{
@@ -199,7 +192,7 @@ namespace VCClient.ViewModels
 			}
 		}
 
-		private bool CodeReady
+		public bool CodeReady
 		{
 			get
 			{
@@ -216,17 +209,16 @@ namespace VCClient.ViewModels
 			set => SetField(ref _lastAlgorithmUsed, value, nameof(LastAlgorithmUsed));
 		}
 
-		public DashboardControlVm(ILogger logger, ApplicationSettings settings,
-			DeviceManager deviceManager, CalculationRequestHandler calculator)
+		public DashboardControlVm(AlgorithmSettings settings, DeviceManager deviceManager,
+			CalculationRequestHandler calculator)
 		{
-			_logger = logger;
-
 			RunVolumeCalculationCommand = new CommandHandler(RunVolumeCalculation, !CalculationInProgress);
-			ResetWeightCommand = new CommandHandler(()=> WeightResetRequested?.Invoke(), !CalculationInProgress);
-			OpenResultsFileCommand = new CommandHandler(OpenResultsFile, !CalculationInProgress);
-			OpenPhotosFolderCommand = new CommandHandler(OpenPhotosFolder, !CalculationInProgress);
-			CancelPendingCalculationCommand = new CommandHandler(OnPendingCalculationCancellationRequired, !CalculationInProgress);
+			ResetWeightCommand = new CommandHandler(() => WeightResetRequested?.Invoke(), !CalculationInProgress);
+			OpenResultsFileCommand = new CommandHandler(() => ResultFileOpeningRequested?.Invoke(), !CalculationInProgress);
+			OpenPhotosFolderCommand = new CommandHandler(() => PhotosFolderOpeningRequested?.Invoke(), !CalculationInProgress);
+			CancelPendingCalculationCommand = new CommandHandler(OnPendingCalculationCancellationRequested, !CalculationInProgress);
 
+			// TODO: remove calculator and deviceManager compositions, change to event raising
 			// TODO: move this into a separate method to enable hot reload
 			UpdateSettings(settings);
 			WeightResetRequested += deviceManager.DeviceStateUpdater.ResetWeight;
@@ -248,38 +240,19 @@ namespace VCClient.ViewModels
 			_barcodeResetTimer.Dispose();
 		}
 
-		private void OnBarcodeResetElapsed(object sender, ElapsedEventArgs e)
+		public void UpdateSettings(AlgorithmSettings settings)
 		{
-			ObjectCode = "";
-		}
-
-		private void OnPendingCalculationCancellationRequired()
-		{
-			ObjectCode = "";
-			CalculationCancellationRequested?.Invoke();
-		}
-
-		public void UpdateSettings(ApplicationSettings settings)
-		{
-			_requireBarcode = settings.AlgorithmSettings.RequireBarcode;
-			_selectedWeightUnits = settings.AlgorithmSettings.SelectedWeightUnits;
-			_resultsFilePath = settings.GeneralSettings.ResultsFilePath;
-			_photosDirectoryPath = settings.GeneralSettings.PhotosDirectoryPath;
+			_requireBarcode = settings.RequireBarcode;
+			_selectedWeightUnits = settings.SelectedWeightUnits;
 
 			Dispatcher.Invoke(() =>
 			{
-				switch (settings.AlgorithmSettings.SelectedWeightUnits)
+				WeightLabelText = _selectedWeightUnits switch
 				{
-					case WeightUnits.Gr:
-						WeightLabelText = "гр";
-						break;
-					case WeightUnits.Kg:
-						WeightLabelText = "кг";
-						break;
-					default:
-						WeightLabelText = "";
-						break;
-				}
+					WeightUnits.Gr => "гр",
+					WeightUnits.Kg => "кг",
+					_ => "",
+				};
 			});
 		}
 
@@ -298,18 +271,12 @@ namespace VCClient.ViewModels
 
 			Dispatcher.Invoke(() =>
 			{
-				switch (_selectedWeightUnits)
+				ObjectWeight = _selectedWeightUnits switch
 				{
-					case WeightUnits.Gr:
-						ObjectWeight = data.WeightGr;
-						break;
-					case WeightUnits.Kg:
-						ObjectWeight = data.WeightGr / 1000.0;
-						break;
-					default:
-						ObjectWeight = double.NaN;
-						break;
-				}
+					WeightUnits.Gr => data.WeightGr,
+					WeightUnits.Kg => data.WeightGr / 1000.0,
+					_ => double.NaN,
+				};
 			});
 		}
 
@@ -318,115 +285,56 @@ namespace VCClient.ViewModels
 			if (status == CalculationStatus.InProgress)
 				_barcodeResetTimer.Stop();
 
-			_lastMessage = GuiUtils.GetMessageFromCalculationStatus(status);
-			var dashStatus = StatusUtils.GetDashboardStatus(status);
-			UpdateDashStatus(dashStatus);
-		}
-
-		private void UpdateDashStatus(DashboardStatus status)
-		{
-			switch (status)
-			{
-				case DashboardStatus.InProgress:
-				{
-					Dispatcher.Invoke(() =>
-					{
-						CalculationInProgress = true;
-						StatusBrush = new SolidColorBrush(Colors.DarkOrange);
-						StatusText = _lastMessage;
-						CalculationPending = false;
-					});
-					break;
-				}
-				case DashboardStatus.Ready:
-				{
-					Dispatcher.Invoke(() =>
-					{
-						CalculationInProgress = false;
-						StatusBrush = new SolidColorBrush(Colors.Green);
-						StatusText = _lastMessage;
-						CalculationPending = false;
-					});
-					break;
-				}
-				case DashboardStatus.Pending:
-				{
-					Dispatcher.Invoke(() =>
-					{
-						CalculationInProgress = false;
-						StatusBrush = new SolidColorBrush(Colors.Blue);
-						StatusText = _lastMessage;
-						CalculationPending = true;
-					});
-					break;
-				}
-				case DashboardStatus.Finished:
-				{
-					Dispatcher.Invoke(() =>
-					{
-						CalculationInProgress = false;
-						StatusBrush = new SolidColorBrush(Colors.DarkGreen);
-						StatusText = _lastMessage;
-						CalculationPending = false;
-					});
-					break;
-				}
-				case DashboardStatus.Error:
-				{
-					Dispatcher.Invoke(() =>
-					{
-						CalculationInProgress = false;
-						ObjectCode = "";
-						StatusBrush = new SolidColorBrush(Colors.Red);
-						StatusText = $"Ошибка: {_lastMessage}";
-						CalculationPending = false;
-					});
-					break;
-				}
-				default:
-					throw new ArgumentOutOfRangeException(nameof(status), status, null);
-			}
-		}
-
-		private void OpenResultsFile()
-		{
-			try
-			{
-				var resultsFileInfo = new FileInfo(_resultsFilePath);
-				if (!resultsFileInfo.Exists)
-					return;
-
-				IoUtils.OpenFile(_resultsFilePath);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogException("Failed to open results file", ex);
-			}
-		}
-
-		private void OpenPhotosFolder()
-		{
-			try
-			{
-				var photosDirectoryInfo = new DirectoryInfo(_photosDirectoryPath);
-				if (!photosDirectoryInfo.Exists)
-					return;
-
-				IoUtils.OpenFolder(_photosDirectoryPath);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogException("Failed to open photos folder", ex);
-			}
+			UpdateDashStatus(status);
 		}
 
 		public void UpdateDataUponCalculationFinish(CalculationResultData data)
 		{
-			ObjectCode = "";
-			UnitCount = 0;
-			Comment = "";
+			var length = 0;
+			var width = 0;
+			var height = 0;
+			var volume = 0.0;
 
-			UpdateVolumeData(data.Result);
+			var result = data.Result;
+			if (result != null)
+			{
+				length = result.ObjectLengthMm;
+				width = result.ObjectWidthMm;
+				height = result.ObjectHeightMm;
+				volume = length * width * height / 1000.0;
+			}
+
+			Dispatcher.Invoke(() =>
+			{
+				ObjectCode = "";
+				UnitCount = 0;
+				Comment = "";
+				ObjectLength = length;
+				ObjectWidth = width;
+				ObjectHeight = height;
+				ObjectVolume = volume;
+			});
+		}
+
+		public void UpdateLastAlgorithm(string lastAlgorithmUsed, string wasRangeMeterUsed)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				LastAlgorithmUsed = $"LastAlgorithm={lastAlgorithmUsed}, RM={wasRangeMeterUsed}";
+			});
+		}
+
+		private void UpdateDashStatus(CalculationStatus status)
+		{
+			var values = GuiUtils.GetDashboardValuesFromCaculationStatus(status);
+
+			Dispatcher.Invoke(() =>
+			{
+				CalculationInProgress = values.CalculationInProgress;
+				StatusBrush = values.DashBrush;
+				StatusText = values.Message;
+				CalculationPending = values.CalculationPending;
+			});
 		}
 		
 		private void RunVolumeCalculation()
@@ -435,38 +343,17 @@ namespace VCClient.ViewModels
 			CalculationRequested?.Invoke(requestData);
 		}
 
-		private void UpdateVolumeData(CalculationResult result)
-		{
-			if (result == null)
-			{
-				Dispatcher.Invoke(() =>
-				{
-					ObjectLength = 0;
-					ObjectWidth = 0;
-					ObjectHeight = 0;
-					ObjectVolume = 0;
-				});
-
-				return;
-			}
-
-			Dispatcher.Invoke(() =>
-			{
-				ObjectLength = result.ObjectLengthMm;
-				ObjectWidth = result.ObjectWidthMm;
-				ObjectHeight = result.ObjectHeightMm;
-				ObjectVolume = ObjectLength * ObjectWidth * ObjectHeight / 1000.0;
-			});
-		}
-
 		private void ResetMeasurementValues()
 		{
-			ObjectLength = 0;
-			ObjectWidth = 0;
-			ObjectHeight = 0;
-			ObjectVolume = 0;
-			UnitCount = 0;
-			Comment = "";
+			Dispatcher.Invoke(() =>
+			{
+				ObjectLength = 0;
+				ObjectWidth = 0;
+				ObjectHeight = 0;
+				ObjectVolume = 0;
+				UnitCount = 0;
+				Comment = "";
+			});
 		}
 		
 		private void UpdateLockingStatus()
@@ -474,9 +361,15 @@ namespace VCClient.ViewModels
 			LockingStatusChanged?.Invoke(CanAcceptBarcodes);
 		}
 
-		public void UpdateLastAlgorithm(string lastAlgorithmUsed, string wasRangeMeterUsed)
+		private void OnBarcodeResetElapsed(object sender, ElapsedEventArgs e)
 		{
-			LastAlgorithmUsed = $"LastAlgorithm={lastAlgorithmUsed}, RM={wasRangeMeterUsed}";
+			Dispatcher.Invoke(() => ObjectCode = "");
+		}
+
+		private void OnPendingCalculationCancellationRequested()
+		{
+			Dispatcher.Invoke(() => ObjectCode = "");
+			CalculationCancellationRequested?.Invoke();
 		}
 	}
 }

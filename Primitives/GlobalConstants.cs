@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Primitives
 {
-	public class GlobalConstants
+	public static class GlobalConstants
 	{
 		public const string ManufacturerName = "IS";
 
@@ -22,14 +22,14 @@ namespace Primitives
 
 		public static readonly string ConfigFileName = Path.Combine(AppConfigPath, "main.cfg");
 
-		public static readonly string ResultFileName = "results.csv";
-
 		public static readonly string CountersFileName = Path.Combine(AppConfigPath, "counters");
 
-		public static string CsvSeparator = CultureInfo.CurrentCulture.TextInfo.ListSeparator;
+		public static readonly string CsvSeparator = CultureInfo.CurrentCulture.TextInfo.ListSeparator;
 
 		public static readonly string ResultsFileName = "results.csv";
 
 		public static readonly string ResultPhotosFolder = "photos";
+
+		public static readonly string PluginsFolder = "Plugins";
 	}
 }

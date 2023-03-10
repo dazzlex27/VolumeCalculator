@@ -7,6 +7,9 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Primitives\Primitives.csproj" />
   </ItemGroup>
 </Project>

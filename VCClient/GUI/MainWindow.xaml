@@ -17,9 +17,12 @@
         d:DataContext="{d:DesignInstance viewModels:MainWindowVm}"
         KeyboardNavigation.TabNavigation="Cycle">
     <Window.InputBindings>
-        <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding StartMeasurementCommand}"/>
+        <KeyBinding Key="Enter"
+                    Modifiers="Control"
+                    Command="{Binding StartMeasurementCommand}"/>
     </Window.InputBindings>
-    <Grid Width="Auto" Height="Auto">
+    <Grid Width="Auto"
+          Height="Auto">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -30,24 +33,37 @@
               IsTabStop="false">
             <Menu.Resources>
                 <Style TargetType="MenuItem">
-                    <Setter Property="Height" Value="50" />
-                    <Setter Property="FontSize" Value="24"/>
+                    <Setter Property="Height"
+                            Value="50" />
+                    <Setter Property="FontSize"
+                            Value="24"/>
                 </Style>
             </Menu.Resources>
-            <MenuItem Header="Действия" IsTabStop="False">
-                <MenuItem Header="Открыть настройки" Command="{Binding OpenSettingsCommand}"/>
-                <MenuItem Header="Информация о системе" Command="{Binding OpenStatusCommand}"/>
-                <MenuItem Header="Запустить Конфигуратор" Command="{Binding OpenConfiguratorCommand}"/>
-                <MenuItem Header="Завершить работу" Command="{Binding ShutDownCommand}"/>
+            <MenuItem Header="Действия"
+                      IsTabStop="False">
+                <MenuItem Header="Открыть настройки"
+                          Command="{Binding OpenSettingsCommand}"/>
+                <MenuItem Header="Информация о системе"
+                          Command="{Binding OpenStatusCommand}"/>
+                <MenuItem Header="Запустить Конфигуратор"
+                          Command="{Binding OpenConfiguratorCommand}"/>
+                <MenuItem Header="Завершить работу"
+                          Command="{Binding ShutDownCommand}"/>
             </MenuItem>
-            <MenuItem Header="Инструменты" IsTabStop="false">
+            <MenuItem Header="Инструменты"
+                      IsTabStop="false">
                 <MenuItem Header="Сохранение тестовых данных" 
                           IsCheckable="True" 
                           IsChecked="{Binding IsTestDataGenerationControlVisible, Mode=TwoWay}"/>
             </MenuItem>
         </Menu>
         <Separator Grid.Row="1"/>
-        <Grid Grid.Row="2" Margin="5" Name="GrMain" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="Auto">
+        <Grid Grid.Row="2"
+              Margin="5"
+              Name="GrMain"
+              VerticalAlignment="Stretch"
+              HorizontalAlignment="Stretch"
+              Width="Auto">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
@@ -55,9 +71,9 @@
             </Grid.RowDefinitions>
             <gui:StreamViewControl DataContext="{Binding StreamViewControlVm, Mode=TwoWay}"/>
             <gui:DashboardControl Grid.Row="1" 
-                                             VerticalAlignment="Stretch" 
-                                             HorizontalAlignment="Stretch" 
-                                             DataContext="{Binding DashboardControlVm, Mode=TwoWay}"/>
+                                  VerticalAlignment="Stretch" 
+                                  HorizontalAlignment="Stretch" 
+                                  DataContext="{Binding DashboardControlVm, Mode=TwoWay}"/>
             <gui:TestDataGenerationControl Grid.Row="2" 
                                            DataContext="{Binding TestDataGenerationControlVm, Mode=TwoWay}" 
                                            KeyboardNavigation.TabNavigation="None"/>

@@ -1,4 +1,4 @@
-﻿using DeviceIntegration;
+﻿using Primitives.Plugins;
 using Primitives;
 using System.ComponentModel.Composition;
 
@@ -7,10 +7,13 @@ namespace BarcodeScanners
 	[Export(typeof(IPlugin))]
 	internal class PluginDefinition : IPlugin
 	{
-		public void Initialize()
+		public string Type => "device";
+
+		public void Initialize(IPluginToolset toolset)
 		{
-			DeviceRegistrator.RegisterBarcodeScanner("generic", typeof(GenericSerialPortBarcodeScanner));
-			DeviceRegistrator.RegisterBarcodeScanner("keyboard", typeof(GenericKeyboardBarcodeScanner));
+			var registrator = toolset.DeviceRegistrator;
+			registrator.RegisterDevice(DeviceType.BarcodeScanner, "generic", typeof(GenericSerialPortBarcodeScanner));
+			registrator.RegisterDevice(DeviceType.BarcodeScanner, "keyboard", typeof(GenericKeyboardBarcodeScanner));
 		}
 	}
 }

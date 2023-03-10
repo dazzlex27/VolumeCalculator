@@ -13,7 +13,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="GodSharp.SerialPort" Version="1.2.0.6" />
-    <PackageReference Include="System.ServiceModel.Federation" Version="4.8.1" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.0" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0" />
   </ItemGroup>
 </Project>

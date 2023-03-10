@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Timers;
+using CommonUtils;
 using DeviceIntegration.Scales;
 using FrameProcessor;
 using Primitives;

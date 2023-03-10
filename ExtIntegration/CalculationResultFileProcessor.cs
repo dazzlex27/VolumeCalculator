@@ -2,11 +2,11 @@
 using System.Globalization;
 using System.IO;
 using System.Text;
+using CommonUtils;
 using Primitives;
 using Primitives.Calculation;
 using Primitives.Logging;
 using Primitives.Settings;
-using ProcessingUtils;
 
 namespace ExtIntegration
 {
@@ -21,7 +21,7 @@ namespace ExtIntegration
 		public CalculationResultFileProcessor(ILogger logger, string outputFolderPath)
 		{
 			_logger = logger;
-			FullOutputPath = Path.Combine(outputFolderPath, GlobalConstants.ResultFileName);
+			FullOutputPath = Path.Combine(outputFolderPath, GlobalConstants.ResultsFileName);
 
 			_fileWriteLock = new object();
 

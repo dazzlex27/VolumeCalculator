@@ -11,60 +11,67 @@ using System.Net.Http;
 
 namespace DeviceIntegration
 {
-	public static class DeviceFactory
+	public class DeviceFactory
 	{
-		public static IFrameProvider CreateRequestedFrameProvider(string name, ILogger logger)
+		private readonly DeviceDefinitions _definitions;
+
+		public DeviceFactory(DeviceDefinitions definitions)
 		{
-			var targetType = DeviceDefinitions.FrameProviders[name];
+			_definitions = definitions;
+		}
+
+		public IFrameProvider CreateRequestedFrameProvider(string name, ILogger logger)
+		{
+			var targetType = _definitions.FrameProviders[name];
 			if (targetType == null)
 				throw new DeviceNotFoundException("FrameProvider", name);
 
 			return (IFrameProvider)Activator.CreateInstance(targetType, logger);
 		}
 
-		public static IScales CreateRequestedScales(string name, ILogger logger, string port, int minWeight)
+		public IScales CreateRequestedScales(string name, ILogger logger, string port, int minWeight)
 		{
-			var targetType = DeviceDefinitions.Scales[name];
+			var targetType = _definitions.Scales[name];
 			if (targetType == null)
 				throw new DeviceNotFoundException("Scales", name);
 
 			return (IScales)Activator.CreateInstance(targetType, logger, port, minWeight);
 		}
 
-		public static IBarcodeScanner CreateRequestedScanner(string name, ILogger logger, string port)
+		public IBarcodeScanner CreateRequestedScanner(string name, ILogger logger, string port)
 		{
-			var targetType = DeviceDefinitions.BarcodeScanners[name];
+			var targetType = _definitions.BarcodeScanners[name];
 			if (targetType == null)
 				throw new DeviceNotFoundException("BarcodeScanner", name);
 
 			return (IBarcodeScanner)Activator.CreateInstance(targetType, logger, port);
 		}
 
-		public static IIoCircuit CreateRequestedIoCircuit(string name, ILogger logger, string port)
+		public IIoCircuit CreateRequestedIoCircuit(string name, ILogger logger, string port)
 		{
-			var targetType = DeviceDefinitions.IoCircuits[name];
+			var targetType = _definitions.IoCircuits[name];
 			if (targetType == null)
 				throw new DeviceNotFoundException("IoCircuit", name);
 
 			return (IIoCircuit)Activator.CreateInstance(targetType, logger, port);
 		}
 
-		public static IRangeMeter CreateRequestedRangeMeter(string name, ILogger logger)
+		public IRangeMeter CreateRequestedRangeMeter(string name, ILogger logger)
 		{
-			var targetType = DeviceDefinitions.RangeMeters[name];
+			var targetType = _definitions.RangeMeters[name];
 			if (targetType == null)
 				throw new DeviceNotFoundException("RangeMeter", name);
 
 			return (IRangeMeter)Activator.CreateInstance(targetType, logger);
 		}
 
-		public static IIpCamera CreateRequestedIpCamera(IpCameraSettings settings, HttpClient httpClient, ILogger logger)
+		public IIpCamera CreateRequestedIpCamera(IpCameraSettings settings, HttpClient httpClient, ILogger logger)
 		{
 			if (settings == null)
 				return null;
 
 			var name = settings.CameraName;
-			var targetType = DeviceDefinitions.IpCameras[name];
+			var targetType = _definitions.IpCameras[name];
 			if (targetType == null)
 				throw new DeviceNotFoundException("IpCamera", name);
 

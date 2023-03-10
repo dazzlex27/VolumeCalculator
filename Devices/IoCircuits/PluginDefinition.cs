@@ -1,5 +1,5 @@
-﻿using DeviceIntegration;
-using Primitives;
+﻿using Primitives;
+using Primitives.Plugins;
 using System.ComponentModel.Composition;
 
 namespace IoCircuits
@@ -7,9 +7,11 @@ namespace IoCircuits
 	[Export(typeof(IPlugin))]
 	internal class PluginDefinition : IPlugin
 	{
-		public void Initialize()
+		public string Type => "device";
+
+		public void Initialize(IPluginToolset toolset)
 		{
-			DeviceRegistrator.RegisterIoCircuit("keusb24r", typeof(KeUsb24RCircuit));
+			toolset.DeviceRegistrator.RegisterDevice(DeviceType.IoCircuit, "keusb24r", typeof(KeUsb24RCircuit));
 		}
 	}
 }
