@@ -20,8 +20,8 @@ namespace VCClient.ViewModels
 		public event Action CalculationStartRequested;
 
 		private readonly ILogger _logger;
-		private readonly ServerComponentsHandler _server;
 		private readonly HttpClient _httpClient;
+		private readonly ServerComponentsHandler _server;
 
 		private StreamViewControlVm _streamViewControlVm;
 		private DashboardControlVm _dashboardControlVm;
@@ -81,43 +81,59 @@ namespace VCClient.ViewModels
 			OpenStatusCommand = new CommandHandler(OpenStatusWindow, true);
 			OpenConfiguratorCommand = new CommandHandler(OpenConfigurator, true);
 			ShutDownCommand = new CommandHandler(() => RaiseShutDownRequestedEvent(true, false), true);
-			StartMeasurementCommand = new CommandHandler(OnCalculationStartRequested, true);
+			StartMeasurementCommand = new CommandHandler(() => CalculationStartRequested?.Invoke(), true);
+
+			StreamViewControlVm = new StreamViewControlVm(_logger);
+			DashboardControlVm = new DashboardControlVm();
+			TestDataGenerationControlVm = new TestDataGenerationControlVm(_logger);
 		}
 
 		public void Dispose()
 		{
-			_streamViewControlVm?.Dispose();
 			_dashboardControlVm?.Dispose();
 			_testDataGenerationControlVm?.Dispose();
 		}
 
-		public void InitializeSubViewModels()
+		public void UpdateSettings(ApplicationSettings settings)
 		{
-			var settings = _server.GetSettings();
+			var algorithmSettings = settings.AlgorithmSettings;
 			var deviceManager = _server.DeviceManager;
 			var frameProvider = deviceManager.DeviceSet.FrameProvider;
 			var calculator = _server.Calculator;
+			var minDepth = frameProvider.GetDepthCameraParams().MinDepth;
 
-			StreamViewControlVm?.Dispose();
-			StreamViewControlVm = new StreamViewControlVm(_logger, settings, frameProvider);
+			frameProvider.ColorFrameReady -= StreamViewControlVm.UpdateColorImage;
+			frameProvider.DepthFrameReady -= StreamViewControlVm.UpdateDepthImage;
+			StreamViewControlVm.UpdateSettings(algorithmSettings);
+			StreamViewControlVm.UpdateMinDepth(minDepth);
+			frameProvider.ColorFrameReady += StreamViewControlVm.UpdateColorImage;
+			frameProvider.DepthFrameReady += StreamViewControlVm.UpdateDepthImage;
 
-			if (DashboardControlVm != null)
-			{
-				DashboardControlVm.ResultFileOpeningRequested -= OpenResultsFile;
-				DashboardControlVm.PhotosFolderOpeningRequested -= OpenPhotosFolder;
-			}
-			DashboardControlVm = new DashboardControlVm(settings.AlgorithmSettings, deviceManager, calculator);
+			DashboardControlVm.WeightResetRequested -= deviceManager.DeviceStateUpdater.ResetWeight;
+			deviceManager.DeviceEventGenerator.WeightMeasurementReady -= DashboardControlVm.UpdateWeight;
+			deviceManager.DeviceEventGenerator.BarcodeReady -= DashboardControlVm.UpdateBarcode;
+			DashboardControlVm.CalculationCancellationRequested -= calculator.CancelPendingCalculation;
+			DashboardControlVm.CalculationRequested -= calculator.StartCalculation;
+			DashboardControlVm.LockingStatusChanged -= calculator.UpdateLockingStatus;
+			calculator.CalculationFinished -= DashboardControlVm.UpdateDataUponCalculationFinish;
+			calculator.LastAlgorithmUsedChanged -= DashboardControlVm.UpdateLastAlgorithm;
+			calculator.CalculationStatusChanged -= DashboardControlVm.UpdateCalculationStatus;
+			DashboardControlVm.ResultFileOpeningRequested -= OpenResultsFile;
+			DashboardControlVm.PhotosFolderOpeningRequested -= OpenPhotosFolder;
+			DashboardControlVm.UpdateSettings(algorithmSettings);
+			DashboardControlVm.WeightResetRequested += deviceManager.DeviceStateUpdater.ResetWeight;
+			deviceManager.DeviceEventGenerator.WeightMeasurementReady += DashboardControlVm.UpdateWeight;
+			deviceManager.DeviceEventGenerator.BarcodeReady += DashboardControlVm.UpdateBarcode;
+			DashboardControlVm.CalculationCancellationRequested += calculator.CancelPendingCalculation;
+			DashboardControlVm.CalculationRequested += calculator.StartCalculation;
+			DashboardControlVm.LockingStatusChanged += calculator.UpdateLockingStatus;
+			calculator.CalculationFinished += DashboardControlVm.UpdateDataUponCalculationFinish;
+			calculator.LastAlgorithmUsedChanged += DashboardControlVm.UpdateLastAlgorithm;
+			calculator.CalculationStatusChanged += DashboardControlVm.UpdateCalculationStatus;
 			DashboardControlVm.ResultFileOpeningRequested += OpenResultsFile;
 			DashboardControlVm.PhotosFolderOpeningRequested += OpenPhotosFolder;
 
-			TestDataGenerationControlVm = new TestDataGenerationControlVm(_logger, settings, frameProvider);
-		}
-
-		public void UpdateApplicationSettings(ApplicationSettings settings)
-		{
-			_dashboardControlVm.UpdateSettings(settings.AlgorithmSettings);
-			_streamViewControlVm.UpdateSettings(settings);
-			_testDataGenerationControlVm.UpdateSettings(settings);
+			TestDataGenerationControlVm.UpdateSettings(algorithmSettings, frameProvider);
 		}
 
 		private async Task OpenSettingsWindowAsync()
@@ -242,11 +258,6 @@ namespace VCClient.ViewModels
 			{
 				_logger.LogException("Failed to open photos folder", ex);
 			}
-		}
-
-		private void OnCalculationStartRequested()
-		{
-			CalculationStartRequested?.Invoke();
 		}
 
 		private void RaiseShutDownRequestedEvent(bool shutDownPc, bool force)

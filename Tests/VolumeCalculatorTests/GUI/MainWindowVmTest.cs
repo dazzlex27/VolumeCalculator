@@ -24,11 +24,11 @@ namespace VolumeCalculatorTests.GUI
 		}
 
 		[Test]
-		public async Task InitializeSubViewModels_WhenCalledRightAfterServerStartup_DoesntThrow()
+		public async Task UpdateSettings_WhenCalledRightAfterServerStartup_DoesntThrow()
 		{
 			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
 			var vm = new MainWindowVm(_logger, _httpClient, server);
-			vm.InitializeSubViewModels();
+			vm.UpdateSettings(server.GetSettings());
 		}
 
 		[Test]

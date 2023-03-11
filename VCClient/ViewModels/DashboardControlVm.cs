@@ -7,8 +7,6 @@ using GuiCommon;
 using Primitives;
 using Primitives.Settings;
 using VCClient.Utils;
-using VCServer.VolumeCalculation;
-using VCServer.DeviceHandling;
 using Primitives.Calculation;
 
 namespace VCClient.ViewModels
@@ -209,27 +207,13 @@ namespace VCClient.ViewModels
 			set => SetField(ref _lastAlgorithmUsed, value, nameof(LastAlgorithmUsed));
 		}
 
-		public DashboardControlVm(AlgorithmSettings settings, DeviceManager deviceManager,
-			CalculationRequestHandler calculator)
+		public DashboardControlVm()
 		{
 			RunVolumeCalculationCommand = new CommandHandler(RunVolumeCalculation, !CalculationInProgress);
 			ResetWeightCommand = new CommandHandler(() => WeightResetRequested?.Invoke(), !CalculationInProgress);
 			OpenResultsFileCommand = new CommandHandler(() => ResultFileOpeningRequested?.Invoke(), !CalculationInProgress);
 			OpenPhotosFolderCommand = new CommandHandler(() => PhotosFolderOpeningRequested?.Invoke(), !CalculationInProgress);
 			CancelPendingCalculationCommand = new CommandHandler(OnPendingCalculationCancellationRequested, !CalculationInProgress);
-
-			// TODO: remove calculator and deviceManager compositions, change to event raising
-			// TODO: move this into a separate method to enable hot reload
-			UpdateSettings(settings);
-			WeightResetRequested += deviceManager.DeviceStateUpdater.ResetWeight;
-			deviceManager.DeviceEventGenerator.WeightMeasurementReady += UpdateWeight;
-			deviceManager.DeviceEventGenerator.BarcodeReady += UpdateBarcode;
-			CalculationCancellationRequested += calculator.CancelPendingCalculation;
-			CalculationRequested += calculator.StartCalculation;
-			LockingStatusChanged += calculator.UpdateLockingStatus;
-			calculator.CalculationFinished += UpdateDataUponCalculationFinish;
-			calculator.LastAlgorithmUsedChanged += UpdateLastAlgorithm;
-			calculator.CalculationStatusChanged += UpdateCalculationStatus;
 
 			_barcodeResetTimer = new Timer(20000) { AutoReset = false };
 			_barcodeResetTimer.Elapsed += OnBarcodeResetElapsed;

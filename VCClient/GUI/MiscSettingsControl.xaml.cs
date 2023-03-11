@@ -1,5 +1,5 @@
 ﻿using System.Windows.Input;
-using VCClient.Utils;
+using ProcessingUtils;
 using TextBox = System.Windows.Controls.TextBox;
 
 namespace VCClient.GUI

@@ -211,9 +211,10 @@ namespace VCClient
 				_clientLogger.LogInfo("Initializing GUI handlers...");
 
 				_mainWindowVm = new MainWindowVm(_clientLogger, _httpClient, _server);
+				var settings = _server.GetSettings();
+				_mainWindowVm?.UpdateSettings(settings);
 				_mainWindowVm.ShutDownRequested += ShutDown;
 				_mainWindowVm.CalculationStartRequested += OnCalculationStartRequested;
-				_mainWindowVm.InitializeSubViewModels();
 
 				_mainWindow = new MainWindow { DataContext = _mainWindowVm };
 
@@ -253,7 +254,7 @@ namespace VCClient
 
 		private void OnApplicationSettingsUpdated(ApplicationSettings settings)
 		{
-			_mainWindowVm?.UpdateApplicationSettings(settings);
+			_mainWindowVm?.UpdateSettings(settings);
 		}
 
 		private void OnCalculationStartRequested()

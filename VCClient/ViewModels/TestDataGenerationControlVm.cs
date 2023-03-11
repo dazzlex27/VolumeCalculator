@@ -12,10 +12,10 @@ namespace VCClient.ViewModels
 	internal class TestDataGenerationControlVm : BaseViewModel, IDisposable
 	{
 		private readonly ILogger _logger;
-		private readonly IFrameProvider _frameProvider;
 
+		private AlgorithmSettings _settings;
+		private IFrameProvider _frameProvider;
 		private TestDataGenerator _testDataGenerator;
-		private ApplicationSettings _applicationSettings;
 
 		private string _testCaseName;
 		private string _testCaseFolderPath;
@@ -143,11 +143,9 @@ namespace VCClient.ViewModels
 			set => SetField(ref _generationInProgress, value, nameof(GenerationInProgress));
 		}
 
-		public TestDataGenerationControlVm(ILogger logger, ApplicationSettings settings, IFrameProvider frameProvider)
+		public TestDataGenerationControlVm(ILogger logger)
 		{
 			_logger = logger;
-			_applicationSettings = settings;
-			_frameProvider = frameProvider;
 
 			TestCaseName = "obj1";
 			Description = "";
@@ -165,9 +163,10 @@ namespace VCClient.ViewModels
 			_testDataGenerator?.Dispose();
 		}
 
-		public void UpdateSettings(ApplicationSettings settings)
+		public void UpdateSettings(AlgorithmSettings settings, IFrameProvider frameProvider)
 		{
-			_applicationSettings = settings;
+			_settings = settings;
+			_frameProvider = frameProvider;
 		}
 
 		private void RunTestDataGeneration()
@@ -181,7 +180,7 @@ namespace VCClient.ViewModels
 				var basicTestInfo = new TestCaseInfo(TestCaseName, Description, TestCaseFolderPath, ObjLength,
 					ObjWidth, ObjHeight, TimesToSave);
 
-				_testDataGenerator = new TestDataGenerator(_logger, basicTestInfo, _frameProvider, _applicationSettings.AlgorithmSettings);
+				_testDataGenerator = new TestDataGenerator(_logger, basicTestInfo, _frameProvider, _settings);
 				_testDataGenerator.FinishedSaving += OnSavingFinished;
 			}
 			catch (Exception ex)

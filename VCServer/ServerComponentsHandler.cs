@@ -112,7 +112,14 @@ namespace VCServer
 
 		public void UpdateApplicationSettings(ApplicationSettings settings)
 		{
-			OnApplicationSettingsChanged(settings);
+			_settings = settings;
+			Calculator?.UpdateSettings(settings);
+			DmProcessor?.SetProcessorSettings(settings);
+			DeviceManager?.DeviceEventGenerator?.UpdateSettings(settings);
+			_requestProcessor?.UpdateSettings(settings);
+
+			ApplicationSettingsChanged?.Invoke(settings);
+
 			_logger.LogInfo($"New settings have been applied: {settings}");
 		}
 
@@ -125,17 +132,6 @@ namespace VCServer
 		public void ShutPcDown()
 		{
 			IoUtils.ShutPcDown();
-		}
-
-		private void OnApplicationSettingsChanged(ApplicationSettings settings)
-		{
-			_settings = settings;
-			Calculator?.UpdateSettings(settings);
-			DmProcessor?.SetProcessorSettings(settings);
-			DeviceManager?.DeviceEventGenerator?.UpdateSettings(settings);
-			_requestProcessor?.UpdateSettings(settings);
-
-			ApplicationSettingsChanged?.Invoke(settings);
 		}
 
 		private void OnCalculationFinished(CalculationResultData resultData)

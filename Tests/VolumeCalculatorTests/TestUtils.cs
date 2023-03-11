@@ -46,7 +46,7 @@ namespace VolumeCalculatorTests
 			var server = await CreateServerAsync(logger, httpClient);
 
 			var vm = new MainWindowVm(logger, httpClient, server);
-			vm.InitializeSubViewModels();
+			vm.UpdateSettings(server.GetSettings());
 
 			return new Tuple<ServerComponentsHandler, MainWindowVm>(server, vm);
 		}

@@ -1,8 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace VCClient.Utils
+namespace ProcessingUtils
 {
-	internal static partial class RegexInstances
+	public static partial class RegexInstances
 	{
 		public static Regex NaturalNumberValidator = NaturalNumberRegex();
 

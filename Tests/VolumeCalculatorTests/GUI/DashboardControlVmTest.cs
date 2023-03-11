@@ -12,24 +12,21 @@ namespace VolumeCalculatorTests.GUI
 	internal class DashboardControlVmTest
 	{
 		ILogger _logger;
-		HttpClient _httpClient;
 
 		[SetUp]
 		public void SetUp()
 		{
 			_logger = new DummyLogger();
-			_httpClient = new HttpClient();
 		}
 
 		[TearDown]
 		public void TearDown()
 		{
-			_httpClient?.Dispose();
 			_logger?.Dispose();
 		}
 
 		[Test]
-		public async Task UpdateDataUponCalculationFinish_WhenRanOnFreshInstance_SetsCorrectAttributes()
+		public void UpdateDataUponCalculationFinish_WhenRanOnFreshInstance_SetsCorrectAttributes()
 		{
 			var gtObjectCode = "";
 			var gtUnitCount = 0;
@@ -37,9 +34,9 @@ namespace VolumeCalculatorTests.GUI
 			var gtresultData = TestUtils.GetSuccessfulResult();
 			var gtResult = gtresultData.Result;
 
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var settings = ApplicationSettings.GetDefaultDebugSettings();
+			var vm = new DashboardControlVm();
+			vm.UpdateSettings(settings.AlgorithmSettings);
 			vm.UpdateDataUponCalculationFinish(gtresultData);
 
 			Assert.Multiple(() =>
@@ -55,26 +52,26 @@ namespace VolumeCalculatorTests.GUI
 		}
 
 		[Test]
-		public async Task UpdateBarcode_WhenGivenValidBarcode_SetsBarcode()
+		public void UpdateBarcode_WhenGivenValidBarcode_SetsBarcode()
 		{
 			var gtBarcode = "TESTBARCODE1234";
 
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var settings = ApplicationSettings.GetDefaultDebugSettings();
+			var vm = new DashboardControlVm();
+			vm.UpdateSettings(settings.AlgorithmSettings);
 			vm.UpdateBarcode(gtBarcode);
 
 			Assert.That(vm.ObjectCode, Is.EqualTo(gtBarcode));
 		}
 
 		[Test]
-		public async Task UpdateBarcode_WhenCalculationInProgress_DoesntSetBarcode()
+		public void UpdateBarcode_WhenCalculationInProgress_DoesntSetBarcode()
 		{
 			var gtBarcode = "TESTBARCODE1234";
 
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var settings = ApplicationSettings.GetDefaultDebugSettings();
+			var vm = new DashboardControlVm();
+			vm.UpdateSettings(settings.AlgorithmSettings);
 			vm.CalculationInProgress = true;
 			vm.UpdateBarcode(gtBarcode);
 
@@ -82,14 +79,14 @@ namespace VolumeCalculatorTests.GUI
 		}
 
 		[Test]
-		public async Task UpdateBarcode_WhenGivenEmptyBarcode_DoesntSetBarcode()
+		public void UpdateBarcode_WhenGivenEmptyBarcode_DoesntSetBarcode()
 		{
 			var gtBarcodeBefore = "TESTBARCODE1234";
 			var gtBarcodeAfter = string.Empty;
 
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var settings = ApplicationSettings.GetDefaultDebugSettings();
+			var vm = new DashboardControlVm();
+			vm.UpdateSettings(settings.AlgorithmSettings);
 			vm.UpdateBarcode(gtBarcodeBefore);
 			vm.UpdateBarcode(gtBarcodeAfter);
 
@@ -99,13 +96,11 @@ namespace VolumeCalculatorTests.GUI
 		[TestCase(nameof(DashboardControlVm.CodeBoxFocused))]
 		[TestCase(nameof(DashboardControlVm.UnitCountBoxFocused))]
 		[TestCase(nameof(DashboardControlVm.CommentBoxFocused))]
-		public async Task UpdateBarcode_WhenABoxIsFocused_DoesntSetBarcode(string propertyName)
+		public void UpdateBarcode_WhenABoxIsFocused_DoesntSetBarcode(string propertyName)
 		{
 			var gtBarcode = "TESTBARCODE1234";
 
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var vm = new DashboardControlVm();
 			vm.GetType().GetProperty(propertyName).SetValue(vm, true);
 			vm.UpdateBarcode(gtBarcode);
 
@@ -113,42 +108,42 @@ namespace VolumeCalculatorTests.GUI
 		}
 
 		[Test]
-		public async Task UpdateWeight_WhenGivenValidWeight_SetsWeight()
+		public void UpdateWeight_WhenGivenValidWeight_SetsWeight()
 		{
 			var gtWeightGr = 725;
 			var gtScaleDate = new ScaleMeasurementData(MeasurementStatus.Measured, gtWeightGr);
 
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var settings = ApplicationSettings.GetDefaultDebugSettings();
+			var vm = new DashboardControlVm();
+			vm.UpdateSettings(settings.AlgorithmSettings);
 			vm.UpdateWeight(gtScaleDate);
 
 			Assert.That(vm.ObjectWeight, Is.EqualTo(gtWeightGr));
 		}
 
 		[Test]
-		public async Task UpdateWeight_WhenGivenNullWeightData_DoesntSetWeight()
+		public void UpdateWeight_WhenGivenNullWeightData_DoesntSetWeight()
 		{
 			var gtWeightGr = 725;
 			ScaleMeasurementData gtScaleDate = null;
 
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var settings = ApplicationSettings.GetDefaultDebugSettings();
+			var vm = new DashboardControlVm();
+			vm.UpdateSettings(settings.AlgorithmSettings);
 			vm.UpdateWeight(gtScaleDate);
 
 			Assert.That(vm.ObjectWeight, Is.Not.EqualTo(gtWeightGr));
 		}
 
 		[Test]
-		public async Task UpdateWeight_WhenCalculationInGrogress_DoesntSetWeight()
+		public void UpdateWeight_WhenCalculationInGrogress_DoesntSetWeight()
 		{
 			var gtWeightGr = 725;
 			var gtScaleDate = new ScaleMeasurementData(MeasurementStatus.Measured, gtWeightGr);
 
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var settings = ApplicationSettings.GetDefaultDebugSettings();
+			var vm = new DashboardControlVm();
+			vm.UpdateSettings(settings.AlgorithmSettings);
 			vm.CalculationInProgress = true;
 			vm.UpdateWeight(gtScaleDate);
 
@@ -156,14 +151,14 @@ namespace VolumeCalculatorTests.GUI
 		}
 
 		[Test]
-		public async Task UpdateWeight_WhenWeightIsTooSmall_DoesntSetWeight()
+		public void UpdateWeight_WhenWeightIsTooSmall_DoesntSetWeight()
 		{
 			var gtWeightGr = 0.000001;
 			var gtScaleDate = new ScaleMeasurementData(MeasurementStatus.Measured, gtWeightGr);
 
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var settings = ApplicationSettings.GetDefaultDebugSettings();
+			var vm = new DashboardControlVm();
+			vm.UpdateSettings(settings.AlgorithmSettings);
 			vm.UpdateWeight(gtScaleDate);
 
 			Assert.That(vm.ObjectWeight, Is.Not.EqualTo(gtWeightGr));
@@ -181,16 +176,16 @@ namespace VolumeCalculatorTests.GUI
 		[TestCase(CalculationStatus.Successful, false, false)]
 		[TestCase(CalculationStatus.TimedOut, false, false)]
 		[TestCase(CalculationStatus.WeightNotStable, false, false)]
-		public async Task UpdateCalculationStatus_WhenSetToSuccessful_SetsCorrectValues(
+		public void UpdateCalculationStatus_WhenSetToSuccessful_SetsCorrectValues(
 			CalculationStatus gtStatus, bool gtCalculationInProgress, bool gtCalculationPending)
 		{
 			var dashboardStatus = StatusUtils.GetDashboardStatus(gtStatus);
 			var gtStatusBrush = GuiUtils.GetBrushFromDashboardStatus(dashboardStatus);
 			var gtStatusText = GuiUtils.GetMessageFromCalculationStatus(gtStatus);
 
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var settings = ApplicationSettings.GetDefaultDebugSettings();
+			var vm = new DashboardControlVm();
+			vm.UpdateSettings(settings.AlgorithmSettings);
 			vm.UpdateCalculationStatus(gtStatus);
 			
 			Assert.Multiple(() =>
@@ -203,30 +198,27 @@ namespace VolumeCalculatorTests.GUI
 		}
 
 		[Test]
-		public async Task UpdateLastAlgorithm_WhenGivenValues_UpdatesField()
+		public void UpdateLastAlgorithm_WhenGivenValues_UpdatesField()
 		{
 			var gtAlgorithm = "dm1";
 			var gtWasRangeMeterUsed = "+";
 			var gtMessage = $"LastAlgorithm={gtAlgorithm}, RM={gtWasRangeMeterUsed}";
 
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var vm = new DashboardControlVm();
 			vm.UpdateLastAlgorithm(gtAlgorithm, gtWasRangeMeterUsed);
 
 			Assert.That(gtMessage, Is.EqualTo(vm.LastAlgorithmUsed));
 		}
 
 		[Test]
-		public async Task UpdateSettings_WhenGivenValidSettings_UpdatesFields()
+		public void UpdateSettings_WhenGivenValidSettings_UpdatesFields()
 		{
 			string weightLabelTextBefore;
 			var weightLabelTextAfter = "кг";
 
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var serverSettings = server.GetSettings();
-			var vm = new DashboardControlVm(serverSettings.AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var settings = ApplicationSettings.GetDefaultDebugSettings();
+			var vm = new DashboardControlVm();
+			vm.UpdateSettings(settings.AlgorithmSettings);
 			weightLabelTextBefore = vm.WeightLabelText;
 
 			var algSettings = new AlgorithmSettings(null, 1, false, 3000, true, Primitives.WeightUnits.Kg,
@@ -238,17 +230,15 @@ namespace VolumeCalculatorTests.GUI
 		}
 
 		[Test]
-		public async Task Dispose_WhenGivenValidSettings_DoesntThrow()
+		public void Dispose_WhenGivenValidSettings_DoesntThrow()
 		{
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var vm = new DashboardControlVm();
 
 			vm.Dispose();
 		}
 
 		[Test]
-		public async Task ObjectCode_WhenAssignedNewValue_SetsFields()
+		public void ObjectCode_WhenAssignedNewValue_SetsFields()
 		{
 			var gtObjectLength = 0;
 			var gtObjectWidth = 0;
@@ -256,9 +246,9 @@ namespace VolumeCalculatorTests.GUI
 			var gtObjectVolume = 0;
 			var gtUnitCount = 0;
 			var gtComment = "";
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var settings = ApplicationSettings.GetDefaultDebugSettings();
+			var vm = new DashboardControlVm();
+			vm.UpdateSettings(settings.AlgorithmSettings);
 
 			vm.ObjectLength = 3;
 			vm.ObjectWidth = 4;
@@ -280,11 +270,9 @@ namespace VolumeCalculatorTests.GUI
 		}
 
 		[Test]
-		public async Task CalculationRequested_WhenTriggeredCalculation_RaisesEvent()
+		public void CalculationRequested_WhenTriggeredCalculation_RaisesEvent()
 		{
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var vm = new DashboardControlVm();
 
 			var isCalled = false;
 			vm.CalculationRequested += (o) => isCalled = true;
@@ -294,11 +282,9 @@ namespace VolumeCalculatorTests.GUI
 		}
 
 		[Test]
-		public async Task WeightResetRequested_WhenTriggeredWeightReset_RaisesEvent()
+		public void WeightResetRequested_WhenTriggeredWeightReset_RaisesEvent()
 		{
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var vm = new DashboardControlVm();
 
 			var isCalled = false;
 			vm.WeightResetRequested += () => isCalled = true;
@@ -308,11 +294,9 @@ namespace VolumeCalculatorTests.GUI
 		}
 
 		[Test]
-		public async Task ResultFileOpeningRequested_WhenTriggeredFileOpening_RaisesEvent()
+		public void ResultFileOpeningRequested_WhenTriggeredFileOpening_RaisesEvent()
 		{
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var vm = new DashboardControlVm();
 
 			var isCalled = false;
 			vm.ResultFileOpeningRequested += () => isCalled = true;
@@ -322,25 +306,9 @@ namespace VolumeCalculatorTests.GUI
 		}
 
 		[Test]
-		public async Task PhotosFolderOpeningRequested_WhenTriggeredPhotoFolderOpening_RaisesEvent()
+		public void CalculationCancellationRequested_WhenTriggeredCalculationCancellation_RaisesEvent()
 		{
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
-
-			var isCalled = false;
-			vm.PhotosFolderOpeningRequested += () => isCalled = true;
-			vm.OpenPhotosFolderCommand.Execute(null);
-
-			Assert.That(isCalled, Is.True);
-		}
-
-		[Test]
-		public async Task CalculationCancellationRequested_WhenTriggeredCalculationCancellation_RaisesEvent()
-		{
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var vm = new DashboardControlVm();
 
 			var isCalled = false;
 			vm.CalculationCancellationRequested += () => isCalled = true;
@@ -355,11 +323,9 @@ namespace VolumeCalculatorTests.GUI
 		[TestCase(nameof(DashboardControlVm.CodeBoxFocused), true)]
 		[TestCase(nameof(DashboardControlVm.UnitCountBoxFocused), true)]
 		[TestCase(nameof(DashboardControlVm.CommentBoxFocused), true)]
-		public async Task LockingStatusChanged_WhenTriggeredStatusChange_RaisesEvent(string propertyName, bool value)
+		public void LockingStatusChanged_WhenTriggeredStatusChange_RaisesEvent(string propertyName, bool value)
 		{
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var vm = new DashboardControlVm();
 
 			var isCalled = false;
 			vm.LockingStatusChanged += (o) => isCalled = true;
@@ -376,12 +342,10 @@ namespace VolumeCalculatorTests.GUI
 		[TestCase(false, true, true, false)]
 		[TestCase(true, false, true, false)]
 		[TestCase(true, true, true, false)]
-		public async Task CanAcceptBarcodes_WhenGivenDifferentStatesOfBoxes_ReturnsApproppriateValue(
+		public void CanAcceptBarcodes_WhenGivenDifferentStatesOfBoxes_ReturnsApproppriateValue(
 			bool codeBoxFocused, bool unitCountBoxFocused, bool commentBoxFocused, bool returnValue)
 		{
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var vm = new DashboardControlVm(server.GetSettings().AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var vm = new DashboardControlVm();
 
 			vm.CodeBoxFocused = codeBoxFocused;
 			vm.UnitCountBoxFocused = unitCountBoxFocused;
@@ -395,14 +359,13 @@ namespace VolumeCalculatorTests.GUI
 		[TestCase(null, true, false)]
 		[TestCase("", false, true)]
 		[TestCase("code", false, true)]
-		public async Task CodeReady_WhenNoCodeWithDefaultSettings_ReturnsFalse(
+		public void CodeReady_WhenNoCodeWithDefaultSettings_ReturnsFalse(
 			string code, bool requireBarcode, bool resultValue)
 		{
-			var server = await TestUtils.CreateServerAsync(_logger, _httpClient);
-			var serverSettings = server.GetSettings();
-			serverSettings.AlgorithmSettings.RequireBarcode = requireBarcode;
-			var vm = new DashboardControlVm(serverSettings.AlgorithmSettings,
-				server.DeviceManager, server.Calculator);
+			var settings = ApplicationSettings.GetDefaultDebugSettings();
+			settings.AlgorithmSettings.RequireBarcode = requireBarcode;
+			var vm = new DashboardControlVm();
+			vm.UpdateSettings(settings.AlgorithmSettings);
 
 			vm.ObjectCode = code;
 

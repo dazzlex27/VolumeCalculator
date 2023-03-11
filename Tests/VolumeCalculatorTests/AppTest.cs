@@ -52,7 +52,7 @@ namespace VolumeCalculatorTests
 			DisposeApp(components.Item1, components.Item2);
 		}
 
-		private void DisposeApp(ServerComponentsHandler server, MainWindowVm vm)
+		private static void DisposeApp(ServerComponentsHandler server, MainWindowVm vm)
 		{
 			vm.Dispose();
 			server.Dispose();

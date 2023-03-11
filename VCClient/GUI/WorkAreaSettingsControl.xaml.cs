@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
-using VCClient.Utils;
+using ProcessingUtils;
 using TextBox = System.Windows.Controls.TextBox;
 
 namespace VCClient.GUI

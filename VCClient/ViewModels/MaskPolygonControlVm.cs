@@ -47,11 +47,9 @@ namespace VCClient.ViewModels
 			set => SetField(ref _canvasHeight, value, nameof(CanvasHeight));
 		}
 
-		public MaskPolygonControlVm(IReadOnlyList<RelPoint> points)
+		public MaskPolygonControlVm()
 		{
 			PolygonNodes = new List<Ellipse>();
-
-			SetPolygonPoints(points);
 		}
 
 		public void SetPolygonPoints(IReadOnlyList<RelPoint> relPoints)

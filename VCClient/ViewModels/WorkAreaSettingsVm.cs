@@ -61,9 +61,11 @@ namespace VCClient.ViewModels
 			FloorDepth = settings.FloorDepth;
 			MinObjHeight = settings.MinObjectHeight;
 			UseColorMask = settings.UseColorMask;
-			ColorMaskRectangleControlVm = new MaskPolygonControlVm(settings.ColorMaskContour);
+			ColorMaskRectangleControlVm = new MaskPolygonControlVm();
+			ColorMaskRectangleControlVm.SetPolygonPoints(settings.ColorMaskContour);
 			UseDepthMask = settings.UseDepthMask;
-			DepthMaskPolygonControlVm = new MaskPolygonControlVm(settings.DepthMaskContour);
+			DepthMaskPolygonControlVm = new MaskPolygonControlVm();
+			DepthMaskPolygonControlVm.SetPolygonPoints(settings.DepthMaskContour);
 			RangeMeterCorrectionValue = settings.RangeMeterCorrectionValueMm;
 		}
 
