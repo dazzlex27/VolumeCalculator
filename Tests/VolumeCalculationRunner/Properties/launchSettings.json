@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "VolumeCalculationRunner": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

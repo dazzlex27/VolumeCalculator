@@ -32,7 +32,7 @@ DepthMapProcessor::DepthMapProcessor(CameraIntrinsics colorIntrinsics, CameraInt
 
 	_needToUpdateMeasurementVolume = false;
 
-	_maskMode = false;
+	_debugDirectory = "";
 }
 
 DepthMapProcessor::~DepthMapProcessor()
@@ -76,12 +76,10 @@ void DepthMapProcessor::SetAlgorithmSettings(const short floorDepth, const short
 	_needToUpdateMeasurementVolume = true;
 }
 
-void DepthMapProcessor::SetDebugPath(const char* path, const bool maskMode)
+void DepthMapProcessor::SetDebugDirectory(const char* path)
 {
-	_debugPath = std::string(path);
-	_contourExtractor.SetDebugPath(_debugPath);
-
-	_maskMode = maskMode;
+	_debugDirectory = path;
+	_contourExtractor.SetDebugDirectory(_debugDirectory);
 }
 
 NativeAlgorithmSelectionResult* DepthMapProcessor::SelectAlgorithm(const NativeAlgorithmSelectionData data)
@@ -234,9 +232,6 @@ VolumeCalculationResult* DepthMapProcessor::CalculateObjectVolume(const VolumeCa
 	result->WidthMm = object2DSize.Width;
 	result->HeightMm = objectHeight;
 
-	if (_maskMode)
-		Tamper(result);
-
 	return result;
 }
 
@@ -353,9 +348,9 @@ const cv::RotatedRect DepthMapProcessor::CalculateObjectBoundingRect(const Conto
 	{
 	case Dm1:
 	{
-		if (debugFilename != "")
+		if (_debugDirectory != "" && debugFilename != "")
 		{
-			const std::string& filename = _debugPath + "/" + debugFilename + "_ctr_depth.png";
+			const std::string& filename = _debugDirectory + "/" + debugFilename + "_ctr_depth.png";
 			DmUtils::DrawTargetContour(depthObjectContour, _mapWidth, _mapHeight, filename);
 		}
 
@@ -366,9 +361,9 @@ const cv::RotatedRect DepthMapProcessor::CalculateObjectBoundingRect(const Conto
 		const std::vector<DepthValue>& worldDepthValues = CalculationUtils::GetWorldDepthValues(depthObjectContour, _depthMapBuffer, _mapWidth, _depthIntrinsics);
 		const Contour& perspectiveCorrectedContour = CalculationUtils::GetCameraPoints(worldDepthValues, contourTopPlaneDepth, _depthIntrinsics);
 
-		if (debugFilename != "")
+		if (_debugDirectory != "" && debugFilename != "")
 		{
-			const std::string& filename = _debugPath + "/" + debugFilename + "_ctr_depth.png";
+			const std::string& filename = _debugDirectory + "/" + debugFilename + "_ctr_depth.png";
 			DmUtils::DrawTargetContour(perspectiveCorrectedContour, _mapWidth, _mapHeight, filename);
 		}
 
@@ -376,10 +371,10 @@ const cv::RotatedRect DepthMapProcessor::CalculateObjectBoundingRect(const Conto
 	}
 	case Rgb:
 	{
-		if (debugFilename != "")
+		if (_debugDirectory != "" && debugFilename != "")
 		{
-			const std::string& depthFilename = _debugPath + "/" + debugFilename + "_ctr_depth.png";
-			const std::string& colorFilename = _debugPath + "/" + debugFilename + "_ctr_color.png";
+			const std::string& depthFilename = _debugDirectory + "/" + debugFilename + "_ctr_depth.png";
+			const std::string& colorFilename = _debugDirectory + "/" + debugFilename + "_ctr_color.png";
 			DmUtils::DrawTargetContour(depthObjectContour, _mapWidth, _mapHeight, depthFilename);
 			DmUtils::DrawTargetContour(colorObjectContour, _mapWidth, _mapHeight, colorFilename);
 		}
@@ -485,29 +480,4 @@ void DepthMapProcessor::UpdateMeasurementVolume(const int mapWidth, const int ma
 
 	const int width = abs(_measurementVolume.Points[3].x - _measurementVolume.Points[0].x);
 	const int height = abs(_measurementVolume.Points[0].y - _measurementVolume.Points[1].y);
-}
-
-void DepthMapProcessor::Tamper(VolumeCalculationResult* result) const
-{
-	srand((uint)time(NULL));
-
-	int r0 = rand() % 100;
-
-	if (r0 > 50)
-		memset(result, 0, sizeof(VolumeCalculationResult));
-	else
-	{
-		double r1 = (double)(rand() % 100) / 100.0;
-		double r2 = (double)(rand() % 100) / 100.0;
-		double r3 = (double)(rand() % 100) / 100.0;
-		result->LengthMm *= (int)r1;
-		result->WidthMm *= (int)r2;
-		result->HeightMm *= (int)r3;
-	}
-
-	if (r0 > 93)
-	{
-		int* ok = nullptr;
-		int okVal = *ok;
-	}
 }

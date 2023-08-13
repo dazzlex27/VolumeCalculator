@@ -28,9 +28,7 @@ private:
 	bool _correctPerspective;
 	RelRect _colorRoiRect;
 
-	bool _maskMode;
-
-	std::string _debugPath;
+	std::string _debugDirectory;
 
 	short* _depthMapBuffer;
 	byte* _depthMaskBuffer;
@@ -46,7 +44,7 @@ public:
 
 	void SetAlgorithmSettings(const short floorDepth, const short cutOffDepth, 
 		const RelPoint* polygonPoints, const int polygonPointCount, const RelRect& roiRect);
-	void SetDebugPath(const char* path, const bool maskMode);
+	void SetDebugDirectory(const char* path);
 
 	NativeAlgorithmSelectionResult* SelectAlgorithm(const NativeAlgorithmSelectionData data);
 	VolumeCalculationResult* CalculateObjectVolume(const VolumeCalculationData& data);
@@ -67,6 +65,4 @@ private:
 		const CameraIntrinsics& intristics, const short contourTopPlaneDepth) const;
 	const bool IsObjectInZone(const std::vector<DepthValue>& contour) const;
 	void UpdateMeasurementVolume(const int mapWidth, const int mapHeight);
-
-	void Tamper(VolumeCalculationResult* result) const;
 };

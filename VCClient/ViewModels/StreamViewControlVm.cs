@@ -71,7 +71,7 @@ namespace VCClient.ViewModels
 		{
 			var workArea = settings.WorkArea;
 			_floorDepth = workArea.FloorDepth;
-			_cutOffDepth = (short)(_floorDepth - workArea.MinObjectHeight);
+			_cutOffDepth = workArea.GetCutOffDepth();
 
 			UseColorMask = settings.WorkArea.UseColorMask;
 			ColorMaskPolygonControlVm.SetPolygonPoints(settings.WorkArea.ColorMaskContour);

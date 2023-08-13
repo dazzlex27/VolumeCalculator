@@ -10,27 +10,30 @@ namespace VolumeCalculationRunner
 
 		public DepthMap[] DepthMaps { get; }
 
-		public int ObjLength { get; }
+		public ImageData Image { get; }
 
-		public int ObjWidth { get; }
+		public int ObjLengthMm { get; }
 
-		public int ObjHeight { get; }
+		public int ObjWidthMm { get; }
 
-		public short FloorDepth { get; }
+		public int ObjHeightMm { get; }
 
-		public short MinObjHeight { get; }
+		public short FloorDepthMm { get; }
 
-		public VolumeTestCaseData(string caseName, string description, DepthMap[] depthMaps, int objLength, int objWidth, int objHeight,  
-			short floorDepth, short minObjHeight)
+		public short MinObjHeightMm { get; }
+
+		public VolumeTestCaseData(string caseName, string description, DepthMap[] depthMaps, ImageData image,
+			int objLengthMm, int objWidthMm, int objHeightMm, short floorDepthMm, short minObjHeightMm)
 		{
 			CaseName = caseName;
 			Description = description;
 			DepthMaps = depthMaps;
-			ObjWidth = objWidth;
-			ObjHeight = objHeight;
-			ObjLength = objLength;
-			FloorDepth = floorDepth;
-			MinObjHeight = minObjHeight;
+			Image = image;
+			ObjWidthMm = objWidthMm;
+			ObjHeightMm = objHeightMm;
+			ObjLengthMm = objLengthMm;
+			FloorDepthMm = floorDepthMm;
+			MinObjHeightMm = minObjHeightMm;
 		}
 	}
 }

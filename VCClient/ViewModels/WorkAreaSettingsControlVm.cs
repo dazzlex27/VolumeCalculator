@@ -129,8 +129,7 @@ namespace VCClient.ViewModels
 			WorkAreaVm.DepthMaskPolygonControlVm.CanEditPolygon = true;
 			_latestDepthMap = depthMap;
 
-			var cutOffDepth = (short)(WorkAreaVm.FloorDepth - WorkAreaVm.MinObjHeight);
-			var filteredMap = DepthMapUtils.GetDepthFilteredDepthMap(depthMap, cutOffDepth);
+			var filteredMap = DepthMapUtils.GetDepthFilteredDepthMap(depthMap, WorkAreaVm.CutOffDepth);
 
 			var depthMapImage = DepthMapUtils.GetColorizedDepthMapData(filteredMap, MinDepth, WorkAreaVm.FloorDepth);
 			DepthImageBitmap = GraphicsUtils.GetWriteableBitmapFromImageData(depthMapImage);

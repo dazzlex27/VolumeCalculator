@@ -81,6 +81,11 @@ namespace Primitives.Settings
 				GetDefaultAreaContour(), true, GetDefaultAreaContour(), 0);
 		}
 
+		public short GetCutOffDepth()
+		{
+			return (short)(FloorDepth - MinObjectHeight);
+		}
+
 		private static List<RelPoint> GetDefaultAreaContour()
 		{
 			return new List<RelPoint>

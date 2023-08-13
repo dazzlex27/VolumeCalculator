@@ -149,14 +149,12 @@ namespace VCServer.VolumeCalculation
 					_logger.LogInfo($"Starting a volume calculation... {algStatus}");
 
 					var calculationIndex = IoUtils.GetCurrentUniversalObjectCounter(GlobalConstants.CountersFileName);
-					var cutOffDepth = (short)(activeWorkArea.FloorDepth - activeWorkArea.MinObjectHeight);
 
 					var calculationData = new VolumeCalculationData(_settings.AlgorithmSettings.SampleDepthMapCount,
 						_lastBarcode, calculationIndex, dm1Enabled, dm2Enabled, rgbEnabled,
-						_settings.GeneralSettings.PhotosDirectoryPath, activeWorkArea.FloorDepth, cutOffDepth,
-						activeWorkArea.RangeMeterCorrectionValueMm);
+						_settings.GeneralSettings.PhotosDirectoryPath, activeWorkArea.RangeMeterCorrectionValueMm);
 
-					_volumeCalculator = new VolumeCalculationLogic(_logger, _dmProcessor, _deviceManager.FrameProvider,
+					_volumeCalculator = new VolumeCalculationLogic(_logger, _dmProcessor, activeWorkArea, _deviceManager.FrameProvider,
 						_deviceManager.RangeMeter, _deviceManager.IpCamera, calculationData);
 					_volumeCalculator.CalculationFinished += OnCalculationFinished;
 					_volumeCalculator.Dispose();

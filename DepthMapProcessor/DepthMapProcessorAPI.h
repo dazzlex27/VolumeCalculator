@@ -9,7 +9,7 @@ DLL_EXPORT void CreateDepthMapProcessor(CameraIntrinsics colorIntrinsics, Camera
 DLL_EXPORT void SetAlgorithmSettings(short floorDepth, short cutOffDepth, RelPoint* polygonPoints, int polygonPointCount,
 	RelRect colorRoiRect);
 
-DLL_EXPORT void SetDebugPath(const char* path, bool maskMode);
+DLL_EXPORT void SetDebugDirectory(const char* path);
 
 DLL_EXPORT NativeAlgorithmSelectionResult* SelectAlgorithm(NativeAlgorithmSelectionData data);
 DLL_EXPORT void DisposeAlgorithmSelectionResult(VolumeCalculationResult* result);

@@ -18,5 +18,6 @@
     <ProjectReference Include="..\..\CommonUtils\CommonUtils.csproj" />
     <ProjectReference Include="..\..\FrameProcessor\FrameProcessor.csproj" />
     <ProjectReference Include="..\..\Primitives\Primitives.csproj" />
+    <ProjectReference Include="..\..\VCServer\VCServer.csproj" />
   </ItemGroup>
 </Project>

@@ -13,6 +13,7 @@ using Primitives.Logging;
 using ProcessingUtils;
 using Timer = System.Timers.Timer;
 using Primitives.Calculation;
+using Primitives.Settings;
 
 namespace VCServer.VolumeCalculation
 {
@@ -48,7 +49,7 @@ namespace VCServer.VolumeCalculation
 
 		private readonly CancellationToken _token;
 
-		public VolumeCalculationLogic(ILogger logger, DepthMapProcessor processor, IFrameProvider frameProvider,
+		public VolumeCalculationLogic(ILogger logger, DepthMapProcessor processor, WorkAreaSettings workArea, IFrameProvider frameProvider,
 			IRangeMeter rangeMeter, IIpCamera ipCamera, VolumeCalculationData calculationData)
 		{
 			_logger = logger;
@@ -61,8 +62,8 @@ namespace VCServer.VolumeCalculation
 			_barcode = calculationData.Barcode;
 			_calculationIndex = calculationData.CalculationIndex;
 			_photoDirectoryPath = calculationData.PhotosDirectoryPath;
-			_floorDepth = calculationData.FloorDepth;
-			_cutOffDepth = calculationData.CutOffDepth;
+			_floorDepth = workArea.FloorDepth;
+			_cutOffDepth = workArea.GetCutOffDepth();
 			_rangeMeterCorrectionValueMm = calculationData.RangeMeterCorrectionValue;
 
 			_images = new List<ImageData>();

@@ -16,7 +16,7 @@ namespace FrameProcessor.Native
 			RelPoint* polygonPoints, int polygonPointCount, RelRect colorRoiRect);
 
 		[DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-		public static extern void SetDebugPath(string path, bool maskMode);
+		public static extern void SetDebugDirectory(string path);
 
 		[DllImport(Constants.AnalyzerLibName, CallingConvention = CallingConvention.Cdecl)]
 		public static extern unsafe VolumeCalculationResult* CalculateObjectVolume(VolumeCalculationData data);

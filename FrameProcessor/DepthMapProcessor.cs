@@ -159,13 +159,12 @@ namespace FrameProcessor
 				SetWorkAreaSettings(settings.AlgorithmSettings.WorkArea);
 
 				var terminatedPath = settings.GeneralSettings.PhotosDirectoryPath + "\0";
-				NativeMethods.SetDebugPath(terminatedPath, false);
+				NativeMethods.SetDebugDirectory(terminatedPath);
 			}
 		}
 
 		public void SetWorkAreaSettings(WorkAreaSettings workAreaSettings)
 		{
-			var cutOffDepth = (short)(workAreaSettings.FloorDepth - workAreaSettings.MinObjectHeight);
 			var colorRoiRect = CreateColorRoiRectFromSettings(workAreaSettings);
 
 			unsafe
@@ -179,7 +178,7 @@ namespace FrameProcessor
 
 				fixed (Native.RelPoint* points = relPoints)
 				{
-					NativeMethods.SetAlgorithmSettings(workAreaSettings.FloorDepth, cutOffDepth,
+					NativeMethods.SetAlgorithmSettings(workAreaSettings.FloorDepth, workAreaSettings.GetCutOffDepth(),
 						points, relPoints.Length, colorRoiRect);
 				}
 			}

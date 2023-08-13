@@ -26,6 +26,8 @@ namespace VCClient.ViewModels
 			set => SetField(ref _minObjHeight, value, nameof(MinObjHeight));
 		}
 
+		public short CutOffDepth => (short)(FloorDepth - MinObjHeight);
+
 		public bool UseColorMask
 		{
 			get => _useColorMask;

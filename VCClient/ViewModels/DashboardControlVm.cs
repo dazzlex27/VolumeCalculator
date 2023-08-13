@@ -312,12 +312,14 @@ namespace VCClient.ViewModels
 		{
 			var values = GuiUtils.GetDashboardValuesFromCaculationStatus(status);
 
+			values.DashBrush.Freeze();
+
 			Dispatcher.Invoke(() =>
 			{
 				CalculationInProgress = values.CalculationInProgress;
-				StatusBrush = values.DashBrush;
-				StatusText = values.Message;
 				CalculationPending = values.CalculationPending;
+				StatusText = values.Message;
+				StatusBrush = values.DashBrush;
 			});
 		}
 		

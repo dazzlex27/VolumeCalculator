@@ -14,9 +14,9 @@ DLL_EXPORT void SetAlgorithmSettings(short floorDepth, short cutOffDepth, RelPoi
 	Processor->SetAlgorithmSettings(floorDepth, cutOffDepth, polygonPoints, polygonPointCount, colorRoiRect);
 }
 
-DLL_EXPORT void SetDebugPath(const char* path, bool maskMode)
+DLL_EXPORT void SetDebugDirectory(const char* path)
 {
-	Processor->SetDebugPath(path, maskMode);
+	Processor->SetDebugDirectory(path);
 }
 
 DLL_EXPORT VolumeCalculationResult* CalculateObjectVolume(VolumeCalculationData calculationData)

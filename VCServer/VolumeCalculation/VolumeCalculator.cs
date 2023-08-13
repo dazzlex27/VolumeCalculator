@@ -39,7 +39,7 @@ namespace VCServer.VolumeCalculation
 
 			var results = new List<ObjectVolumeData>();
 
-			for (var i = 0; i < depthMaps.Count; i++)
+			for (var i = 0; i < data.RequiredSampleCount; i++)
 			{
 				var currentResult = _processor.CalculateVolume(depthMaps[i], images[i], calculatedDistance, algorithm);
 				results.Add(currentResult);

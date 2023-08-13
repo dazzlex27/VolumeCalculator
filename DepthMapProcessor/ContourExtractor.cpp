@@ -1,6 +1,11 @@
 #include "ContourExtractor.h"
 #include "DmUtils.h"
 
+ContourExtractor::ContourExtractor()
+{
+	_debugDirectory = "";
+}
+
 const Contour ContourExtractor::ExtractContourFromBinaryImage(const cv::Mat& image) const
 {
 	std::vector<Contour> contours;
@@ -33,18 +38,18 @@ const Contour ContourExtractor::ExtractContourFromColorImage(const cv::Mat& imag
 			mergedContour.emplace_back(contours[i][j]);
 	}
 
-	if (debugPath != "")
+	if (_debugDirectory != "" && debugPath != "")
 	{
 		const std::string& path = std::string(debugPath);
-		cv::imwrite(_debugPath + "/" + path + ".png", cannied);
+		cv::imwrite(_debugDirectory + "/" + path + ".png", cannied);
 	}
 
 	return mergedContour;
 }
 
-void ContourExtractor::SetDebugPath(const std::string& path)
+void ContourExtractor::SetDebugDirectory(const std::string& path)
 {
-	_debugPath = std::string(path);
+	_debugDirectory = path;
 }
 
 const Contour ContourExtractor::GetContourClosestToCenter(const std::vector<Contour>& contours, const int width, const int height) const
