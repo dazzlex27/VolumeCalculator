@@ -24,14 +24,14 @@ const std::vector<Contour> DmUtils::GetValidContours(const std::vector<Contour>&
 
 const RelPoint DmUtils::AbsoluteToRelative(const cv::Point& abs, const int width, const int height)
 {
-	RelPoint res;
+	RelPoint res{};
 	res.X = (float)(abs.x) / width;
 	res.Y = (float)(abs.y) / height;
 
 	return res;
 }
 
-void DmUtils::ConvertDepthMapDataToBinaryMask(const int mapDataLength, const short*const mapData,  byte*const maskData)
+void DmUtils::ConvertDepthMapDataToBinaryMask(const int mapDataLength, const short*const mapData, byte*const maskData)
 {
 	for (int i = 0; i < mapDataLength; i++)
 	{
@@ -49,10 +49,10 @@ void DmUtils::FilterDepthMapByMaxDepth(const int mapDataLength, short*const mapD
 	}
 }
 
-void DmUtils::FilterDepthMapByMeasurementVolume(short*const mapData, const std::vector<DepthValue>& worldDepthValues, 
+void DmUtils::FilterDepthMapByMeasurementVolume(const int mapLength, short*const mapData, DepthValue*const worldDepthValues, 
 	const MeasurementVolume& volume)
 {
-	for (int i = 0; i < worldDepthValues.size(); i++)
+	for (int i = 0; i < mapLength; i++)
 	{
 		const bool pointIsInZone = IsPointInZone(worldDepthValues[i], volume);
 		if (!pointIsInZone)
@@ -86,7 +86,7 @@ const std::vector<short> DmUtils::GetNonZeroContourDepthValues(const int mapWidt
 	if (contour.size() == 0)
 		return nonZeroValues;
 
-	cv::Rect boundingRect = roi.boundingRect();
+	const cv::Rect& boundingRect = roi.boundingRect();
 
 	nonZeroValues.reserve(boundingRect.width * boundingRect.height);
 
@@ -102,26 +102,6 @@ const std::vector<short> DmUtils::GetNonZeroContourDepthValues(const int mapWidt
 	}
 
 	return nonZeroValues;
-}
-
-const RotRelRect DmUtils::RotAbsRectToRel(const int rotWidth, const int rotHeight, const cv::RotatedRect& rect)
-{
-	RotRelRect result;
-
-	cv::Point2f rectPoints[4];
-	rect.points(rectPoints);
-
-	memcpy(result.Points, rectPoints, 4 * sizeof(FlPoint));
-	for (int i = 0; i < 4; i++)
-	{
-		result.Points[i].X = (float)rectPoints[i].x / rotWidth;
-		result.Points[i].Y = (float)rectPoints[i].y / rotHeight;
-	}
-	result.Width = rect.size.width / rotWidth;
-	result.Height = rect.size.height / rotHeight;
-	result.AngleDeg = rect.angle;
-
-	return result;
 }
 
 const float DmUtils::GetDistanceBetweenPoints(const int x1, const int y1, const int x2, const int y2)
@@ -182,7 +162,7 @@ const short DmUtils::FindModeInSortedArray(const short * const array, const int 
 
 void DmUtils::DrawTargetContour(const Contour& contour, const int width, const int height, const std::string& filename)
 {
-	cv::RotatedRect rect = cv::minAreaRect(cv::Mat(contour));
+	const cv::RotatedRect& rect = cv::minAreaRect(cv::Mat(contour));
 	cv::Point2f points[4];
 	rect.points(points);
 
@@ -196,7 +176,7 @@ void DmUtils::DrawTargetContour(const Contour& contour, const int width, const i
 	contoursToDraw.emplace_back(contour);
 	contoursToDraw.emplace_back(rectContour);
 
-	cv::Mat img2 = cv::Mat::zeros(height, width, CV_8UC3);
+	const cv::Mat& img2 = cv::Mat::zeros(height, width, CV_8UC3);
 
 	cv::Scalar colors[3];
 	colors[0] = cv::Scalar(255, 0, 0);
@@ -223,26 +203,6 @@ bool DmUtils::IsPointInZone(const DepthValue& worldPoint, const MeasurementVolum
 		return false;
 
 	return true;
-}
-
-// Source:  https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html
-bool DmUtils::IsPointInsidePolygon(const std::vector<cv::Point>& polygon, int x, int y)
-{
-	bool pointIsInPolygon = false;
-
-	for (int i = 0, j = (int)(polygon.size() - 1); i < (int)polygon.size(); j = i++)
-	{
-		bool pointInLineScope = (polygon[i].y > y) != (polygon[j].y > y);
-
-		int lineXHalf = (polygon[j].x - polygon[i].x) * (y - polygon[i].y) / (polygon[j].y - polygon[i].y);
-		int lineXPosition = lineXHalf + polygon[i].x;
-		bool pointInLeftHalfPlaneOfLine = x < lineXPosition;
-
-		if (pointInLineScope && pointInLeftHalfPlaneOfLine)
-			pointIsInPolygon = !pointIsInPolygon;
-	}
-
-	return pointIsInPolygon;
 }
 
 bool DmUtils::IsObjectInBounds(const Contour& objectContour, const int width, const int height)

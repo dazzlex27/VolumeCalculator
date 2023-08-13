@@ -7,21 +7,16 @@ const DepthMap*const Utils::ReadDepthMapFromFile(const char* filepath)
 	if (!stream.good())
 		return nullptr;
 
-	int width = 0;
-	stream >> width;
-	int height = 0;
-	stream >> height;
-	DepthMap* dm = new DepthMap();
-	dm->Width = width;
-	dm->Height = height;
+	auto dm = new DepthMap();
+	stream >> dm->Width;
+	stream >> dm->Height;
+	dm->Data = new short[dm->Width * dm->Height];
 
 	short value;
 	int index = 0;
 
 	while (stream >> value)
-	{
 		dm->Data[index++] = value;
-	}
 
 	stream.close();
 

@@ -29,6 +29,10 @@ DepthMapProcessor::DepthMapProcessor(CameraIntrinsics colorIntrinsics, CameraInt
 	_depthMapBuffer = nullptr;
 	_depthMaskBuffer = nullptr;
 	_colorImageBuffer = nullptr;
+	_worldDepthValuesBuffer = nullptr;
+
+	_sortedNonZeroMapValuesCount = 0;
+	_sortedNonZeroMapValuesBuffer = nullptr;
 
 	_needToUpdateMeasurementVolume = false;
 
@@ -53,6 +57,18 @@ DepthMapProcessor::~DepthMapProcessor()
 	{
 		delete[] _colorImageBuffer;
 		_colorImageBuffer = nullptr;
+	}
+
+	if (_sortedNonZeroMapValuesBuffer != nullptr)
+	{
+		delete[] _sortedNonZeroMapValuesBuffer;
+		_sortedNonZeroMapValuesBuffer = nullptr;
+	}
+
+	if (_worldDepthValuesBuffer != nullptr)
+	{
+		delete[] _worldDepthValuesBuffer;
+		_worldDepthValuesBuffer = nullptr;
 	}
 }
 
@@ -86,11 +102,11 @@ NativeAlgorithmSelectionResult* DepthMapProcessor::SelectAlgorithm(const NativeA
 {
 	const bool dataIsValid = data.DepthMap->Data != nullptr && data.ColorImage->Data != nullptr;
 	if (!dataIsValid)
-		return new NativeAlgorithmSelectionResult{ DataIsInvalid, false };
+		return new NativeAlgorithmSelectionResult{ AlgorithmSelectionStatus::DataIsInvalid, false };
 
 	const bool atLeastOneModeIsEnabled = data.Dm1Enabled || data.Dm2Enabled || data.RgbEnabled;
 	if (!atLeastOneModeIsEnabled)
-		return new NativeAlgorithmSelectionResult{ NoAlgorithmsAllowed, false };
+		return new NativeAlgorithmSelectionResult{ AlgorithmSelectionStatus::NoAlgorithmsAllowed, false };
 
 	PrepareBuffers(data.DepthMap, data.ColorImage);
 
@@ -104,15 +120,15 @@ NativeAlgorithmSelectionResult* DepthMapProcessor::SelectAlgorithm(const NativeA
 
 	const bool atLeastOneContourExists = colorContourExists || depthContourExists;
 	if (!atLeastOneContourExists)
-		return new NativeAlgorithmSelectionResult{ NoObjectFound, false };
+		return new NativeAlgorithmSelectionResult{ AlgorithmSelectionStatus::NoObjectFound, false };
 
 	const bool rgbDisabled = !data.RgbEnabled;
 	if (rgbDisabled && !depthContourExists)
-		return new NativeAlgorithmSelectionResult{ NoObjectFound, false };
+		return new NativeAlgorithmSelectionResult{ AlgorithmSelectionStatus::NoObjectFound, false };
 
 	const bool onlyRgbIsEnabled = data.RgbEnabled && !data.Dm1Enabled && !data.Dm2Enabled;
 	if (onlyRgbIsEnabled && !colorContourExists)
-		return new NativeAlgorithmSelectionResult{ NoObjectFound, false };
+		return new NativeAlgorithmSelectionResult{ AlgorithmSelectionStatus::NoObjectFound, false };
 
 	// out of easy invalid cases
 
@@ -142,10 +158,10 @@ NativeAlgorithmSelectionResult* DepthMapProcessor::SelectAlgorithm(const NativeA
 			objectHeight = minObjHeight;
 		}
 		else
-			return new NativeAlgorithmSelectionResult{ NoObjectFound, false };
+			return new NativeAlgorithmSelectionResult{ AlgorithmSelectionStatus::NoObjectFound, false };
 	}
 
-	AlgorithmSelectionStatus algorithm = Undefined;
+	AlgorithmSelectionStatus algorithm = AlgorithmSelectionStatus::Undefined;
 
 	// checking RGB option
 	const bool eligibleForRgbCalculation = data.RgbEnabled && colorContourExists;
@@ -158,20 +174,20 @@ NativeAlgorithmSelectionResult* DepthMapProcessor::SelectAlgorithm(const NativeA
 		{
 			const bool heightIsOkForRgb = objectHeight < _maxObjHeightForRgb;
 			if (heightIsOkForRgb)
-				algorithm = Rgb;
+				algorithm = AlgorithmSelectionStatus::Rgb;
 		}
 	}
 
 	// at this point rgb is not an option
-	if (algorithm == Undefined)
+	if (algorithm == AlgorithmSelectionStatus::Undefined)
 	{
 		if (!depthContourExists)
-			return new NativeAlgorithmSelectionResult{ NoObjectFound, false };
+			return new NativeAlgorithmSelectionResult{ AlgorithmSelectionStatus::NoObjectFound, false };
 
 		// if data from range meter is present - ignore the bottom plane
 		const short contourPlanesDelta = rangeMeterWasUsed ? 0 : depthContourPlanes.Bottom - contourTopPlaneDepth;
 		const bool planesAreWithinMargin = contourPlanesDelta < _contourPlaneDepthDeltaForDm2;
-		algorithm = planesAreWithinMargin ? Dm1 : Dm2;
+		algorithm = planesAreWithinMargin ? AlgorithmSelectionStatus::Dm1 : AlgorithmSelectionStatus::Dm2;
 	}
 
 	// Saving debug data (by passing debug file name)
@@ -190,7 +206,7 @@ VolumeCalculationResult* DepthMapProcessor::CalculateObjectVolume(const VolumeCa
 
 	PrepareBuffers(data.DepthMap, data.ColorImage);
 
-	const Contour& colorObjectContour = data.SelectedAlgorithm == Rgb ? GetTargetContourFromColorImage() : Contour();
+	const Contour& colorObjectContour = data.SelectedAlgorithm == AlgorithmSelectionStatus::Rgb ? GetTargetContourFromColorImage() : Contour();
 	const int colorContourArea = !colorObjectContour.empty() ? (int)cv::contourArea(colorObjectContour) : 0;
 	const bool colorContourExists = colorContourArea > 3;
 
@@ -215,7 +231,7 @@ VolumeCalculationResult* DepthMapProcessor::CalculateObjectVolume(const VolumeCa
 	short objectHeight = _floorDepth - contourTopPlaneDepth;
 	if (contourTopPlaneDepth <= 0 || objectHeight <= 0)
 	{
-		if (data.SelectedAlgorithm == Rgb && colorContourExists)
+		if (data.SelectedAlgorithm == AlgorithmSelectionStatus::Rgb && colorContourExists)
 		{
 			contourTopPlaneDepth = _floorDepth - minObjHeight;
 			objectHeight = minObjHeight;
@@ -237,9 +253,9 @@ VolumeCalculationResult* DepthMapProcessor::CalculateObjectVolume(const VolumeCa
 
 void DepthMapProcessor::PrepareBuffers(const DepthMap*const depthMap, const ColorImage*const colorImage)
 {
-	FillDepthBufferFromDepthMap(*depthMap);
+	FillDepthBufferFromDepthMap(depthMap);
 	DmUtils::FilterDepthMapByMaxDepth(_mapLength, _depthMapBuffer, _cutOffDepth);
-	FillColorBufferFromImage(*colorImage);
+	FillColorBufferFromImage(colorImage);
 
 	if (_needToUpdateMeasurementVolume)
 	{
@@ -247,9 +263,8 @@ void DepthMapProcessor::PrepareBuffers(const DepthMap*const depthMap, const Colo
 		_needToUpdateMeasurementVolume = false;
 	}
 
-	// TODO: HERE!!!!!
-	const std::vector<DepthValue> worldDepthValues = CalculationUtils::GetWorldDepthValuesFromDepthMap(_mapWidth, _mapHeight, _depthMapBuffer, _depthIntrinsics);
-	DmUtils::FilterDepthMapByMeasurementVolume(_depthMapBuffer, worldDepthValues, _measurementVolume);
+	CalculationUtils::GetWorldDepthValuesFromDepthMap(_mapWidth, _mapHeight, _depthMapBuffer, _depthIntrinsics, _worldDepthValuesBuffer);
+	DmUtils::FilterDepthMapByMeasurementVolume(_mapLength, _depthMapBuffer, _worldDepthValuesBuffer, _measurementVolume);
 }
 
 const short DepthMapProcessor::CalculateFloorDepth(const DepthMap& depthMap)
@@ -263,33 +278,39 @@ const short DepthMapProcessor::CalculateFloorDepth(const DepthMap& depthMap)
 	return DmUtils::FindModeInSortedArray(nonZeroValues.data(), (int)nonZeroValues.size());
 }
 
-void DepthMapProcessor::FillColorBufferFromImage(const ColorImage& image)
+void DepthMapProcessor::FillColorBufferFromImage(const ColorImage* image)
 {
-	const bool dimsAreTheSame = _colorImageWidth == image.Width && _colorImageHeight == image.Height && 
-		_colorImageLengthBytes == image.BytesPerPixel;
+	const int newWidth = image->Width;
+	const int newHeight = image->Height;
+	const int bpp = image->BytesPerPixel;
+
+	const bool dimsAreTheSame = _colorImageWidth == newWidth && _colorImageHeight == newHeight && _colorImageLengthBytes == bpp;
 	if (!dimsAreTheSame)
 	{
-		_colorImageWidth = image.Width;
-		_colorImageHeight = image.Height;
-		const int colorImageLength = image.Width * image.Height;
-		_colorImageLengthBytes = colorImageLength * image.BytesPerPixel;
-		_colorImageBytesPerPixel = image.BytesPerPixel;
+		_colorImageWidth = newWidth;
+		_colorImageHeight = newHeight;
+		const int colorImageLength = newWidth * newHeight;
+		_colorImageLengthBytes = colorImageLength * bpp;
+		_colorImageBytesPerPixel = bpp;
 
 		if (_colorImageBuffer != nullptr)
 			delete[] _colorImageBuffer;
 		_colorImageBuffer = new byte[_colorImageLengthBytes];
 	}
 
-	memcpy(_colorImageBuffer, image.Data, _colorImageLengthBytes);
+	memcpy(_colorImageBuffer, image->Data, _colorImageLengthBytes);
 }
 
-void DepthMapProcessor::FillDepthBufferFromDepthMap(const DepthMap& depthMap)
+void DepthMapProcessor::FillDepthBufferFromDepthMap(const DepthMap* depthMap)
 {
-	const bool dimsAreTheSame = _mapWidth == depthMap.Width && _mapHeight == depthMap.Height;
+	const int newWidth = depthMap->Width;
+	const int newHeight = depthMap->Height;
+
+	const bool dimsAreTheSame = _mapWidth == newWidth && _mapHeight == newHeight;
 	if (!dimsAreTheSame)
 	{
-		_mapWidth = depthMap.Width;
-		_mapHeight = depthMap.Height;
+		_mapWidth = newWidth;
+		_mapHeight = newHeight;
 		_mapLength = _mapWidth * _mapHeight;
 		_mapLengthBytes = _mapLength * sizeof(short);
 
@@ -300,9 +321,15 @@ void DepthMapProcessor::FillDepthBufferFromDepthMap(const DepthMap& depthMap)
 		if (_depthMaskBuffer != nullptr)
 			delete[] _depthMaskBuffer;
 		_depthMaskBuffer = new byte[_mapLength];
+
+		if (_worldDepthValuesBuffer != nullptr)
+			delete[] _worldDepthValuesBuffer;
+		_worldDepthValuesBuffer = new DepthValue[_mapLength];
 	}
 
-	memcpy(_depthMapBuffer, depthMap.Data, _mapLengthBytes);
+	memset(_depthMaskBuffer, 0, sizeof(byte) * _mapLength);
+	memset(_worldDepthValuesBuffer, 0, sizeof(DepthValue) * _mapLength);
+	memcpy(_depthMapBuffer, depthMap->Data, _mapLengthBytes);
 }
 
 const Contour DepthMapProcessor::GetTargetContourFromDepthMap() const
@@ -319,7 +346,7 @@ const Contour DepthMapProcessor::GetTargetContourFromColorImage(const char* debu
 	cv::Mat input(_colorImageHeight, _colorImageWidth, cvChannelsCode, _colorImageBuffer);
 
 	const cv::Rect& roi = DmUtils::GetAbsRoiFromRoiRect(_colorRoiRect, cv::Size(input.cols, input.rows));
-	cv::Mat inputRoi = input(roi);
+	const cv::Mat& inputRoi = input(roi);
 
 	return _contourExtractor.ExtractContourFromColorImage(inputRoi, debugPath);
 }
@@ -330,11 +357,11 @@ const TwoDimDescription DepthMapProcessor::Calculate2DContourDimensions(const Co
 	const cv::RotatedRect& boundingRect = CalculateObjectBoundingRect(depthObjectContour, colorObjectContour,
 		selectedAlgorithm, contourTopPlaneDepth);
 
-	const CameraIntrinsics& selectedInstrinsics = selectedAlgorithm == Rgb ? _colorIntrinsics : _depthIntrinsics;
+	const CameraIntrinsics& selectedInstrinsics = selectedAlgorithm == AlgorithmSelectionStatus::Rgb ? _colorIntrinsics : _depthIntrinsics;
 
 	const TwoDimDescription& twoDimDescription = GetTwoDimDescription(boundingRect, selectedInstrinsics, contourTopPlaneDepth);
 
-	TwoDimDescription result;
+	TwoDimDescription result{};
 	result.Length = twoDimDescription.Length;
 	result.Width = twoDimDescription.Width;
 
@@ -347,7 +374,7 @@ const cv::RotatedRect DepthMapProcessor::CalculateObjectBoundingRect(const Conto
 {
 	switch (selectedAlgorithm)
 	{
-	case Dm1:
+	case AlgorithmSelectionStatus::Dm1:
 	{
 		if (_debugDirectory != "" && debugFilename != "")
 		{
@@ -357,7 +384,7 @@ const cv::RotatedRect DepthMapProcessor::CalculateObjectBoundingRect(const Conto
 
 		return cv::minAreaRect(depthObjectContour);
 	}
-	case Dm2:
+	case AlgorithmSelectionStatus::Dm2:
 	{
 		const std::vector<DepthValue>& worldDepthValues = CalculationUtils::GetWorldDepthValues(depthObjectContour, _depthMapBuffer, _mapWidth, _depthIntrinsics);
 		const Contour& perspectiveCorrectedContour = CalculationUtils::GetCameraPoints(worldDepthValues, contourTopPlaneDepth, _depthIntrinsics);
@@ -370,7 +397,7 @@ const cv::RotatedRect DepthMapProcessor::CalculateObjectBoundingRect(const Conto
 
 		return cv::minAreaRect(perspectiveCorrectedContour);
 	}
-	case Rgb:
+	case AlgorithmSelectionStatus::Rgb:
 	{
 		if (_debugDirectory != "" && debugFilename != "")
 		{
@@ -387,9 +414,9 @@ const cv::RotatedRect DepthMapProcessor::CalculateObjectBoundingRect(const Conto
 	}
 }
 
-const ContourPlanes DepthMapProcessor::GetDepthContourPlanes(const Contour& depthObjectContour) const
+const ContourPlanes DepthMapProcessor::GetDepthContourPlanes(const Contour& depthObjectContour)
 {
-	ContourPlanes planes;
+	ContourPlanes planes{};
 	planes.Top = 0;
 	planes.Bottom = 0;
 
@@ -398,27 +425,35 @@ const ContourPlanes DepthMapProcessor::GetDepthContourPlanes(const Contour& dept
 
 	const cv::RotatedRect& objectBoundingRect = cv::minAreaRect(depthObjectContour);
 
-	const std::vector<short>& contourNonZeroValues = DmUtils::GetNonZeroContourDepthValues(_mapWidth, _mapHeight,
-		_depthMapBuffer, objectBoundingRect, depthObjectContour);
-
+	const std::vector<short>& contourNonZeroValues = DmUtils::GetNonZeroContourDepthValues(_mapWidth, _mapHeight, _depthMapBuffer,
+		objectBoundingRect, depthObjectContour);
 	if (contourNonZeroValues.size() == 0)
 		return planes;
 
-	const int size = (int)contourNonZeroValues.size();
-	short* sortedNonZeroMapValues = new short[size];
-	memcpy(sortedNonZeroMapValues, contourNonZeroValues.data(), size * sizeof(short));
-	std::sort(sortedNonZeroMapValues, sortedNonZeroMapValues + size);
+	const int nonZeroValuesCount = (int)contourNonZeroValues.size();
+	if ( _sortedNonZeroMapValuesCount < nonZeroValuesCount)
+	{
+		_sortedNonZeroMapValuesCount = nonZeroValuesCount;
 
-	const int valueForMeasurementCount = size / 20;
+		if (_sortedNonZeroMapValuesBuffer != nullptr)
+			delete[] _sortedNonZeroMapValuesBuffer;
 
-	const short topMode = DmUtils::FindModeInSortedArray(sortedNonZeroMapValues, valueForMeasurementCount);
+		const int arraySizeMargin = 20;
+		_sortedNonZeroMapValuesBuffer = new short[_sortedNonZeroMapValuesCount + arraySizeMargin];
+		memset(_sortedNonZeroMapValuesBuffer, 0, sizeof(short) * _sortedNonZeroMapValuesCount);
+	}
+
+	memcpy(_sortedNonZeroMapValuesBuffer, contourNonZeroValues.data(), _sortedNonZeroMapValuesCount * sizeof(short));
+	std::sort(_sortedNonZeroMapValuesBuffer, _sortedNonZeroMapValuesBuffer + _sortedNonZeroMapValuesCount);
+
+	const int valueForMeasurementCount = _sortedNonZeroMapValuesCount / 20;
+
+	const short topMode = DmUtils::FindModeInSortedArray(_sortedNonZeroMapValuesBuffer, valueForMeasurementCount);
 	planes.Top = topMode;
 
-	const short* bottomValuesStartPointer = sortedNonZeroMapValues + size - valueForMeasurementCount;
+	const short* bottomValuesStartPointer = _sortedNonZeroMapValuesBuffer + _sortedNonZeroMapValuesCount - valueForMeasurementCount;
 	const short bottomMode = DmUtils::FindModeInSortedArray(bottomValuesStartPointer, valueForMeasurementCount);
 	planes.Bottom = bottomMode;
-
-	delete[] sortedNonZeroMapValues;
 
 	return planes;
 }
@@ -445,7 +480,7 @@ const TwoDimDescription DepthMapProcessor::GetTwoDimDescription(const cv::Rotate
 	const int objectWidth = (int)DmUtils::GetDistanceBetweenPoints(pointsWorld[0].x, pointsWorld[0].y, pointsWorld[1].x, pointsWorld[1].y);
 	const int objectHeight = (int)DmUtils::GetDistanceBetweenPoints(pointsWorld[0].x, pointsWorld[0].y, pointsWorld[3].x, pointsWorld[3].y);
 
-	TwoDimDescription twoDimDescription;
+	TwoDimDescription twoDimDescription{};
 	twoDimDescription.Length = objectWidth > objectHeight ? objectWidth : objectHeight;
 	twoDimDescription.Width = objectWidth < objectHeight ? objectWidth : objectHeight;
 

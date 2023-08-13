@@ -6,7 +6,7 @@
 typedef unsigned char byte;
 typedef unsigned int uint;
 
-enum AlgorithmSelectionStatus
+enum class AlgorithmSelectionStatus
 {
 	Undefined = -5,
 	NoAlgorithmsAllowed = -3,

@@ -129,10 +129,10 @@ const std::vector<cv::Point> CalculationUtils::GetCameraPoints(const std::vector
 	return cameraPoints;
 }
 
-const std::vector<DepthValue> CalculationUtils::GetWorldDepthValuesFromDepthMap(const int mapWidth, const int mapHeight, 
-	const short*const depthMapBuffer, const CameraIntrinsics& intrinsics)
+void CalculationUtils::GetWorldDepthValuesFromDepthMap(const int mapWidth, const int mapHeight, 
+	const short*const depthMapBuffer, const CameraIntrinsics& intrinsics, DepthValue*const worldDepthValues)
 {
-	std::vector<DepthValue> depthValues;
+	int throughIndex = 0;
 
 	for (int j = 0; j < mapHeight; j++)
 	{
@@ -142,13 +142,10 @@ const std::vector<DepthValue> CalculationUtils::GetWorldDepthValuesFromDepthMap(
 			const int xWorld = (int)((i + 1 - intrinsics.PrincipalPointX) * depth / intrinsics.FocalLengthX);
 			const int yWorld = (int)(-(j + 1 - intrinsics.PrincipalPointY) * depth / intrinsics.FocalLengthY);
 
-			DepthValue depthValue;
+			DepthValue& depthValue = worldDepthValues[throughIndex++];
 			depthValue.Value = depth;
 			depthValue.XWorld = xWorld;
 			depthValue.YWorld = yWorld;
-			depthValues.emplace_back(depthValue);
 		}
 	}
-
-	return depthValues;
 }

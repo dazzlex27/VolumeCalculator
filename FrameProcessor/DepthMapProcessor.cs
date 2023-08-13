@@ -13,6 +13,8 @@ namespace FrameProcessor
 		private readonly ILogger _logger;
 		private readonly object _lock;
 
+		private readonly IntPtr _handle;
+
 		public DepthMapProcessor(ILogger logger, ColorCameraParams colorCameraParams, DepthCameraParams depthCameraParams)
 		{
 			_lock = new object();
@@ -24,7 +26,7 @@ namespace FrameProcessor
 			var colorIntrinsics = TypeConverter.ColorParamsToIntrinsics(colorCameraParams);
 			var depthIntrinsics = TypeConverter.DepthParamsToIntrinsics(depthCameraParams);
 
-			NativeMethods.CreateDepthMapProcessor(colorIntrinsics, depthIntrinsics);
+			_handle = NativeMethods.CreateDepthMapProcessor(colorIntrinsics, depthIntrinsics);
 		}
 
 		public ObjectVolumeData CalculateVolume(DepthMap depthMap, ImageData colorImage, short calculatedDistance, 
@@ -55,7 +57,7 @@ namespace FrameProcessor
 							CalculatedDistance = calculatedDistance
 						};
 
-						var nativeResult = NativeMethods.CalculateObjectVolume(volumeCalculationData);
+						var nativeResult = NativeMethods.CalculateObjectVolume(_handle, volumeCalculationData);
 
 						var result = nativeResult == null ?
 							null : new ObjectVolumeData(nativeResult->LengthMm, nativeResult->WidthMm, nativeResult->HeightMm);
@@ -77,7 +79,7 @@ namespace FrameProcessor
 					{
 						var nativeDepthMap = GetNativeDepthMapFromDepthMap(depthMap, depthData);
 
-						return NativeMethods.CalculateFloorDepth(nativeDepthMap);
+						return NativeMethods.CalculateFloorDepth(_handle, nativeDepthMap);
 					}
 				}
 			}
@@ -129,7 +131,7 @@ namespace FrameProcessor
 									: debugFilename
 							};
 
-							var nativeResult = (NativeAlgorithmSelectionResult*)NativeMethods.SelectAlgorithm(algorithmSelectionData);
+							var nativeResult = (NativeAlgorithmSelectionResult*)NativeMethods.SelectAlgorithm(_handle, algorithmSelectionData);
 
 							var status = nativeResult->Status;
 							var isSelected = IsAlgorithmSelected(status);
@@ -159,7 +161,7 @@ namespace FrameProcessor
 				SetWorkAreaSettings(settings.AlgorithmSettings.WorkArea);
 
 				var terminatedPath = settings.GeneralSettings.PhotosDirectoryPath + "\0";
-				NativeMethods.SetDebugDirectory(terminatedPath);
+				NativeMethods.SetDebugDirectory(_handle, terminatedPath);
 			}
 		}
 
@@ -178,7 +180,7 @@ namespace FrameProcessor
 
 				fixed (Native.RelPoint* points = relPoints)
 				{
-					NativeMethods.SetAlgorithmSettings(workAreaSettings.FloorDepth, workAreaSettings.GetCutOffDepth(),
+					NativeMethods.SetAlgorithmSettings(_handle, workAreaSettings.FloorDepth, workAreaSettings.GetCutOffDepth(),
 						points, relPoints.Length, colorRoiRect);
 				}
 			}
@@ -187,7 +189,7 @@ namespace FrameProcessor
 		public void Dispose()
 		{
 			_logger.LogInfo("Disposing depth map processor...");
-			NativeMethods.DestroyDepthMapProcessor();
+			NativeMethods.DestroyDepthMapProcessor(_handle);
 			_logger.LogInfo("Disposed depth map processor");
 		}
 

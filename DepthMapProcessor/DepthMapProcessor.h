@@ -31,8 +31,12 @@ private:
 	std::string _debugDirectory;
 
 	short* _depthMapBuffer;
+	DepthValue* _worldDepthValuesBuffer;
 	byte* _depthMaskBuffer;
 	byte* _colorImageBuffer;
+
+	int _sortedNonZeroMapValuesCount;
+	short* _sortedNonZeroMapValuesBuffer;
 
 	std::vector<cv::Point2f> _polygonPoints;
 	MeasurementVolume _measurementVolume;
@@ -52,15 +56,15 @@ public:
 	const short CalculateFloorDepth(const DepthMap& depthMap);
 
 private:
-	void FillColorBufferFromImage(const ColorImage& image);
-	void FillDepthBufferFromDepthMap(const DepthMap& depthMap);
+	void FillColorBufferFromImage(const ColorImage* image);
+	void FillDepthBufferFromDepthMap(const DepthMap* depthMap);
 	const Contour GetTargetContourFromDepthMap() const;
 	const Contour GetTargetContourFromColorImage(const char* debugPath = "") const;
 	const TwoDimDescription Calculate2DContourDimensions(const Contour& depthObjectContour,
 		const Contour& colorObjectContour, const AlgorithmSelectionStatus selectedAlgorithm, const short contourTopPlaneDepth) const;
 	const cv::RotatedRect CalculateObjectBoundingRect(const Contour& depthObjectContour, const Contour& colorObjectContour,
 		const AlgorithmSelectionStatus selectedAlgorithm, const short contourTopPlaneDepth, const char* debugPath = "") const;
-	const ContourPlanes GetDepthContourPlanes(const Contour& contour) const;
+	const ContourPlanes GetDepthContourPlanes(const Contour& contour);
 	const TwoDimDescription GetTwoDimDescription(const cv::RotatedRect& contourBoundingRect,
 		const CameraIntrinsics& intristics, const short contourTopPlaneDepth) const;
 	const bool IsObjectInZone(const std::vector<DepthValue>& contour) const;

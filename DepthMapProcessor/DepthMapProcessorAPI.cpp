@@ -1,27 +1,25 @@
 #include "DepthMapProcessorAPI.h"
 #include "DepthMapProcessor.h"
 
-DepthMapProcessor* Processor;
-
-DLL_EXPORT void CreateDepthMapProcessor(CameraIntrinsics colorIntrinsics, CameraIntrinsics depthIntrinsics)
+DLL_EXPORT DepthMapProcessor* CreateDepthMapProcessor(CameraIntrinsics colorIntrinsics, CameraIntrinsics depthIntrinsics)
 {
-	Processor = new DepthMapProcessor(colorIntrinsics, depthIntrinsics);
+	return new DepthMapProcessor(colorIntrinsics, depthIntrinsics);
 }
 
-DLL_EXPORT void SetAlgorithmSettings(short floorDepth, short cutOffDepth, RelPoint* polygonPoints, int polygonPointCount, 
+DLL_EXPORT void SetAlgorithmSettings(DepthMapProcessor* processor, short floorDepth, short cutOffDepth, RelPoint* polygonPoints, int polygonPointCount,
 	RelRect colorRoiRect)
 {
-	Processor->SetAlgorithmSettings(floorDepth, cutOffDepth, polygonPoints, polygonPointCount, colorRoiRect);
+	processor->SetAlgorithmSettings(floorDepth, cutOffDepth, polygonPoints, polygonPointCount, colorRoiRect);
 }
 
-DLL_EXPORT void SetDebugDirectory(const char* path)
+DLL_EXPORT void SetDebugDirectory(DepthMapProcessor* processor, const char* path)
 {
-	Processor->SetDebugDirectory(path);
+	processor->SetDebugDirectory(path);
 }
 
-DLL_EXPORT VolumeCalculationResult* CalculateObjectVolume(VolumeCalculationData calculationData)
+DLL_EXPORT VolumeCalculationResult* CalculateObjectVolume(DepthMapProcessor* processor, VolumeCalculationData calculationData)
 {
-	return Processor->CalculateObjectVolume(calculationData);
+	return processor->CalculateObjectVolume(calculationData);
 }
 
 void DisposeCalculationResult(VolumeCalculationResult* result)
@@ -33,17 +31,17 @@ void DisposeCalculationResult(VolumeCalculationResult* result)
 	}
 }
 
-DLL_EXPORT short CalculateFloorDepth(DepthMap depthMap)
+DLL_EXPORT short CalculateFloorDepth(DepthMapProcessor* processor, DepthMap depthMap)
 {
 	if (depthMap.Data == nullptr)
 		return -1;
 
-	return Processor->CalculateFloorDepth(depthMap);
+	return processor->CalculateFloorDepth(depthMap);
 }
 
-DLL_EXPORT NativeAlgorithmSelectionResult* SelectAlgorithm(NativeAlgorithmSelectionData data)
+DLL_EXPORT NativeAlgorithmSelectionResult* SelectAlgorithm(DepthMapProcessor* processor, NativeAlgorithmSelectionData data)
 {
-	return Processor->SelectAlgorithm(data);
+	return processor->SelectAlgorithm(data);
 }
 
 void DisposeAlgorithmSelectionResult(VolumeCalculationResult* result)
@@ -55,8 +53,8 @@ void DisposeAlgorithmSelectionResult(VolumeCalculationResult* result)
 	}
 }
 
-DLL_EXPORT void DestroyDepthMapProcessor()
+DLL_EXPORT void DestroyDepthMapProcessor(DepthMapProcessor* processor)
 {
-	delete Processor;
-	Processor = nullptr;
+	delete processor;
+	processor = nullptr;
 }

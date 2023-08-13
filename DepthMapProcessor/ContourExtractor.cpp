@@ -32,6 +32,8 @@ const Contour ContourExtractor::ExtractContourFromColorImage(const cv::Mat& imag
 	cv::findContours(cannied, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
 	Contour mergedContour;
+	mergedContour.reserve(contours.size() * 30); // approximate
+
 	for (int i = 0; i < contours.size(); i++)
 	{
 		for (int j = 0; j < contours[i].size(); j++)
