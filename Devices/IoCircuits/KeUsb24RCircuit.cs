@@ -13,6 +13,8 @@ namespace IoCircuits
 {
 	internal class KeUsb24RCircuit : IIoCircuit
 	{
+		const int LineCount = 32;
+
 		private readonly byte[] _headerBytes;
 		private readonly byte[] _footerBytes;
 
@@ -32,11 +34,11 @@ namespace IoCircuits
 			_logger.LogInfo($"Starting KeUsb24RBoard on port {_port}...");
 
 			_headerBytes = Encoding.ASCII.GetBytes("$KE");
-			_footerBytes = new byte[] { 0x0D, 0x0A };
+			_footerBytes = "\r\n"u8.ToArray();
 
 			_lineStates = new ConcurrentDictionary<int, LineRequestStatus>();
 			_lastLineValues = new ConcurrentDictionary<int, int>();
-			for (var i = 0; i < 32; i++)
+			for (var i = 0; i < LineCount; i++)
 			{
 				_lineStates.TryAdd(i, LineRequestStatus.None);
 				_lastLineValues.TryAdd(i, -1);
@@ -132,7 +134,7 @@ namespace IoCircuits
 
 				var linesRequested = _lineStates
 					.Where(i => i.Value == LineRequestStatus.UpdateRequested)
-					.Select(i => i.Key).ToList();
+					.Select(i => i.Key);
 
 				if (!linesRequested.Contains(parsedLineNum))
 					continue;

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Text;
 using FrameProcessor;
 using FrameProviders;
@@ -50,9 +51,9 @@ namespace VolumeCalculationRunner
 			var sw = new Stopwatch();
 			sw.Start();
 
-			var testCaseFolders = testDirectory.EnumerateDirectories().ToList();
-			var totalCaseCount = testCaseFolders.Count;
-			if (totalCaseCount== 0)
+			var testCaseFolders = testDirectory.EnumerateDirectories();
+			var totalCaseCount = testCaseFolders.Count();
+			if (totalCaseCount == 0)
 			{
 				await LogVerbose($@"No valid test cases were found! Program terminates");
 				return false;
@@ -126,7 +127,7 @@ namespace VolumeCalculationRunner
 					await LogVerbose($@"Floor depth = {testCaseData.FloorDepthMm}, min obj height = {testCaseData.MinObjHeightMm}");
 				}
 
-				if (testCaseData.DepthMaps == null || testCaseData.DepthMaps.Length == 0)
+				if (testCaseData.DepthMaps == null || !testCaseData.DepthMaps.Any())
 				{
 					if (logEnabled)
 						await LogVerbose(@"Skipping the test case as no maps were found");
@@ -136,7 +137,7 @@ namespace VolumeCalculationRunner
 
 				if (logEnabled)
 				{
-					await LogVerbose($@"Found {testCaseData.DepthMaps.Length} maps");
+					await LogVerbose($@"Found {testCaseData.DepthMaps.Count()} maps");
 					await LogVerbose("Calculating volume...");
 				}
 
@@ -157,9 +158,10 @@ namespace VolumeCalculationRunner
 					var volumeCalculator = new VolumeCalculator(dummyLogger, processor);
 
 					// pad images to be the same length as maps
-					var duplicatedImagesArray = Enumerable.Repeat(testCaseData.Image, calctulationData.RequiredSampleCount).ToArray();
+					var duplicatedImagesArray = Enumerable.Repeat(testCaseData.Image, calctulationData.RequiredSampleCount).ToImmutableList();
 
-					var calculationResult = volumeCalculator.Calculate(duplicatedImagesArray, testCaseData.DepthMaps, calctulationData, -1);
+					var calculationResult = volumeCalculator.Calculate(duplicatedImagesArray, testCaseData.DepthMaps.ToImmutableList(),
+						calctulationData, -1);
 
 					var status = calculationResult.Status == CalculationStatus.Successful ? 
 						TestCaseResultType.Success : TestCaseResultType.ProcessingFailure;

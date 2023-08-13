@@ -18,7 +18,7 @@ namespace FrameProviders.Local
 			if (!Directory.Exists(ColorFramesPath))
 				return null;
 
-			var colorFrameFiles = new DirectoryInfo(ColorFramesPath).EnumerateFiles().ToArray();
+			var colorFrameFiles = new DirectoryInfo(ColorFramesPath).EnumerateFiles();
 
 			var readImages = new List<ImageData>();
 			foreach (var file in colorFrameFiles)
@@ -35,7 +35,7 @@ namespace FrameProviders.Local
 			if (!Directory.Exists(DepthFramesPath))
 				return null;
 
-			var depthFrameFiles = new DirectoryInfo(DepthFramesPath).EnumerateFiles().ToArray();
+			var depthFrameFiles = new DirectoryInfo(DepthFramesPath).EnumerateFiles();
 
 			var readMaps = new List<DepthMap>();
 			foreach (var file in depthFrameFiles)

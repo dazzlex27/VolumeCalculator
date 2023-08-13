@@ -247,6 +247,7 @@ void DepthMapProcessor::PrepareBuffers(const DepthMap*const depthMap, const Colo
 		_needToUpdateMeasurementVolume = false;
 	}
 
+	// TODO: HERE!!!!!
 	const std::vector<DepthValue> worldDepthValues = CalculationUtils::GetWorldDepthValuesFromDepthMap(_mapWidth, _mapHeight, _depthMapBuffer, _depthIntrinsics);
 	DmUtils::FilterDepthMapByMeasurementVolume(_depthMapBuffer, worldDepthValues, _measurementVolume);
 }

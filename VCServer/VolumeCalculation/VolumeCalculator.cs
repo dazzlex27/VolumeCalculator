@@ -57,9 +57,9 @@ namespace VCServer.VolumeCalculation
 		{
 			try
 			{
-				var lengths = results.Where(r => r != null).Select(r => r.LengthMm).ToArray();
-				var widths = results.Where(r => r != null).Select(r => r.WidthMm).ToArray();
-				var heights = results.Where(r => r != null).Select(r => r.HeightMm).ToArray();
+				var lengths = results.Where(r => r != null).Select(r => r.LengthMm);
+				var widths = results.Where(r => r != null).Select(r => r.WidthMm);
+				var heights = results.Where(r => r != null).Select(r => r.HeightMm);
 
 				var joinedLengths = string.Join(",", lengths);
 				var joinedWidths = string.Join(",", widths);

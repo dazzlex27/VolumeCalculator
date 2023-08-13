@@ -175,7 +175,7 @@ namespace ExtIntegration.RequestHandlers
 
 				var allSocketsButTheExcludedOne = excludeSocket == null
 					? _activeConnections
-					: _activeConnections.ToList().Where(s => s != excludeSocket).ToList();
+					: _activeConnections.Where(s => s != excludeSocket).ToList();
 				allSocketsButTheExcludedOne.ForEach(s => s.Send(message));
 			}
 			catch (Exception ex)

@@ -92,9 +92,9 @@ namespace CommonUtils
 		{
 			var runningProcesses = Process.GetProcesses();
 			var matchingProcesses = runningProcesses
-					.Where(p => p.ProcessName.ToLowerInvariant() == processName.ToLowerInvariant()).ToList();
+					.Where(p => p.ProcessName.ToLowerInvariant() == processName.ToLowerInvariant());
 
-			return matchingProcesses.Count > 0;
+			return matchingProcesses.Any();
 		}
 
 		public static bool KillProcess(string processName)
@@ -102,8 +102,7 @@ namespace CommonUtils
 			try
 			{
 				var runningProcesses = Process.GetProcesses();
-				var matchingProcesses = runningProcesses
-					.Where(p => p.ProcessName.ToLowerInvariant().Contains(processName.ToLowerInvariant())).ToList();
+				var matchingProcesses = runningProcesses.Where(p => p.ProcessName.ToLowerInvariant().Contains(processName.ToLowerInvariant()));
 				foreach (var process in matchingProcesses)
 					process.Kill();
 

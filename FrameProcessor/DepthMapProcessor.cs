@@ -264,7 +264,7 @@ namespace FrameProcessor
 					_logger.LogInfo("algorithm was undefined");
 					break;
 				default:
-					throw new ArgumentOutOfRangeException();
+					throw new ArgumentOutOfRangeException(nameof(status));
 			}
 
 			return selected;

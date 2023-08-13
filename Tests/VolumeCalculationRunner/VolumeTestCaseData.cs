@@ -8,7 +8,7 @@ namespace VolumeCalculationRunner
 
 		public string Description { get; }
 
-		public DepthMap[] DepthMaps { get; }
+		public IEnumerable<DepthMap> DepthMaps { get; }
 
 		public ImageData Image { get; }
 
@@ -22,7 +22,7 @@ namespace VolumeCalculationRunner
 
 		public short MinObjHeightMm { get; }
 
-		public VolumeTestCaseData(string caseName, string description, DepthMap[] depthMaps, ImageData image,
+		public VolumeTestCaseData(string caseName, string description, IEnumerable<DepthMap> depthMaps, ImageData image,
 			int objLengthMm, int objWidthMm, int objHeightMm, short floorDepthMm, short minObjHeightMm)
 		{
 			CaseName = caseName;

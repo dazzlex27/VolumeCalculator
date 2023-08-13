@@ -7,7 +7,7 @@ namespace VolumeCalculationRunner
 	{
 		public static async Task<VolumeTestCaseData> ReadTestDataAsync(DirectoryInfo testCaseDirectory)
 		{
-			var directoryFiles = testCaseDirectory.EnumerateFiles().ToList();
+			var directoryFiles = testCaseDirectory.EnumerateFiles();
 			var testCaseName = testCaseDirectory.Name;
 
 			var description = "";
@@ -39,11 +39,11 @@ namespace VolumeCalculationRunner
 			return new VolumeTestCaseData(testCaseName, description, depthMaps, image, widthMm, heightMm, depthMm, floorDepthMm, objMinHeightMm);
 		}
 
-		private static async Task<DepthMap[]> ReadDepthMapsFromFolderAsync(string testCaseName, DirectoryInfo directory)
+		private static async Task<IEnumerable<DepthMap>> ReadDepthMapsFromFolderAsync(string testCaseName, DirectoryInfo directory)
 		{
-			var files = directory.EnumerateFiles().Where(f => f.Extension == ".dm").ToList();
+			var files = directory.EnumerateFiles().Where(f => f.Extension == ".dm");
 
-			var depthMaps = new List<DepthMap>(files.Count);
+			var depthMaps = new List<DepthMap>(files.Count());
 			foreach (var file in files)
 			{
 				var depthMap = await DepthMapUtils.ReadDepthMapFromRawFileAsync(file.FullName);
@@ -56,7 +56,7 @@ namespace VolumeCalculationRunner
 				depthMaps.Add(depthMap);
 			}
 
-			return depthMaps.ToArray();
+			return depthMaps;
 		}
 	}
 }

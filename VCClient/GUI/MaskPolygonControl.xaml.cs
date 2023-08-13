@@ -34,7 +34,7 @@ namespace VCClient.GUI
 			set
 			{
 				SetValue(IsReadOnlyProperty, value);
-				SetPoints(value ? new List<Point>() : _vm.PolygonPoints.ToList());
+				SetPoints(value ? new List<Point>() : _vm.PolygonPoints);
 			}
 		}
 
@@ -64,7 +64,7 @@ namespace VCClient.GUI
 			InitializeComponent();
 		}
 
-		private void AssignEllipseColor()
+		private static void AssignEllipseColor()
 		{
 			if (_polygonColor != Colors.Blue)
 				return;
@@ -243,7 +243,7 @@ namespace VCClient.GUI
 
 		private void OnPolygonPointsChanged(IReadOnlyList<Point> obj)
 		{
-			SetPoints(_vm.PolygonPoints.ToList());
+			SetPoints(_vm.PolygonPoints);
 		}
 
 		private void OnMaskPolygonControSizeChanged(object sender, SizeChangedEventArgs e)
