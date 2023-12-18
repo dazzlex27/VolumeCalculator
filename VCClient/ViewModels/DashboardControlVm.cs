@@ -45,6 +45,8 @@ namespace VCClient.ViewModels
 		private bool _commentBoxFocused;
 
 		private string _lastAlgorithmUsed;
+
+		private bool _debugMode;
 		
 		public ICommand RunVolumeCalculationCommand { get; }
 
@@ -205,6 +207,12 @@ namespace VCClient.ViewModels
 		{
 			get => _lastAlgorithmUsed;
 			set => SetField(ref _lastAlgorithmUsed, value, nameof(LastAlgorithmUsed));
+		}
+
+		public bool DebugMode
+		{
+			get => _debugMode;
+			set => SetField(ref _debugMode, value, nameof(DebugMode));
 		}
 
 		public DashboardControlVm()

@@ -61,6 +61,19 @@ namespace VCClient.ViewModels
 			}
 		}
 
+		public bool IsDebugDataVisible
+		{
+			get => _dashboardControlVm == null ? false : _dashboardControlVm.DebugMode;
+			set
+			{
+				if (_dashboardControlVm == null)
+					return;
+
+				_dashboardControlVm.DebugMode = value;
+				OnPropertyChanged();
+			}
+		}
+
 		public ICommand OpenSettingsCommand { get; }
 
 		public ICommand OpenStatusCommand { get; }

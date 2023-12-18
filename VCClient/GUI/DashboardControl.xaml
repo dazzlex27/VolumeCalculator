@@ -230,7 +230,8 @@
                     MinHeight="50"
                     Style="{StaticResource ButtonStyle}" />
             <TextBlock Text="{Binding LastAlgorithmUsed}"
-                       Style="{StaticResource TextBlockStyle}" />
+                       Style="{StaticResource TextBlockStyle}"
+                       Visibility="{Binding DebugMode, Converter={StaticResource BooleanToVisibilityConverter}}"/>
         </StackPanel>
         <Grid Grid.Row="1"
               Grid.Column="0"
