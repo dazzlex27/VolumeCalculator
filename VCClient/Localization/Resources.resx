@@ -1,0 +1,228 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CalculationStatus.AbortedByUser" xml:space="preserve">
+    <value>Aborted by user</value>
+  </data>
+  <data name="CalculationStatus.BarcodeNotEntered" xml:space="preserve">
+    <value>Code not entered</value>
+  </data>
+  <data name="CalculationStatus.CalculationError" xml:space="preserve">
+    <value>Calculation error</value>
+  </data>
+  <data name="CalculationStatus.ErrorPrefix" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="CalculationStatus.FailedToCloseFiles" xml:space="preserve">
+    <value>Calculation result file still open</value>
+  </data>
+  <data name="CalculationStatus.FailedToSelectAlgorithm" xml:space="preserve">
+    <value>Failed to select algorithm</value>
+  </data>
+  <data name="CalculationStatus.FailedToStart" xml:space="preserve">
+    <value>Failed to start</value>
+  </data>
+  <data name="CalculationStatus.InProgress" xml:space="preserve">
+    <value>Performing calculation...</value>
+  </data>
+  <data name="CalculationStatus.ObjectNotFound" xml:space="preserve">
+    <value>Object not found</value>
+  </data>
+  <data name="CalculationStatus.Pending" xml:space="preserve">
+    <value>Autotimer running...</value>
+  </data>
+  <data name="CalculationStatus.Ready" xml:space="preserve">
+    <value>Ready to calculate</value>
+  </data>
+  <data name="CalculationStatus.Successful" xml:space="preserve">
+    <value>Calculation complete</value>
+  </data>
+  <data name="CalculationStatus.TimedOut" xml:space="preserve">
+    <value>Device connection error</value>
+  </data>
+  <data name="CalculationStatus.WeightNotStable" xml:space="preserve">
+    <value>Weight is not stable</value>
+  </data>
+  <data name="DashboardControl.CalculateSize" xml:space="preserve">
+    <value>Calculate size</value>
+  </data>
+  <data name="DashboardControl.Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DashboardControl.Cm" xml:space="preserve">
+    <value>cm</value>
+  </data>
+  <data name="DashboardControl.Code" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="DashboardControl.Comment" xml:space="preserve">
+    <value>Comment</value>
+  </data>
+  <data name="DashboardControl.Mm" xml:space="preserve">
+    <value>mm</value>
+  </data>
+  <data name="DashboardControl.OpenPhotoFolder" xml:space="preserve">
+    <value>Open photo folder</value>
+  </data>
+  <data name="DashboardControl.OpenResultFile" xml:space="preserve">
+    <value>Open result file</value>
+  </data>
+  <data name="DashboardControl.ResetScales" xml:space="preserve">
+    <value>Reset scales</value>
+  </data>
+  <data name="DashboardControl.Size" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="DashboardControl.Units" xml:space="preserve">
+    <value>Units</value>
+  </data>
+  <data name="DashboardControl.Weight" xml:space="preserve">
+    <value>Weight</value>
+  </data>
+  <data name="Toolbar.ActionsButton" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="Toolbar.DisplayDebugInfoButton" xml:space="preserve">
+    <value>Display debug info</value>
+  </data>
+  <data name="Toolbar.OpenConfiguratorButton" xml:space="preserve">
+    <value>Launch Configurator</value>
+  </data>
+  <data name="Toolbar.OpenSettingsButton" xml:space="preserve">
+    <value>Open settings</value>
+  </data>
+  <data name="Toolbar.SaveTestDataButton" xml:space="preserve">
+    <value>Save test data</value>
+  </data>
+  <data name="Toolbar.ShutDownButton" xml:space="preserve">
+    <value>Shut down</value>
+  </data>
+  <data name="Toolbar.SystemInformationButton" xml:space="preserve">
+    <value>System information</value>
+  </data>
+  <data name="Toolbar.ToolsButton" xml:space="preserve">
+    <value>Tools</value>
+  </data>
+  <data name="WeightUnits.Gr" xml:space="preserve">
+    <value>gr</value>
+  </data>
+  <data name="WeightUnits.Kg" xml:space="preserve">
+    <value>kg</value>
+  </data>
+</root>

@@ -8,6 +8,7 @@
              d:DesignWidth="800"
              d:DesignHeight="450"
              x:ClassModifier="internal"
+             xmlns:l="clr-namespace:GuiCommon.Localization;assembly=GuiCommon"
              d:DataContext="{d:DesignInstance viewModels:DashboardControlVm}"
              KeyboardNavigation.TabNavigation="Cycle"
              DataContextChanged="OnDataContextChanged">
@@ -34,7 +35,7 @@
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
                            Margin="2,0"
-                           Text="Код"
+                           Text="{l:Translate DashboardControl.Code}"
                            FontSize="24" />
                 <TextBox Style="{StaticResource TextBoxStyle}"
                          Grid.Column="1"
@@ -66,7 +67,7 @@
                            VerticalAlignment="Center"
                            Style="{StaticResource TextBlockStyle}"
                            Margin="2,0"
-                           Text="Вес"
+                           Text="{l:Translate DashboardControl.Weight}"
                            FontSize="24" />
                 <TextBlock Style="{StaticResource TextBlockStyle}"
                            Grid.Column="1"
@@ -82,10 +83,10 @@
                 <StackPanel KeyboardNavigation.TabNavigation="None"
                             Grid.Column="3">
                     <Button Margin="10,2"
-                            HorizontalAlignment="Center"
+                            HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             IsTabStop="False"
-                            Content="Сбросить весы"
+                            Content="{l:Translate DashboardControl.ResetScales}"
                             Command="{Binding ResetWeightCommand}" 
                             Focusable="False"
                             FontSize="24"
@@ -104,7 +105,7 @@
                            VerticalAlignment="Center"
                            Style="{StaticResource TextBlockStyle}"
                            Margin="2,0"
-                           Text="Единиц"
+                           Text="{l:Translate DashboardControl.Units}"
                            FontSize="24" />
                 <TextBox Style="{StaticResource TextBoxStyle}"
                          Grid.Column="1"
@@ -129,13 +130,43 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition MinWidth="180"
                                       Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Style="{StaticResource TextBlockStyle}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Margin="2,0"
+                           Text="{l:Translate DashboardControl.Comment}"
+                           FontSize="24" />
+                <TextBox Style="{StaticResource TextBoxStyle}"
+                         Grid.Column="1"
+                         GotKeyboardFocus="OnCommentBoxGotFocus"
+                         LostKeyboardFocus="OnCommentBoxLostFocus"
+                         Margin="2"
+                         TabIndex="2"
+                         FontSize="24"
+                         Text="{Binding Path=Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         MaxLength="256"
+                         AcceptsReturn="False" />
+                <Button Grid.Column="2"
+                        Content="OK"
+                        IsDefault="{Binding CodeBoxFocused}"
+                        Visibility="{Binding CommentBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        Click="OnButtonClicked"
+                        Style="{StaticResource ButtonStyle}" />
+            </Grid>
+            <Grid Margin="2,2,2,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition MinWidth="180"
+                                      Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Center"
                            VerticalAlignment="Center"
                            Style="{StaticResource TextBlockStyle}"
                            Margin="2,0"
-                           Text="Размеры"
+                           Text="{l:Translate DashboardControl.Size}"
                            FontSize="24" />
                 <StackPanel Grid.Column="1"
                             Orientation="Horizontal">
@@ -162,51 +193,33 @@
                     <TextBlock Margin="2"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               Text="мм ("
+                               Text="{l:Translate DashboardControl.Mm}"
                                FontSize="24" />
-                    <TextBlock Margin="2"
+                    <TextBlock Margin="2,2,0,2"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Text="("
+                               FontSize="24"
+                               Style="{StaticResource TextBlockStyle}" />
+                    <TextBlock Margin="0,2"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                Text="{Binding Path=ObjectVolume}"
                                FontSize="24"
                                Style="{StaticResource TextBlockStyle}" />
-                    <TextBlock Margin="2"
+                    <TextBlock Margin="2,2,0,2"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               Text="см³)"
+                               Text="{l:Translate DashboardControl.Cm}"
+                               FontSize="24"
+                               Style="{StaticResource TextBlockStyle}" />
+                    <TextBlock Margin="0,2,2,2"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Text="³)"
                                FontSize="24"
                                Style="{StaticResource TextBlockStyle}" />
                 </StackPanel>
-            </Grid>
-            <Grid Margin="2,2,2,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition MinWidth="180"
-                                      Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource TextBlockStyle}"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           Margin="2,0"
-                           Text="Комментарий"
-                           FontSize="24" />
-                <TextBox Style="{StaticResource TextBoxStyle}"
-                         Grid.Column="1"
-                         GotKeyboardFocus="OnCommentBoxGotFocus"
-                         LostKeyboardFocus="OnCommentBoxLostFocus"
-                         Margin="2"
-                         TabIndex="2"
-                         FontSize="24"
-                         Text="{Binding Path=Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         MaxLength="256"
-                         AcceptsReturn="False" />
-                <Button Grid.Column="2"
-                        Content="OK"
-                        IsDefault="{Binding CodeBoxFocused}"
-                        Visibility="{Binding CommentBoxFocused, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        Click="OnButtonClicked"
-                        Style="{StaticResource ButtonStyle}" />
             </Grid>
         </StackPanel>
         <StackPanel Grid.Column="1"
@@ -214,7 +227,7 @@
                     Margin="3"
                     KeyboardNavigation.TabNavigation="None">
             <Button Margin="2"
-                    Content="Открыть файл с результатами"
+                    Content="{l:Translate DashboardControl.OpenResultFile}"
                     Command="{Binding OpenResultsFileCommand}" 
                     Focusable="False"
                     FontSize="24" 
@@ -222,7 +235,7 @@
                     MinHeight="50"
                     Style="{StaticResource ButtonStyle}" />
             <Button Margin="2"
-                    Content="Открыть папку с фото"
+                    Content="{l:Translate DashboardControl.OpenPhotoFolder}"
                     Command="{Binding OpenPhotosFolderCommand}" 
                     Focusable="False"
                     FontSize="24" 
@@ -240,7 +253,7 @@
                     Margin="2"
                     MinHeight="50"
                     TabIndex="3"
-                    Content="Измерить объект"
+                    Content="{l:Translate DashboardControl.CalculateSize}"
                     Command="{Binding RunVolumeCalculationCommand}"
                     FontSize="24" 
                     Style="{StaticResource ButtonStyle}" />
@@ -262,7 +275,7 @@
             <Button Grid.Column="1" 
                     MinWidth="70"
                     MinHeight="50"
-                    Content="Отменить запуск" 
+                    Content="{l:Translate DashboardControl.Cancel}"
                     Visibility="{Binding CalculationPending, Converter={StaticResource BooleanToVisibilityConverter}}"
                     Command="{Binding CancelPendingCalculationCommand}"
                     FontSize="20"

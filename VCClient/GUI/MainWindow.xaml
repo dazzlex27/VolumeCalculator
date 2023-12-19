@@ -6,6 +6,7 @@
         xmlns:gui="clr-namespace:VCClient.GUI"
         xmlns:viewModels="clr-namespace:VCClient.ViewModels"
         xmlns:utils="clr-namespace:VCClient.Utils"
+        xmlns:l="clr-namespace:GuiCommon.Localization;assembly=GuiCommon"
         mc:Ignorable="d"
         x:ClassModifier="internal"
         Title="{x:Static utils:GuiUtils.AppHeaderString}" 
@@ -39,23 +40,23 @@
                             Value="24"/>
                 </Style>
             </Menu.Resources>
-            <MenuItem Header="Действия"
+            <MenuItem Header="{l:Translate Toolbar.ActionsButton}"
                       IsTabStop="False">
-                <MenuItem Header="Открыть настройки"
+                <MenuItem Header="{l:Translate Toolbar.OpenSettingsButton}"
                           Command="{Binding OpenSettingsCommand}"/>
-                <MenuItem Header="Информация о системе"
+                <MenuItem Header="{l:Translate Toolbar.SystemInformationButton}"
                           Command="{Binding OpenStatusCommand}"/>
-                <MenuItem Header="Запустить Конфигуратор"
+                <MenuItem Header="{l:Translate Toolbar.OpenConfiguratorButton}"
                           Command="{Binding OpenConfiguratorCommand}"/>
-                <MenuItem Header="Завершить работу"
+                <MenuItem Header="{l:Translate Toolbar.ShutDownButton}"
                           Command="{Binding ShutDownCommand}"/>
             </MenuItem>
-            <MenuItem Header="Инструменты"
+            <MenuItem Header="{l:Translate Toolbar.ToolsButton}"
                       IsTabStop="false">
-                <MenuItem Header="Сохранение тестовых данных" 
+                <MenuItem Header="{l:Translate Toolbar.SaveTestDataButton}"
                           IsCheckable="True" 
                           IsChecked="{Binding IsTestDataGenerationControlVisible, Mode=TwoWay}"/>
-                <MenuItem Header="Отображение отладочной информации" 
+                <MenuItem Header="{l:Translate Toolbar.DisplayDebugInfoButton}"
                           IsCheckable="True" 
                           IsChecked="{Binding IsDebugDataVisible, Mode=TwoWay}"/>
             </MenuItem>

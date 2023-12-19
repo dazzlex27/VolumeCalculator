@@ -8,6 +8,7 @@ using Primitives;
 using Primitives.Settings;
 using VCClient.Utils;
 using Primitives.Calculation;
+using GuiCommon.Localization;
 
 namespace VCClient.ViewModels
 {
@@ -65,7 +66,7 @@ namespace VCClient.ViewModels
 			{
 				SetField(ref _objectCode, value, nameof(ObjectCode));
 
-				if (_objectCode != "")
+				if (!string.IsNullOrEmpty(_objectCode))
 					_barcodeResetTimer.Start();
 
 				if (CodeReady)
@@ -241,8 +242,8 @@ namespace VCClient.ViewModels
 			{
 				WeightLabelText = _selectedWeightUnits switch
 				{
-					WeightUnits.Gr => "гр",
-					WeightUnits.Kg => "кг",
+					WeightUnits.Gr => TranslationManager.Instance.Translate("WeightUnits.Gr") as string,
+					WeightUnits.Kg => TranslationManager.Instance.Translate("WeightUnits.Kg") as string,
 					_ => "",
 				};
 			});

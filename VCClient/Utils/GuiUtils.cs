@@ -1,9 +1,9 @@
 ﻿using Primitives;
 using Primitives.Calculation;
-using System.Threading.Tasks;
 using System;
 using System.Windows.Media;
 using VCServer;
+using GuiCommon.Localization;
 
 namespace VCClient.Utils
 {
@@ -16,83 +16,36 @@ namespace VCClient.Utils
 
 		public static string GetMessageFromCalculationStatus(CalculationStatus status)
 		{
-			var message = "";
-			bool appendErrorPrefix = false;
-
-			switch (status)
+			return status switch
 			{
-				case CalculationStatus.CalculationError:
-					message = "ошибка измерения";
-					appendErrorPrefix = true;
-					break;
-				case CalculationStatus.TimedOut:
-					message = "нарушена связь с устройством";
-					appendErrorPrefix = true;
-					break;
-				case CalculationStatus.AbortedByUser:
-					message = "измерение прервано";
-					appendErrorPrefix = true;
-					break;
-				case CalculationStatus.FailedToSelectAlgorithm:
-					message = "не удалось выбрать алгоритм";
-					appendErrorPrefix = true;
-					break;
-				case CalculationStatus.ObjectNotFound:
-					message = "объект не найден";
-					appendErrorPrefix = true;
-					break;
-				case CalculationStatus.BarcodeNotEntered:
-					message = "код не введен";
-					appendErrorPrefix = true;
-					break;
-				case CalculationStatus.WeightNotStable:
-					message = "вес нестабилен";
-					appendErrorPrefix = true;
-					break;
-				case CalculationStatus.FailedToStart:
-					message = "ошибка запуска";
-					appendErrorPrefix = true;
-					break;
-				case CalculationStatus.FailedToCloseFiles:
-					message = "открыт файл результатов";
-					appendErrorPrefix = true;
-					break;
-				case CalculationStatus.Pending:
-					message = "запущен автотаймер...";
-					break;
-				case CalculationStatus.InProgress:
-					message = "выполняется измерение...";
-					break;
-				case CalculationStatus.Ready:
-					message = "Готов к измерению";
-					break;
-				case CalculationStatus.Successful:
-					message = "измерение завершено";
-					break;
-			}
-
-			var prefix = appendErrorPrefix ? "Ошибка: " : "";
-
-			return $"{prefix}{message}";
+				CalculationStatus.CalculationError => TranslationManager.Instance.Translate("CalculationStatus.CalculationError") as string,
+				CalculationStatus.TimedOut => TranslationManager.Instance.Translate("CalculationStatus.TimedOut") as string,
+				CalculationStatus.AbortedByUser => TranslationManager.Instance.Translate("CalculationStatus.AbortedByUser") as string,
+				CalculationStatus.FailedToSelectAlgorithm => TranslationManager.Instance.Translate("CalculationStatus.FailedToSelectAlgorithm") as string,
+				CalculationStatus.ObjectNotFound => TranslationManager.Instance.Translate("CalculationStatus.ObjectNotFound") as string,
+				CalculationStatus.BarcodeNotEntered => TranslationManager.Instance.Translate("CalculationStatus.BarcodeNotEntered") as string,
+				CalculationStatus.WeightNotStable => TranslationManager.Instance.Translate("CalculationStatus.WeightNotStable") as string,
+				CalculationStatus.FailedToStart => TranslationManager.Instance.Translate("CalculationStatus.FailedToStart") as string,
+				CalculationStatus.FailedToCloseFiles => TranslationManager.Instance.Translate("CalculationStatus.FailedToCloseFiles") as string,
+				CalculationStatus.Pending => TranslationManager.Instance.Translate("CalculationStatus.Pending") as string,
+				CalculationStatus.InProgress => TranslationManager.Instance.Translate("CalculationStatus.InProgress") as string,
+				CalculationStatus.Ready => TranslationManager.Instance.Translate("CalculationStatus.Ready") as string,
+				CalculationStatus.Successful => TranslationManager.Instance.Translate("CalculationStatus.Successful") as string,
+				_ => "#Unknown status#",
+			};
 		}
 
 		public static SolidColorBrush GetBrushFromDashboardStatus(DashboardStatus status)
 		{
-			switch (status)
+			return status switch
 			{
-				case DashboardStatus.Ready:
-					return new SolidColorBrush(Colors.Green);
-				case DashboardStatus.InProgress:
-					return new SolidColorBrush(Colors.DarkOrange);
-				case DashboardStatus.Pending:
-					return new SolidColorBrush(Colors.Blue);
-				case DashboardStatus.Error:
-					return new SolidColorBrush(Colors.Red);
-				case DashboardStatus.Finished:
-					return new SolidColorBrush(Colors.DarkGreen);
-				default:
-					return new SolidColorBrush(Colors.Black);
-			}
+				DashboardStatus.Ready => new SolidColorBrush(Colors.Green),
+				DashboardStatus.InProgress => new SolidColorBrush(Colors.DarkOrange),
+				DashboardStatus.Pending => new SolidColorBrush(Colors.Blue),
+				DashboardStatus.Error => new SolidColorBrush(Colors.Red),
+				DashboardStatus.Finished => new SolidColorBrush(Colors.DarkGreen),
+				_ => new SolidColorBrush(Colors.Black),
+			};
 		}
 
 		public static DashboardVmValueSet GetDashboardValuesFromCaculationStatus(CalculationStatus status)

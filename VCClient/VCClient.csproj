@@ -8,10 +8,10 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>True</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
-    <ApplicationIcon>ISlogo.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\ISlogo.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationManifest>Resources\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonUtils\CommonUtils.csproj" />
@@ -24,8 +24,19 @@
     <ProjectReference Include="..\VCServer\VCServer.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="ISlogo.ico" />
+    <Resource Include="Resources\ISlogo.ico" />
     <Page Remove="Themes\Metro\Metro.MSControls.Toolkit.Implicit.xaml" />
-    <SplashScreen Include="splash.jpg" />
+    <SplashScreen Include="Resources\splash.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Localization\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="Localization\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

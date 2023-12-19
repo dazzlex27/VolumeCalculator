@@ -3,13 +3,16 @@ using CommonUtils.Plugins;
 using CommonUtils.SettingsLoaders;
 using DeviceIntegration;
 using GuiCommon;
+using GuiCommon.Localization;
 using Primitives;
 using Primitives.Logging;
 using Primitives.Settings;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -55,9 +58,20 @@ namespace VCClient
 			}
 		}
 
+		//public ICollectionView Languages { get; private set; }
+
 		public void Dispose()
 		{
 			ShutDown(false, false);
+		}
+
+		private static void InitializeLocalization()
+		{
+			TranslationManager.Instance.TranslationProvider =
+				new ResxTranslationProvider("VCClient.Localization.Resources", Assembly.GetExecutingAssembly());
+			// TODO: 
+			//Languages.CurrentChanged += (s, e) => TranslationManager.Instance.CurrentLanguage = (CultureInfo)Languages.CurrentItem;
+			TranslationManager.Instance.CurrentLanguage = CultureInfo.InstalledUICulture;
 		}
 
 		private async void OnApplicationStartup(object sender, StartupEventArgs e)
@@ -66,6 +80,8 @@ namespace VCClient
 
 			try
 			{
+				InitializeLocalization();
+
 				_serverLogger = new TxtLogger(serverAppTitle, "main");
 				_deviceLogger = new TxtLogger(serverAppTitle, "devices");
 				_calculationLogger = new TxtLogger(serverAppTitle, "calculation");
