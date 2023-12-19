@@ -1,10 +1,11 @@
 /!!bin
 /!!distribs
 .vs
-/.idea
+.idea
 [Bb]in/
 [Oo]bj/
 *.vcxproj.user
 *.sln.DotSettings.user
-/Tests/DepthMapProcessorTests/samples
-/Tools/Build/logs
+Tests/DepthMapProcessorTests/samples
+Tools/Build/logs
+packages

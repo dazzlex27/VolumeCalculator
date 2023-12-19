@@ -214,7 +214,7 @@ namespace VolumeCalculatorTests.GUI
 		public void UpdateSettings_WhenGivenValidSettings_UpdatesFields()
 		{
 			string weightLabelTextBefore;
-			var weightLabelTextAfter = "кг";
+			var weightLabelTextAfter = "#WeightUnits.Kg#";
 
 			var settings = ApplicationSettings.GetDefaultDebugSettings();
 			var vm = new DashboardControlVm();

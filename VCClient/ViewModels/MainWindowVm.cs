@@ -177,8 +177,7 @@ namespace VCClient.ViewModels
 						return;
 
 					var settings = settingsWindowVm.GetSettings();
-					_server.UpdateApplicationSettings(settings);
-					await _server.SaveSettingsAsync();
+					_server.UpdateApplicationSettings(settings, true);
 				}
 				catch (Exception ex)
 				{

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Globalization;
 using System.Linq;
 
 namespace Primitives
@@ -22,15 +23,15 @@ namespace Primitives
 	{
 		public override void WriteJson(JsonWriter writer, RelPoint value, JsonSerializer serializer)
 		{
-			writer.WriteValue($"{value.X},{value.Y}");
+			writer.WriteValue($"{value.X.ToString().Replace(',','.')},{value.Y.ToString().Replace(',', '.')}");
 		}
 
 		public override RelPoint ReadJson(JsonReader reader, Type objectType, RelPoint existingValue,
 			bool hasExistingValue, JsonSerializer serializer)
 		{
 			var str = (string)reader.Value;
-			var tokens = 
-				str.Split(',').Select(t => double.Parse(t, System.Globalization.NumberStyles.Float)).ToArray();
+			var tokens = str.Split(',').Select(t => double.Parse(t,
+				NumberStyles.Float, CultureInfo.InvariantCulture)).ToArray();
 
 			return new RelPoint(tokens[0], tokens[1]);
 		}

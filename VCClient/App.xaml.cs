@@ -125,10 +125,9 @@ namespace VCClient
 					return;
 				}
 
-				// TODO: reimplement this
-				//if (MessageBox.Show("Вы действительно хотите отключить систему?", "Завершение работы",
-				//		MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
-				//	return;
+				if (MessageBox.Show("Вы действительно хотите завершить работу?", "Завершение работы",
+						MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
+					return;
 
 				_serverLogger?.LogInfo("Disposing the application...");
 
@@ -139,7 +138,10 @@ namespace VCClient
 				_serverLogger?.LogInfo("Application stopped");
 
 				if (!shutPcDown)
+				{
+					Process.GetCurrentProcess().Kill();
 					return;
+				}
 
 				_serverLogger?.LogInfo("Shutting down the system...");
 				_server?.ShutPcDown();

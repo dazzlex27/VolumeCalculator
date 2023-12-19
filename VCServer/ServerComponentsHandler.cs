@@ -71,6 +71,7 @@ namespace VCServer
 			_settingsHandler = settingsHandler;
 			var settingsFromHandler = await settingsHandler.LoadAsync();
 
+			bool needToSave = false;
 			ApplicationSettings settings;
 			if (settingsFromHandler == null)
 			{
@@ -80,11 +81,12 @@ namespace VCServer
 #else
 				settings = ApplicationSettings.GetDefaultSettings();
 #endif
+				needToSave = true;
 			}
 			else
 				settings = settingsFromHandler;
 
-			UpdateApplicationSettings(settings);
+			UpdateApplicationSettings(settings, needToSave);
 		}
 
 		public void Dispose()
@@ -110,7 +112,7 @@ namespace VCServer
 			return _settings;
 		}
 
-		public void UpdateApplicationSettings(ApplicationSettings settings)
+		public void UpdateApplicationSettings(ApplicationSettings settings, bool saveSettings)
 		{
 			_settings = settings;
 			Calculator?.UpdateSettings(settings);
@@ -119,6 +121,9 @@ namespace VCServer
 			_requestProcessor?.UpdateSettings(settings);
 
 			ApplicationSettingsChanged?.Invoke(settings);
+
+			if (saveSettings)
+				SaveSettingsAsync();
 
 			_logger.LogInfo($"New settings have been applied: {settings}");
 		}
